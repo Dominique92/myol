@@ -4,6 +4,9 @@
  */
 
 /* All buttons*/
+.ol-control-hidden {
+	display: none;
+}
 .ol-control {
 	border-radius: 2px;
 	padding: 0;

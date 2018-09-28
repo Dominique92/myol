@@ -246,28 +246,26 @@ var overpass = layerOverpass({
 
 map.addControl(controlLayersSwitcher(layers));
 
-map.addLayer(marqueur(
-	'data:image/svg+xml;utf8,' +
-	'<svg xmlns="http://www.w3.org/2000/svg" width="31" height="43" ' +
-	'style="stroke-width:4;stroke:rgb(255,0,0,.5);fill:rgb(0,0,0,0)">' +
-	'<rect width="31" height="43" />' +
-	'</svg>', [-.575, 44.845],
-	'lonlat', ['Lon {0}, Lat {1}', '<br/>X {2}, Y {3} (CH1903)']
+map.addLayer(dragIcon(
+	markerImage,
+	[6.575, 45.845],
+	'lonlat', [
+		'Lon [0], Lat [1]',
+		'<br/>(CH1903) X [2], Y [3] '
+	]
 ));
-map.addLayer(marqueur(
-	'data:image/svg+xml;utf8,' +
-	'<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" ' +
-	'style="stroke-width:3;stroke:rgb(255,208,0);fill:rgb(0,0,0,0)">' +
-	'<circle cx="15" cy="15" r="13.5" />' +
-	'<line x1="15" y1="0" x2="15" y2="30" />' +
-	'<line x1="0" y1="15" x2="30" y2="15" />' +
-	'</svg>', [6.15, 46.2],
+
+var viseur = dragIcon(
+	targetImage,
+	[6.15, 46.2],
 	'edit-lonlat', [
-		'Lon <input type="text" onchange="viseur.edit(this,0,4326)" size="12" maxlength="12" value="{0}"/>' +
-		'<br/>Lat <input type="text" onchange="viseur.edit(this,1,4326)" size="12" maxlength="12" value="{1}"/>',
-		'<br/>X <input type="text" onchange="viseur.edit(this,0,21781)" size="12" maxlength="12" value="{2}"/>' +
-		'<br/>Y <input type="text" onchange="viseur.edit(this,1,21781)" size="12" maxlength="12" value="{3}"/>'
+		'Lon <input type="text" onchange="viseur.edit(this,0,4326)" size="10" maxlength="12" value="[0]"/> ' +
+		'Lat <input type="text" onchange="viseur.edit(this,1,4326)" size="10" maxlength="12" value="[1]"/>',
+		'<br/>Suisse ' +
+		'X <input type="text" onchange="viseur.edit(this,0,21781)" size="7" maxlength="12" value="[2]"/> ' +
+		'Y <input type="text" onchange="viseur.edit(this,1,21781)" size="7" maxlength="12" value="[3]"/>'
 	],
-	'edit'));
+	'edit');
+map.addLayer(viseur);
 
 map.addControl(controlLineEditor('geojson', overlays));

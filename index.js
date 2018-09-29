@@ -109,6 +109,7 @@ function chemineurLayer() {
 /**
  * Controls examples
  */
+var controlgps = controlGPS();
 function controlsCollection() {
 	return [
 		new ol.control.ScaleLine(),
@@ -140,7 +141,7 @@ function controlsCollection() {
 			keepOpen: true,
 			placeholder: 'Saisir un nom' // Initialization of the input field
 		}),
-		controlGPS(),
+		controlgps,
 		controlLoadGPX(),
 		controlDownloadGPX(),
 //		controlPrint(),
@@ -222,19 +223,19 @@ var overpass = layerOverpass({
 		layerMassifsWri(),
 		overpass,
 	],
+/*	view = new ol.View({
+		//center: ol.proj.fromLonLat([-3.5, 48.25]), // France
+		//center: ol.proj.fromLonLat([7, 47]), // Suisse
+		//center: ol.proj.fromLonLat([9.2, 45.5]), // Milan
+		//center: ol.proj.fromLonLat([7.07, 45.19]), // Rochemelon
+		//center: ol.proj.fromLonLat([-.1, 51.5]), // Londres
+//		center: ol.proj.fromLonLat([-4, 48]), // Bretagne
+//		zoom: 8
+	}),*/
 	map = new ol.Map({
 		target: 'map',
-		//	loadTilesWhileInteracting: true,
+//		view: view,
 		controls: controlsCollection(),
-		/*				view: new ol.View({
-							center: ol.proj.fromLonLat([-4, 48]), // Bretagne
-							//center: ol.proj.fromLonLat([-3.5, 48.25]), // France
-							//center: ol.proj.fromLonLat([7, 47]), // Suisse
-							//center: ol.proj.fromLonLat([9.2, 45.5]), // Milan
-							//center: ol.proj.fromLonLat([7.07, 45.19]), // Rochemelon
-							//center: ol.proj.fromLonLat([-.1, 51.5]), // Londres
-							zoom: 8
-						}),*/
 		layers: overlays
 	}),
 	layers = layersCollection({
@@ -242,30 +243,33 @@ var overpass = layerOverpass({
 		//IGN: 'hcxdz5f1p9emo4i1lch6ennl', // chemineur.fr
 		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // https://manage.thunderforest.com
 		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt',
-	});
+	}),
+	marqueur = dragIcon(
+		markerImage,
+		[6.575, 45.845],
+		'lonlat', [
+			'Lon [0], Lat [1]',
+			'<br/>(CH1903) X [2], Y [3] '
+		]
+	),
+	viseur = dragIcon(
+		targetImage,
+		[6.15, 46.2],
+		'edit-lonlat', [
+			'Lon <input type="text" onchange="viseur.edit(this,0,4326)" size="10" maxlength="12" value="[0]"/> ' +
+			'Lat <input type="text" onchange="viseur.edit(this,1,4326)" size="10" maxlength="12" value="[1]"/>',
+			'<br/>Suisse ' +
+			'X <input type="text" onchange="viseur.edit(this,0,21781)" size="7" maxlength="12" value="[2]"/> ' +
+			'Y <input type="text" onchange="viseur.edit(this,1,21781)" size="7" maxlength="12" value="[3]"/>'
+		],
+		'edit'
+	);
+
+map.addLayer(marqueur);
+map.addLayer(viseur);
+controlgps.callBack = function (position) {
+	viseur.getPoint().setCoordinates(position);
+}
 
 map.addControl(controlLayersSwitcher(layers));
-
-map.addLayer(dragIcon(
-	markerImage,
-	[6.575, 45.845],
-	'lonlat', [
-		'Lon [0], Lat [1]',
-		'<br/>(CH1903) X [2], Y [3] '
-	]
-));
-
-var viseur = dragIcon(
-	targetImage,
-	[6.15, 46.2],
-	'edit-lonlat', [
-		'Lon <input type="text" onchange="viseur.edit(this,0,4326)" size="10" maxlength="12" value="[0]"/> ' +
-		'Lat <input type="text" onchange="viseur.edit(this,1,4326)" size="10" maxlength="12" value="[1]"/>',
-		'<br/>Suisse ' +
-		'X <input type="text" onchange="viseur.edit(this,0,21781)" size="7" maxlength="12" value="[2]"/> ' +
-		'Y <input type="text" onchange="viseur.edit(this,1,21781)" size="7" maxlength="12" value="[3]"/>'
-	],
-	'edit');
-map.addLayer(viseur);
-
 map.addControl(controlLineEditor('geojson', overlays));

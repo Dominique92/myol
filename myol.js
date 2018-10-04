@@ -618,13 +618,21 @@ function layerOverpass(options) {
 }
 
 /**
- * Marqueurs
+ * Markers
  * Requires proj4.js for swiss coordinates
  * Requires 'onadd' layer event
  */
-function dragIcon(imageUrl, ll, IdDisplay, format, movable) { // imageUrl, [lon, lat], 'id-display', ['format de base', 'format suisse']
+function draggedIcon(imageUrl, llInit, IdDisplay, movable) { // imageUrl, [lon, lat], 'id-display', ['format de base', 'format suisse']
+	var format = new ol.format.GeoJSON(),
+		eljson = document.getElementById(IdDisplay + '-json'),
+		elxy = document.getElementById(IdDisplay + '-xy');
+
+	// Use GeoJson input field value if any
+	if (eljson && eljson.value)
+		llInit = JSON.parse(eljson.value).coordinates;
+
 	var point = new ol.geom.Point(
-			ol.proj.fromLonLat(ll)
+			ol.proj.fromLonLat(llInit)
 		),
 		iconStyle = new ol.style.Style({
 			image: new ol.style.Icon(({
@@ -639,10 +647,11 @@ function dragIcon(imageUrl, ll, IdDisplay, format, movable) { // imageUrl, [lon,
 			features: [iconFeature]
 		}),
 		layer = new ol.layer.Vector({
-			source : source,
+			source: source,
 			style: iconStyle,
 			zIndex: 2
 		});
+
 	layer.on('onadd', function(event) {
 		if (movable) {
 			// Drag and drop
@@ -656,35 +665,46 @@ function dragIcon(imageUrl, ll, IdDisplay, format, movable) { // imageUrl, [lon,
 		}
 	});
 
-	// Show a coordinate
+	// Specific Swiss coordinates EPSG:21781 (CH1903 / LV03)
+	if (typeof proj4 == 'function') {
+		proj4.defs('EPSG:21781', '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=660.077,13.551,369.344,2.484,1.783,2.939,5.66 +units=m +no_defs');
+		ol.proj.proj4.register(proj4);
+	}
+
+	// Display a coordinate
 	function displayLL(ll) {
 		var ll4326 = ol.proj.transform(ll, 'EPSG:3857', 'EPSG:4326'),
-			html = format[0],
-			p = [Math.round(ll4326[0] * 100000) / 100000, Math.round(ll4326[1] * 100000) / 100000];
-
-		// Adding Swiss coordinates EPSG:21781 (CH1903 / LV03)
-		if (ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll) && // Si on est dans la zone suisse EPSG:21781
-			format.length >= 2 &&
-			typeof proj4 == 'function') {
-			proj4.defs('EPSG:21781', '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=660.077,13.551,369.344,2.484,1.783,2.939,5.66 +units=m +no_defs');
-			ol.proj.proj4.register(proj4);
+			values = {
+				lon: Math.round(ll4326[0] * 100000) / 100000,
+				lat: Math.round(ll4326[1] * 100000) / 100000,
+				json: JSON.stringify(format.writeGeometryObject(point, {
+					featureProjection: 'EPSG:3857'
+				}))
+			};
+		// Specific Swiss coordinates EPSG:21781 (CH1903 / LV03)
+		if (typeof proj4 == 'function' &&
+			ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll)) { // Si on est dans la zone suisse EPSG:21781
 			var c21781 = ol.proj.transform(ll, 'EPSG:3857', 'EPSG:21781');
-			html += format[1];
-			p.push(Math.round(c21781[0]), Math.round(c21781[1]));
+			values.x = Math.round(c21781[0]);
+			values.y = Math.round(c21781[1]);
 		}
-
-		// We integrate coordinates in html format
-		for (var r in p) // === sprinft
-			html = html.replace('[' + r + ']', p[r]);
+		if (elxy)
+			elxy.style.display = values.x ? '' : 'none';
 
 		// We insert the resulting HTML string where it is going
-		var displayElement = document.getElementById(IdDisplay);
-		if (displayElement)
-			displayElement.innerHTML = html;
+		for (var v in values) {
+			var el = document.getElementById(IdDisplay + '-' + v);
+			if (el) {
+				if (el.value !== undefined)
+					el.value = values[v];
+				else
+					el.innerHTML = values[v];
+			}
+		}
 	}
 
 	// Display once at init
-	displayLL(ol.proj.fromLonLat(ll));
+	displayLL(ol.proj.fromLonLat(llInit));
 
 	// <input> coords edition
 	layer.edit = function(event, nol, projection) {

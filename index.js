@@ -244,26 +244,8 @@ var overpass = layerOverpass({
 		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // https://manage.thunderforest.com
 		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt',
 	}),
-	marqueur = dragIcon(
-		markerImage,
-		[6.575, 45.845],
-		'lonlat', [
-			'Lon [0], Lat [1]',
-			'<br/>(CH1903) X [2], Y [3] '
-		]
-	),
-	viseur = dragIcon(
-		targetImage,
-		[6.15, 46.2],
-		'edit-lonlat', [
-			'Lon <input type="text" onchange="viseur.edit(this,0,4326)" size="10" maxlength="12" value="[0]"/> ' +
-			'Lat <input type="text" onchange="viseur.edit(this,1,4326)" size="10" maxlength="12" value="[1]"/>',
-			'<br/>Suisse ' +
-			'X <input type="text" onchange="viseur.edit(this,0,21781)" size="7" maxlength="12" value="[2]"/> ' +
-			'Y <input type="text" onchange="viseur.edit(this,1,21781)" size="7" maxlength="12" value="[3]"/>'
-		],
-		'edit'
-	);
+	marqueur = draggedIcon(markerImage, [6.575, 45.845], 'll'),
+	viseur = draggedIcon(targetImage, [6.15, 46.2], 'lled', true);
 
 map.addLayer(marqueur);
 map.addLayer(viseur);

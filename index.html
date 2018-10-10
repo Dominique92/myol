@@ -24,23 +24,22 @@
 			height: 60vw;
 		}
 	</style>
-	<script>
-		window.addEventListener('load', function() {
-			map = new ol.Map({
-				target: 'map',
-				controls: controlsCollection()
-			});
-			var layersSwitcher = controlLayersSwitcher(layersCollection({
-					IGN: 'IGN_KEY', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
-					thunderforest: 'THUNDERFOREST_KEY', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
-					bing: '<BING_KEY>' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
-				}));
-			map.addControl(layersSwitcher);
-		});
-	</script>
 </head>
 
 <body>
 	<div id="map"></div>
+
+	<script>
+		// Must be after the <div> tag
+		map = new ol.Map({
+			target: 'map',
+			controls: controlsCollection()
+		});
+		map.addControl(controlLayersSwitcher(layersCollection({
+			IGN: 'IGN_KEY', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
+			thunderforest: 'THUNDERFOREST_KEY', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
+			bing: '<BING_KEY>' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
+		})));
+	</script>
 </body>
 </html>

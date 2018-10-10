@@ -12,12 +12,10 @@ This [EXAMPLE DEMO](https://dominique92.github.io/MyOl/) implements a single map
 LAYERS KEYS
 ===========
 If you want to use external providers layers, you must acquire free keys and replace them in the html (see source comment)
-```
-- French IGN : Get your own (free) IGN key at [http://professionnels.ign.fr](http://professionnels.ign.fr/ign/contrats)
-- OSM thunderforest : Get your own (free) THUNDERFOREST key at [https://manage.thunderforest.com](https://manage.thunderforest.com)
-- Microsoft BING : Get your own (free) BING key at [https://www.microsoft.com](https://www.microsoft.com/en-us/maps/create-a-bing-maps-key)
-- Swiss Topo : You also need to register your domain in [https://shop.swisstopo.admin.ch](https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info)
-```
+* French IGN : Get your own (free) IGN key at [http://professionnels.ign.fr](http://professionnels.ign.fr/ign/contrats)
+* OSM thunderforest : Get your own (free) THUNDERFOREST key at [https://manage.thunderforest.com](https://manage.thunderforest.com)
+* Microsoft BING : Get your own (free) BING key at [https://www.microsoft.com](https://www.microsoft.com/en-us/maps/create-a-bing-maps-key)
+* Swiss Topo : You also need to register your domain in [https://shop.swisstopo.admin.ch](https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info)
 
 FULL FUNCTIONS
 ==============

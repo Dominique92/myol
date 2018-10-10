@@ -8,8 +8,16 @@ This [EXAMPLE DEMO](https://dominique92.github.io/MyOl/) implements a single map
 * You can download the [DISTRIBUTION ZIPPED PACKAGE](https://github.com/Dominique92/MyOl/archive/master.zip) and unzip it in your website FTP section.
 * See the [FULL HTML EXAMPLE CODE](https://raw.githubusercontent.com/Dominique92/MyOl/master/index.html)
 * You can include the includes, css & javascript sections of this example on your own page (adjust the include files path to your implementation)
-* If you want to use the France IGN, Microsoft BING & OSM thunderforest map layers, you must acquire a free key and replace it in the html (see source comment)
 
+LAYERS KEYS
+===========
+If you want to use external providers layers, you must acquire free keys and replace them in the html (see source comment)
+```
+- French IGN : Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
+- OSM thunderforest : Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
+- Microsoft BING : Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
+- Swiss Topo : You also need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
+```
 
 FULL FUNCTIONS
 ==============

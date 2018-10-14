@@ -152,8 +152,8 @@ var overpass = layerOverpass({
 		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // https://manage.thunderforest.com
 		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt',
 	}),
-	marqueur = draggedIcon(markerImage, [6.575, 45.845], 'll'),
-	viseur = draggedIcon(targetImage, [6.15, 46.2], 'lled', true);
+	marqueur = draggedIcon(markerImage, 'marqueur'),
+	viseur = draggedIcon(targetImage, 'viseur', true);
 
 map.addLayer(marqueur);
 map.addLayer(viseur);

@@ -113,8 +113,10 @@ var overpass = layerOverpass({
 		url: '//overpass-api.de/api/interpreter',
 		selector: 'overpass',
 		labelClass: 'label-overpass',
-		label: function(p) {
-			return ['<hr/><a href="http://chemineur.fr/posting.php?mode=post',
+		iconUrl : '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/',
+/*TODO
+		postLabel: function(p) {
+			return;return ['<hr/><a href="http://chemineur.fr/posting.php?mode=post',
 					'sid=ca86393fbad98908cf443bdeef5a04ca',
 					'f=' + p.type,
 					'url=' + encodeURI(p.url),
@@ -124,6 +126,7 @@ var overpass = layerOverpass({
 				].join('&') +
 				'">Créer une fiche</a>';
 		}
+*/
 	}),
 	overlays = [
 		layerPointsWri(),

@@ -60,6 +60,10 @@
 		<li><input type="checkbox" name="overpass" id="ravitaillement" value='["shop"~"supermarket|convenience"]' />Ravitaillement</li>
 		<li><input type="checkbox" name="overpass" id="bus" value='["highway"="bus_stop"]' />Bus</li>
 		<li><input type="checkbox" name="overpass" id="parking" value='["amenity"="parking"]["access"!="private"]' />Parking</li>
+
+		<li><input type="checkbox" name="overpass" id="point_eau" value='["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["natural"="spring"]+["man_made"="water_well"]' />Point d'eau</li>
+		<li><input type="checkbox" name="overpass" id="telephone" value='["amenity"="telephone"]' />Cabines téléphoniques</li>
+		<li><input type="checkbox" name="overpass" id="internet" value='["internet_access"~"yes|public|wlan|wired|terminal|service|free|fee|type|access"]' />Café internet</li>
 	</ul>
 
 	<input id="marqueur-json" type="hidden" value='{"type":"Point","coordinates":[6.575,45.845]}' />

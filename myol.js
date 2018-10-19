@@ -537,12 +537,14 @@ function layerOverpass(options) {
 				args = [];
 
 			if (resolution < 30) // Only for small areas
-				for (var l = 0; l < list.length; l++)
-					args.push(
-						'node' + list[l] + bb + // Ask for nodes in the bbox
-						'way' + list[l] + bb // Also ask for areas
-					);
-
+				for (var l = 0; l < list.length; l++) {
+					var lists = list[l].split('+');
+					for (var ls = 0; ls < lists.length; ls++)
+						args.push(
+							'node' + lists[ls] + bb + // Ask for nodes in the bbox
+							'way' + lists[ls] + bb // Also ask for areas
+						);
+				}
 			return options.url +
 				'?data=[timeout:5];(' + // Not too much !
 				args.join('') +
@@ -553,7 +555,7 @@ function layerOverpass(options) {
 		style: function(properties) {
 			return {
 				image: new ol.style.Icon({
-					src: '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/' + overpassType(properties) + '.png'
+					src: options.iconUrl + overpassType(properties).icon + '.png'
 				})
 			};
 		},
@@ -566,11 +568,17 @@ function layerOverpass(options) {
 				hotel: 'h&ocirc;tel',
 				camp_site: 'camping',
 				convenience: 'alimentation',
-				supermarket: 'supermarch&egrave;'
+				supermarket: 'supermarch&egrave;',
+				drinking_water: 'point d\'eau',
+				water_point: 'point d\'eau',
+				watering_place: 'abreuvoir',
+				spring: 'source',
+				water_well: 'puits',
+				fountain: 'fontaine'
 			},
-			type = p.type = overpassType(p),
+			type = overpassType(p).name,
 			description = [
-				(p.name && p.name.toLowerCase().indexOf(type) ? type : '') +
+				(!p.name ? type : (p.name.toLowerCase().indexOf(type) ? type : '')), //TODO : devrait utiliser la traduction
 				'*'.repeat(p.stars),
 				p.rooms ? p.rooms + ' chambres' : '',
 				p.place ? p.place + ' places' : '',
@@ -599,7 +607,7 @@ function layerOverpass(options) {
 				p.website ? '&#8943;<a title="Voir le site web" target="_blank" href="' + p.website + '">' + (p.website.split('/')[2] || p.website) + '</a>' : '',
 				'&copy; Voir sur <a title="Voir la fiche d\'origine sur openstreetmap" target="_blank" href="' + osmUrl + '">OSM</a>'
 			],
-			postLabel = typeof options.label == 'function' ? options.label(p, f) : options.label || '';
+			postLabel = typeof options.label == 'function' ? options.postLabel(p, f) : options.postLabel || '';
 
 		popup = popup.concat(typeof postLabel == 'object' ? postLabel : [postLabel]);
 		return ('<p>' + popup.join('</p><p>') + '</p>').replace(/<p>\s*<\/p>/ig, '');
@@ -609,10 +617,16 @@ function layerOverpass(options) {
 		var checkElements = document.getElementsByName(options.selector);
 		for (var e = 0; e < checkElements.length; e++)
 			if (checkElements[e].checked) {
-				var conditions = checkElements[e].value.split('"');
-				if (properties[conditions[1]] &&
-					properties[conditions[1]].match(conditions[3]))
-					return checkElements[e].id;
+				var tags = checkElements[e].value.split('+');
+				for (var t = 0; t < tags.length; t++) {
+					var conditions = tags[t].split('"');
+					if (properties[conditions[1]] &&
+						properties[conditions[1]].match(conditions[3]))
+						return {
+							icon: checkElements[e].id,
+							name: properties[conditions[1]]
+						};
+				}
 			}
 	}
 

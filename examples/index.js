@@ -131,26 +131,16 @@ var overpass = layerOverpass({
 		layerMassifsWri(),
 		overpass,
 	],
-/*	view = new ol.View({
-		//center: ol.proj.fromLonLat([-3.5, 48.25]), // France
-		//center: ol.proj.fromLonLat([7, 47]), // Suisse
-		//center: ol.proj.fromLonLat([9.2, 45.5]), // Milan
-		//center: ol.proj.fromLonLat([7.07, 45.19]), // Rochemelon
-		//center: ol.proj.fromLonLat([-.1, 51.5]), // Londres
-//		center: ol.proj.fromLonLat([-4, 48]), // Bretagne
-//		zoom: 8
-	}),*/
 	map = new ol.Map({
 		target: 'map',
-//		view: view,
 		controls: controlsCollection(),
 		layers: overlays
 	}),
 	layers = layersCollection({
-		IGN: 'o6owv8ubhn3vbz2uj8jq5j0z', // localhost
-		//IGN: 'hcxdz5f1p9emo4i1lch6ennl', // chemineur.fr
-		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // https://manage.thunderforest.com
-		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt',
+		IGN: 'd27mzh49fzoki1v3aorusg6y', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
+		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
+		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
+		// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
 	}),
 	marqueur = draggedIcon(markerImage, 'marqueur'),
 	viseur = draggedIcon(targetImage, 'viseur', true);

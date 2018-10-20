@@ -35,12 +35,22 @@
 	<div id="map"></div>
 
 	<ul>
+		<li>OVERPASS<input type="checkbox" name="overpass" checked="checked" /></li>
 		<li><input type="checkbox" name="overpass" id="point_eau" value='["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["natural"="spring"]+["man_made"="water_well"]' />Point d'eau</li>
 		<li><input type="checkbox" name="overpass" id="telephone" value='["amenity"="telephone"]' />Cabines téléphoniques</li>
 		<li><input type="checkbox" name="overpass" id="wifi" value='["internet_access"~"yes|public|wlan|wired|terminal|service|free|fee|type|access"]' />Café internet</li>
+		<li><input type="checkbox" name="overpass" id="ravitaillement" value='["shop"~"supermarket|convenience"]' />Ravitaillement</li>
+		<li><input type="checkbox" name="overpass" id="parking" value='["amenity"="parking"]["access"!="private"]' />Parking</li>
 	</ul>
 	<ul>
-		<li>Chemineur<input type="checkbox" name="chemineur" checked="checked" /></li>
+		<li><input type="checkbox" name="overpass" id="refuge" value='["tourism"="alpine_hut"]' />Refuge gardé</li>
+		<li><input type="checkbox" name="overpass" id="cabane" value='["building"="cabin"]' />Cabane non gardée</li>
+		<li><input type="checkbox" name="overpass" id="camping" value='["tourism"="camp_site"]' />Camping</li>
+		<li><input type="checkbox" name="overpass" id="abri" value='["amenity"="shelter"]["shelter_type"="basic_hut"]' />Abri</li>
+		<li><input type="checkbox" checked="checked" name="overpass" id="hotel" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]' />Hôtel</li>
+		<li><input type="checkbox" name="overpass" id="bus" value='["highway"="bus_stop"]' />Bus</li>
+		<li><input type="checkbox" name="overpass" id="wc" value='["amenity"="toilets"]' />Toilettes</li>
+		<li><input type="checkbox" name="overpass" id="restaurant" value='["amenity"="restaurant"]' />Restaurants</li>
 	</ul>
 	<ul>
 		<li>WRI<input type="checkbox" name="wri-poi" /></li>
@@ -53,18 +63,10 @@
 		<li><input type="checkbox" name="wri-poi" value="28" checked="checked" />bâtiment en montagne</li>
 	</ul>
 	<ul>
-		<li>MASSIFS<input type="checkbox" name="wri-massifs" /></li>
+		<li>Chemineur<input type="checkbox" name="chemineur" checked="checked" /></li>
 	</ul>
 	<ul>
-		<li>OVERPASS<input type="checkbox" name="overpass" checked="checked" /></li>
-		<li><input type="checkbox" name="overpass" id="refuge" value='["tourism"="alpine_hut"]' />Refuge gardé</li>
-		<li><input type="checkbox" name="overpass" id="cabane" value='["building"="cabin"]' />Cabane non gardée</li>
-		<li><input type="checkbox" name="overpass" id="camping" value='["tourism"="camp_site"]' />Camping</li>
-		<li><input type="checkbox" name="overpass" id="abri" value='["amenity"="shelter"]' />Abri</li>
-		<li><input type="checkbox" checked="checked" name="overpass" id="hotel" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]' />Hôtel</li>
-		<li><input type="checkbox" name="overpass" id="ravitaillement" value='["shop"~"supermarket|convenience"]' />Ravitaillement</li>
-		<li><input type="checkbox" name="overpass" id="bus" value='["highway"="bus_stop"]' />Bus</li>
-		<li><input type="checkbox" name="overpass" id="parking" value='["amenity"="parking"]["access"!="private"]' />Parking</li>
+		<li>Massifs<input type="checkbox" name="wri-massifs" /></li>
 	</ul>
 
 	<input id="marqueur-json" type="hidden" value='{"type":"Point","coordinates":[6.575,45.845]}' />

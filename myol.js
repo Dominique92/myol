@@ -536,7 +536,7 @@ function layerOverpass(options) {
 			var bb = '(' + bbox[1] + ',' + bbox[0] + ',' + bbox[3] + ',' + bbox[2] + ');',
 				args = [];
 
-			if (resolution < 30) // Only for small areas
+			if (resolution < options.maxResolution || 30) // Only for small areas
 				for (var l = 0; l < list.length; l++) {
 					var lists = list[l].split('+');
 					for (var ls = 0; ls < lists.length; ls++)
@@ -551,7 +551,7 @@ function layerOverpass(options) {
 				');out center;'; // add center of areas
 		},
 		format: new ol.format.OSMXMLPOI(),
-		selector: options.selector,
+		selector: options.selector, // The layer is cleared & reloaded if one selector check is clicked
 		style: function(properties) {
 			return {
 				image: new ol.style.Icon({
@@ -628,6 +628,10 @@ function layerOverpass(options) {
 						};
 				}
 			}
+		return {
+			icon: 'inconnu',
+			name: 'inconnu'
+		};
 	}
 
 	return layer;

@@ -6,7 +6,7 @@ SIMPLE EXAMPLE
 ==============
 This [EXAMPLE DEMO](https://dominique92.github.io/MyOl/) implements a single map with the most current maps layers providers.
 * You can download the [DISTRIBUTION ZIPPED PACKAGE](https://github.com/Dominique92/MyOl/archive/master.zip) and unzip it in your website FTP section.
-* See the [FULL HTML EXAMPLE CODE](https://raw.githubusercontent.com/Dominique92/MyOl/master/index.html)
+* See the [FULL FUNCTIONS EXAMPLE DEMO](https://dominique92.github.io/MyOl/examples/)
 * You can include the includes, css & javascript sections of this example on your own page (adjust the include files path to your implementation)
 
 LAYERS KEYS

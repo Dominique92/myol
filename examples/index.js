@@ -145,8 +145,8 @@ var overpass = layerOverpass({
 		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
 		// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
 	}),
-	marqueur = draggedIcon(markerImage, 'marqueur'),
-	viseur = draggedIcon(targetImage, 'viseur', true);
+	marqueur = marker(markerImage, 'marqueur'),
+	viseur = marker(targetImage, 'viseur', true);
 
 map.addLayer(marqueur);
 map.addLayer(viseur);

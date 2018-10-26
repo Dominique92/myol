@@ -7,7 +7,7 @@ var _v=document.cookie,_r='COOKIES : ';if(typeof _v=='array'||typeof _v=='object
 function layerMassifsWri() {
 	return layerVectorURL({
 		url: '//www.refuges.info/api/polygones?type_polygon=1',
-		selector: 'wri-massifs',
+		selectorName: 'wri-massifs',
 		style: function(properties) {
 			// Translates the color in RGBA to be transparent
 			var cs = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(properties.couleur);
@@ -20,9 +20,6 @@ function layerMassifsWri() {
 				})
 			};
 		},
-		label: function(properties) {
-			return properties.nom;
-		},
 		hover: function(properties) {
 			return {
 				fill: new ol.style.Fill({
@@ -32,6 +29,9 @@ function layerMassifsWri() {
 					color: 'black'
 				})
 			};
+		},
+		label: function(properties) {
+			return properties.nom;
 		},
 		click: function(properties) {
 			if (properties.lien)
@@ -47,7 +47,7 @@ function layerMassifsWri() {
 function layerPointsWri() {
 	return layerVectorURL({
 		url: '//www.refuges.info/api/bbox?type_points=',
-		selector: 'wri-poi',
+		selectorName: 'wri-poi',
 		style: function(properties) {
 			return {
 				image: new ol.style.Icon({
@@ -72,7 +72,7 @@ function layerPointsWri() {
 function chemineurLayer() {
 	return layerVectorURL({
 		url: '//dc9.fr/chemineur/ext/Dominique92/GeoBB/gis.php?site=this&poi=3,8,16,20,23,28,30,40,44,64,58,62,65',
-		selector: 'chemineur',
+		selectorName: 'chemineur',
 		style: function(properties) {
 			return {
 				// POI
@@ -111,7 +111,8 @@ function chemineurLayer() {
 //***************************************************************
 var overpass = layerOverpass({
 		url: '//overpass-api.de/api/interpreter',
-		selector: 'overpass',
+		selectorId: 'overpass',
+		selectorName: 'overpass',
 		labelClass: 'label-overpass',
 		iconUrl : '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/',
 /*TODO
@@ -132,7 +133,7 @@ var overpass = layerOverpass({
 		layerPointsWri(),
 		chemineurLayer(),
 		layerMassifsWri(),
-		overpass,
+		overpass
 	],
 	map = new ol.Map({
 		target: 'map',

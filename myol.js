@@ -159,11 +159,13 @@ function layerTileIncomplete(extent, sources) {
 	// Zoom has changed
 	function change() {
 		var view = layer.map_.getView(),
+			center = view.getCenter(),
 			currentResolution = 999999; // Init loop at max resolution
 		sources[currentResolution] = backgroundSource; // Add extrabound source on the top of the list
 
 		// Search for sources according to the map resolution
-		if (ol.extent.intersects(extent, view.calculateExtent(layer.map_.getSize())))
+		if (center &&
+			ol.extent.intersects(extent, view.calculateExtent(layer.map_.getSize())))
 			currentResolution = Object.keys(sources).filter(function(event) { // HACK : use of filter to perform an action
 				return event > view.getResolution();
 			})[0];
@@ -325,6 +327,7 @@ ol.loadingstrategy.bboxDependant = function(extent, resolution) {
  * Requires 'onadd' layer event
  * Requires ol.loadingstrategy.bboxDependant & controlPermanentCheckbox
  */
+//TODO BUG Uncaught SyntaxError: Unexpected token < in JSON at position 46735
 function layerVectorURL(options) {
 	var source = new ol.source.Vector({
 			strategy: ol.loadingstrategy.bboxDependant,
@@ -370,8 +373,7 @@ function initLayerVectorURLListeners(e) {
 	if (!map.popElement_) { //HACK Only once for all layers
 		// Display a label when hover the feature
 		map.popElement_ = document.createElement('div');
-		var dx = 0.4,
-			xAnchor, // Spread too closes icons
+		var dx = 0.4, xAnchor, // Spread too closes icons
 			hovered = [],
 			popup = new ol.Overlay({
 				element: map.popElement_
@@ -403,13 +405,15 @@ function initLayerVectorURLListeners(e) {
 				if (l && l.options_) {
 					var h = {
 						event: event,
+						pixel: event.pixel, // Follow the mouse if line or surface
 						feature: f,
 						layer: l,
 						options: l.options_,
 						properties: f.getProperties(),
 						coordinates: f.getGeometry().flatCoordinates // If it's a point, just over it
 					};
-					h.pixel = map.getPixelFromCoordinate(h.coordinates);
+					if (h.coordinates.length == 2) // Stable if icon
+						h.pixel = map.getPixelFromCoordinate(h.coordinates);
 					h.ll4326 = ol.proj.transform(h.coordinates, 'EPSG:3857', 'EPSG:4326');
 					hovered.push(h);
 				}
@@ -418,9 +422,11 @@ function initLayerVectorURLListeners(e) {
 			if (hovered) {
 				// Sort features left to right
 				hovered.sort(function(a, b) {
+					if (a.coordinates.length > 2) return 999; // Lines & surfaces under of the pile !
+					if (b.coordinates.length > 2) return -999;
 					return a.pixel[0] - b.pixel[0];
 				});
-				xAnchor = 0.5 + dx * (hovered.length - 1) / 2;
+				xAnchor = 0.5 + dx * (hovered.length + 1) / 2; // dx left because we begin to remove dx at the first icon
 				hovered.forEach(checkHovered);
 			}
 		}
@@ -431,29 +437,24 @@ function initLayerVectorURLListeners(e) {
 				map.getViewport().style.cursor = 'pointer';
 
 			// Apply hover if any
-			var style = (h.options.hover || h.options.style)(h.feature.getProperties());
+			var style = (h.options.hover || h.options.style)(h.properties);
 
-			// Shift icon if too many grouped here
+			// Spread too closes icons //TODO BUG don't allow to click on the last !!
 			if (hovered.length > 1 &&
-				style.image) {
-				style.image.anchor_[0] = xAnchor;
-				xAnchor -= dx;
-			}
+				style.image)
+				style.image.anchor_[0] = xAnchor -= dx;
 			h.feature.setStyle(new ol.style.Style(style));
 
-			if (!popup.getPosition()) { // Only for the first feature on the hovered stack
+			if (h.options.label &&
+				!popup.getPosition()) { // Only for the first feature on the hovered stack
 				// Calculate the label' anchor
-				if (h.coordinates.length != 2)
-					h.coordinates = h.event.coordinate; // If it's a surface, over the pointer
 				popup.setPosition(map.getView().getCenter()); // For popup size calculation
 
 				// Fill label class & text
-				h.properties.lon = Math.round(h.ll4326[0] * 100000) / 100000;
-				h.properties.lat = Math.round(h.ll4326[1] * 100000) / 100000;
 				map.popElement_.className = 'popup ' + (h.layer.options_.labelClass || '');
 				map.popElement_.innerHTML = typeof h.options.label == 'function' ?
 					h.options.label(h.properties, h.feature, h.layer) :
-					h.options.label || '';
+					h.options.label;
 
 				// Shift of the label to stay into the map regarding the pointer position
 				if (h.pixel[1] < map.popElement_.clientHeight + 12) { // On the top of the map (not enough space for it)
@@ -675,37 +676,38 @@ function layerOverpass(options) {
  * Requires proj4.js for swiss coordinates
  * Requires 'onadd' layer event
  */
-function marker(imageUrl, display, dragged) { // imageUrl, [lon, lat] | 'id-display', dragged
+function marker(imageUrl, display, llInit, dragged) { // imageUrl, 'id-display', [lon, lat], bool
 	var format = new ol.format.GeoJSON(),
-		llInit = typeof display == 'object' ? display : [3, 47], // Center of France
-		eljson, ellon, ellat, elxy;
+		eljson, json, ellon, ellat, elxy;
 
 	if (typeof display == 'string') {
 		eljson = document.getElementById(display + '-json');
 		elxy = document.getElementById(display + '-xy');
 	}
 	// Use json field values if any
-	if (eljson && eljson.value)
-		llInit = JSON.parse(eljson.value).coordinates;
+	if (eljson)
+		json = eljson.value || eljson.innerHTML;
+	if (json)
+		llInit = JSON.parse(json).coordinates;
 
-	var point = new ol.geom.Point(
-			ol.proj.fromLonLat(llInit)
-		),
-		iconStyle = new ol.style.Style({
+	var style = new ol.style.Style({
 			image: new ol.style.Icon(({
 				src: imageUrl,
 				anchor: [0.5, 0.5]
 			}))
 		}),
-		iconFeature = new ol.Feature({
+		point = new ol.geom.Point(
+			ol.proj.fromLonLat(llInit)
+		),
+		feature = new ol.Feature({
 			geometry: point
 		}),
 		source = new ol.source.Vector({
-			features: [iconFeature]
+			features: [feature]
 		}),
 		layer = new ol.layer.Vector({
 			source: source,
-			style: iconStyle,
+			style: style,
 			zIndex: 2
 		});
 
@@ -713,8 +715,8 @@ function marker(imageUrl, display, dragged) { // imageUrl, [lon, lat] | 'id-disp
 		if (dragged) {
 			// Drag and drop
 			event.target.map_.addInteraction(new ol.interaction.Modify({
-				features: new ol.Collection([iconFeature]),
-				style: iconStyle
+				features: new ol.Collection([feature]),
+				style: style
 			}));
 			point.on('change', function() {
 				displayLL(this.getCoordinates());
@@ -768,6 +770,7 @@ function marker(imageUrl, display, dragged) { // imageUrl, [lon, lat] | 'id-disp
 		var coord = ol.proj.transform(point.getCoordinates(), 'EPSG:3857', 'EPSG:' + projection); // La position actuelle de l'icone
 		coord[nol] = parseFloat(event.value); // On change la valeur qui a été modifiée
 		point.setCoordinates(ol.proj.transform(coord, 'EPSG:' + projection, 'EPSG:3857')); // On repositionne l'icone
+		layer.map_.getView().setCenter(point.getCoordinates());
 	};
 
 	layer.getPoint = function() {
@@ -952,11 +955,16 @@ function controlLayersSwitcher(baseLayers) {
 function controlPermalink(options) {
 	var divElement = document.createElement('div'),
 		aElement = document.createElement('a'),
-		params,
 		control = new ol.control.Control({
 			element: divElement,
 			render: render
-		});
+		}),
+		params =
+			location.hash.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Priority to the hash
+			document.cookie.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Then the cookie
+			(options.defaultPos || '6/2/47').match(/([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/);
+	control.paramsCenter = [parseFloat(params[2]), parseFloat(params[3])];
+
 	if (options.visible) {
 		divElement.className = 'ol-permalink';
 		aElement.innerHTML = 'Permalink';
@@ -969,26 +977,23 @@ function controlPermalink(options) {
 
 		// Set the map at the init
 		if (options.init !== false && // If use hash & cookies
-			typeof params == 'undefined') { // Only once
-			params =
-				location.hash.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Priority to the hash
-				document.cookie.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Then the cookie
-				(options.defaultPos || '6/2/47').match(/([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/); // Appli default / Final
+			params) { // Only once
 			view.setZoom(params[1]);
-			view.setCenter(ol.proj.transform([parseFloat(params[2]), parseFloat(params[3])], 'EPSG:4326', 'EPSG:3857'));
+			view.setCenter(ol.proj.transform(control.paramsCenter, 'EPSG:4326', 'EPSG:3857'));
+			params = null;
 		}
 
 		// Check the current map zoom & position
-		var ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
-		params = [
-			parseInt(view.getZoom()),
-			Math.round(ll4326[0] * 100000) / 100000,
-			Math.round(ll4326[1] * 100000) / 100000
-		];
+		var ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
+			newParams = [
+				parseInt(view.getZoom()),
+				Math.round(ll4326[0] * 100000) / 100000,
+				Math.round(ll4326[1] * 100000) / 100000
+			];
 
 		// Set the new permalink
-		aElement.href = '#map=' + params.join('/');
-		document.cookie = 'map=' + params.join('/') + ';path=/';
+		aElement.href = '#map=' + newParams.join('/');
+		document.cookie = 'map=' + newParams.join('/') + ';path=/';
 	}
 
 	return control;

@@ -109,51 +109,51 @@ function chemineurLayer() {
 //***************************************************************
 // EXAMPLE
 //***************************************************************
-var overpass = layerOverpass({
-		url: '//overpass-api.de/api/interpreter',
-		selectorId: 'overpass',
-		selectorName: 'overpass',
-		labelClass: 'label-overpass',
-		iconUrl : '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/',
-/*TODO
-		postLabel: function(p) {
-			return;return ['<hr/><a href="http://chemineur.fr/posting.php?mode=post',
-					'sid=ca86393fbad98908cf443bdeef5a04ca',
-					'f=' + p.type,
-					'url=' + encodeURI(p.url),
-					'nom=' + p.name,
-					'lon=' + p.lon,
-					'lat=' + p.lat
-				].join('&') +
-				'">Créer une fiche</a>';
-		}
-*/
-	}),
-	overlays = [
-		layerPointsWri(),
-		chemineurLayer(),
-		layerMassifsWri(),
-		overpass
-	],
-	map = new ol.Map({
-		target: 'map',
-		controls: controlsCollection(),
-		layers: overlays
-	}),
-	layers = layersCollection({
+var layerSwitcher = controlLayersSwitcher(layersCollection({
 		IGN: 'd27mzh49fzoki1v3aorusg6y', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
 		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
 		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
 		// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
+	})),
+	overpass = layerOverpass({
+		url: '//overpass-api.de/api/interpreter',
+		selectorId: 'overpass',
+		selectorName: 'overpass',
+		labelClass: 'label-overpass',
+		iconUrlPath: '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/',
+		postLabel: function(t, p) {
+			var ll4326 = ol.proj.transform(p.geometry.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
+			return ['<a title="Créer une fiche modifiable à partir du point OSM" ' +
+					'href="posting.php?mode=post',
+					'type=' + t,
+					'name=' + p.name,
+					'lon=' + Math.round(ll4326[0] * 100000) / 100000,
+					'lat=' + Math.round(ll4326[0] * 100000) / 100000
+				].join('&') +
+				'">Créer une fiche locale</a>';
+		}
 	}),
-	marqueur = marker(markerImage, 'marqueur'),
-	viseur = marker(targetImage, 'viseur', null, true);
+	marqueur = marker('http://www.refuges.info/images/cadre.png', 'marqueur'),
+	viseur = marker('http://www.refuges.info/images/viseur.png', 'viseur', null, true),
+	overlays = [
+		layerPointsWri(),
+		chemineurLayer(),
+		layerMassifsWri(),
+		overpass,
+		marqueur,
+		viseur
+	],
+	map = new ol.Map({
+		target: 'map',
+		controls: controlsCollection().concat([
+			layerSwitcher,
+			controlEdit('geojson', overlays, true),
+			controlEditCreate('LineString'),
+			controlEditCreate('Polygon')
+		]),
+		layers: overlays
+	});
 
-map.addLayer(marqueur);
-map.addLayer(viseur);
-controlgps.callBack = function (position) {
+controlgps.callBack = function(position) {
 	viseur.getPoint().setCoordinates(position);
 }
-
-map.addControl(controlLayersSwitcher(layers));
-map.addControl(controlLineEditor('geojson', overlays));

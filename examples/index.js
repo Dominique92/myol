@@ -33,34 +33,8 @@ function layerMassifsWri() {
 		label: function(properties) {
 			return properties.nom;
 		},
-		click: function(properties) {
-			if (properties.lien)
-				window.location.href = properties.lien;
-		}
-	});
-}
-
-/**
- * www.refuges.info POI layer
- * Requires layerVectorURL
- */
-function layerPointsWri() {
-	return layerVectorURL({
-		url: '//www.refuges.info/api/bbox?type_points=',
-		selectorName: 'wri-poi',
-		style: function(properties) {
-			return {
-				image: new ol.style.Icon({
-					src: '//www.refuges.info/images/icones/' + properties.type.icone + '.png'
-				})
-			};
-		},
-		label: function(properties) {
-			return properties.nom;
-		},
-		click: function(properties) {
-			if (properties.lien)
-				window.location.href = properties.lien;
+		href: function(properties) {
+			return properties.lien;
 		}
 	});
 }
@@ -99,9 +73,8 @@ function chemineurLayer() {
 		label: function(properties) {
 			return properties.nom;
 		},
-		click: function(properties) {
-			if (properties.url)
-				window.location.href = properties.url;
+		href: function(properties) {
+			return properties.url;
 		}
 	});
 }
@@ -115,44 +88,29 @@ var layerSwitcher = controlLayersSwitcher(layersCollection({
 		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
 		// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
 	})),
-	overpass = layerOverpass({
-		url: '//overpass-api.de/api/interpreter',
-		selectorId: 'overpass',
-		selectorName: 'overpass',
-		labelClass: 'label-overpass',
-		iconUrlPath: '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/',
-		postLabel: function(t, p) {
-			var ll4326 = ol.proj.transform(p.geometry.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
-			return ['<a title="Créer une fiche modifiable à partir du point OSM" ' +
-					'href="posting.php?mode=post',
-					'type=' + t,
-					'name=' + p.name,
-					'lon=' + Math.round(ll4326[0] * 100000) / 100000,
-					'lat=' + Math.round(ll4326[0] * 100000) / 100000
-				].join('&') +
-				'">Créer une fiche locale</a>';
-		}
-	}),
 	marqueur = marker('http://www.refuges.info/images/cadre.png', 'marqueur'),
 	viseur = marker('http://www.refuges.info/images/viseur.png', 'viseur', null, true),
 	overlays = [
-		layerPointsWri(),
+		layerPointsWri({
+			selectorName: 'wri-poi'
+		}),
 		chemineurLayer(),
 		layerMassifsWri(),
-		overpass,
+		layerOverpass(),
 		marqueur,
 		viseur
-	],
-	map = new ol.Map({
-		target: 'map',
-		controls: controlsCollection().concat([
-			layerSwitcher,
-			controlEdit('geojson', overlays, true),
-			controlEditCreate('LineString'),
-			controlEditCreate('Polygon')
-		]),
-		layers: overlays
-	});
+	];
+
+new ol.Map({
+	target: 'map',
+	controls: controlsCollection().concat([
+		layerSwitcher,
+		controlEdit('geojson', overlays, true),
+		controlEditCreate('LineString'),
+		controlEditCreate('Polygon')
+	]),
+	layers: overlays
+});
 
 controlgps.callBack = function(position) {
 	viseur.getPoint().setCoordinates(position);

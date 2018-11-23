@@ -8,9 +8,8 @@
  * No classes, no jquery, no es6 modules, no nodejs build nor minification, no npm repository, ... only a pack of JS functions & CSS
  * I know, I know, this is not up to date way of programming but thtat's my choice & you are free to take it, modifiy & adapt as you wish
  */
-//TODO END test with libs non debug / on mobile
 //TODO END http://jsbeautifier.org/ & http://jshint.com
-//TODO BEST Site off line, application
+//TODO BEST map off line, application
 
 /**
  * HACK send 'onAdd' event to layers when added to a map
@@ -261,14 +260,14 @@ function layerBing(layer, key) {
 // VECTORS, GEOJSON & AJAX LAYERS
 //***************************************************************
 /**
- * Mem in cookies the checkbox content with name="name"
+ * Mem in cookies the checkbox content with name="selectorName"
  */
 //TODO BEST when unchecked, remove cookie
-function controlPermanentCheckbox(name, callback) {
-	var checkElements = document.getElementsByName(name),
+function controlPermanentCheckbox(selectorName, callback) {
+	var checkElements = document.getElementsByName(selectorName),
 		cookie =
-		location.hash.match('map-' + name + '=([^#,&;]*)') || // Priority to the hash
-		document.cookie.match('map-' + name + '=([^;]*)'); // Then the cookie
+		location.hash.match('map-' + selectorName + '=([^#,&;]*)') || // Priority to the hash
+		document.cookie.match('map-' + selectorName + '=([^;]*)'); // Then the cookie
 
 	for (var e = 0; e < checkElements.length; e++) {
 		checkElements[e].addEventListener('click', permanentCheckboxClick); // Attach the action
@@ -278,17 +277,17 @@ function controlPermanentCheckbox(name, callback) {
 	}
 
 	// Call callback once at the init
-	callback(null, permanentCheckboxList(name));
+	callback(null, permanentCheckboxList(selectorName));
 
 	function permanentCheckboxClick(evt) {
-		var list = permanentCheckboxList(name, evt);
+		var list = permanentCheckboxList(selectorName, evt);
 		if (typeof callback == 'function')
 			callback(evt, list);
 	}
 }
 
-function permanentCheckboxList(name, evt) {
-	var checkElements = document.getElementsByName(name),
+function permanentCheckboxList(selectorName, evt) {
+	var checkElements = document.getElementsByName(selectorName),
 		allChecks = [];
 
 	for (var e = 0; e < checkElements.length; e++) {
@@ -306,7 +305,7 @@ function permanentCheckboxList(name, evt) {
 	}
 
 	// Mem in a cookie
-	document.cookie = 'map-' + name + '=' + allChecks.join(',') + ';path=/';
+	document.cookie = 'map-' + selectorName + '=' + allChecks.join(',') + ';path=/';
 
 	return allChecks; // Returns list of checked values or ids
 }
@@ -317,8 +316,8 @@ function permanentCheckboxList(name, evt) {
  * Returns {ol.loadingstrategy} to be used in layer definition
  */
 ol.loadingstrategy.bboxDependant = function(extent, resolution) {
-	if (this.resolution != resolution) // Force loading when zoom in
-		this.clear();
+	if (this.resolution != resolution)
+		this.clear(); // Force loading when zoom in
 	this.resolution = resolution; // Mem resolution for further requests
 	return [extent];
 };
@@ -328,6 +327,8 @@ ol.loadingstrategy.bboxDependant = function(extent, resolution) {
  * Requires 'onadd' layer event
  * Requires ol.loadingstrategy.bboxDependant & controlPermanentCheckbox
  */
+//TODO BUG ne clique pas sur l'étiquette d'un polygone alpage aspir ou massif WRI
+//TODO BUG pas s'étiquette sur IE & EDGE
 function layerVectorURL(options) {
 	var source = new ol.source.Vector({
 			strategy: ol.loadingstrategy.bboxDependant,
@@ -348,7 +349,9 @@ function layerVectorURL(options) {
 			zIndex: 1, // Above baselayer even if included to the map before
 			style: typeof options.style != 'function' ?
 				ol.style.Style.defaultFunction : function(feature) {
-					return new ol.style.Style(options.style(feature.getProperties()));
+					return new ol.style.Style(
+						options.style(feature.getProperties())
+					);
 				}
 		});
 
@@ -368,13 +371,14 @@ function layerVectorURL(options) {
 }
 
 // We use only one listener for hover and one for click on all vector layers
+//TODO BEST mettre cette fonction dans layerVectorURL
 function initLayerVectorURLListeners(e) {
 	var map = e.target.map_;
+
 	if (!map.popElement_) { //HACK Only once for all layers
 		// Display a label when hover the feature
-		//TODO BEST Pas de click sur le label d'une icone sur la carte
-		//TODO BLOCKING Quand click sur plusieurs features, exécute le click en dessous
-		map.popElement_ = document.createElement('div');
+		map.popElement_ = document.createElement('a');
+		map.popElement_.style.display = 'block';
 		var dx = 0.4,
 			xAnchor, // Spread too closes icons
 			hovered = [],
@@ -385,110 +389,124 @@ function initLayerVectorURLListeners(e) {
 
 		map.on('pointermove', pointerMove);
 
-		function pointerMove(evt) {
-			// Reset cursor & popup position
-			map.getViewport().style.cursor = 'default'; // To get the default cursor if there is no feature here
-
-			var mapRect = map.getTargetElement().getBoundingClientRect(),
-				popupRect = map.popElement_.getBoundingClientRect();
-			if (popupRect.left - 5 > mapRect.x + evt.pixel[0] || mapRect.x + evt.pixel[0] >= popupRect.right + 5 ||
-				popupRect.top - 5 > mapRect.y + evt.pixel[1] || mapRect.y + evt.pixel[1] >= popupRect.bottom + 5)
-				popup.setPosition(undefined); // Hide label by default if none feature or his popup here
-
-			// Reset previous hovered styles
-			if (hovered)
-				hovered.forEach(function(h) {
-					if (h.layer && h.options)
-						h.feature.setStyle(new ol.style.Style(h.options.style(h.feature.getProperties())));
+		// Click on a feature
+		map.on('click', function(evt) {
+			map.forEachFeatureAtPixel(
+				evt.pixel,
+				function() {
+					map.popElement_.click(); // Simulate a click on the label
+				}, {
+					hitTolerance: 6
 				});
+		});
+	}
 
-			// Search the hovered the feature(s)
-			hovered = [];
-			map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
-				if (layer && layer.options_) {
-					var h = {
-						event: evt,
-						pixel: evt.pixel, // Follow the mouse if line or surface
-						feature: feature,
-						layer: layer,
-						options: layer.options_,
-						properties: feature.getProperties(),
-						coordinates: feature.getGeometry().flatCoordinates // If it's a point, just over it
-					};
-					if (h.coordinates.length == 2) // Stable if icon
-						h.pixel = map.getPixelFromCoordinate(h.coordinates);
-					h.ll4326 = ol.proj.transform(h.coordinates, 'EPSG:3857', 'EPSG:4326');
-					hovered.push(h);
-				}
+	function pointerMove(evt) {
+		// Reset cursor & popup position
+		map.getViewport().style.cursor = 'default'; // To get the default cursor if there is no feature here
+		map.popElement_.removeAttribute('href');
+
+		var mapRect = map.getTargetElement().getBoundingClientRect(),
+			popupRect = map.popElement_.getBoundingClientRect();
+		if (popupRect.left - 5 > mapRect.x + evt.pixel[0] || mapRect.x + evt.pixel[0] >= popupRect.right + 5 ||
+			popupRect.top - 5 > mapRect.y + evt.pixel[1] || mapRect.y + evt.pixel[1] >= popupRect.bottom + 5)
+			popup.setPosition(undefined); // Hide label by default if none feature or his popup here
+
+		// Reset previous hovered styles
+		if (hovered)
+			hovered.forEach(function(h) {
+				if (h.layer && h.options)
+					h.feature.setStyle(new ol.style.Style(
+						h.options.style(h.feature.getProperties())
+					));
 			});
 
-			if (hovered) {
-				// Sort features left to right
-				hovered.sort(function(a, b) {
-					if (a.coordinates.length > 2) return 999; // Lines & surfaces under of the pile !
-					if (b.coordinates.length > 2) return -999;
-					return a.pixel[0] - b.pixel[0];
-				});
-				xAnchor = 0.5 + dx * (hovered.length + 1) / 2; // dx left because we begin to remove dx at the first icon
-				hovered.forEach(checkHovered);
+		// Search the hovered feature(s)
+		hovered = [];
+		map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+			//TODO BEST make a separate function / pb : visibility of evt.pixel & hovered[]
+			if (layer && layer.options_) {
+				var h = { //TODO BEST simplifier la structure
+					pixel: evt.pixel, // Follow the mouse if line or surface
+					feature: feature,
+					layer: layer,
+					options: layer.options_,
+					properties: feature.getProperties(),
+					coordinates: feature.getGeometry().flatCoordinates // If it's a point, just over it
+				};
+				if (typeof layer.options_.href == 'function')
+					h.href = layer.options_.href(h.properties);
+				if (h.coordinates.length == 2) // Stable if icon
+					h.pixel = map.getPixelFromCoordinate(h.coordinates);
+				h.ll4326 = ol.proj.transform(h.coordinates, 'EPSG:3857', 'EPSG:4326');
+				hovered.push(h);
 			}
-		}
-
-		function checkHovered(h) {
-			// Hover a clikable feature
-			if (h.options.click)
-				map.getViewport().style.cursor = 'pointer';
-
-			// Apply hover if any
-			var style = (h.options.hover || h.options.style)(h.properties);
-
-			// Spread too closes icons //TODO BUG BLOCKING don't allow to click on the last !!
-			if (hovered.length > 1 &&
-				style.image)
-				style.image.anchor_[0] = xAnchor -= dx;
-			h.feature.setStyle(new ol.style.Style(style));
-
-			if (h.options.label &&
-				!popup.getPosition()) { // Only for the first feature on the hovered stack
-				// Calculate the label' anchor
-				popup.setPosition(map.getView().getCenter()); // For popup size calculation
-
-				// Fill label class & text
-				map.popElement_.className = 'popup ' + (h.layer.options_.labelClass || '');
-				map.popElement_.innerHTML = typeof h.options.label == 'function' ?
-					h.options.label(h.properties, h.feature, h.layer) :
-					h.options.label;
-
-				// Shift of the label to stay into the map regarding the pointer position
-				if (h.pixel[1] < map.popElement_.clientHeight + 12) { // On the top of the map (not enough space for it)
-					h.pixel[0] += h.pixel[0] < map.getSize()[0] / 2 ? 10 : -map.popElement_.clientWidth - 10;
-					h.pixel[1] = 2;
-				} else {
-					h.pixel[0] -= map.popElement_.clientWidth / 2;
-					h.pixel[0] = Math.max(h.pixel[0], 0); // Bord gauche
-					h.pixel[0] = Math.min(h.pixel[0], map.getSize()[0] - map.popElement_.clientWidth - 1); // Bord droit
-					h.pixel[1] -= map.popElement_.clientHeight + 10;
-				}
-				popup.setPosition(map.getCoordinateFromPixel(h.pixel));
-			}
-		}
-
-		// Click on a feature
-		//TODO BEST CTRL + Click -> New navigator tab
-		map.on('click', function(evt) {
-			if (!evt.originalEvent.shiftKey &&
-				!evt.originalEvent.ctrlKey &&
-				!evt.originalEvent.altKey)
-				map.forEachFeatureAtPixel(
-					evt.pixel,
-					function(feature, layer) {
-						if (layer && layer.options_ &&
-							typeof layer.options_.click == 'function')
-							layer.options_.click(feature.getProperties());
-					}, {
-						hitTolerance: 6
-					});
+		}, {
+			hitTolerance: 6
 		});
+
+		if (hovered) {
+			// Sort features left to right
+			hovered.sort(function(a, b) {
+				if (a.coordinates.length > 2) return 999; // Lines & surfaces under of the pile !
+				if (b.coordinates.length > 2) return -999;
+				return a.pixel[0] - b.pixel[0];
+			});
+			xAnchor = 0.5 + dx * (hovered.length + 1) / 2; // dx left because we begin to remove dx at the first icon
+			hovered.forEach(checkHovered);
+		}
+	}
+
+	function checkHovered(h) {
+		// Apply hover if any
+		var style = (h.options.hover || h.options.style)(h.properties);
+
+		// Spread too closes icons //TODO BUG don't allow to click on the last !!
+		//TODO BEST redo this as only the icon moves (can see), not the feature position (can click)
+		if (hovered.length > 2 &&
+			style.image)
+			style.image.anchor_[0] = xAnchor -= dx;
+
+		h.feature.setStyle(
+			new ol.style.Style(style)
+		);
+
+		// Hovering label
+		var label = typeof h.options.label == 'function' ? //TODO BEST faire une fonction englobante d'appel avec arguments...
+			h.options.label(h.properties, h.feature, h.layer, h.pixel, h.ll4326) : //TODO BEST utiliser args...
+			h.options.label || '',
+			postLabel = typeof h.options.postLabel == 'function' ?
+			h.options.postLabel(h.properties, h.feature, h.layer, h.pixel, h.ll4326) :
+			h.options.postLabel || '';
+		if (label &&
+			!popup.getPosition()) { // Only for the first feature on the hovered stack
+			// Calculate the label's anchor
+			popup.setPosition(map.getView().getCenter()); // For popup size calculation
+
+			// Fill label class & text
+			map.popElement_.className = 'myPopup ' + (h.layer.options_.labelClass || '');
+			map.popElement_.innerHTML = label + postLabel;
+			if (h.href)
+				map.popElement_.href = h.href;
+
+			// Shift of the label to stay into the map regarding the pointer position
+			if (h.pixel[1] < map.popElement_.clientHeight + 12) { // On the top of the map (not enough space for it)
+				h.pixel[0] += h.pixel[0] < map.getSize()[0] / 2 ?
+					10 :
+					-map.popElement_.clientWidth - 10;
+				h.pixel[1] = 2;
+			} else {
+				h.pixel[0] -= map.popElement_.clientWidth / 2;
+				h.pixel[0] = Math.max(h.pixel[0], 0); // Bord gauche
+				h.pixel[0] = Math.min(h.pixel[0], map.getSize()[0] - map.popElement_.clientWidth - 1); // Bord droit
+				h.pixel[1] -= map.popElement_.clientHeight + 10;
+			}
+			popup.setPosition(map.getCoordinateFromPixel(h.pixel));
+
+			// Hover a clikable feature
+			if (h.href)
+				map.getViewport().style.cursor = 'pointer';
+		}
 	}
 }
 
@@ -530,57 +548,109 @@ ol.format.OSMXMLPOI = function() {
 ol.inherits(ol.format.OSMXMLPOI, ol.format.OSMXML);
 
 /**
+ * www.refuges.info POI layer
+ * Requires layerVectorURL
+ */
+function layerPointsWri(options) {
+	return layerVectorURL({
+		url: '//www.refuges.info/api/bbox?type_points=',
+		selectorName: options.selectorName,
+		style: function(properties) {
+			return {
+				image: new ol.style.Icon({
+					src: '//www.refuges.info/images/icones/' + properties.type.icone + '.png'
+				})
+			};
+		},
+		label: function(properties) {
+			return properties.nom;
+		},
+		postLabel: options.postLabel,
+		href: function(properties) {
+			return properties.lien;
+		},
+		type: function(properties) {
+			return properties.type.icone;
+		},
+		name: function(properties) {
+			return properties.nom;
+		}
+	});
+}
+
+/**
  * OSM overpass POI layer
  * From: https://openlayers.org/en/latest/examples/vector-osm.html
  * Doc: http://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
  * Requires layerVectorURL
  */
+//TODO BUG pas d'overpass sur IE
 //TODO BUG BEST quand déplace ou zoom aprés avoir changer un sélecteur : affiche des ?
-function layerOverpass(options) {
-	var layer = layerVectorURL({
-		url: function(bbox, list, resolution) {
-			var bb = '(' + bbox[1] + ',' + bbox[0] + ',' + bbox[3] + ',' + bbox[2] + ');',
-				args = [],
-				elSelector = document.getElementById(options.selectorId);
-
-			if (resolution < (options.maxResolution || 30)) { // Only for small areas
-				for (var l = 0; l < list.length; l++) {
-					var lists = list[l].split('+');
-					for (var ls = 0; ls < lists.length; ls++)
-						args.push(
-							'node' + lists[ls] + bb + // Ask for nodes in the bbox
-							'way' + lists[ls] + bb // Also ask for areas
-						);
-				}
-				if (elSelector)
-					elSelector.style.color =
-					elSelector.title = '';
-			} else if (elSelector) {
-				elSelector.style.color = 'red';
-				elSelector.title = 'Zoom in to enable see the points.';
-			}
-
-			return options.url +
-				'?data=[timeout:5];(' + // Not too much !
-				args.join('') +
-				');out center;'; // add center of areas
-		},
-		format: new ol.format.OSMXMLPOI(),
-		selectorName: options.selectorName, // The layer is cleared & reloaded if one selector check is clicked
-		style: function(properties) {
-			return {
-				image: new ol.style.Icon({
-					src: options.iconUrlPath + overpassType(properties) + '.png'
-				})
-			};
-		},
-		labelClass: options.labelClass,
-		label: formatLabel
-	});
-
 //TODO BEST afficher erreur 429 (Too Many Requests)
-//TODO BEST afficher affichage OK, ...
-	function formatLabel(p, f) { // p = properties, f = feature
+function layerOverpass(options) {
+	var defaultOptions = {
+		url: '//overpass-api.de/api/interpreter',
+		maxResolution: 30,
+		selectorId: 'overpass', // Element containing all checkboxes
+		selectorName: 'overpass', // Checboxes
+		labelClass: 'label-overpass',
+		iconUrlPath: '//dc9.fr/chemineur/ext/Dominique92/GeoBB/types_points/'
+	};
+	options = options || {};
+	for (var d in defaultOptions)
+		options[d] = options[d] || defaultOptions[d];
+
+	var elSelector = document.getElementById(options.selectorId),
+		checkElements = document.getElementsByName(options.selectorName),
+		layer = layerVectorURL({
+			url: overpassUrl,
+			format: new ol.format.OSMXMLPOI(),
+			selectorName: options.selectorName, // The layer is cleared & reloaded if one selector check is clicked
+			style: function(properties) {
+				return {
+					image: new ol.style.Icon({
+						src: options.iconUrlPath + overpassType(properties) + '.png'
+					})
+				};
+			},
+			labelClass: options.labelClass,
+			label: formatLabel,
+			postLabel: options.postLabel,
+			type: function(properties) {
+				return overpassType(properties);
+			},
+			name: function(properties) {
+				return properties.name;
+			}
+		});
+	elSelector.className = 'overpass'; // At the biginning
+
+	function overpassUrl(bbox, list, resolution) {
+		var bb = '(' + bbox[1] + ',' + bbox[0] + ',' + bbox[3] + ',' + bbox[2] + ');',
+			args = [];
+
+		if (resolution < (options.maxResolution)) { // Only for small areas
+			for (var l = 0; l < list.length; l++) {
+				var lists = list[l].split('+');
+				for (var ls = 0; ls < lists.length; ls++)
+					args.push(
+						'node' + lists[ls] + bb + // Ask for nodes in the bbox
+						'way' + lists[ls] + bb // Also ask for areas
+					);
+			}
+			if (elSelector)
+				elSelector.className = 'overpass';
+		} else if (elSelector)
+			elSelector.className = 'overpass-zoom-out';
+
+		return options.url +
+			'?data=[timeout:5];(' + // Not too much !
+			args.join('') +
+			');out center;'; // add center of areas
+	}
+
+	function formatLabel(p, f) { // properties, feature
+		p.name = p.name || p.alt_name || p.short_name || '';
 		var language = {
 				alpine_hut: 'Refuge gard&egrave;',
 				hotel: 'h&ocirc;tel',
@@ -602,10 +672,11 @@ function layerOverpass(options) {
 				p['addr:city'], p.city
 			],
 			popup = [
-				(p.name ? '<b>' + p.name + '</b>' : '') +
-				(p.alt_name ? '<b>' + p.alt_name + '</b>' : '') +
-				(p.short_name ? '<b>' + p.short_name + '</b>' : ''),
-				[(p.name || '').toLowerCase().match(language[p.tourism]) ? '' : p.tourism ? language[p.tourism] : p.tourism,
+				'<b>' + p.name.charAt(0).toUpperCase() + p.name.slice(1) + '</b>', [
+					'<a target="_blank"',
+					'href="http://www.openstreetmap.org/' + (p.nodetype ? p.nodetype : 'node') + '/' + f.getId() + '"',
+					'title="Voir la fiche d\'origine sur openstreetmap">',
+					(p.name || '').toLowerCase().match(language[p.tourism]) ? '' : p.tourism ? language[p.tourism] : p.tourism,
 					'*'.repeat(p.stars),
 					p.shelter_type == 'basic_hut' ? 'Abri' : '',
 					p.building == 'cabin' ? 'Cabane non gard&egrave;e' : '',
@@ -615,11 +686,13 @@ function layerOverpass(options) {
 					p.man_made == 'water_well' ? 'Puits' : '',
 					p.shop ? 'alimentation' : '',
 					typeof language[p.amenity] == 'string' ? language[p.amenity] : p.amenity,
+					'</a>'
+				].join(' '), [
 					p.rooms ? p.rooms + ' chambres' : '',
 					p.beds ? p.beds + ' lits' : '',
 					p.place ? p.place + ' places' : '',
 					p.capacity ? p.capacity + ' places' : '',
-					p.ele ? parseInt(p.ele, 10) + 'm' : '',
+					p.ele ? parseInt(p.ele, 10) + 'm' : ''
 				].join(' '),
 				phone ? '&phone;<a title="Appeler" href="tel:' + phone.replace(/[^0-9\+]+/ig, '') + '">' + phone + '</a>' : '',
 				p.email ? '&#9993;<a title="Envoyer un mail" href="mailto:' + p.email + '">' + p.email + '</a>' : '',
@@ -647,7 +720,7 @@ function layerOverpass(options) {
 			if (!done.includes(k0))
 				switch (k0) {
 					case 'internet_access':
-						if (p[k] != 'no' && !nbInternet++)
+						if ((p[k] != 'no') && !(nbInternet++))
 							popup.push('Accès internet');
 						break;
 					default:
@@ -655,19 +728,10 @@ function layerOverpass(options) {
 				}
 		}
 
-		// Label tail with OSM reference & user specific function
-		popup.push(
-			p.description,
-			'<hr/><a title="Voir la fiche d\'origine sur openstreetmap" ' +
-			'href="http://www.openstreetmap.org/' + (p.nodetype ? p.nodetype : 'node') + '/' + f.getId() + '" ' +
-			'target="_blank">Voir sur OSM</a>',
-			typeof options.postLabel == 'function' ? options.postLabel(overpassType(p), p, f) : options.postLabel || ''
-		);
 		return ('<p>' + popup.join('</p><p>') + '</p>').replace(/<p>\s*<\/p>/ig, '');
 	}
 
 	function overpassType(properties) {
-		var checkElements = document.getElementsByName(options.selectorName);
 		for (var e = 0; e < checkElements.length; e++)
 			if (checkElements[e].checked) {
 				var tags = checkElements[e].value.split('+');
@@ -722,7 +786,7 @@ function marker(imageUrl, display, llInit, dragged) { // imageUrl, 'id-display',
 		layer = new ol.layer.Vector({
 			source: source,
 			style: style,
-			zIndex: 2
+			zIndex: 10
 		});
 
 	layer.on('onadd', function(evt) {
@@ -750,8 +814,9 @@ function marker(imageUrl, display, llInit, dragged) { // imageUrl, 'id-display',
 			values = {
 				lon: Math.round(ll4326[0] * 100000) / 100000,
 				lat: Math.round(ll4326[1] * 100000) / 100000,
-				json: JSON.stringify(format.writeGeometryObject(point, { //TODO BEST writeGeometryObject {decimals: 5}
-					featureProjection: 'EPSG:3857'
+				json: JSON.stringify(format.writeGeometryObject(point, {
+					featureProjection: 'EPSG:3857',
+					decimals: 5
 				}))
 			};
 		// Specific Swiss coordinates EPSG:21781 (CH1903 / LV03)
@@ -808,10 +873,11 @@ function marker(imageUrl, display, llInit, dragged) { // imageUrl, 'id-display',
  * options.render {function} called when the control is rendered.
  * options.action {function} called when the control is clicked.
  */
-//TODO BEST Aligner les boutons (un trou ! = GPS)
+//TODO BEST ASPIR Aligner les boutons (un trou ! = GPS)
 var nextButtonTopPos = 6, // Top position of next button (em)
 	globalControlGroups = {}; // List of group controls
 
+//TODO BEST héritage de ol.control.Control ?
 function controlButton(options) {
 	options = options || {
 		className: 'ol-control-hidden'
@@ -984,8 +1050,8 @@ function controlPermalink(options) {
 			render: render
 		}),
 		params = location.hash.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Priority to the hash
-			document.cookie.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Then the cookie
-			(options.defaultPos || '6/2/47').match(/([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/);
+		document.cookie.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Then the cookie
+		(options.defaultPos || '6/2/47').match(/([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/);
 
 	control.paramsCenter = [parseFloat(params[2]), parseFloat(params[3])];
 
@@ -1105,16 +1171,16 @@ function controlLengthLine() {
 	}
 
 	function calculateLength(feature) {
-/*//TODO BEST RANDO idée de hover à développer / inhibe modify !!! / effacer le style quand on quite
-		f.setStyle(
-      new ol.style.Style({
-//          fill: new ol.style.Fill({opacity: 0.7}),
-          stroke: new ol.style.Stroke({color: 'blue'
-          })
-      })
-  );
-*/
-		
+		/*//TODO BEST RANDO idée de hover à développer / inhibe modify !!! / effacer le style quand on quite
+				f.setStyle(
+		      new ol.style.Style({
+		//          fill: new ol.style.Fill({opacity: 0.7}),
+		          stroke: new ol.style.Stroke({color: 'blue'
+		          })
+		      })
+		  );
+		*/
+
 		var length = ol.sphere.getLength(feature.getGeometry());
 		if (length >= 100000)
 			divElement.innerHTML = (Math.round(length / 1000)) + ' km';
@@ -1237,7 +1303,8 @@ function controlDownloadGPX() {
 		var fileName = 'trace.gpx',
 			gpx = new ol.format.GPX().writeFeatures(layers, {
 				dataProjection: 'EPSG:4326',
-				featureProjection: 'EPSG:3857'
+				featureProjection: 'EPSG:3857',
+				decimals: 5
 			}),
 			file = new Blob([gpx.replace(/>/g, ">\n")], {
 				type: 'application/gpx+xml'
@@ -1275,8 +1342,8 @@ window.addEventListener('load', function() {
 /**
  * Print control
  */
-function controlPrint() {
 //TODO CHEM/RANDO impression full format page -> CSS
+function controlPrint() {
 	return controlButton({
 		className: 'print-button',
 		title: 'Imprimer la carte',
@@ -1304,7 +1371,7 @@ function controlEdit(inputId, snapLayers, enableAtInit) {
 		}),
 		layer = new ol.layer.Vector({
 			source: source,
-			zIndex: 3
+			zIndex: 20
 		}),
 		/*//TODO BUG CHEM hover reste aprés l'ajout d'un polygone
 		hover = new ol.interaction.Select({
@@ -1407,7 +1474,7 @@ function controlEdit(inputId, snapLayers, enableAtInit) {
 			flatCoord(lines, features[f].getGeometry().getCoordinates(), pointerPosition);
 		source.clear(); // And clear the edited layer
 
-		for (var a in lines) {
+		for (var a = 0; a < lines.length; a++) {
 			// Exclude 1 coord features (points)
 			if (lines[a] && lines[a].length < 2)
 				lines[a] = null;
@@ -1420,30 +1487,25 @@ function controlEdit(inputId, snapLayers, enableAtInit) {
 			}
 
 			// Merge lines having a common end
-			//TODO BUG CHEM don't merge recursively (join 2 existing lines)
-			for (var b in lines)
-				if (a < b) {
-					var m = [a, b];
-					for (var i = 4; i; i--) // 4 times
-						if (lines[m[0]] && lines[m[1]]) {
-							// Shake lines end to explore all possibilities
-							m.reverse();
-							lines[m[0]].reverse();
-							if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
+			for (var b = 0; b < a; b++) { // Once each combination
+				var m = [a, b];
+				for (var i = 4; i; i--) // 4 times
+					if (lines[m[0]] && lines[m[1]]) {
+						// Shake lines end to explore all possibilities
+						m.reverse();
+						lines[m[0]].reverse();
+						if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
 
-								// Merge 2 lines matching ends
-								lines[m[0]] = lines[m[0]].concat(lines[m[1]]);
-								lines[m[1]] = 0;
+							// Merge 2 lines matching ends
+							lines[m[0]] = lines[m[0]].concat(lines[m[1]]);
+							lines[m[1]] = 0;
 
-								// Re-check if the new line is closed
-								if (button.group.P && // Only if we manage Polygons
-									compareCoords(lines[m[0]])) {
-									polys.push([lines[m[0]]]);
-									lines[m[0]] = null;
-								}
-							}
+							// Restart all the loops
+							a = -1;
+							break;
 						}
-				}
+					}
+			}
 		}
 
 		// Makes holes if a polygon is included in a biggest one
@@ -1478,9 +1540,9 @@ function controlEdit(inputId, snapLayers, enableAtInit) {
 				}));
 
 		// Save lines in <EL> as geoJSON at every change
-		//TODO BEST réduire le nb de décimales
 		inputEl.value = format.writeFeatures(source.getFeatures(), {
-			featureProjection: 'EPSG:3857'
+			featureProjection: 'EPSG:3857',
+			decimals: 5
 		});
 	}
 
@@ -1517,9 +1579,11 @@ function controlEditCreate(type) {
 			group: 'edit',
 			label: type.charAt(0),
 			render: render,
-			title: 'Activer "' + type.charAt(0) + '" puis cliquer sur la carte et sur chaque point du tracé pour dessiner ' +
-				(type == 'LineString' ? 'une ligne' :
-					'un polygone\nSi le nouveau polygone est entièrement compris dans un autre, il crée un "trou".'),
+			title: 'Activer "' + type.charAt(0) + ' puis' +
+				'"\ncliquer sur la carte et sur chaque point du tracé pour dessiner ' +
+				(type == 'Polygon' ? 'un polygone' : 'une ligne') +
+				',\ndouble cliquer pour terminer.' +
+				(type == 'Polygon' ? '\nSi le nouveau polygone est entièrement compris dans un autre, il crée un "trou".' : ''),
 			activate: function(active) {
 				draw.setActive(active);
 			}
@@ -1527,7 +1591,7 @@ function controlEditCreate(type) {
 		draw = new ol.interaction.Draw({
 			source: button.group.M.source,
 			type: type
-		})		;
+		});
 
 	function render(evt) { //HACK to get map ref when the control is added
 		if (!draw.map_) { // Only once
@@ -1644,9 +1708,10 @@ function layersCollection(keys) {
  * JSON.parse handling error
  */
 function JSONparse(json) {
+	var js;
 	if (json)
 		try {
-			var js = JSON.parse(json);
+			js = JSON.parse(json);
 		} catch (returnCode) {
 			if (returnCode)
 				console.log(returnCode + ' parsing : "' + json + '" ' + new Error().stack);

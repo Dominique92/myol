@@ -78,7 +78,8 @@ function chemineurLayer() {
 				}),
 				// Traces
 				stroke: new ol.style.Stroke({
-					color: 'blue'
+					color: 'blue',
+					width: 3
 				})
 			};
 		},
@@ -102,16 +103,10 @@ function chemineurLayer() {
 	});
 }
 
-//***************************************************************
-// EXAMPLE
-//***************************************************************
-var geo_keys = {
-		IGN: 'd27mzh49fzoki1v3aorusg6y', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
-		thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
-		bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
-		// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
-	},
-	marqueur = marker('http://www.refuges.info/images/cadre.png', 'marqueur'),
+/**
+ * EXAMPLE
+ */
+var marqueur = marker('http://www.refuges.info/images/cadre.png', 'marqueur'),
 	viseur = marker('http://www.refuges.info/images/viseur.png', 'viseur', null, true),
 	overlays = [
 		layerPointsWri({
@@ -123,8 +118,21 @@ var geo_keys = {
 		marqueur,
 		viseur
 	],
-	basicControls = controlsCollection(),
-	edit = controlEdit('geojson', {
+	basicControls = controlsCollection({
+		geoKeys: {
+			IGN: 'd27mzh49fzoki1v3aorusg6y', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
+			thunderforest: 'a54d38a8b23f435fa08cfb1d0d0b266e', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
+			bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
+			// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
+		},
+		controlGPS: {
+			callBack: function(position) {
+				viseur.getPoint().setCoordinates(position);
+			}
+		}
+	}),
+	edit = controlEdit({
+		inputId: 'geojson',
 		snapLayers: overlays,
 		styleOptions: {
 			fill: new ol.style.Fill({
@@ -157,12 +165,12 @@ var geo_keys = {
 new ol.MyMap({
 	target: 'map',
 	layers: overlays,
-	controls: basicControls.concat([
-		controlLayersSwitcher(layersCollection(geo_keys)),
-		edit
-	])
+	controls: basicControls.concat([edit])
 });
 
-controlgps.callBack = function(position) {
-	viseur.getPoint().setCoordinates(position);
-}
+
+/**
+ * GENERAL TODO
+ */
+//TODO-BEST END http://jsbeautifier.org/ & http://jshint.com
+//TODO-ARCHI map off line, application

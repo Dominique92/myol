@@ -1,6 +1,7 @@
 Dominique92.MyOl
 ================
-This package intent to make you able to implement an [openlayer map](https://openlayers.org/) in your own website.
+This package adds many features to [openlayer map](https://openlayers.org/).
+It is deployed on http://alpages.info
 
 SIMPLE EXAMPLE
 ==============
@@ -23,20 +24,22 @@ MyOL extension provides supplementary functions to [Openlayers V5](https://openl
 * GeoJson ajax layers,
 * Multi vendors maps &amp; projections:
 ```
-- OSM, Maps.Refuges.Info
-- ThunderForest Outdoors, Cycles, Landscape, Transport, ...
-- IGN France, cadastre, photos
-- SwissTopo
-- IDEE España, photos
+- OSM, OSM-FR, Maps.Refuges.Info
+- ThunderForest Outdoors, OpenTopoMap, Cycles, Landscape, Transport, ...
+- IGN France, cadastre, satellite, ...
+- SwissTopo, satellite
+- IDEE España, satellite
 - IGM Italie
 - OS Great Britain
 - Kompass Austria
-- Bing Microsoft, photos
-- Google maps, photos
+- Bing Microsoft, satellite
+- Google maps, satellite
 ```
+* geoJson vector layers, OverPass (OSM vector points of interest)
 * Editable position marker with multi-projection position display,
 * Polylines & polygons editor.
 * Keep position, zoom & zoom on cookies
+* Layer switcher, GPS, geocoder, print map, line length display, GPX upload & download
 [See a DEMO here](https://dominique92.github.io/MyOl/examples/)
 
 ARCHITECTURE
@@ -49,6 +52,13 @@ The coding rules are volontary simple & don't follow all openlayers's
 * Few classes, no inheritage, no jquery...
 * Each adaptation is included in a single JS function that you can include separately (check dependencies if any)
 * Feel free to use, modify & share as you want
+
+DEPENDENCIES
+============
+This package includes :
+* openlayers v5.3.0
+* proj4js 2.5.0
+* ol-geocoder v3.2.0
 
 FILES
 =====

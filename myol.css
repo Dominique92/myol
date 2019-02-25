@@ -42,6 +42,16 @@
 	-moz-box-shadow: -.5px -.5px 8px rgba(0, 0, 0, 0.65);
 	-webkit-box-shadow: -.5px -.5px 8px rgba(0, 0, 0, 0.65);
 }
+.ol-control-question {
+	background-color: white;
+	position: relative;
+	top: -1.35em;
+	right: -1.7em;
+	padding: 1px;
+}
+.ol-control-question span {
+	cursor: pointer;
+}
 .ol-geocoder .gcd-gl-control {
 	background-color: rgba(0, 0, 0, 0);
 }
@@ -80,10 +90,6 @@
 .ol-geocoder.gcd-txt-container {
 	width: 50%;
 }
-
-.ol-geocoder.gcd-gl-container {
-	top: 6em;
-}
 .ol-geocoder .gcd-gl-btn {
 	width: 1.375em;
 	height: 1.375em;
@@ -111,27 +117,20 @@
 /* https://developer.mozilla.org/fr/docs/Web/SVG/Tutoriel/Paths */
 
 /* Print */
+.print-button:hover {
+	background-color: transparent;
+}
 .print-button button {
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' style='stroke:black;'%3E%3Cpath d='M8 6l9 0 0 2-9 0z'/%3E%3Cpath d='M5 10l15 0 0 5-15 0z'/%3E%3Cpath d='M8 13l9 0 0 6-9 0z' style='fill:white;'/%3E%3C/svg%3E");
 }
-/*//TODO
-@media print {
-	html, body{
-		padding:0px!important;
-		margin:0px!important;
-	wpage-break-before: avoid;
-	wpage-break-after: avoid;
-	width:100%;
-	wheight:100%;
-	}
-	wbody{display:none;}
-.ol-viewport {
-	wdisplay:block;
-	  position: absolute;
-	  wheight: 100% !important;
-	  width: 100% !important;
-  }
-} */
+.print-button p {
+	margin: 0;
+	font-size: 14px;
+	font-family: Times New Roman;
+}
+.print-button p span {
+	color: blue;
+}
 
 /* Switch layer popup */
 .switch-layer {
@@ -182,7 +181,7 @@
 .myPopup,
 .myPopup:hover {
 	padding: 1px 4px;
-	background: white;
+	background-color: white;
 	border-radius: 5px;
 	box-shadow: 0 3px 8px #888;
 	-moz-box-shadow: 0 3px 8px #888;

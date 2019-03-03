@@ -97,7 +97,7 @@ function layerThunderforest(layer, key) {
 function layerGoogle(layer) {
 	return new ol.layer.Tile({
 		source: new ol.source.XYZ({
-			url: '//mt{0-3}.google.com/vt/lyrs=' + layer + '&x={x}&y={y}&z={z}',
+			url: '//mt{0-3}.google.com/vt/lyrs=' + layer + '&hl=fr&x={x}&y={y}&z={z}',
 			attributions: '&copy; <a href="https://www.google.com/maps">Google</a>'
 		})
 	});
@@ -381,7 +381,6 @@ ol.loadingstrategy.bboxDependant = function(extent, resolution) {
  * Requires permanentCheckboxList
  */
 //TODO-BEST JSON error handling : error + URL
-//TODO BUG recharge sans clean si agrandit la fenetre. Visible sur les polygones/fill
 ol.layer.LayerVectorURL = function(o) {
 	const this_ = this, // For callback functions
 		options = this.options_ = ol.assign({ // Default options
@@ -407,12 +406,20 @@ ol.layer.LayerVectorURL = function(o) {
 			);
 		};
 
+	// HACK to clear the layer when the xhr response is received
+	// This needs to be redone every time a response is received to avoid multiple simultaneous xhr requests
+	const format = new ol.format.GeoJSON();
+	format.readFeatures = function(s, o) {
+		if (source.featuresRtree_)
+			source.featuresRtree_.clear();
+		return ol.format.GeoJSON.prototype.readFeatures.call(this, s, o);
+	};
+
 	// Manage source & vector objects
 	const source = new ol.source.Vector(ol.assign({
 		strategy: ol.loadingstrategy.bboxDependant,
-		format: new ol.format.GeoJSON(),
+		format: format,
 		url: function(extent, resolution, projection) {
-			source.clear(); // Redraw the layer
 			const bbox = ol.proj.transformExtent(extent, projection.getCode(), 'EPSG:4326'),
 				// Retreive checked parameters
 				list = permanentCheckboxList(options.selectorName).filter(function(evt) { // selectorName optional
@@ -1069,12 +1076,12 @@ function controlPermalink(o) {
 		divElement = document.createElement('div'),
 		aElement = document.createElement('a');
 	let this_ = new ol.control.Control({
-		element: divElement,
-		render: render
-	});
-	let params = (location.hash + location.search).match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Priority to the hash
+			element: divElement,
+			render: render
+		}),
+		params = (location.hash + location.search).match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Priority to the hash
 		document.cookie.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Then the cookie
-		(options.format || '6/2/47').match(/([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/); // Url arg format : <ZOOM>/<LON>/<LAT>/<LAYER>
+		(options.initialFit || '6/2/47').match(/([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/); // Url arg format : <ZOOM>/<LON>/<LAT>/<LAYER>
 
 	if (options.visible) {
 		divElement.className = 'ol-permalink';
@@ -1098,17 +1105,18 @@ function controlPermalink(o) {
 			params = null;
 		}
 
-		// Check the current map zoom & position
-		const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
-			newParams = [
-				parseInt(view.getZoom()),
-				Math.round(ll4326[0] * 100000) / 100000,
-				Math.round(ll4326[1] * 100000) / 100000
-			];
+		// Set the permalink with current map zoom & position
+		if (view.getCenter()) {
+			const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
+				newParams = [
+					parseInt(view.getZoom()),
+					Math.round(ll4326[0] * 100000) / 100000,
+					Math.round(ll4326[1] * 100000) / 100000
+				];
 
-		// Set the new permalink
-		aElement.href = options.hash + 'map=' + newParams.join('/');
-		document.cookie = 'map=' + newParams.join('/') + ';path=/';
+			aElement.href = options.hash + 'map=' + newParams.join('/');
+			document.cookie = 'map=' + newParams.join('/') + ';path=/';
+		}
 	}
 
 	return this_;

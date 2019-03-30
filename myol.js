@@ -137,11 +137,10 @@ function layerIGN(key, layer, format) {
 			url: '//wxs.ign.fr/' + key + '/wmts',
 			layer: layer,
 			matrixSet: 'PM',
-			format: format || 'image/jpeg',
+			format: 'image/' + (format || 'jpeg'),
 			tileGrid: IGNtileGrid,
 			style: 'normal',
-			attributions: '<a href="http://www.geoportail.fr/" target="_blank">' +
-				'<img src="https://api.ign.fr/geoportail/api/js/latest/theme/geoportal/img/logo_gp.gif"></a>'
+			attributions: '&copy; <a href="http://www.geoportail.fr/" target="_blank">IGN</a>'
 		})
 	});
 }
@@ -474,6 +473,7 @@ ol.layer.LayerVectorURL = function(o) {
 		//TODO BUG BEST interagit avec l'éditeur
 		map.addInteraction(new ol.interaction.Select({
 			condition: ol.events.condition.pointerMove,
+			hitTolerance: 6,
 			filter: function(feature, layer) {
 				return layer == this_;
 			},
@@ -494,7 +494,7 @@ ol.layer.LayerVectorURL = function(o) {
 		let pixel = [evt.pixel[0], evt.pixel[1]];
 
 		// Hide label by default if none feature or his popup here
-		var mapRect = map.getTargetElement().getBoundingClientRect(),
+		const mapRect = map.getTargetElement().getBoundingClientRect(),
 			popupRect = map.popElement_.getBoundingClientRect();
 		if (popupRect.left - 5 > mapRect.x + evt.pixel[0] || mapRect.x + evt.pixel[0] >= popupRect.right + 5 ||
 			popupRect.top - 5 > mapRect.y + evt.pixel[1] || mapRect.y + evt.pixel[1] >= popupRect.bottom + 5)
@@ -545,12 +545,15 @@ ol.layer.LayerVectorURL = function(o) {
 							pixel[0] -= map.popElement_.clientWidth / 2;
 							pixel[0] = Math.max(pixel[0], 0); // Bord gauche
 							pixel[0] = Math.min(pixel[0], map.getSize()[0] - map.popElement_.clientWidth - 1); // Bord droit
-							pixel[1] -= map.popElement_.clientHeight + 10;
+							pixel[1] -= map.popElement_.clientHeight + 8;
 						}
 						map.popup_.setPosition(map.getCoordinateFromPixel(pixel));
 					}
 				}
-			});
+			}, {
+				hitTolerance: 6,
+			}
+		);
 	}
 };
 ol.inherits(ol.layer.LayerVectorURL, ol.layer.Vector);
@@ -1130,13 +1133,17 @@ function controlGPS(options) {
 	options = options || {};
 
 	// Vérify if geolocation is available
-	if (!window.location.href.match(/https|localhost/i))
+	if (!navigator.geolocation ||
+		!window.location.href.match(/https|localhost/i))
 		return new ol.control.Control({ //HACK No button
 			element: document.createElement('div'),
 		});
 
-	// The position marker
-	const feature = new ol.Feature(),
+	let map, view,
+		gps = {},
+		compas = {}, // Mem last sensors values
+		// The graticule
+		feature = new ol.Feature(),
 		layer = new ol.layer.Vector({
 			source: source = new ol.source.Vector({
 				features: [feature]
@@ -1157,72 +1164,89 @@ function controlGPS(options) {
 			title: 'Centrer sur la position GPS',
 			activeBackgroundColor: '#ef3',
 			activate: function(active) {
+				map = this_.getMap();
+				view = map.getView();
+
+				// Toggle reticule, position & rotation
 				geolocation.setTracking(active);
 				if (active)
-					this_.getMap().addLayer(layer);
-				else
-					this_.getMap().removeLayer(layer);
+					map.addLayer(layer);
+				else {
+					map.removeLayer(layer);
+					view.setRotation(0);
+				}
 			}
 		}),
+
 		// Interface with the GPS system
 		geolocation = new ol.Geolocation({
 			trackingOptions: {
 				enableHighAccuracy: true
 			}
 		});
-
 	geolocation.on('error', function(error) {
 		alert('Geolocation error: ' + error.message);
 	});
-
 	geolocation.on('change', function() {
-		const position = ol.proj.fromLonLat(this.getPosition());
-		this_.getMap().getView().setCenter(position);
+		gps.position = ol.proj.fromLonLat(this.getPosition());
+		gps.accuracyGeometry = this.getAccuracyGeometry().transform('EPSG:4326', 'EPSG:3857');
+		if (this.getHeading()) {
+			gps.heading = -this.getHeading(); // Delivered radians, clockwize
+			gps.delta = gps.heading - compas.heading; // Freeze delta at this time bewteen the GPS heading & the compas
+		}
 
-		// Redraw the marker
-		feature.setGeometry(new ol.geom.GeometryCollection([
-			// The accurate circle
-			this.getAccuracyGeometry().transform('EPSG:4326', 'EPSG:3857'),
-			// The graticule
-			new ol.geom.MultiLineString([
-				[
-					[position[0], -20000000],
-					[position[0], 20000000]
-				],
-				[
-					[position[0] - 20000000, position[1]],
-					[position[0] + 20000000, position[1]]
-				]
-			])
-		]));
-
-		if (typeof options.callBack == 'function') // Default undefined
-			options.callBack(position);
+		renderReticule();
 	});
 
-	// Keep the map oriented
-	window.addEventListener("deviceorientation", function(evt) {
-		// Magnetic compas
-		let heading = typeof evt.webkitCompassHeading !== "undefined" ?
-			evt.webkitCompassHeading : //iOS non-standard
-			evt.alpha;
+	// Browser heading from the inertial sensors
+	window.addEventListener(
+		'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : // Gives always the magnetic north
+		'deviceorientation', // Gives sometime the magnetic north, sometimes initial device orientation
+		function(evt) {
+			let heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
+			if (heading)
+				compas = {
+					heading: Math.PI / 180 * // Delivered ° reverse clockwize
+						(heading - screen.orientation.angle), // Screen portrait / landscape
+					absolute: evt.absolute // Gives initial device orientation | magnetic north
+				};
 
-		// Browser orientation
-		const orientation = screen.orientation && screen.orientation.type ?
-			screen.orientation.type :
-			screen.orientation || screen.mozOrientation || screen.msOrientation,
-			os = orientation.split("-");
-		if (os[0] === "landscape")
-			heading += 90;
-		else
-			heading += 180;
-		if (os[1] === "secondary")
-			heading -= 180;
+			renderReticule();
+		});
 
-		// Orientate the map
-		if (this_.active)
-			this_.getMap().getView().setRotation(heading / 180 * Math.PI);
-	});
+	function renderReticule() {
+		if (this_.active && gps) {
+			if (!feature.getGeometry()) // Only once the first time the feature is activated
+				view.setZoom(17); // Zoom on the area
+
+			view.setCenter(gps.position);
+			// Redraw the marker
+			feature.setGeometry(new ol.geom.GeometryCollection([
+				gps.accuracyGeometry, // The accurate circle
+				new ol.geom.MultiLineString([ // The graticule
+					[
+						[gps.position[0], -20000000],
+						[gps.position[0], 20000000]
+					],
+					[
+						[gps.position[0] - 20000000, gps.position[1]],
+						[gps.position[0] + 20000000, gps.position[1]]
+					]
+				])
+			]));
+
+			// Map orientation (Radians and reverse clockwize)
+			view.setRotation(
+				compas.absolute ? compas.heading : // Use magnetic compas value
+				compas.heading && gps.delta ? compas.heading + gps.delta : // Correct last GPS heading with handset moves
+				0
+			);
+
+			// Optional callback function
+			if (typeof options.callBack == 'function') // Default undefined
+				options.callBack(gps.position);
+		}
+	}
 
 	return this_;
 }
@@ -1339,6 +1363,7 @@ function controlLoadGPX(o) {
  * Requires ol.control.Button
  * Requires 'myol:onadd' layer event
  */
+//TODO BUG n'exporte pas les points
 function controlDownloadGPX(o) {
 	const options = ol.assign({
 			label: '&dArr;',
@@ -1426,9 +1451,9 @@ function geocoder() {
 		provider: 'osm',
 		lang: 'FR',
 		keepOpen: true,
-		placeholder: 'Saisir un nom' // Initialization of the input field
+		placeholder: 'Recherche sur la carte' // Initialization of the input field
 	});
-	gc.container.title = 'Recherche de lieu par son nom';
+	gc.container.title = 'Recherche sur la carte';
 	gc.container.style.top = (nextButtonTopPos += 2) + 'em';
 
 	return gc;
@@ -1490,7 +1515,7 @@ function printMap(orientation, el, resolution) {
 		/*//TODO attendre fin du chargement de toutes les couches !
 		map.getLayers().forEach(function(layer) {
 			if(layer.getSource())
-				;//DCMM
+				;
 		});
 		*/
 
@@ -1612,7 +1637,7 @@ function controlEdit(o) {
 				group: this_,
 				label: drawOption.type.charAt(0),
 				title: 'Activer "' + drawOption.type.charAt(0) + '" puis\n' +
-					'Cliquer sur la carte et sur chaque désiré pour dessiner ' +
+					'Cliquer sur la carte et sur chaque point désiré pour dessiner ' +
 					(drawOption.type == 'Polygon' ? 'un polygone' : 'une ligne') +
 					',\ndouble cliquer pour terminer.\n' +
 					(drawOption.type == 'Polygon' ?
@@ -1819,11 +1844,13 @@ function compareCoords(a, b) {
  */
 function controlsCollection(options) {
 	options = options || {};
+	if (!options.baseLayers)
+		options.baseLayers = layersCollection(options.geoKeys);
 
 	return [
 		controlLayersSwitcher(ol.assign({
 			geoKeys: options.geoKeys,
-			baseLayers: layersCollection(options.geoKeys)
+			baseLayers: options.baseLayers
 		}, options.controlLayersSwitcher)),
 		new ol.control.ScaleLine(),
 		new ol.control.Attribution({
@@ -1855,7 +1882,6 @@ function controlsCollection(options) {
  * Tile layers examples
  * Requires many
  */
-//TODO BUG investigate : The connection used to load resources from https://api.ign.fr used TLS 1.0 or TLS 1.1, which are deprecated and will be disabled in the future. Once disabled, users will be prevented from loading these resources. The server should enable TLS 1.2 or later. See https://www.chromestatus.com/feature/5654791610957824 for more information.
 function layersCollection(keys) {
 	return {
 		'OSM-FR': layerOSM('//{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'),
@@ -1864,7 +1890,7 @@ function layersCollection(keys) {
 			'//maps.refuges.info/hiking/{z}/{x}/{y}.png',
 			'<a href="http://wiki.openstreetmap.org/wiki/Hiking/mri">MRI</a>'
 		),
-		'OpenTopoMap': layerOSM(
+		'OpenTopo': layerOSM(
 			'//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
 			'<a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 		),
@@ -1885,11 +1911,23 @@ function layersCollection(keys) {
 		'IGN TOP 25': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD'),
 		'IGN classique': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE'),
 		'IGN photos': layerIGN(keys.IGN, 'ORTHOIMAGERY.ORTHOPHOTOS'),
-		'IGN Spot': layerIGN(keys.IGN, 'ORTHOIMAGERY.ORTHO-SAT.SPOT.2017'),
-		'IGN plan': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.PLANIGN'),
-		'Etat major': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40'),
-		// NOT YET	layerIGN('IGN avalanches', keys.IGN,'GEOGRAPHICALGRIDSYSTEMS.SLOPES.MOUNTAIN'),
+		//403		'IGN Spot': layerIGN(keys.IGN, 'ORTHOIMAGERY.ORTHO-SAT.SPOT.2017', 'png'),
+		//Double		'SCAN25TOUR': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR'),
+		'IGN 1950': layerIGN(keys.IGN, 'ORTHOIMAGERY.ORTHOPHOTOS.1950-1965', 'png'),
 		'Cadastre': layerIGN(keys.IGN, 'CADASTRALPARCELS.PARCELS', 'image/png'),
+		'Etat major': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40'),
+		//400		'ETATMAJOR10': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR10', 'png'),
+		//400		'IGN.SCAN-OACI': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-OACI', 'png'),
+		'IGN plan': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.PLANIGN'),
+		'IGN route': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.ROUTIER'),
+		'IGN noms': layerIGN(keys.IGN, 'GEOGRAPHICALNAMES.NAMES', 'png'),
+		'IGN rail': layerIGN(keys.IGN, 'TRANSPORTNETWORKS.RAILWAYS', 'png'),
+		'IGN forêt': layerIGN(keys.IGN, 'LANDCOVER.FORESTAREAS', 'png'),
+		'IGN limites': layerIGN(keys.IGN, 'ADMINISTRATIVEUNITS.BOUNDARIES', 'png'),
+		//403		'SHADOW': layerIGN(keys.IGN, 'ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW', 'png'),
+		//404		'PN': layerIGN(keys.IGN, 'PROTECTEDAREAS.PN', 'png'),
+		//404		'PNR': layerIGN(keys.IGN, 'PROTECTEDAREAS.PNR', 'png'),
+		//403		'Avalanches':	layerIGN('IGN avalanches', keys.IGN,'GEOGRAPHICALGRIDSYSTEMS.SLOPES.MOUNTAIN'),
 		'Swiss': layerSwissTopo('ch.swisstopo.pixelkarte-farbe'),
 		'Swiss photo': layerSwissTopo('ch.swisstopo.swissimage'),
 		'Espagne': layerSpain('mapa-raster', 'MTN'),

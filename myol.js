@@ -1175,6 +1175,12 @@ function controlGPS(options) {
 					map.removeLayer(layer);
 					view.setRotation(0);
 				}
+
+				// Set preload of upper level tiles
+				map.getLayers().forEach(function(layer) {
+					if (layer.type == 'TILE')
+						layer.setPreload(active ? 3 : 0);
+				});
 			}
 		}),
 
@@ -1477,6 +1483,7 @@ function controlPrint() {
 	});
 }
 
+//TODO ajouter l'échelle dans les cartes imprimées
 //TODO ARCHI mettre dans controlPrint
 function printMap(orientation, el, resolution) {
 	// Search control div element in the hierarchy

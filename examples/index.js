@@ -1,4 +1,4 @@
-var _v=document.cookie,_r='COOKIES : ';if(typeof _v=='array'||typeof _v=='object'){for(_i in _v)if(typeof _v[_i]!='function')_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r);
+console.log(document.cookie);
 
 /**
  * www.refuges.info POI layer
@@ -167,12 +167,3 @@ new ol.MyMap({
 	layers: overlays,
 	controls: basicControls.concat([edit])
 });
-
-
-/**
- * GENERAL TODO
- */
-//TODO-ARCHI map off line, application
-
-//TODO-END http://jsbeautifier.org/ & http://jshint.com
-//TODO-END replace var by const / let

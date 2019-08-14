@@ -81,10 +81,11 @@ function layerOSM(url, attribution) {
 /**
  * Kompas (austria)
  * Requires layerOSM
+ * Not available via https
  */
 function layerKompass(layer) {
 	return layerOSM(
-		'http://ec{0-3}.cdn.ecmaps.de/WmsGateway.ashx.jpg?' + // Not available via https
+		'http://ec{0-3}.cdn.ecmaps.de/WmsGateway.ashx.jpg?' +
 		'Experience=ecmaps&MapStyle=' + layer + '&TileX={x}&TileY={y}&ZoomLevel={z}',
 		'<a href="http://www.kompass.de/livemap/">KOMPASS</a>'
 	);
@@ -769,7 +770,7 @@ layerOverpass = function(o) {
  * Requires 'myol:onadd' layer event
  */
 //TODO-BEST pointer finger sur la cible (select ?)
-//							map.getViewport().style.cursor = 'pointer'; / default
+// map.getViewport().style.cursor = 'pointer'; / default
 function marker(imageUrl, display, llInit, dragged) { // imageUrl, 'id-display', [lon, lat], bool
 	const format = new ol.format.GeoJSON();
 	let eljson, json, elxy;
@@ -900,7 +901,7 @@ function JSONparse(json) {
  * Control buttons
  * Abstract definition to be used by other control buttons definitions
  */
-let nextButtonTopPos = 4; // Top position of next button (em)
+let nextButtonPos = 2.5; // Top position of next button (em)
 
 ol.control.Button = function(o) {
 	const this_ = this, // For callback functions
@@ -929,11 +930,11 @@ ol.control.Button = function(o) {
 
 	this.on('myol:onadd', function() {
 		if (options.rightPosition) { // {float} distance to the top when the button is on the right of the map
-			divElement.style.right = '.5em';
 			divElement.style.top = options.rightPosition + 'em';
+			divElement.style.right = '.5em';
 		} else {
-			divElement.style.left = '.5em';
-			divElement.style.top = (nextButtonTopPos += 2) + 'em';
+			divElement.style.top = '.5em';
+			divElement.style.left = (nextButtonPos += 2) + 'em';
 		}
 	});
 
@@ -1090,8 +1091,8 @@ function controlPermalink(o) {
 		divElement = document.createElement('div'),
 		aElement = document.createElement('a');
 	const this_ = new ol.control.Control({
-			element: divElement,
-			render: render
+		element: divElement,
+		render: render
 	});
 	let params = (location.hash + location.search).match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Priority to the hash
 		document.cookie.match(/map=([-0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/) || // Then the cookie
@@ -1151,22 +1152,24 @@ function controlGPS(options) {
 		});
 
 	let map, view,
-		gps = {},
-		compas = {}, // Mem last sensors values
+		gps = {}, // Mem last sensors values
+		compas = {},
 
 		// The graticule
-		feature = new ol.Feature(),
+		graticule = new ol.Feature(),
+		northGraticule = new ol.Feature(),
 		layer = new ol.layer.Vector({
 			source: source = new ol.source.Vector({
-				features: [feature]
+				features: [graticule, northGraticule]
 			}),
 			style: new ol.style.Style({
 				fill: new ol.style.Fill({
 					color: 'rgba(128,128,255,0.2)'
 				}),
 				stroke: new ol.style.Stroke({
-					color: 'blue',
-					width: 2
+					color: '#20b',
+					lineDash: [16, 14],
+					width: 1
 				})
 			})
 		}),
@@ -1177,8 +1180,9 @@ function controlGPS(options) {
 			title: 'Centrer sur la position GPS',
 			activeBackgroundColor: '#ef3',
 			activate: function(active) {
-				map = this_.getMap();
-				view = map.getView();
+				//TODO 3 steps activation : position + reticule + orientation / reticule / none
+				//TODO freeze rotation when inactive
+				//TODO block screen standby
 
 				// Toggle reticule, position & rotation
 				geolocation.setTracking(active);
@@ -1197,63 +1201,105 @@ function controlGPS(options) {
 				enableHighAccuracy: true
 			}
 		});
+
+	northGraticule.setStyle(new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			color: '#c00',
+			lineDash: [16, 14],
+			width: 1
+		})
+	}));
+
+	this_.on('myol:onadd', function() {
+		map = this_.getMap();
+		view = map.getView();
+
+		map.on('moveend', renderReticule);
+	});
+
 	geolocation.on('error', function(error) {
 		alert('Geolocation error: ' + error.message);
 	});
+
 	geolocation.on('change', function() {
 		gps.position = ol.proj.fromLonLat(this.getPosition());
 		gps.accuracyGeometry = this.getAccuracyGeometry().transform('EPSG:4326', 'EPSG:3857');
+		/*//TODO Firefox Update delta only over some speed
+		if (!navigator.userAgent.match('Firefox'))
+
 		if (this.getHeading()) {
 			gps.heading = -this.getHeading(); // Delivered radians, clockwize
 			gps.delta = gps.heading - compas.heading; // Freeze delta at this time bewteen the GPS heading & the compas
-		}
+		} */
 
 		renderReticule();
 	});
 
 	// Browser heading from the inertial sensors
 	window.addEventListener(
-		'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : // Gives always the magnetic north
+		'ondeviceorientationabsolute' in window ?
+		'deviceorientationabsolute' : // Gives always the magnetic north
 		'deviceorientation', // Gives sometime the magnetic north, sometimes initial device orientation
 		function(evt) {
 			const heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
 			if (heading)
 				compas = {
-					heading: Math.PI / 180 * // Delivered ° reverse clockwize
-						(heading - screen.orientation.angle), // Screen portrait / landscape
+					heading: Math.PI / 180 * (heading - screen.orientation.angle), // Delivered ° reverse clockwize
 					absolute: evt.absolute // Gives initial device orientation | magnetic north
 				};
 
 			renderReticule();
-		});
+		}
+	);
 
 	function renderReticule() {
 		if (this_.active && gps) {
-			if (!feature.getGeometry()) // Only once the first time the feature is activated
+			if (!graticule.getGeometry()) // Only once the first time the feature is enabled
 				view.setZoom(17); // Zoom on the area
 
 			view.setCenter(gps.position);
-			// Redraw the marker
-			feature.setGeometry(new ol.geom.GeometryCollection([
+
+			// Estimate the viewport size
+			let hg = map.getCoordinateFromPixel([0, 0]),
+				bd = map.getCoordinateFromPixel(map.getSize()),
+				far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10;
+
+			// Redraw the graticule
+			graticule.setGeometry(new ol.geom.GeometryCollection([
 				gps.accuracyGeometry, // The accurate circle
 				new ol.geom.MultiLineString([ // The graticule
 					[
-						[gps.position[0], -20000000],
-						[gps.position[0], 20000000]
+						[gps.position[0], gps.position[1]],
+						[gps.position[0], gps.position[1] - far]
 					],
 					[
-						[gps.position[0] - 20000000, gps.position[1]],
-						[gps.position[0] + 20000000, gps.position[1]]
+						[gps.position[0], gps.position[1]],
+						[gps.position[0] - far, gps.position[1]]
+					],
+					[
+						[gps.position[0], gps.position[1]],
+						[gps.position[0] + far, gps.position[1]]
+					]
+				])
+			]));
+			northGraticule.setGeometry(new ol.geom.GeometryCollection([
+				new ol.geom.MultiLineString([ // Color north in red
+					[
+						[gps.position[0], gps.position[1]],
+						[gps.position[0], gps.position[1] + far]
 					]
 				])
 			]));
 
 			// Map orientation (Radians and reverse clockwize)
-			view.setRotation(
-				compas.absolute ? compas.heading : // Use magnetic compas value
-				compas.heading && gps.delta ? compas.heading + gps.delta : // Correct last GPS heading with handset moves
-				0
-			);
+			if (compas.absolute)
+				view.setRotation(compas.heading, 0); // Use magnetic compas value
+			/*//TODO Firefox use delta if speed > ??? km/h
+					compas.absolute ?
+					compas.heading : // Use magnetic compas value
+					compas.heading && gps.delta ? compas.heading + gps.delta : // Correct last GPS heading with handset moves
+					0
+				); */
 
 			// Optional callback function
 			if (typeof options.callBack == 'function') // Default undefined
@@ -1322,7 +1368,7 @@ function controlLoadGPX(o) {
 			style: new ol.style.Style({
 				stroke: new ol.style.Stroke({
 					color: 'blue',
-					width: 2
+					width: 3
 				})
 			})
 		}, o),
@@ -1455,7 +1501,8 @@ function controlDownloadGPX(o) {
 function geocoder() {
 	// Vérify if geocoder is available (not in IE)
 	const ua = navigator.userAgent;
-	if (ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1)
+	if (typeof Geocoder != 'function' ||
+		ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1)
 		return new ol.control.Control({ //HACK No button
 			element: document.createElement('div'),
 		});
@@ -1467,7 +1514,8 @@ function geocoder() {
 		placeholder: 'Recherche sur la carte' // Initialization of the input field
 	});
 	gc.container.title = 'Recherche sur la carte';
-	gc.container.style.top = (nextButtonTopPos += 2) + 'em';
+	gc.container.style.top = '.5em';
+	gc.container.style.left = (nextButtonPos += 2) + 'em';
 
 	return gc;
 }
@@ -1862,8 +1910,8 @@ function controlsCollection(options) {
 
 	return [
 		controlLayersSwitcher(ol.assign({
-			geoKeys: options.geoKeys,
-			baseLayers: options.baseLayers
+			baseLayers: options.baseLayers,
+			geoKeys: options.geoKeys
 		}, options.controlLayersSwitcher)),
 		new ol.control.ScaleLine(),
 		new ol.control.Attribution({
@@ -1903,7 +1951,7 @@ function layersCollection(keys) {
 			'//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
 			'<a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 		),
-		'OSM outdoors': layerThunderforest('outdoors', keys.thunderforest),
+		//		'OSM outdoors': layerThunderforest('outdoors', keys.thunderforest),
 		'OSM-FR': layerOSM('//{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'),
 		'OSM': layerOSM('//{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
 		'MRI': layerOSM(
@@ -1916,12 +1964,14 @@ function layersCollection(keys) {
 		), // Not on https
 		'Autriche': layerKompass('KOMPASS Touristik'),
 		'Kompas': layerKompass('KOMPASS'),
+		/* //TODO quota expired
 		'OSM cycle': layerThunderforest('cycle', keys.thunderforest),
 		'OSM landscape': layerThunderforest('landscape', keys.thunderforest),
 		'OSM transport': layerThunderforest('transport', keys.thunderforest),
 		'OSM trains': layerThunderforest('pioneer', keys.thunderforest),
 		'OSM villes': layerThunderforest('neighbourhood', keys.thunderforest),
 		'OSM contraste': layerThunderforest('mobile-atlas', keys.thunderforest),
+		*/
 		'IGN': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS'),
 		'IGN TOP 25': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD'),
 		'IGN classique': layerIGN(keys.IGN, 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE'),

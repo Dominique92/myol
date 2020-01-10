@@ -1,9 +1,17 @@
 <!DOCTYPE html>
+<!--
+© Dominique Cavailhez 2019
+https://github.com/Dominique92/MyOl
+Based on https://openlayers.org
+-->
 <html>
-
 <head>
 	<title>My Openlayers simple example</title>
+	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+	<!-- IE related -->
+	<script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script>
 
 	<!-- Openlayers -->
 	<link  href="ol/ol.css" type="text/css" rel="stylesheet">
@@ -34,7 +42,7 @@
 
 	<script>
 		// Must be after the <div> tag
-		new ol.MyMap({
+		new ol.Map({
 			target: 'map',
 			controls: controlsCollection({
 				geoKeys: {
@@ -47,5 +55,4 @@
 		});
 	</script>
 </body>
-
 </html>

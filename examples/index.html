@@ -1,11 +1,18 @@
 <!DOCTYPE html>
+<!--
+© Dominique Cavailhez 2019
+https://github.com/Dominique92/MyOl
+Based on https://openlayers.org
+-->
 <html>
-
 <head>
 	<title>My Openlayers</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="icon" type="image/x-icon" href="https://openlayers.org/assets/theme/img/favicon.ico" />
+	<link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+	<!-- IE related -->
+	<!--script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script-->
 
 	<!-- Openlayers -->
 	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
@@ -22,6 +29,8 @@
 	<link  href="../myol.css" type="text/css" rel="stylesheet">
 	<script src="../myol.js"></script>
 
+	<!-- This exemple -->
+	<script src="index.js" defer="defer"></script>
 	<style>
 		#map {
 			width: 90vw;
@@ -30,89 +39,113 @@
 		.label-overpass {
 			background: #cde;
 		}
+		.selectors span {
+			font-size: .8em;
+			color: blue;
+		}
 	</style>
 </head>
 
 <body>
 	<div id="map"></div>
 
-	<ul id="overpass">
-		<li>OVERPASS<input type="checkbox" name="overpass" /></li>
-		<li><input type="checkbox" name="overpass" id="point_eau" value='["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["natural"="spring"]+["man_made"="water_well"]' />Point d'eau</li>
-		<li><input type="checkbox" name="overpass" id="telephone" value='["amenity"="telephone"]' />Cabines téléphoniques</li>
-		<li><input type="checkbox" name="overpass" id="wifi" value='["internet_access"~"yes|public|wlan|wired|terminal|service|free|fee|type|access"]' />Café internet</li>
-		<li><input type="checkbox" name="overpass" id="ravitaillement" value='["shop"~"supermarket|convenience"]' />Ravitaillement</li>
-		<li><input type="checkbox" name="overpass" id="parking" value='["amenity"="parking"]["access"!="private"]' />Parking</li>
-	</ul>
-	<ul>
-		<li><input type="checkbox" name="overpass" id="refuge" value='["tourism"="alpine_hut"]' />Refuge gardé</li>
-		<li><input type="checkbox" name="overpass" id="cabane" value='["building"="cabin"]' />Cabane non gardée</li>
-		<li><input type="checkbox" name="overpass" id="camping" value='["tourism"="camp_site"]' />Camping</li>
-		<li><input type="checkbox" name="overpass" id="abri" value='["amenity"="shelter"]["shelter_type"="basic_hut"]' />Abri</li>
-		<li><input type="checkbox" name="overpass" id="hotel" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]' />Hôtel</li>
-		<li><input type="checkbox" name="overpass" id="restaurant" value='["amenity"="restaurant"]' />Restaurants</li>
-		<li><input type="checkbox" name="overpass" id="bus" value='["highway"="bus_stop"]' />Bus</li>
-		<li><input type="checkbox" name="overpass" id="wc" value='["amenity"="toilets"]' />WC</li>
-	</ul>
-	<ul>
-		<li>WRI<input type="checkbox" name="wri-poi" /></li>
-		<li><input type="checkbox" name="wri-poi" value="7" checked="checked" />cabane non gardée</li>
-		<li><input type="checkbox" name="wri-poi" value="10" />refuge gardé</li>
-		<li><input type="checkbox" name="wri-poi" value="9" checked="checked" />gîte d'étape</li>
-		<li><input type="checkbox" name="wri-poi" value="23" />point d'eau</li>
-		<li><input type="checkbox" name="wri-poi" value="6" checked="checked" />sommet</li>
-		<li><input type="checkbox" name="wri-poi" value="3" />passage délicat</li>
-		<li><input type="checkbox" name="wri-poi" value="28" />bâtiment en montagne</li>
-	</ul>
-	<ul>
-		<li>Chemineur<input type="checkbox" name="chemineur" /></li>
-	</ul>
-	<ul>
-		<li>Massifs<input type="checkbox" name="wri-massifs" /></li>
-	</ul>
+	<!-- Fixed marker -->
+	<p>
+		<input type="hidden" id="marqueur-json" value='{"type":"Point","coordinates":[7.45,46.95]}' />
+		Lon <span id="marqueur-lon"></span>,
+		Lat <span id="marqueur-lat"></span>
+		<span id="marqueur-xy"> /
+			X=<span id="marqueur-x"></span>,
+			Y=<span id="marqueur-y"></span>
+			(CH1903)
+		</span>
+	</p>
 
-	<input type="hidden" id="marqueur-json" value='{"type":"Point","coordinates":[6.575,45.845]}' />
-	<div>Lon <span id="marqueur-lon"></span>, Lat <span id="marqueur-lat"></span></div>
-	<div id="marqueur-xy">(CH1903) X <span id="marqueur-x"></span>, Y <span id="marqueur-y"></span></div>
+	<!-- Draggable marker -->
+	<p>
+		<input type="text" id="viseur-json" size="60" value='{"type":"Point","coordinates":[2.4,47]}' /><br/>
+		Lon <input type="text" id="viseur-lon" size="10" maxlength="12" />
+		Lat <input type="text" id="viseur-lat" size="10" maxlength="12" />
+		<span>Suisse
+			X:<input type="text" id="viseur-x" size="7" maxlength="12" />
+			Y:<input type="text" id="viseur-y" size="7" maxlength="12" />
+			(CH 1903)
+		</span><br/>
+		<button id="viseur-center-marker">Déplacer le viseur au centre de la carte</button>
+		<button id="viseur-center-map">Centrer la carte sur le viseur</button>
+	</p>
 
-	<input type="text" id="viseur-json" size="60" value='{"type":"Point","coordinates":[6.15,47.2]}' />
-	<div>
-		Lon <input type="text" id="viseur-lon" onchange="viseur.edit(this,0,4326)" size="10" maxlength="12" />
-		Lat <input type="text" id="viseur-lat" onchange="viseur.edit(this,1,4326)" size="10" maxlength="12" />
-	</div>
-	<div id="viseur-xy">Suisse
-		X <input type="text" id="viseur-x" onchange="viseur.edit(this,0,21781)" size="7" maxlength="12" />
-		Y <input type="text" id="viseur-y" onchange="viseur.edit(this,1,21781)" size="7" maxlength="12" />
-	</div>
-
-	<p><a style="cursor:pointer" onclick="map.getView().setCenter(viseur.getPoint().getCoordinates())">Recentrer la carte sur le curseur</a></p>
-	<p><a style="cursor:pointer" onclick="viseur.getPoint().setCoordinates(map.getView().getCenter())">Remettre le curseur au centre actuel de la carte</a></p>
-	<p><a style="cursor:pointer" onclick="controlgps.action()">Utiliser la position du GPS</a></p>
-
+	<!-- Features editor -->
 	<input type="text" id="geojson" style="width:90%" value='
-		{"type": "FeatureCollection",
-			"features": [
-				{
-					"type": "Feature",
-					"geometry": {
-						"type":"MultiLineString",	"coordinates":[[[-4.37,47.79],[-4.33,47.86],[-4.47,48],[-4.75,48.05],[-4.3,48.12],[-4.27,48.2],[-4.564,48.2],[-4.64,48.3],[-4.23,48.33],[-4.5,48.38],[-4.86,48.3],[-4.84,48.59],[-4.46,48.63],[-4.0,48.7],[-3.7,48.7],[-3.57,48.68],[-3.58,48.84],[-3.14,48.86],[-2.68,48.52],[-2.8,47.57],[-3.14,47.58],[-3.66,47.79],[-4.15,47.76]]]}
-				},{
-					"type": "Feature",
-					"geometry": {
-						"type":"MultiLineString",
-						"coordinates":[[[-5.7,48],[-5.6,47.7],[-5.1,47.8]]]}
-				},{
-					"type": "Feature",
-					"geometry": {
-						"type": "Polygon",
-						"coordinates": [[[-2.16293, 50.03509],[-3.11462, 49.57392],[-2.48886, 48.9216],[-1.81755, 48.85824],[-1.8988, 49.44551],[-2.16293, 50.03509]],
-							[[-2.27646, 49.17243],[-1.97617, 49.14249],[-2.01096, 49.24779],[-2.28561, 49.27169],[-2.27646, 49.17243]]]}
-				}
+{
+	"type": "FeatureCollection",
+	"features": [{
+		"type": "Feature",
+		"geometry": {
+			"type": "LineString",
+			"coordinates": [[-4.5,47.2],[-2,44.5]]
+		}
+	}, {
+		"type": "Feature",
+		"geometry": {
+			"type": "Polygon",
+			"coordinates": [
+				[[-5.5,47.2],[-3,44.5],[-8,44.5],[-5.5,47.2]],
+				[[-5.5,44.7],[-6.5,45.8],[-4.5,45.8],[-5.5,44.7]]
 			]
 		}
+	}]
+}
 	' />
+	
+	<ul class="selectors">
+		<li>
+			OVERPASS<input type="checkbox" name="osm-features" />
+			<span id="osm-features-status" />
+		</li>
+		<li><input type="checkbox" name="osm-features" id="City Hall" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]' />Hôtel</li>
+		<li><input type="checkbox" name="osm-features" id="Residence" value='["tourism"="alpine_hut"]' />Refuge gardé</li>
+		<li><input type="checkbox" name="osm-features" id="Lodge" value='["building"="cabin"]' />Cabane non gardée</li>
+		<li><input type="checkbox" name="osm-features" id="Fishing Hot Spot Facility" value='["amenity"="shelter"]["shelter_type"="basic_hut"]' />Abri</li>
+		<li><input type="checkbox" name="osm-features" id="Campground" value='["tourism"="camp_site"]' />Camping</li>
 
-	<script src="index.js"></script>
+		<li><input type="checkbox" name="osm-features" id="Drinking Water" value='["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["natural"="spring"]+["man_made"="water_well"]' />Point d'eau</li>
+		<li><input type="checkbox" name="osm-features" id="Ground Transportation" value='["highway"="bus_stop"]' />Bus</li>
+		<li><input type="checkbox" name="osm-features" id="Parking Area" value='["amenity"="parking"]["access"!="private"]' />Parking</li>
+		<li><input type="checkbox" name="osm-features" id="Restaurant" value='["amenity"="restaurant"]' />Restaurants</li>
+		<li><input type="checkbox" name="osm-features" id="Shopping Center" value='["shop"~"supermarket|convenience"]' />Alimentation</li>
+
+		<li><input type="checkbox" name="osm-features" id="Restroom" value='["amenity"="toilets"]' />WC</li>
+		<li><input type="checkbox" name="osm-features" id="Oil Field" value='["internet_access"~"yes|public|wlan|wired|terminal|service|free|fee|type|access"]' />Café internet</li>
+		<li><input type="checkbox" name="osm-features" id="Telephone" value='["amenity"="telephone"]' />Cabines téléphoniques</li>
+	</ul>
+	<ul class="selectors">
+		<li>
+			WRI<input type="checkbox" name="wri-features" />
+			<span id="wri-features-status" />
+		</li>
+		<li><input type="checkbox" name="wri-features" value="7" checked="checked" />cabane non gardée</li>
+		<li><input type="checkbox" name="wri-features" value="10" />refuge gardé</li>
+		<li><input type="checkbox" name="wri-features" value="9" checked="checked" />gîte d'étape</li>
+		<li><input type="checkbox" name="wri-features" value="23" />point d'eau</li>
+		<li><input type="checkbox" name="wri-features" value="6" checked="checked" />sommet</li>
+		<li><input type="checkbox" name="wri-features" value="3" />passage délicat</li>
+		<li><input type="checkbox" name="wri-features" value="28" />bâtiment en montagne</li>
+	</ul>
+	<ul class="selectors">
+		<li>pyrenees-refuges.com<input type="checkbox" name="prc-features" /><span id="prc-features-status" /></li>
+	</ul>
+	<ul class="selectors">
+		<li>camptocamp.org<input type="checkbox" name="c2c-features" /><span id="c2c-features-status" /></li>
+	</ul>
+	<ul class="selectors">
+		<li>Chemineur.fr<input type="checkbox" name="chm-features" /><span id="chm-features-status" /></li>
+	</ul>
+	<ul class="selectors">
+		<li>Alpages.info<input type="checkbox" name="alp-features" /><span id="alp-features-status" /></li>
+	</ul>
+	<ul class="selectors">
+		<li>Massifs<input type="checkbox" name="wri-massifs" /><span id="wri-massifs-status" /></li>
+	</ul>
 </body>
-
 </html>

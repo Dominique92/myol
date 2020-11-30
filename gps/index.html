@@ -3,13 +3,22 @@
 © Dominique Cavailhez 2019
 https://github.com/Dominique92/MyOl
 Based on https://openlayers.org
+
+This is the entry for the servers that don't run PHP
+This installs the service but upgrades the files only after the caches delay
 -->
 <html>
 <head>
-	<title>MyGPS</title>
+	<link rel="manifest" href="manifest.json">
+
+	<title>My GPS</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link rel="icon" type="image/png" href="favicon.png" />
+
+	<!-- Polyfills -->
+	<script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script><!-- IE -->
+	<script src="https://unpkg.com/elm-pep"></script><!-- FF -->
 
 	<!-- Openlayers -->
 	<link href="../ol/ol.css" type="text/css" rel="stylesheet">
@@ -24,17 +33,8 @@ Based on https://openlayers.org
 	<script src="../myol.js"></script>
 
 	<!-- This app -->
-	<link rel="manifest" href="manifest.json">
+	<link href="index.css" type="text/css" rel="stylesheet">
 	<script src="index.js" defer="defer"></script>
-
-	<style>
-		html, body, #map {
-			margin: 0;
-			padding: 0;
-			width: 100%;
-			height: 100%;
-		}
-	</style>
 </head>
 
 <body>

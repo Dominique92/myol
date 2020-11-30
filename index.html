@@ -10,8 +10,9 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-	<!-- IE related -->
-	<script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script>
+	<!-- Polyfills -->
+	<script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script><!-- IE -->
+	<script src="https://unpkg.com/elm-pep"></script><!-- FF -->
 
 	<!-- Openlayers -->
 	<link  href="ol/ol.css" type="text/css" rel="stylesheet">
@@ -29,10 +30,11 @@ Based on https://openlayers.org
 		html, body {
 			margin: 0;
 			padding: 0;
+			overflow: hidden;
 		}
 		#map {
 			width: 100vw;
-			height: 100vh;
+			height: calc(100vh - 10em);
 		}
 	</style>
 </head>
@@ -40,18 +42,18 @@ Based on https://openlayers.org
 <body>
 	<div id="map"></div>
 
+	<p><a href="examples">LAYERS DEMO</a></p>
+	<p><a href="examples/markers.html">MARKERS DEMO</a></p>
+	<p><a href="examples/editor.html">EDITOR DEMO</a></p>
+	<p><a href="gps">OFF LINE GPS</a></p>
+
 	<script>
-		// Must be after the <div> tag
+		// Must be after the <div id="map"> tag
 		new ol.Map({
 			target: 'map',
 			controls: controlsCollection({
-				geoKeys: {
-					ign: 'hcxdz5f1p9emo4i1lch6ennl', // Get your own (free) IGN key at http://professionnels.ign.fr/ign/contrats
-					thunderforest: 'ee751f43b3af4614b01d1bce72785369', // Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
-					bing: 'ArLngay7TxiroomF7HLEXCS7kTWexf1_1s1qiF7nbTYs2IkD3XLcUnvSlKbGRZxt' // Get your own (free) BING key at https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
-					// SwissTopo : You need to register your domain in https://shop.swisstopo.admin.ch/fr/products/geoservice/swisstopo_geoservices/WMTS_info
-				}
-			})
+				baseLayers: layersCollection(),
+			}),
 		});
 	</script>
 </body>

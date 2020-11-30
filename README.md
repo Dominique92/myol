@@ -1,7 +1,7 @@
 Dominique92.MyOl
 ================
 * This package adds many features to [openlayer maps](https://openlayers.org/)
-* It is deployed on [refuges.info](https://www.refuges.info) [alpages.info](https://alpages.info)
+* It is deployed on [refuges.info](https://www.refuges.info) & [alpages.info](https://alpages.info)
 
 SIMPLE EXAMPLE
 ==============
@@ -9,28 +9,45 @@ This [EXAMPLE DEMO](https://Dominique92.github.io/MyOl/) implements a single map
 * You can download the [DISTRIBUTION ZIPPED PACKAGE](https://github.com/Dominique92/MyOl/archive/master.zip) and unzip it in your website FTP section.
 * You can include the css & js sections of this example on your own page (adjust the include files path to your implementation)
 
-SUPPORTED FEATURES
-==================
-[See a COMPLETE DEMO here](https://Dominique92.github.io/MyOl/examples/)
+BASELAYERS & SWITCHER
+=====================
+[See a LAYER DEMO here](https://Dominique92.github.io/MyOl/examples/)
+* OSM, OSM-FR, OpenTopo, Maps.Refuges.Info
+* ThunderForest Outdoors, OpenTopoMap, Cycles, Landscape, Transport, ...
+* IGN France, cadastre, satellite, ...
+* SwissTopo, satellite
+* IDEE España, satellite
+* IGM Italie
+* OS Great Britain
+* Kompass Austria
+* Bing Microsoft, satellite
+* Google maps, satellite
+
+VECTOR LAYERS
+=============
+[See a LAYER DEMO here](https://Dominique92.github.io/MyOl/examples/)
 * GeoJson ajax layers,
-* Multi vendors maps :
-```
-- OSM, OSM-FR, OpenTopo, Maps.Refuges.Info
-- ThunderForest Outdoors, OpenTopoMap, Cycles, Landscape, Transport, ...
-- IGN France, cadastre, satellite, ...
-- SwissTopo, satellite
-- IDEE España, satellite
-- IGM Italie
-- OS Great Britain
-- Kompass Austria
-- Bing Microsoft, satellite
-- Google maps, satellite
-```
-* geoJson vector layers, OverPass (OSM vector points of interest)
+* OverPass (OSM vector points of interest)
+
+MARKER DISPLAY & EDIT
+=====================
+[See a MARKER DEMO here](https://Dominique92.github.io/MyOl/examples/markers.html)
 * Editable position marker with multi-projection position display,
+
+LINES & POLYGONS EDITOR
+=======================
+[See an EDITOR DEMO here](https://Dominique92.github.io/MyOl/examples/editor.html)
 * Polylines & polygons editor.
+
+OTHER FEATURES
+==============
 * Keep position, zoom & zoom on cookies
-* Layer switcher, GPS, geocoder, print map, line length display, GPX upload & download
+* Layer switcher
+* Geocoder
+* Line length display
+* GPX upload & download
+* Off connexion GPS
+* Print map
 
 LAYERS KEYS
 ===========
@@ -50,7 +67,7 @@ OFF LINE MAPS
 * Switch to full screen mode (also memorize the higher scales)
 * Move along the path of your hike slowly enough to load all tiles
 * Repeat with the layers of cards you want to memorize
-* Go to the field and click on the "MyGPS" icon
+* Go to the field and click on the "My GPS" icon
 * If you have a .gpx file in your mobile, view it by clicking on ⇑
 * All tiles viewed once will be kept in the explorer's cache for a few days
 * This application does not record your track

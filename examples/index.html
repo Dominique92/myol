@@ -9,28 +9,26 @@ Based on https://openlayers.org
 	<title>My Openlayers</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="icon" type="image/x-icon" href="favicon.ico" />
+	<link rel="icon" type="image/png" href="logo.png" />
 
-	<!-- IE related -->
-	<!--script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script-->
+	<!-- Polyfills -->
+	<script nomodule src="https://cdn.polyfill.io/v3/polyfill.min.js"></script><!-- IE -->
+	<script src="https://unpkg.com/elm-pep"></script><!-- FF -->
 
 	<!-- Openlayers -->
 	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="../ol/ol.js"></script>
 
 	<!-- Recherche par nom -->
-	<link  href="../geocoder/ol-geocoder.css" type="text/css" rel="stylesheet">
-	<script src="../geocoder/ol-geocoder-debug.js"></script>
+	<link  href="../geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
+	<script src="../geocoder/ol-geocoder.js"></script>
 
-	<!-- Proj4 projections Swiss & UK -->
-	<script src="../proj4/proj4-src.js"></script>
-
-	<!-- My Openleyers -->
+	<!-- My Openlayers -->
 	<link  href="../myol.css" type="text/css" rel="stylesheet">
 	<script src="../myol.js"></script>
 
 	<!-- This exemple -->
-	<script src="index.js" defer="defer"></script>
+	<script src="example.js" defer="defer"></script>
 	<style>
 		#map {
 			width: 90vw;
@@ -43,66 +41,23 @@ Based on https://openlayers.org
 			font-size: .8em;
 			color: blue;
 		}
+		ul {
+			margin-top: 0;
+		}
 	</style>
 </head>
 
 <body>
 	<div id="map"></div>
 
-	<!-- Fixed marker -->
-	<p>
-		<input type="hidden" id="marqueur-json" value='{"type":"Point","coordinates":[7.45,46.95]}' />
-		Lon <span id="marqueur-lon"></span>,
-		Lat <span id="marqueur-lat"></span>
-		<span id="marqueur-xy"> /
-			X=<span id="marqueur-x"></span>,
-			Y=<span id="marqueur-y"></span>
-			(CH1903)
-		</span>
-	</p>
+	<p><a href="..">BASIC DEMO</a></p>
+	<p><a href="markers.html">MARKERS DEMO</a></p>
+	<p><a href="editor.html">EDITOR DEMO</a></p>
+	<p><a href="../gps">OFF LINE GPS</a></p>
 
-	<!-- Draggable marker -->
-	<p>
-		<input type="text" id="viseur-json" size="60" value='{"type":"Point","coordinates":[2.4,47]}' /><br/>
-		Lon <input type="text" id="viseur-lon" size="10" maxlength="12" />
-		Lat <input type="text" id="viseur-lat" size="10" maxlength="12" />
-		<span>Suisse
-			X:<input type="text" id="viseur-x" size="7" maxlength="12" />
-			Y:<input type="text" id="viseur-y" size="7" maxlength="12" />
-			(CH 1903)
-		</span><br/>
-		<button id="viseur-center-marker">Déplacer le viseur au centre de la carte</button>
-		<button id="viseur-center-map">Centrer la carte sur le viseur</button>
-	</p>
-
-	<!-- Features editor -->
-	<input type="text" id="geojson" style="width:90%" value='
-{
-	"type": "FeatureCollection",
-	"features": [{
-		"type": "Feature",
-		"geometry": {
-			"type": "LineString",
-			"coordinates": [[-4.5,47.2],[-2,44.5]]
-		}
-	}, {
-		"type": "Feature",
-		"geometry": {
-			"type": "Polygon",
-			"coordinates": [
-				[[-5.5,47.2],[-3,44.5],[-8,44.5],[-5.5,47.2]],
-				[[-5.5,44.7],[-6.5,45.8],[-4.5,45.8],[-5.5,44.7]]
-			]
-		}
-	}]
-}
-	' />
-	
+	<br/>OVERPASS<input type="checkbox" name="osm-features" />
+	<span id="osm-features-status"></span>
 	<ul class="selectors">
-		<li>
-			OVERPASS<input type="checkbox" name="osm-features" />
-			<span id="osm-features-status" />
-		</li>
 		<li><input type="checkbox" name="osm-features" id="City Hall" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]' />Hôtel</li>
 		<li><input type="checkbox" name="osm-features" id="Residence" value='["tourism"="alpine_hut"]' />Refuge gardé</li>
 		<li><input type="checkbox" name="osm-features" id="Lodge" value='["building"="cabin"]' />Cabane non gardée</li>
@@ -119,11 +74,10 @@ Based on https://openlayers.org
 		<li><input type="checkbox" name="osm-features" id="Oil Field" value='["internet_access"~"yes|public|wlan|wired|terminal|service|free|fee|type|access"]' />Café internet</li>
 		<li><input type="checkbox" name="osm-features" id="Telephone" value='["amenity"="telephone"]' />Cabines téléphoniques</li>
 	</ul>
+
+	<br/>WRI<input type="checkbox" name="wri-features" />
+	<span id="wri-features-status"></span>
 	<ul class="selectors">
-		<li>
-			WRI<input type="checkbox" name="wri-features" />
-			<span id="wri-features-status" />
-		</li>
 		<li><input type="checkbox" name="wri-features" value="7" checked="checked" />cabane non gardée</li>
 		<li><input type="checkbox" name="wri-features" value="10" />refuge gardé</li>
 		<li><input type="checkbox" name="wri-features" value="9" checked="checked" />gîte d'étape</li>
@@ -132,20 +86,21 @@ Based on https://openlayers.org
 		<li><input type="checkbox" name="wri-features" value="3" />passage délicat</li>
 		<li><input type="checkbox" name="wri-features" value="28" />bâtiment en montagne</li>
 	</ul>
+
 	<ul class="selectors">
-		<li>pyrenees-refuges.com<input type="checkbox" name="prc-features" /><span id="prc-features-status" /></li>
+		<li>pyrenees-refuges.com<input type="checkbox" name="prc-features" /><span id="prc-features-status"></span></li>
 	</ul>
 	<ul class="selectors">
-		<li>camptocamp.org<input type="checkbox" name="c2c-features" /><span id="c2c-features-status" /></li>
+		<li>camptocamp.org<input type="checkbox" name="c2c-features" /><span id="c2c-features-status"></span></li>
 	</ul>
 	<ul class="selectors">
-		<li>Chemineur.fr<input type="checkbox" name="chm-features" /><span id="chm-features-status" /></li>
+		<li>Chemineur.fr<input type="checkbox" name="chm-features" /><span id="chm-features-status"></span></li>
 	</ul>
 	<ul class="selectors">
-		<li>Alpages.info<input type="checkbox" name="alp-features" /><span id="alp-features-status" /></li>
+		<li>Alpages.info<input type="checkbox" name="alp-features" /><span id="alp-features-status"></span></li>
 	</ul>
 	<ul class="selectors">
-		<li>Massifs<input type="checkbox" name="wri-massifs" /><span id="wri-massifs-status" /></li>
+		<li>Massifs<input type="checkbox" name="wri-massifs" /><span id="wri-massifs-status"></span></li>
 	</ul>
 </body>
 </html>

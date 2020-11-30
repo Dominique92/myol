@@ -1,7 +1,7 @@
 {
-	"name": "MyGPS",
+	"name": "My GPS",
+	"display": "fullscreen",
 	"start_url": "index.html",
-	"display": "standalone",
 	"icons": [{
 		"src": "favicon.png",
 		"sizes": "225x225",

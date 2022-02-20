@@ -129,15 +129,15 @@ function controlPermalink(options) {
 			const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
 				newParams = [
 					parseInt(view.getZoom()), // Zoom
-					Math.round(ll4326[0] * 100000) / 100000, // Lon
-					Math.round(ll4326[1] * 100000) / 100000, // Lat
+					Math.round(ll4326[0] * 10000) / 10000, // Lon
+					Math.round(ll4326[1] * 10000) / 10000, // Lat
 				];
 
 			if (options.display)
 				aEl.href = options.hash + 'map=' + newParams.join('/');
 			if (options.setUrl)
 				location.href = '#map=' + newParams.join('/');
-			document.cookie = 'map=' + newParams.join('/') + ';path=/; SameSite=Lax';
+			document.cookie = 'map=' + newParams.join('/') + ';path=/; SameSite=Strict';
 		}
 	}
 	return control;
@@ -148,7 +148,7 @@ function controlPermalink(options) {
  */
 function controlMousePosition() {
 	return new ol.control.MousePosition({
-		coordinateFormat: ol.coordinate.createStringXY(5),
+		coordinateFormat: ol.coordinate.createStringXY(4),
 		projection: 'EPSG:4326',
 		className: 'ol-coordinate',
 		undefinedHTML: String.fromCharCode(0), //HACK hide control when mouse is out of the map
@@ -256,8 +256,7 @@ function controlGeocoder(options) {
 		title: 'Recherche sur la carte',
 	}, options);
 
-	if (typeof Geocoder != 'function' || // Vérify if geocoder is available
-		document.documentMode) // Not supported in IE
+	if (typeof Geocoder != 'function') // Vérify if geocoder is available
 		return new ol.control.Control({
 			element: document.createElement('div'), //HACK no button
 		});
@@ -295,6 +294,7 @@ function controlGPS() {
 				'orange', // 1 : waiting physical GPS sensor position & altitude
 				'lime', // 2 : active, centered & oriented
 				'grey', // 3 : active, do not centered nor oriented
+				//BEST No orange wait position when no real GPS captor
 			],
 			title: 'Centrer sur la position GPS',
 			activate: function(state) {
@@ -489,7 +489,8 @@ function controlLoadGPX(options) {
 
 	inputEl.type = 'file';
 	inputEl.addEventListener('change', function() {
-		reader.readAsText(inputEl.files[0]);
+		if (inputEl.files)
+			reader.readAsText(inputEl.files[0]);
 	});
 
 	reader.onload = function() {
@@ -536,11 +537,14 @@ function controlLoadGPX(options) {
 		const extent = ol.extent.createEmpty();
 		for (let f in features)
 			ol.extent.extend(extent, features[f].getGeometry().getExtent());
-		map.getView().fit(extent, {
-			maxZoom: 17,
-			size: map.getSize(),
-			padding: [5, 5, 5, 5],
-		});
+		if (ol.extent.isEmpty(extent))
+			alert('Fichier GPX vide');
+		else
+			map.getView().fit(extent, {
+				maxZoom: 17,
+				size: map.getSize(),
+				padding: [5, 5, 5, 5],
+			});
 	};
 	return control;
 }
@@ -646,8 +650,10 @@ function controlPrint() {
 			'choisir l‘orientation,\n' +
 			'zoomer et déplacer,\n' +
 			'cliquer sur l‘icône imprimante.',
-		question: '<input type="radio" name="print-orientation" value="0" />Portrait A4<br>' +
-			'<input type="radio" name="print-orientation" value="1" />Paysage A4',
+		question: '<input type="radio" name="print-orientation" id="ol-po0" value="0" />' +
+			'<label for="ol-po0">Portrait A4</label><br />' +
+			'<input type="radio" name="print-orientation" id="ol-po1" value="1" />' +
+			'<label for="ol-po1">Paysage A4</label>',
 		activate: function() {
 			resizeDraft(control.getMap());
 			control.getMap().once('rendercomplete', function() {
@@ -660,38 +666,44 @@ function controlPrint() {
 	control.setMap = function(map) { //HACK execute actions on Map init
 		ol.control.Control.prototype.setMap.call(this, map);
 
-		const oris = document.getElementsByName('print-orientation');
-		for (let i = 0; i < oris.length; i++) // Use « for » because of a bug in Edge / IE
-			oris[i].onchange = resizeDraft;
+		const poEls = document.getElementsByName('print-orientation');
+		for (let i = 0; i < poEls.length; i++) // Use « for » because of a bug in Edge / IE
+			poEls[i].onchange = resizeDraft;
 	};
 
 	function resizeDraft() {
-		// Resize map to the A4 dimensions
 		const map = control.getMap(),
 			mapEl = map.getTargetElement(),
-			oris = document.querySelectorAll("input[name=print-orientation]:checked"),
-			orientation = oris.length ? oris[0].value : 0;
-		mapEl.style.width = orientation === 0 ? '210mm' : '297mm';
-		mapEl.style.height = orientation === 0 ? '290mm' : '209.9mm'; // -.1mm for Chrome landscape no marging bug
-		map.setSize([mapEl.offsetWidth, mapEl.offsetHeight]);
+			poElcs = document.querySelectorAll('input[name=print-orientation]:checked'),
+			orientation = poElcs.length ? parseInt(poElcs[0].value) : 0;
+
+		mapEl.style.maxHeight = mapEl.style.maxWidth =
+			mapEl.style.float = 'none';
+		mapEl.style.width = orientation == 0 ? '208mm' : '295mm';
+		mapEl.style.height = orientation == 0 ? '295mm' : '208mm';
+		map.setSize([mapEl.clientWidth, mapEl.clientHeight]);
+
+		// Set portrait / landscape
+		const styleSheet = document.createElement('style');
+		styleSheet.type = 'text/css';
+		styleSheet.innerText = '@page {size: ' + (orientation == 0 ? 'portrait' : 'landscape') + '}';
+		document.head.appendChild(styleSheet);
 
 		// Hide all but the map
+		document.body.appendChild(mapEl);
 		for (let child = document.body.firstElementChild; child !== null; child = child.nextSibling)
 			if (child.style && child !== mapEl)
 				child.style.display = 'none';
 
-		// Raises the map to the top level
-		document.body.appendChild(mapEl);
-		document.body.style.margin = 0;
-		document.body.style.padding = 0;
-
+		// To return without print
 		document.addEventListener('keydown', function(evt) {
 			if (evt.key == 'Escape')
-				setTimeout(function() {
+				setTimeout(function() { // Delay reload for FF & Opera
 					window.location.reload();
 				});
 		});
 	}
+
 	return control;
 }
 
@@ -709,7 +721,7 @@ function controlsCollection(options) {
 		controlGPS(options.controlGPS),
 		controlLoadGPX(),
 		controlDownload(options.controlDownload),
-		//controlPrint(), //BEST BUG : don't print full page
+		controlPrint(),
 
 		// Bottom left
 		controlLengthLine(),
@@ -717,7 +729,7 @@ function controlsCollection(options) {
 		new ol.control.ScaleLine(),
 
 		// Bottom right
-		controlPermalink(options.controlPermalink),
+		controlPermalink(options.permalink),
 		new ol.control.Attribution(),
 	];
 }

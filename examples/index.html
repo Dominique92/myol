@@ -11,9 +11,6 @@ Based on https://openlayers.org
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link href="images/favicon.png" rel="icon" type="image/png" />
 
-	<!-- IE compatibility -->
-	<script nomodule src="../ol/polyfill.min.js"></script>
-
 	<!-- Openlayers -->
 	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="../ol/ol.js"></script>
@@ -69,14 +66,18 @@ new ol.Map({
 	target: 'map',
 	controls: controlsCollection().concat(controlLayerSwitcher()),
 	layers: [
+		// Low map resolution : points
 		layerGeoBB({
 			selectorName: 'geobb-features',
-			maxResolution: 300,
+			maxResolution: 100,
 			distance: 30,
+			attribution: 'Chemineur',
 		}),
-		layerGeoBBCluster({
+		// High map resolution : clusters
+		layerGeoBB({
+			subLayer: 'cluster',
 			selectorName: 'geobb-features',
-			minResolution: 300,
+			minResolution: 100,
 			distance: 30,
 		}),
 	],

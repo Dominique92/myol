@@ -98,8 +98,9 @@
 }
 
 /* Full screen */
-.ol-full-screen-false,
-.ol-full-screen-true {
+.ol-full-screen button, /* ol.6.10.0+ */
+.ol-full-screen-false, /* ol.6.8.1- */
+.ol-full-screen-true { /* ol.6.8.1- */
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' style='stroke:black;stroke-width:2;fill-opacity:0;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:5,7,5,0;'%3E%3Cpath d='M4 4l17 0 0 17-17 0z'/%3E%3C/svg%3E");
 	/* https://developer.mozilla.org/fr/docs/Web/SVG/Tutoriel/Paths */
 }
@@ -140,14 +141,27 @@
 .ol-print p span {
 	color: blue;
 }
-/* When printing, hide all controls except : */
+/* When printing, hide all controls except scale & attribution */
 @media print {
-	.ol-overlaycontainer-stopevent > * {
-		display: none;
+	@page {
+		margin: 0; /* Hide the header, footer & margins */
 	}
-	.ol-attribution,
-	.ol-scale-line {
-		display: block;
+	body {
+		margin: 1mm 0 0 1mm;
+		padding: 0;
+	}
+
+	/* Force attribution open */
+	.ol-scale-line,
+	.ol-attribution {
+		display: flex !important;
+	}
+	.ol-attribution ul {
+		display: block !important;
+	}
+	.ol-attribution button,
+	.ol-overlaycontainer-stopevent > div {
+		display: none;
 	}
 }
 

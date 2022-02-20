@@ -37,12 +37,11 @@ function layerMRI() {
 /**
  * Kompas (Austria)
  * Requires layerOSM
- * This will not work on http: pages. No workarond available !
  */
 function layerKompass(subLayer) {
 	return layerOSM(
-		'http://ec{0-3}.cdn.ecmaps.de/WmsGateway.ashx.jpg?' + // Not available via https
-		'Experience=ecmaps&MapStyle=' + subLayer + '&TileX={x}&TileY={y}&ZoomLevel={z}',
+		'https://chemineur.fr/assets/proxy/?s=ecmaps.de&type=x-icon' + // Not available via https
+		'&Experience=ecmaps&MapStyle=' + subLayer + '&TileX={x}&TileY={y}&ZoomLevel={z}',
 		'<a href="http://www.kompass.de/livemap/">KOMPASS</a>'
 	);
 }
@@ -76,22 +75,25 @@ function layerGoogle(subLayer) {
 /**
  * Stamen http://maps.stamen.com
  */
-function layerStamen(subLayer) {
+function layerStamen(subLayer, minResolution) {
 	return new ol.layer.Tile({
 		source: new ol.source.Stamen({
 			layer: subLayer,
 		}),
+		minResolution: minResolution || 0,
 	});
 }
 
 /**
  * IGN France
- * Doc on http://api.ign.fr
- * var mapKeys.ign = Get your own (free)IGN key at https://professionnels.ign.fr/user
- * IGN V2 & photo don't need this key
+ * var mapKeys.ign = Get your own (free)IGN key at https://geoservices.ign.fr/
+ * doc : https://geoservices.ign.fr/services-web
  */
-function layerIGN(subLayer, format) {
-	let IGNresolutions = [],
+function layerIGN(subLayer, options) {
+	options = options || {};
+
+	let key = options.key || (typeof mapKeys == 'object' ? mapKeys.ign : null),
+		IGNresolutions = [],
 		IGNmatrixIds = [];
 
 	for (let i = 0; i < 18; i++) {
@@ -99,13 +101,14 @@ function layerIGN(subLayer, format) {
 		IGNmatrixIds[i] = i.toString();
 	}
 
-	return typeof mapKeys == 'object' && mapKeys && mapKeys.ign ?
-		new ol.layer.Tile({
+	if (key)
+		return new ol.layer.Tile({
+			maxResolution: options.maxResolution,
 			source: new ol.source.WMTS({
-				url: '//wxs.ign.fr/' + mapKeys.ign + '/wmts',
+				url: '//wxs.ign.fr/' + key + '/wmts',
 				layer: subLayer,
 				matrixSet: 'PM',
-				format: 'image/' + (format || 'jpeg'),
+				format: 'image/' + (options.format || 'jpeg'),
 				tileGrid: new ol.tilegrid.WMTS({
 					origin: [-20037508, 20037508],
 					resolutions: IGNresolutions,
@@ -114,7 +117,7 @@ function layerIGN(subLayer, format) {
 				style: 'normal',
 				attributions: '&copy; <a href="http://www.geoportail.fr/" target="_blank">IGN</a>',
 			}),
-		}) : null;
+		});
 }
 
 /**
@@ -131,19 +134,23 @@ function layerSwissTopo(layer1) {
 		matrixIds[r] = r;
 	}
 
-	return new ol.layer.Tile({
-		source: new ol.source.WMTS(({
-			crossOrigin: 'anonymous',
-			url: '//wmts2{0-4}.geo.admin.ch/1.0.0/' + layer1 + '/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
-			tileGrid: new ol.tilegrid.WMTS({
-				origin: ol.extent.getTopLeft(projectionExtent),
-				resolutions: resolutions,
-				matrixIds: matrixIds,
-			}),
-			requestEncoding: 'REST',
-			attributions: '&copy <a href="https://map.geo.admin.ch/">SwissTopo</a>',
-		})),
-	});
+	return [
+		layerStamen('terrain', 300),
+		new ol.layer.Tile({
+			maxResolution: 300,
+			source: new ol.source.WMTS(({
+				crossOrigin: 'anonymous',
+				url: '//wmts2{0-4}.geo.admin.ch/1.0.0/' + layer1 + '/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
+				tileGrid: new ol.tilegrid.WMTS({
+					origin: ol.extent.getTopLeft(projectionExtent),
+					resolutions: resolutions,
+					matrixIds: matrixIds,
+				}),
+				requestEncoding: 'REST',
+				attributions: '&copy <a href="https://map.geo.admin.ch/">SwissTopo</a>',
+			})),
+		}),
+	];
 }
 
 /**
@@ -162,21 +169,49 @@ function layerSpain(server, subLayer) {
 }
 
 /**
+ * Italy IGM
+ */
+function layerIGM() {
+	return [
+		subLayerIGM('IGM_25000', 'CB.IGM25000', 5, 10),
+		subLayerIGM('IGM_100000', 'MB.IGM100000', 10, 20),
+		subLayerIGM('IGM_250000', 'CB.IGM250000', 20, 120),
+		layerStamen('terrain', 120),
+	];
+
+	function subLayerIGM(url, layer, minResolution, maxResolution) {
+		return new ol.layer.Tile({
+			minResolution: minResolution,
+			maxResolution: maxResolution,
+			source: new ol.source.TileWMS({
+				url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it&type=png' + // Not available via https
+					'&map=/ms_ogc/WMS_v1.3/raster/' + url + '.map',
+				params: {
+					layers: layer,
+				},
+				attributions: '&copy <a href="http://www.pcn.minambiente.it/viewer/">IGM</a>',
+			}),
+		});
+	}
+}
+
+/**
  * Ordnance Survey : Great Britain
  * var mapKeys.os = Get your own (free) key at https://osdatahub.os.uk/
  */
 function layerOS(subLayer) {
-	//BEST carte stamen hors zoom ou extent
-
-	return typeof mapKeys == 'object' && mapKeys && mapKeys.os ?
+	return typeof mapKeys == 'object' && mapKeys && mapKeys.os ? [
+		layerStamen('terrain', 1700),
 		new ol.layer.Tile({
 			extent: [-1198263, 6365000, 213000, 8702260],
-			minZoom: 6.5,
-			maxZoom: 16.4,
+			minResolution: 2,
+			maxResolution: 1700,
 			source: new ol.source.XYZ({
-				url: 'https://api.os.uk/maps/raster/v1/zxy/' + subLayer + '/{z}/{x}/{y}.png?key=' + mapKeys.os,
+				url: 'https://api.os.uk/maps/raster/v1/zxy/' + subLayer +
+					'/{z}/{x}/{y}.png?key=' + mapKeys.os,
 			}),
-		}) : null;
+		}),
+	] : null;
 }
 
 /**
@@ -184,6 +219,9 @@ function layerOS(subLayer) {
  * var mapKeys.bing = Get your own (free) key at http://www.ordnancesurvey.co.uk/business-and-government/products/os-openspace/
  */
 function layerBing(subLayer) {
+	if (typeof mapKeys != 'object' || !mapKeys || !mapKeys.bing)
+		return null;
+
 	const layer = new ol.layer.Tile();
 
 	//HACK : Avoid to call https://dev.virtualearth.net/... if no bing layer is required
@@ -196,7 +234,7 @@ function layerBing(subLayer) {
 		}
 	});
 
-	return typeof mapKeys == 'object' && mapKeys.bing ? layer : null;
+	return layer;
 }
 
 /**
@@ -210,12 +248,19 @@ function layersCollection() {
 		'Refuges.info': layerMRI(),
 		'OSM fr': layerOSM('//{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'),
 		'IGN TOP25': layerIGN('GEOGRAPHICALGRIDSYSTEMS.MAPS'), // Need an IGN key
-		'IGN V2': layerIGN('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2', 'png', 'pratique'), // 'pratique' is the key for the free layers
+		'IGN V2': layerIGN('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2', {
+			format: 'png',
+			key: 'pratique',
+		}),
 		'SwissTopo': layerSwissTopo('ch.swisstopo.pixelkarte-farbe'),
 		'Autriche': layerKompass('KOMPASS Touristik'),
 		'Angleterre': layerOS('Outdoor_3857'),
+		'Italie': layerIGM(),
 		'Espagne': layerSpain('mapa-raster', 'MTN'),
-		'Photo IGN': layerIGN('ORTHOIMAGERY.ORTHOPHOTOS', 'jpeg', 'pratique'),
+		'Photo IGN': layerIGN('ORTHOIMAGERY.ORTHOPHOTOS', {
+			key: 'pratique',
+		}),
+		'Photo Bing': layerBing('Aerial'),
 		'Photo Google': layerGoogle('s'),
 	};
 }
@@ -223,10 +268,6 @@ function layersCollection() {
 function layersDemo() {
 	return Object.assign(layersCollection(), {
 		'OSM': layerOSM('//{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
-		'Hike & Bike': layerOSM(
-			'http://{a-c}.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png',
-			'<a href="//www.hikebikemap.org/">hikebikemap.org</a>'
-		), // Not on https
 		'OSM cycle': layerThunderforest('cycle'),
 		'OSM landscape': layerThunderforest('landscape'),
 		'OSM trains': layerThunderforest('pioneer'),
@@ -238,8 +279,10 @@ function layersDemo() {
 		'Kompas': layerKompass('KOMPASS'),
 
 		'Bing': layerBing('Road'),
-		'Bing photo': layerBing('Aerial'),
 		'Bing hybrid': layerBing('AerialWithLabels'),
+
+		'Photo Swiss': layerSwissTopo('ch.swisstopo.swissimage'),
+		'Photo Espagne': layerSpain('pnoa-ma', 'OI.OrthoimageCoverage'),
 
 		'Google road': layerGoogle('m'),
 		'Google terrain': layerGoogle('p'),
@@ -248,26 +291,5 @@ function layersDemo() {
 		'Toner': layerStamen('toner'),
 		'Watercolor': layerStamen('watercolor'),
 		//BEST neutral layer
-
-		// Need an IGN key
-		'IGN Classique': layerIGN('GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE'),
-		'IGN Standard': layerIGN('GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD'),
-		//Double 	'SCAN25TOUR': layerIGN('GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR'),
-		'IGN 1950': layerIGN('ORTHOIMAGERY.ORTHOPHOTOS.1950-1965', 'png'),
-		'Cadastre': layerIGN('CADASTRALPARCELS.PARCELS', 'png'),
-		'IGN plan': layerIGN('GEOGRAPHICALGRIDSYSTEMS.PLANIGN'),
-		'IGN route': layerIGN('GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.ROUTIER'),
-		'IGN noms': layerIGN('GEOGRAPHICALNAMES.NAMES', 'png'),
-		'IGN rail': layerIGN('TRANSPORTNETWORKS.RAILWAYS', 'png'),
-		'IGN hydro': layerIGN('HYDROGRAPHY.HYDROGRAPHY', 'png'),
-		'IGN forêt': layerIGN('LANDCOVER.FORESTAREAS', 'png'),
-		'IGN limites': layerIGN('ADMINISTRATIVEUNITS.BOUNDARIES', 'png'),
-
-		'Swiss photo': layerSwissTopo('ch.swisstopo.swissimage'),
-		'Espagne photo': layerSpain('pnoa-ma', 'OI.OrthoimageCoverage'),
-
-		'SHADOW': layerIGN('ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW', 'png'),
-		'Etat major': layerIGN('GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40'),
-		'ETATMAJOR10': layerIGN('GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR10'),
 	});
 }

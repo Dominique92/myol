@@ -2,6 +2,7 @@
  * Layer switcher
  * Need to include layerSwitcher.css
  */
+//BEST alt key to swith layers / transparency
 function controlLayerSwitcher(baseLayers, options) {
 	baseLayers = baseLayers || layersCollection();
 	options = options || {};
@@ -10,19 +11,12 @@ function controlLayerSwitcher(baseLayers, options) {
 			element: document.createElement('div'),
 		}),
 		layerNames = Object.keys(baseLayers),
-		request = // Search values in cookies & args
-		window.location.search + '&' + // Priority to the url args ?selector=1,2,3
-		window.location.hash + '&' + // Then the hash #selector=1,2,3
-		document.cookie + '&', // Then the cookies
-		match = request.match(/baselayer=([^&]+)/);
+		baselayer = location.href.match(/baselayer=([^\&]+)/);
+	let transparentBaseLayerName = '';
 
-	var selectedBaseLayerName = match ? decodeURI(match[1]) : layerNames[0],
-		lastBaseLayerName = '',
-		transparentBaseLayerName = '';
-
-	// If the cookie doesn't correspond to an existing layer
-	if (!baseLayers[selectedBaseLayerName])
-		selectedBaseLayerName = layerNames[0];
+	// Get baselayer from url ?
+	if (baselayer)
+		localStorage.myol_baselayer = decodeURI(baselayer[1]);
 
 	// Build html transparency slider
 	const rangeContainerEl = document.createElement('div');
@@ -36,7 +30,7 @@ function controlLayerSwitcher(baseLayers, options) {
 
 		// control.element is defined when attached to the map
 		control.element.className = 'ol-control ol-control-switcher';
-		control.element.innerHTML = '<button>\u2026</button>';
+		control.element.innerHTML = '<button><i>&#x274F;</i></button>';
 		control.element.appendChild(rangeContainerEl);
 		control.element.onmouseover = function() {
 			control.element.classList.add('ol-control-switcher-open');
@@ -69,7 +63,7 @@ function controlLayerSwitcher(baseLayers, options) {
 				selectionEl.firstChild.onclick = selectBaseLayer;
 				baseLayers[name].inputEl = selectionEl.firstChild; // Mem it for further ops
 
-				for (let l = 0; l < baseLayers[name].length; l++) { //HACK IE
+				for (let l = 0; l < baseLayers[name].length; l++) {
 					baseLayers[name][l].setVisible(false); // Don't begin to get the tiles yet
 					map.addLayer(baseLayers[name][l]);
 				}
@@ -78,7 +72,10 @@ function controlLayerSwitcher(baseLayers, options) {
 		displayBaseLayers(); // Init layers
 
 		// Attach html additional selector
-		const additionalSelector = document.getElementById(options.additionalSelectorId || 'additional-selector');
+		const additionalSelector = document.getElementById(
+			options.additionalSelectorId ||
+			'additional-selector'
+		);
 
 		//BEST other id don't use the css
 		if (additionalSelector) {
@@ -88,69 +85,62 @@ function controlLayerSwitcher(baseLayers, options) {
 		}
 	};
 
+	function selectBaseLayer(evt) {
+		// 1 seule couche
+		if (!evt || !evt.ctrlKey || this.value == localStorage.myol_baselayer) {
+			transparentBaseLayerName = '';
+			localStorage.myol_baselayer = this.value;
+		}
+		// Il y a une deuxième couche aprés celle existante
+		else if (layerNames.indexOf(localStorage.myol_baselayer) <
+			layerNames.indexOf(this.value)) {
+			transparentBaseLayerName = this.value;
+			// localStorage.myol_baselayer don't change
+		}
+		// Il y a une deuxième couche avant celle existante
+		else {
+			transparentBaseLayerName = localStorage.myol_baselayer;
+			localStorage.myol_baselayer = this.value;
+		}
+
+		rangeContainerEl.firstChild.value = 50;
+		displayBaseLayers();
+	}
+
 	function displayBaseLayers() {
-		// Refresh layers visibility & opacity
+		// Baselayer default is the first of the selection
+		if (!baseLayers[localStorage.myol_baselayer])
+			localStorage.myol_baselayer = Object.keys(baseLayers)[0];
+
 		for (let name in baseLayers)
 			if (baseLayers[name]) {
-				baseLayers[name].inputEl.checked = false;
-				for (let l = 0; l < baseLayers[name].length; l++) { //HACK IE
-					//for (let layer of baseLayers[name]) {
-					baseLayers[name][l].setVisible(false);
+				const visible =
+					name == localStorage.myol_baselayer ||
+					name == transparentBaseLayerName;
+
+				// Write the checks
+				baseLayers[name].inputEl.checked = visible;
+
+				// Make the right layers visible
+				for (let l = 0; l < baseLayers[name].length; l++) {
+					baseLayers[name][l].setVisible(visible);
 					baseLayers[name][l].setOpacity(1);
 				}
 			}
 
-		// Baselayer default is the first of the selection
-		if (!baseLayers[selectedBaseLayerName])
-			selectedBaseLayerName = Object.keys(baseLayers)[0];
-
-		baseLayers[selectedBaseLayerName].inputEl.checked = true;
-		for (let l = 0; l < baseLayers[selectedBaseLayerName].length; l++) //HACK IE
-			baseLayers[selectedBaseLayerName][l].setVisible(true);
-
-		if (lastBaseLayerName) {
-			baseLayers[lastBaseLayerName].inputEl.checked = true;
-			for (let l = 0; l < baseLayers[lastBaseLayerName].length; l++) //HACK IE
-				baseLayers[lastBaseLayerName][l].setVisible(true);
-		}
 		displayTransparencyRange();
 	}
 
 	function displayTransparencyRange() {
 		if (transparentBaseLayerName) {
-			for (let l = 0; l < baseLayers[transparentBaseLayerName].length; l++) //HACK IE
+			for (let l = 0; l < baseLayers[transparentBaseLayerName].length; l++)
 				baseLayers[transparentBaseLayerName][l].setOpacity(
 					rangeContainerEl.firstChild.value / 100
 				);
+
 			rangeContainerEl.className = 'double-layer';
 		} else
 			rangeContainerEl.className = 'single-layer';
-	}
-
-	function selectBaseLayer(evt) {
-		// Set the baselayer cookie
-		document.cookie = 'baselayer=' + this.value + '; path=/; SameSite=Strict; expires=' +
-			new Date(2100, 0).toUTCString();
-
-		// Manage the double selection
-		if (evt && evt.ctrlKey && this.value != selectedBaseLayerName) {
-			lastBaseLayerName = selectedBaseLayerName;
-
-			transparentBaseLayerName =
-				layerNames.indexOf(lastBaseLayerName) > layerNames.indexOf(this.value) ?
-				lastBaseLayerName :
-				this.value;
-
-			baseLayers[transparentBaseLayerName].inputEl.checked = true;
-			rangeContainerEl.firstChild.value = 50;
-		} else
-			lastBaseLayerName =
-			transparentBaseLayerName = '';
-
-		selectedBaseLayerName = this.value;
-		baseLayers[selectedBaseLayerName].inputEl.checked = true;
-
-		displayBaseLayers();
 	}
 
 	return control;

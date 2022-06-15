@@ -1,0 +1,12 @@
+{
+	"name": "My GPS",
+	"id": "simple_gps",
+	"display": "fullscreen",
+	"scope": "./",
+	"start_url": "index.html",
+	"icons": [{
+		"src": "favicon.png",
+		"sizes": "225x225",
+		"type": "image/png"
+	}]
+}

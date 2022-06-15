@@ -15,6 +15,7 @@ echo "<p>";
 
 $css[] = get ('controls.css');
 $css[] = get ('layerSwitcher.css');
+$css[] = get ('marker.css');
 file_put_contents ('myol.css', implode ('
 
 ', $css));
@@ -26,15 +27,18 @@ $js[] = get ('layerSwitcher.js');
 $js[] = get ('layerVector.js');
 $js[] = get ('layerVectorCollection.js');
 $js[] = get ('controls.js');
+$js[] = get ('marker.js');
 $js[] = get ('editor.js');
-file_put_contents ('myol.js', implode ('
-
-', $js));
+file_put_contents ('myol.js', implode ("\n\n", $js));
 echo 'TO myol.js</p>';
 
 function get ($file) {
 	echo "$file, ";
-	return "/* FILE src/$file */\n".file_get_contents ('src/'.$file);
+	return "/* FILE src/$file */\n".
+		preg_replace (
+			'/\n?[ \t]*\/\/[A-Z][^\n]*/', '',
+			file_get_contents ('src/'.$file)
+		);
 }
 ?>
 

@@ -48,6 +48,7 @@ function controlButton(options) {
 
 	// Toggle the button status & aspect
 	control.state = 0;
+
 	control.toggle = function(newActive, group) {
 		// Toggle by default
 		if (newActive === undefined)
@@ -69,38 +70,41 @@ function controlButton(options) {
 			options.activate(control.state);
 		}
 	};
+
 	return control;
 }
 
 /**
  * Permalink control
- * "map" url hash or cookie = {map=<ZOOM>/<LON>/<LAT>/<LAYER>}
+ * "map" url hash or localStorage: zoom=<ZOOM> lon=<LON> lat=<LAT>
  * Don't set view when you declare the map
  */
 function controlPermalink(options) {
-	options = Object.assign({
-		init: true, // {true | false} use url hash or "controlPermalink" cookie to position the map.
-		setUrl: false, // Change url hash to position the map.
-		display: false, // Display link the map.
-		hash: '?', // {?, #} the permalink delimiter
-	}, options);
 	const aEl = document.createElement('a'),
 		control = new ol.control.Control({
-			element: document.createElement('div'), //HACK no button
+			element: document.createElement('div'),
 			render: render,
 		}),
-		zoomMatch = location.href.match(/zoom=([0-9]+)/),
-		latLonMatch = location.href.match(/lat=([-0-9\.]+)&lon=([-.0-9]+)/);
-	let params = (
-			';map=' + options.forced + // Forced
-			location.href + // Priority to ?map=6/2/47 or #map=6/2/47
-			(zoomMatch && latLonMatch ? // Old format ?zoom=6&lat=47&lon=5
-				';map=' + zoomMatch[1] + '/' + latLonMatch[2] + '/' + latLonMatch[1] :
-				'') +
-			document.cookie + // Then the cookie
-			';map=' + options.mapDefault + // Optional default
-			';map=6/2/47') // General default
-		.match(/map=([0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/); // map=<ZOOM>/<LON>/<LAT>
+		urlMod =
+		// zoom=<zoom>&lon=<lon>&lat=<lat>
+		location.href.replace(
+			// map=<zoom>/<lon>/<lat>
+			/map=([0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/,
+			'zoom=$1&lon=$2&lat=$3'
+		) +
+		// Last values
+		'zoom=' + localStorage.myol_zoom +
+		'lon=' + localStorage.myol_lon +
+		'lat=' + localStorage.myol_lat +
+		// Default
+		'zoom=6&lon=2&lat=47';
+
+	options = Object.assign({
+		init: true, // {true | false} use url hash or localStorage to position the map.
+		setUrl: false, // {true | false} Change url hash when moving the map.
+		display: false, // {true | false} Display permalink link the map.
+		hash: '?', // {?, #} the permalink delimiter after the url
+	}, options);
 
 	if (options.display) {
 		control.element.className = 'ol-permalink';
@@ -109,35 +113,34 @@ function controlPermalink(options) {
 		control.element.appendChild(aEl);
 	}
 
-	if (typeof options.initialCenter == 'function') {
-		options.initialCenter([parseFloat(params[2]), parseFloat(params[3])]);
-	}
-
-	function render(evt) {
+	function render(evt) { //HACK to get map object
 		const view = evt.map.getView();
 
 		// Set center & zoom at the init
-		if (options.init &&
-			params) { // Only once
-			view.setZoom(params[1]);
-			view.setCenter(ol.proj.transform([parseFloat(params[2]), parseFloat(params[3])], 'EPSG:4326', 'EPSG:3857'));
-			params = null;
+		if (options.init) {
+			options.init = false; // Only once
+
+			view.setZoom(urlMod.match(/zoom=([0-9\.]+)/)[1]);
+
+			view.setCenter(ol.proj.transform([
+				urlMod.match(/lon=([-0-9\.]+)/)[1],
+				urlMod.match(/lat=([-0-9\.]+)/)[1],
+			], 'EPSG:4326', 'EPSG:3857'));
 		}
 
 		// Set the permalink with current map zoom & position
 		if (view.getCenter()) {
 			const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
-				newParams = [
-					parseInt(view.getZoom()), // Zoom
-					Math.round(ll4326[0] * 10000) / 10000, // Lon
-					Math.round(ll4326[1] * 10000) / 10000, // Lat
-				];
+				newParams = 'map=' +
+				(localStorage.myol_zoom = Math.round(view.getZoom() * 10) / 10) + '/' +
+				(localStorage.myol_lon = Math.round(ll4326[0] * 10000) / 10000) + '/' +
+				(localStorage.myol_lat = Math.round(ll4326[1] * 10000) / 10000);
 
 			if (options.display)
-				aEl.href = options.hash + 'map=' + newParams.join('/');
+				aEl.href = options.hash + newParams;
+
 			if (options.setUrl)
-				location.href = '#map=' + newParams.join('/');
-			document.cookie = 'map=' + newParams.join('/') + ';path=/; SameSite=Strict';
+				location.href = '#' + newParams;
 		}
 	}
 	return control;
@@ -148,10 +151,21 @@ function controlPermalink(options) {
  */
 function controlMousePosition() {
 	return new ol.control.MousePosition({
-		coordinateFormat: ol.coordinate.createStringXY(4),
 		projection: 'EPSG:4326',
 		className: 'ol-coordinate',
 		undefinedHTML: String.fromCharCode(0), //HACK hide control when mouse is out of the map
+
+		coordinateFormat: function(mouse) {
+			if (ol.gpsPosition) {
+				const ll4326 = ol.proj.transform(ol.gpsPosition, 'EPSG:3857', 'EPSG:4326'),
+					distance = ol.sphere.getDistance(mouse, ll4326);
+
+				return distance < 1000 ?
+					(Math.round(distance)) + ' m' :
+					(Math.round(distance / 10) / 100) + ' km';
+			} else
+				return ol.coordinate.createStringXY(4)(mouse);
+		},
 	});
 }
 
@@ -183,14 +197,10 @@ function controlLengthLine() {
 		// Display the line length
 		if (feature) {
 			const length = ol.sphere.getLength(feature.getGeometry());
-			if (length >= 100000)
-				control.element.innerHTML = (Math.round(length / 1000)) + ' km';
-			else if (length >= 10000)
-				control.element.innerHTML = (Math.round(length / 100) / 10) + ' km';
-			else if (length >= 1000)
-				control.element.innerHTML = (Math.round(length / 10) / 100) + ' km';
-			else if (length >= 1)
-				control.element.innerHTML = (Math.round(length)) + ' m';
+
+			control.element.innerHTML = length < 1000 ?
+				(Math.round(length)) + ' m' :
+				(Math.round(length / 10) / 100) + ' km';
 		}
 		return false; // Continue detection (for editor that has temporary layers)
 	}
@@ -198,10 +208,10 @@ function controlLengthLine() {
 }
 
 /**
- * Control to display set preload of depth upper level tiles or depthFS if we are on full screen mode
- * This prepares the browser to become offline on the same session
+ * Control to display set preload of depth upper level tiles
+ * This prepares the browser to become offline
  */
-function controlTilesBuffer(depth, depthFS) {
+function controlTilesBuffer(depth) {
 	const control = new ol.control.Control({
 		element: document.createElement('div'), //HACK no button
 	});
@@ -209,40 +219,15 @@ function controlTilesBuffer(depth, depthFS) {
 	control.setMap = function(map) { //HACK execute actions on Map init
 		ol.control.Control.prototype.setMap.call(this, map);
 
-		// Change preload when the window expand to fullscreen
+		// Action on each layer
+		//TODO too much load on basic browsing
 		map.on('precompose', function() {
 			map.getLayers().forEach(function(layer) {
-				const fs = document.webkitIsFullScreen || // Edge, Opera
-					document.msFullscreenElement ||
-					document.fullscreenElement; // Chrome, FF, Opera
-
 				if (typeof layer.setPreload == 'function')
-					layer.setPreload(fs ? depthFS || depth || 1 : depth || 1);
+					layer.setPreload(depth);
 			});
 		});
 	};
-
-	return control;
-}
-
-/**
- * Adaptations of ol.control.FullScreen
- */
-//BEST don't work on old IOS/Safari versions
-function controlFullScreen(options) {
-	// Call the former control constructor
-	const control = new ol.control.FullScreen(Object.assign({
-		label: '', //HACK Bad presentation on IE & FF
-		tipLabel: 'Plein écran',
-	}, options));
-
-	//HACK : polyfill for IE
-	control.on('enterfullscreen', function(evt) {
-		evt.target.getMap().getTargetElement().classList.add('ol-pseudo-fullscreen');
-	});
-	control.on('leavefullscreen', function(evt) {
-		evt.target.getMap().getTargetElement().classList.remove('ol-pseudo-fullscreen');
-	});
 
 	return control;
 }
@@ -270,8 +255,10 @@ function controlGeocoder(options) {
 	});
 
 	// Move the button at the same level than the other control's buttons
-	geocoder.container.firstElementChild.firstElementChild.title = options.title;
-	geocoder.container.appendChild(geocoder.container.firstElementChild.firstElementChild);
+	const buttonEl = geocoder.element.firstElementChild.firstElementChild;
+	buttonEl.innerHTML = '&#x1F50D;';
+	buttonEl.title = options.title;
+	geocoder.element.appendChild(buttonEl);
 
 	return geocoder;
 }
@@ -280,15 +267,15 @@ function controlGeocoder(options) {
  * GPS control
  * Requires controlButton
  */
-//BEST GPS tap on map = distance from GPS calculation
 function controlGPS() {
-	let view, geolocation, nbLoc, position, accuracy, altitude, speed;
+	let view, geolocation, nbLoc, position, heading, accuracy, altitude, speed;
 
 	// Display status, altitude & speed
 	const displayEl = document.createElement('div'),
 
 		control = controlButton({
 			className: 'ol-button ol-gps',
+			label: '&#x2295;',
 			buttonBackgroundColors: [ // Define 4 states button
 				'white', // 0 : inactive
 				'orange', // 1 : waiting physical GPS sensor position & altitude
@@ -308,6 +295,7 @@ function controlGPS() {
 						displayEl.classList.remove('ol-control-gps');
 					}
 				}
+				ol.gpsPosition = null;
 			}
 		}),
 
@@ -316,31 +304,41 @@ function controlGPS() {
 		northGraticuleFeature = new ol.Feature(),
 		graticuleLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({
-				features: [graticuleFeature, northGraticuleFeature]
+				features: [graticuleFeature, northGraticuleFeature],
 			}),
+			zIndex: 20, // Above the features
 			style: new ol.style.Style({
 				fill: new ol.style.Fill({
-					color: 'rgba(128,128,255,0.2)'
+					color: 'rgba(128,128,255,0.2)',
 				}),
 				stroke: new ol.style.Stroke({
 					color: '#20b',
 					lineDash: [16, 14],
-					width: 1
-				})
-			})
+					width: 1,
+				}),
+			}),
 		});
 
 	control.element.appendChild(displayEl);
+
+	graticuleFeature.setStyle(new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			color: '#000',
+			lineDash: [16, 14],
+			width: 1,
+		}),
+	}));
 
 	northGraticuleFeature.setStyle(new ol.style.Style({
 		stroke: new ol.style.Stroke({
 			color: '#c00',
 			lineDash: [16, 14],
-			width: 1
-		})
+			width: 1,
+		}),
 	}));
 
-	control.setMap = function(map) { //HACK execute actions on Map init
+	control.setMap = function(map) {
+		//HACK execute actions on Map init
 		ol.control.Control.prototype.setMap.call(this, map);
 
 		view = map.getView();
@@ -350,6 +348,8 @@ function controlGPS() {
 			projection: view.getProjection(),
 			trackingOptions: {
 				enableHighAccuracy: true,
+				maximumAge: 1000,
+				timeout: 1000,
 			},
 		});
 
@@ -378,7 +378,7 @@ function controlGPS() {
 		});
 
 		geolocation.on('error', function(error) {
-			alert('Geolocation error: ' + error.message);
+			console.log('Geolocation error: ' + error.message);
 		});
 	};
 
@@ -400,11 +400,7 @@ function controlGPS() {
 		}
 
 		displayEl.innerHTML = displays.join(', ');
-
-		if (displays.length)
-			displayEl.classList.add('ol-control-gps');
-		else
-			displayEl.classList.remove('ol-control-gps');
+		displayEl.classList[displays.length ? 'add' : 'remove']('ol-control-gps');
 
 		// Render position & graticule
 		if (control.state && position &&
@@ -449,8 +445,13 @@ function controlGPS() {
 				// Center the map
 				view.setCenter(position);
 
-				if (!nbLoc) // Only the first time after activation
+				if (!nbLoc) { // Only the first time after activation
 					view.setZoom(17); // Zoom on the area
+
+					map.dispatchEvent({
+						type: 'myol:ongpsactivate',
+					});
+				}
 
 				nbLoc++;
 
@@ -461,6 +462,9 @@ function controlGPS() {
 						0
 					);
 			}
+
+			// For other controls usage
+			ol.gpsPosition = position;
 		}
 	}
 
@@ -471,11 +475,12 @@ function controlGPS() {
  * GPX file loader control
  * Requires controlButton
  */
+//BEST export / import names and links
 //BEST Chemineur dans MyOl => Traduction sym (symbole export GPS ?)
 //BEST misc formats
 function controlLoadGPX(options) {
 	options = Object.assign({
-		label: '\u25b2',
+		label: '&#x1F4C2;',
 		title: 'Visualiser un fichier GPX sur la carte',
 		activate: function() {
 			inputEl.click();
@@ -517,14 +522,13 @@ function controlLoadGPX(options) {
 							styleOptions = {
 								stroke: new ol.style.Stroke({
 									color: 'blue',
-									width: 2,
+									width: 3,
 								}),
 							};
 
 						if (properties.sym)
 							styleOptions.image = new ol.style.Icon({
-								src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.png',
-								imgSize: [24, 24], // IE compatibility //BEST automatic detect
+								src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
 							});
 
 						return new ol.style.Style(styleOptions);
@@ -555,7 +559,7 @@ function controlLoadGPX(options) {
  */
 function controlDownload(options) {
 	options = Object.assign({
-		label: '\u25bc',
+		label: '&#x1F4E5;',
 		buttonBackgroundColors: ['white'],
 		className: 'ol-button ol-download',
 		title: 'Cliquer sur un format ci-dessous\n' +
@@ -628,13 +632,9 @@ function controlDownload(options) {
 				type: mime,
 			});
 
-		if (typeof navigator.msSaveBlob == 'function') // IE/Edge
-			navigator.msSaveBlob(file, options.fileName + '.' + formatName.toLowerCase());
-		else {
-			hiddenEl.download = options.fileName + '.' + formatName.toLowerCase();
-			hiddenEl.href = URL.createObjectURL(file);
-			hiddenEl.click();
-		}
+		hiddenEl.download = options.fileName + '.' + formatName.toLowerCase();
+		hiddenEl.href = URL.createObjectURL(file);
+		hiddenEl.click();
 	}
 	return control;
 }
@@ -667,7 +667,8 @@ function controlPrint() {
 		ol.control.Control.prototype.setMap.call(this, map);
 
 		const poEls = document.getElementsByName('print-orientation');
-		for (let i = 0; i < poEls.length; i++) // Use « for » because of a bug in Edge / IE
+
+		for (let i in poEls)
 			poEls[i].onchange = resizeDraft;
 	};
 
@@ -695,11 +696,17 @@ function controlPrint() {
 			if (child.style && child !== mapEl)
 				child.style.display = 'none';
 
+		// Finer zoom not dependent on the baselayer's levels
+		map.getView().setConstrainResolution(false);
+		map.addInteraction(new ol.interaction.MouseWheelZoom({
+			maxDelta: 0.1,
+		}));
+
 		// To return without print
 		document.addEventListener('keydown', function(evt) {
 			if (evt.key == 'Escape')
 				setTimeout(function() { // Delay reload for FF & Opera
-					window.location.reload();
+					location.reload();
 				});
 		});
 	}
@@ -715,8 +722,8 @@ function controlsCollection(options) {
 
 	return [
 		// Top left
-		new ol.control.Zoom(), //BEST Valeur du pas du zoom tous explorateurs
-		controlFullScreen(),
+		new ol.control.Zoom(),
+		new ol.control.FullScreen(),
 		controlGeocoder(),
 		controlGPS(options.controlGPS),
 		controlLoadGPX(),

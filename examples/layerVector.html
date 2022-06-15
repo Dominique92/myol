@@ -10,13 +10,14 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link href="images/favicon.png" rel="icon" type="image/png" />
+	<link href="images/favicon.png" rel="apple-touch-icon" />
 
 	<!-- Openlayers -->
 	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="../ol/ol.js"></script>
 
 	<!-- My Openlayers -->
-	<script src="../src/header.js"></script>
+	<script src="../src/header.js"></script><!-- For JSONparse & layerVector -->
 	<script src="../src/layerVector.js"></script>
 	<script src="../src/layerVectorCollection.js"></script>
 
@@ -114,8 +115,6 @@ Based on https://openlayers.org
 	<br style="clear:both" />
 
 	<script>
-console.log('Cookies: ' + document.cookie);
-
 const map = new ol.Map({
 	target: 'map',
 	view: new ol.View({
@@ -206,6 +205,7 @@ if (01)
 	}));
 
 	</script>
+	<script src="print_script.js"></script>
 
 	<h4 style="clear:both;margin-bottom:0">Tests</h4>
 	<div>Check all vector layers / select only 1 feature</div>

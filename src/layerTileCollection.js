@@ -52,11 +52,14 @@ function layerKompass(subLayer) {
  * var mapKeys.thunderforest = Get your own (free) THUNDERFOREST key at https://manage.thunderforest.com
  */
 function layerThunderforest(subLayer) {
-	return typeof mapKeys == 'object' && mapKeys && mapKeys.thunderforest ?
-		layerOSM(
-			'//{a-c}.tile.thunderforest.com/' + subLayer + '/{z}/{x}/{y}.png?apikey=' + mapKeys.thunderforest,
+	if (typeof mapKeys == 'undefined' || !mapKeys) mapKeys = {};
+
+	if (mapKeys.thunderforest)
+		return layerOSM(
+			'//{a-c}.tile.thunderforest.com/' + subLayer +
+			'/{z}/{x}/{y}.png?apikey=' + mapKeys.thunderforest,
 			'<a href="http://www.thunderforest.com">Thunderforest</a>'
-		) : null;
+		);
 }
 
 /**
@@ -70,7 +73,6 @@ function layerGoogle(subLayer) {
 		}),
 	});
 }
-//BEST lien vers GGstreet
 
 /**
  * Stamen http://maps.stamen.com
@@ -89,11 +91,13 @@ function layerStamen(subLayer, minResolution) {
  * var mapKeys.ign = Get your own (free)IGN key at https://geoservices.ign.fr/
  * doc : https://geoservices.ign.fr/services-web
  */
-function layerIGN(subLayer, options) {
-	options = options || {};
+function layerIGN(options) {
+	options = Object.assign({
+		format: 'image/jpeg',
+		style: 'normal',
+	}, options);
 
-	let key = options.key || (typeof mapKeys == 'object' ? mapKeys.ign : null),
-		IGNresolutions = [],
+	let IGNresolutions = [],
 		IGNmatrixIds = [];
 
 	for (let i = 0; i < 18; i++) {
@@ -101,30 +105,25 @@ function layerIGN(subLayer, options) {
 		IGNmatrixIds[i] = i.toString();
 	}
 
-	if (key)
-		return new ol.layer.Tile({
-			maxResolution: options.maxResolution,
-			source: new ol.source.WMTS({
-				url: '//wxs.ign.fr/' + key + '/wmts',
-				layer: subLayer,
-				matrixSet: 'PM',
-				format: 'image/' + (options.format || 'jpeg'),
-				tileGrid: new ol.tilegrid.WMTS({
-					origin: [-20037508, 20037508],
-					resolutions: IGNresolutions,
-					matrixIds: IGNmatrixIds,
-				}),
-				style: 'normal',
-				attributions: '&copy; <a href="http://www.geoportail.fr/" target="_blank">IGN</a>',
+	return new ol.layer.Tile({
+		source: new ol.source.WMTS(Object.assign({
+			url: 'https://wxs.ign.fr/' + options.key + '/wmts',
+			matrixSet: 'PM',
+			tileGrid: new ol.tilegrid.WMTS({
+				origin: [-20037508, 20037508],
+				resolutions: IGNresolutions,
+				matrixIds: IGNmatrixIds,
 			}),
-		});
+			attributions: '&copy; <a href="http://www.geoportail.fr/" target="_blank">IGN</a>',
+		}, options)),
+	});
 }
 
 /**
  * Swisstopo https://api.geo.admin.ch/
  */
+//BEST : fall back out of valid area
 function layerSwissTopo(layer1) {
-	//BEST carte stamen hors zoom ou extent
 	const projectionExtent = ol.proj.get('EPSG:3857').getExtent(),
 		resolutions = [],
 		matrixIds = [];
@@ -200,41 +199,46 @@ function layerIGM() {
  * var mapKeys.os = Get your own (free) key at https://osdatahub.os.uk/
  */
 function layerOS(subLayer) {
-	return typeof mapKeys == 'object' && mapKeys && mapKeys.os ? [
-		layerStamen('terrain', 1700),
-		new ol.layer.Tile({
-			extent: [-1198263, 6365000, 213000, 8702260],
-			minResolution: 2,
-			maxResolution: 1700,
-			source: new ol.source.XYZ({
-				url: 'https://api.os.uk/maps/raster/v1/zxy/' + subLayer +
-					'/{z}/{x}/{y}.png?key=' + mapKeys.os,
+	if (typeof mapKeys == 'undefined' || !mapKeys) mapKeys = {};
+
+	if (mapKeys.os)
+		return [
+			layerStamen('terrain', 1700),
+			new ol.layer.Tile({
+				extent: [-1198263, 6365000, 213000, 8702260],
+				minResolution: 2,
+				maxResolution: 1700,
+				source: new ol.source.XYZ({
+					url: 'https://api.os.uk/maps/raster/v1/zxy/' + subLayer +
+						'/{z}/{x}/{y}.png?key=' + mapKeys.os,
+					attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
+				}),
 			}),
-		}),
-	] : null;
+		];
 }
 
 /**
  * Bing (Microsoft)
- * var mapKeys.bing = Get your own (free) key at http://www.ordnancesurvey.co.uk/business-and-government/products/os-openspace/
+ * var mapKeys.bing = Get your own (free) key at https://docs.microsoft.com/en-us/bingmaps/getting-started/
  */
 function layerBing(subLayer) {
-	if (typeof mapKeys != 'object' || !mapKeys || !mapKeys.bing)
-		return null;
+	if (typeof mapKeys == 'undefined' || !mapKeys) mapKeys = {};
 
-	const layer = new ol.layer.Tile();
+	if (mapKeys.bing) {
+		const layer = new ol.layer.Tile();
 
-	//HACK : Avoid to call https://dev.virtualearth.net/... if no bing layer is required
-	layer.on('change:visible', function() {
-		if (!layer.getSource()) {
-			layer.setSource(new ol.source.BingMaps({
-				imagerySet: subLayer,
-				key: mapKeys.bing,
-			}));
-		}
-	});
+		//HACK : Avoid to call https://dev.virtualearth.net/... if no bing layer is required
+		layer.on('change:visible', function() {
+			if (!layer.getSource()) {
+				layer.setSource(new ol.source.BingMaps({
+					imagerySet: subLayer,
+					key: mapKeys.bing,
+				}));
+			}
+		});
 
-	return layer;
+		return layer;
+	}
 }
 
 /**
@@ -247,18 +251,47 @@ function layersCollection() {
 		'OSM transport': layerThunderforest('transport'),
 		'Refuges.info': layerMRI(),
 		'OSM fr': layerOSM('//{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'),
-		'IGN TOP25': layerIGN('GEOGRAPHICALGRIDSYSTEMS.MAPS'), // Need an IGN key
-		'IGN V2': layerIGN('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2', {
-			format: 'png',
-			key: 'pratique',
+		'IGN TOP25': layerIGN({
+			layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
+			key: mapKeys.ign,
+		}),
+		'IGN V2': layerIGN({
+			layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+			key: 'essentiels',
+			format: 'image/png',
+		}),
+		'IGN cartes 1950': layerIGN({
+			layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN50.1950',
+			key: 'cartes/geoportail',
+		}),
+		'IGN E.M. 1820-66': layerIGN({
+			layer: 'GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40',
+			key: 'cartes/geoportail',
+		}),
+		//TODO Cassini
+		/*'IGN Cassini': layerIGN({
+			layer:'GEOGRAPHICALGRIDSYSTEMS.CASSINI',
+			key: 'cartes/geoportail',
+		}),*/
+		'Cadastre': layerIGN({
+			layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+			key: 'essentiels',
+			format: 'image/png',
 		}),
 		'SwissTopo': layerSwissTopo('ch.swisstopo.pixelkarte-farbe'),
 		'Autriche': layerKompass('KOMPASS Touristik'),
 		'Angleterre': layerOS('Outdoor_3857'),
 		'Italie': layerIGM(),
 		'Espagne': layerSpain('mapa-raster', 'MTN'),
-		'Photo IGN': layerIGN('ORTHOIMAGERY.ORTHOPHOTOS', {
-			key: 'pratique',
+		'Photo IGN': layerIGN({
+			layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+			key: 'essentiels',
+		}),
+		'Photo IGN 1950-65': layerIGN({
+			layer: 'ORTHOIMAGERY.ORTHOPHOTOS.1950-1965',
+			key: 'orthohisto/geoportail',
+			style: 'BDORTHOHISTORIQUE',
+			format: 'image/png',
 		}),
 		'Photo Bing': layerBing('Aerial'),
 		'Photo Google': layerGoogle('s'),
@@ -268,11 +301,13 @@ function layersCollection() {
 function layersDemo() {
 	return Object.assign(layersCollection(), {
 		'OSM': layerOSM('//{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
-		'OSM cycle': layerThunderforest('cycle'),
-		'OSM landscape': layerThunderforest('landscape'),
-		'OSM trains': layerThunderforest('pioneer'),
-		'OSM villes': layerThunderforest('neighbourhood'),
-		'OSM contraste': layerThunderforest('mobile-atlas'),
+		'OSM cyclo': layerOSM('//{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'),
+
+		'ThF cycle': layerThunderforest('cycle'),
+		'ThF landscape': layerThunderforest('landscape'),
+		'ThF trains': layerThunderforest('pioneer'),
+		'ThF villes': layerThunderforest('neighbourhood'),
+		'ThF contraste': layerThunderforest('mobile-atlas'),
 
 		'OS light': layerOS('Light_3857'),
 		'OS road': layerOS('Road_3857'),
@@ -290,6 +325,6 @@ function layersDemo() {
 		'Stamen': layerStamen('terrain'),
 		'Toner': layerStamen('toner'),
 		'Watercolor': layerStamen('watercolor'),
-		//BEST neutral layer
+		'Blank': new ol.layer.Tile(),
 	});
 }

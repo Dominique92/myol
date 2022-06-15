@@ -10,13 +10,12 @@
  * selectorName : <input name="SELECTORNAME"> url arguments selector
  * selectorName : <TAG id="SELECTORNAME-status"></TAG> display loading status
  * urlFunction: function(options, bbox, selection, extent, resolution, projection) returning the XHR url
- * convertProperties: function(properties, feature, options) who extract a list of data from the XHR to be available as feature.display.XXX 
+ * convertProperties: function(properties, feature, options) who extract a list of data from the XHR to be available as feature.display.XXX
  * styleOptionsFunction: function(feature, properties, options) returning options of the style of the features
  * styleOptionsClusterFunction: function(feature, properties, options) returning options of the style of the cluster bullets
  * hoverStyleOptionsFunction: function(feature, properties, options) returning options of the style when hovering the features
  * source.Vector options : format, strategy, attributions, ...
  */
-//BEST BUG icons blink when too many
 function layerVector(opt) {
 	const options = Object.assign({
 			zIndex: 10, // Features : above the base layer (zIndex = 1)
@@ -33,7 +32,6 @@ function layerVector(opt) {
 		layer = new ol.layer.Vector(Object.assign({
 			source: source,
 			style: style,
-			//BEST declutter: true, //BEST BUG enlève les labels mais aussi les icones
 		}, options)),
 
 		elLabel = document.createElement('span'), //HACK to render the html entities in canvas
@@ -97,7 +95,8 @@ function layerVector(opt) {
 				) : {};
 
 			// Detect lines or polygons
-			evt.features[f].display.area = ol.extent.getArea(evt.features[f].getGeometry().getExtent());
+			evt.features[f].display.area =
+				ol.extent.getArea(evt.features[f].getGeometry().getExtent());
 		}
 	});
 
@@ -116,7 +115,11 @@ function layerVector(opt) {
 	// Function to display different styles
 	function displayStyle(feature, styleOptionsFunction) {
 		if (typeof styleOptionsFunction == 'function') {
-			const styleOptions = styleOptionsFunction(feature, Object.assign(feature.getProperties(), feature.display), options);
+			const styleOptions = styleOptionsFunction(
+				feature, Object.assign(feature.getProperties(),
+					feature.display),
+				options
+			);
 
 			//HACK to render the html entities in the canvas
 			if (styleOptions && styleOptions.text) {
@@ -155,7 +158,6 @@ function layerVector(opt) {
 			hoverLayer = new ol.layer.Vector({
 				source: hoverSource,
 				zIndex: 30, // Hover : above the the features
-				//BEST declutter: true, //To avoid dumping the other labels
 				style: function(feature) {
 					return displayStyle(feature, feature.hoverStyleOptionsFunction);
 				},
@@ -179,7 +181,6 @@ function layerVector(opt) {
 		function mouseEvent(evt) {
 			const originalEvent = evt.originalEvent || evt,
 				// Get the hovered feature
-				//BEST BUG forEachFeatureAtPixel with no features when decluter
 				feature = map.forEachFeatureAtPixel(
 					map.getEventPixel(originalEvent),
 					function(feature) {
@@ -189,7 +190,7 @@ function layerVector(opt) {
 					});
 
 			// Update the display of hovered feature
-			if (map.hoveredFeature !== feature) {
+			if (map.hoveredFeature !== feature && !options.noLabel) {
 				if (map.hoveredFeature)
 					hoverSource.clear();
 
@@ -199,7 +200,7 @@ function layerVector(opt) {
 				map.hoveredFeature = feature;
 			}
 
-			if (feature) {
+			if (feature && !options.noClick) {
 				const features = feature.get('features') || [feature],
 					display = Object.assign({},
 						features[0].getProperties(), // Get first or alone feature
@@ -221,7 +222,7 @@ function layerVector(opt) {
 							// To specify feature open a new window
 							window.open(display.url, '_blank', 'resizable=yes').focus();
 						else
-							window.location = display.url;
+							window.location.href = display.url;
 					}
 					// Cluster
 					else if (geom && (features.length > 1 || display.cluster))
@@ -260,7 +261,6 @@ function layerVectorCluster(options) {
 		// Clusterized layer
 		clusterLayer = new ol.layer.Vector(Object.assign({
 			source: clusterSource,
-			//BEST declutter: true,
 			style: clusterStyle,
 			visible: layer.getVisible(),
 			zIndex: layer.getZIndex(),
@@ -353,30 +353,25 @@ function readCheckbox(selectorName, withOn) {
  * selectorName {string}
  * callback {function(selection)} action when the button is clicked
  *
- * Mem the checkboxes in cookies / recover it from the cookies, url args or hash
+ * Mem / recover the checkboxes in localStorage, url args or hash
  * Manages a global flip-flop of the same named <input> checkboxes
  */
 function memCheckbox(selectorName, callback) {
-	const request = // Search values in cookies & args
-		window.location.search + ';' + // Priority to the url args ?selector=1,2,3
-		window.location.hash + ';' + // Then the hash #selector=1,2,3
-		document.cookie + ';' + // Then the cookies
-		selectorName + '=' + readCheckbox(selectorName, true).join(','), // Then the existing checks
-		match = request.match(new RegExp(selectorName + '=([^;]*)')),
-		inputEls = document.getElementsByName(selectorName);
+	const inputEls = document.getElementsByName(selectorName),
+		values = typeof localStorage['myol_' + selectorName] != 'undefined' ?
+		localStorage['myol_' + selectorName] :
+		readCheckbox(selectorName, true).join(',');
 
-	// Set the <inputs> accordingly with the cookies or url args
+	// Set the <inputs> accordingly with the localStorage or url args
 	if (inputEls)
-		for (let e = 0; e < inputEls.length; e++) { // for doesn't work on element array
-			// Set inputs following cookies & args
-			if (match) {
-				inputEls[e].checked =
-					match[1].indexOf(inputEls[e].value) != -1 || // That one is declared
-					match[1].split(',').indexOf('on') != -1; // The "all" (= "on") is set
+		for (let e = 0; e < inputEls.length; e++) { //BEST ?? HACK for doesn't work on element array
+			// Set inputs following localStorage & args
+			inputEls[e].checked =
+				values.indexOf(inputEls[e].value) != -1 || // That one is declared
+				values.split(',').indexOf('on') != -1; // The "all" (= "on") is set
 
-				// Compute the all check && init the cookies if data has been given by the url
-				checkEl(inputEls[e]);
-			}
+			// Compute the all check && init the localStorage if data has been given by the url
+			checkEl(inputEls[e]);
 
 			// Attach the action
 			inputEls[e].addEventListener('click', onClick);
@@ -385,14 +380,11 @@ function memCheckbox(selectorName, callback) {
 	function onClick(evt) {
 		checkEl(evt.target); // Do the "all" check verification
 
-		// Mem the data in the cookie
+		// Mem the data in the localStorage
 		const selection = readCheckbox(selectorName);
 
 		if (selectorName)
-			document.cookie =
-			typeof selection == 'object' ? selectorName + '=' + selection.join(',') : (selection ? 'on' : '') +
-			'path=/; SameSite=Strict; ' +
-			'expires=' + new Date(2100, 0).toUTCString(); // Keep over all session
+			localStorage['myol_' + selectorName] = typeof selection == 'object' ? selection.join(',') : selection ? 'on' : '';
 
 		if (inputEls.length && typeof callback == 'function')
 			callback(selection);
@@ -403,7 +395,7 @@ function memCheckbox(selectorName, callback) {
 		let allIndex = -1, // Index of the "all" <input> if any
 			allCheck = true; // Are all others checked ?
 
-		for (let e = 0; e < inputEls.length; e++) {
+		for (let e = 0; e < inputEls.length; e++) { //BEST ??
 			if (target.value == 'on') // If the "all" <input> is checked (who has a default value = "on")
 				inputEls[e].checked = target.checked; // Force all the others to the same
 			else if (inputEls[e].value == 'on') // The "all" <input>
@@ -446,7 +438,6 @@ function styleOptionsIcon(iconUrl) {
 		return {
 			image: new ol.style.Icon({
 				src: iconUrl,
-				imgSize: [24, 24], // IE compatibility //BEST automatic detect or polyfill
 			}),
 		};
 }
@@ -454,11 +445,11 @@ function styleOptionsIcon(iconUrl) {
 // Get icon from chemineur.fr
 function styleOptionsIconChemineur(iconName) {
 	if (iconName) {
-		const icons = iconName.split(' ')
-		// Limit to 2 type names & ' ' -> '_'
-		iconName = icons[0] + (icons.length > 1 ? '_' + icons[1] : '');
+		const icons = iconName.split(' ');
 
-		return styleOptionsIcon('//chemineur.fr/ext/Dominique92/GeoBB/icones/' + iconName + '.svg');
+		iconName = icons[0] + (icons.length > 1 ? '_' + icons[1] : ''); // Limit to 2 type names & ' ' -> '_'
+
+		return styleOptionsIcon('//chemineur.fr/ext/Dominique92/GeoBB/icones/' + iconName + '.' + iconCanvasExt());
 	}
 }
 
@@ -470,6 +461,7 @@ function styleOptionsFullLabel(properties) {
 	// Cluster
 	if (properties.features || properties.cluster) {
 		let includeCluster = !!properties.cluster;
+
 		for (let f in properties.features) {
 			const name = properties.features[f].getProperties().name || properties.features[f].display.name;
 			if (name)
@@ -477,15 +469,16 @@ function styleOptionsFullLabel(properties) {
 			if (properties.features[f].getProperties().cluster)
 				includeCluster = true;
 		}
-
 		if (text.length == 0 || text.length > 6 || includeCluster)
 			text = ['Cliquer pour zoomer'];
 	}
 	// Feature
 	else {
+		// 1st line
 		if (properties.name)
 			text.push(properties.name);
 
+		// 2nd line
 		if (properties.ele)
 			line.push(parseInt(properties.ele) + ' m');
 		if (properties.capacity)
@@ -493,8 +486,14 @@ function styleOptionsFullLabel(properties) {
 		if (line.length)
 			text.push(line.join(', '));
 
+		// 3rd line
 		if (typeof properties.type == 'string' && properties.type)
-			text.push(properties.type[0].toUpperCase() + properties.type.substring(1).replace('_', ' '));
+			text.push(
+				properties.type[0].toUpperCase() +
+				properties.type.substring(1).replace('_', ' ')
+			);
+
+		// 4rd line
 		if (properties.attribution)
 			text.push('&copy;' + properties.attribution);
 	}
@@ -524,8 +523,8 @@ function styleOptionsLabel(text, properties, important) {
 	// For points
 	if (!properties.area)
 		Object.assign(styleTextOptions, {
-			textBaseline: 'top',
-			offsetY: -30, // Above the icon
+			textBaseline: 'bottom',
+			offsetY: -14, // Above the icon
 		});
 
 	return {

@@ -10,6 +10,7 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link href="images/favicon.png" rel="icon" type="image/png" />
+	<link href="images/favicon.png" rel="apple-touch-icon" />
 
 	<!-- Openlayers -->
 	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
@@ -56,9 +57,13 @@ const map = new ol.Map({
 	target: 'map',
 	view: new ol.View({
 		center: [700000, 5600000], zoom: 7, // Sud est
+		constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
 	}),
 	controls: [
 		new ol.control.Zoom(),
+		new ol.control.Attribution({
+			collapsed: false,
+		}),
 		controlLayerSwitcher(layersDemo()),
 	],
 });

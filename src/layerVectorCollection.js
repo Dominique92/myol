@@ -2,8 +2,6 @@
  * This file implements various acces to geoJson services
  * using MyOl/src/layerVector.js
  */
-//BEST http://www.lacsdespyrenees.com/kml-Bielsa.kml
-//BEST https://www.lecampingsauvage.fr/legislation-et-reglementation/camping-sauvage-bivouac
 
 /**
  * Site chemineur.fr, alpages.info
@@ -11,7 +9,7 @@
  */
 function layerGeoBB(options) {
 	return layerVectorCluster(Object.assign({
-		host: '//chemineur.fr/', //TODO investiger pourquoi c'est pris par urlFunction & convertProperties
+		host: '//chemineur.fr/', //BEST investiger pourquoi c'est pris par urlFunction & convertProperties
 		urlFunction: function(options, bbox, selection) {
 			return options.host + 'ext/Dominique92/GeoBB/gis.php?limit=10000' +
 				'&layer=' + (options.subLayer || 'simple') +
@@ -20,7 +18,7 @@ function layerGeoBB(options) {
 		},
 		convertProperties: function(properties, feature, options) {
 			return {
-				icon: properties.type ? options.host + 'ext/Dominique92/GeoBB/icones/' + properties.type + '.svg' : null,
+				icon: properties.type ? options.host + 'ext/Dominique92/GeoBB/icones/' + properties.type + '.' + iconCanvasExt() : null,
 				url: properties.id ? options.host + 'viewtopic.php?t=' + properties.id : null,
 				attribution: options.attribution,
 			};
@@ -59,7 +57,7 @@ function layerGeoBB(options) {
  */
 function layerWri(options) {
 	return layerVectorCluster(Object.assign({
-		host: '//www.refuges.info/', //TODO investiger pourquoi c'est pris par urlFunction & convertProperties
+		host: '//www.refuges.info/', //BEST investiger pourquoi c'est pris par urlFunction & convertProperties
 		urlFunction: function(options, bbox, selection) {
 			return options.host + 'api/bbox?nb_points=all' +
 				'&type_points=' + selection.join(',') +
@@ -69,11 +67,11 @@ function layerWri(options) {
 			return {
 				type: properties.type.valeur,
 				name: properties.nom,
-				icon: options.host + 'images/icones/' + properties.type.icone + '.svg',
+				icon: options.host + 'images/icones/' + properties.type.icone + '.' + iconCanvasExt(),
 				ele: properties.coord.alt,
 				capacity: properties.places.valeur,
 				url: options.noClick ? null : properties.lien,
-				attribution: 'Refuges.info'
+				attribution: 'Refuges.info',
 			};
 		},
 		styleOptionsFunction: function(feature, properties) {
@@ -200,8 +198,8 @@ function layerOverpass(options) {
 		layer = layerVectorCluster(Object.assign({
 			//host: 'overpass-api.de',
 			//host: 'lz4.overpass-api.de',
-			host: 'overpass.openstreetmap.fr',
-			//host: 'overpass.kumi.systems',
+			//host: 'overpass.openstreetmap.fr', // Out of order
+			host: 'overpass.kumi.systems',
 			//host: 'overpass.nchc.org.tw',
 
 			urlFunction: urlFunction,
@@ -229,9 +227,9 @@ function layerOverpass(options) {
 			args = [];
 
 		// Convert selections on overpass_api language
-		for (let l = 0; l < selection.length; l++) {
+		for (let l = 0; l < selection.length; l++) { //BEST ??
 			const selections = selection[l].split('+');
-			for (let ls = 0; ls < selections.length; ls++)
+			for (let ls = 0; ls < selections.length; ls++) //BEST ??
 				args.push(
 					'node' + selections[ls] + bb + // Ask for nodes in the bbox
 					'way' + selections[ls] + bb // Also ask for areas

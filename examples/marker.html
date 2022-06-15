@@ -10,6 +10,7 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link href="images/favicon.png" rel="icon" type="image/png" />
+	<link href="images/favicon.png" rel="apple-touch-icon" />
 
 	<!-- Openlayers -->
 	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
@@ -19,10 +20,11 @@ Based on https://openlayers.org
 	<script src="../proj4/proj4-src.js"></script>
 
 	<!-- My Openlayers -->
-	<script src="../src/header.js"></script>
+	<script src="../src/header.js"></script><!-- For myol:onadd -->
 	<link  href="../src/controls.css" type="text/css" rel="stylesheet">
 	<script src="../src/controls.js"></script>
-	<script src="../src/editor.js"></script>
+	<link  href="../src/marker.css" type="text/css" rel="stylesheet">
+	<script src="../src/marker.js"></script>
 
 	<style>
 		#map {
@@ -44,73 +46,37 @@ Based on https://openlayers.org
 	<div id="map"></div>
 
 	<!-- Fixed marker -->
-	<p><b>Cadre :</b> <span id="fix-marker"></span></p>
+	<input type="hidden" id="cadre-json" value='{"type":"Point","coordinates":[2.34,48.86]}' /></p>
+	<p><b>Cadre :</b> <span id="cadre-string">sss</span></p>
 
 	<!-- Draggable marker -->
-	<b>Viseur :</b>
-	<input type="text" id="drag-marker-json" style="width:50%" value='{
-		"type": "Point",
-		"coordinates": [7,47]
-	}' />
-	<div id="drag-marker">
-		<p>
+	<div id="marker-coordinates">
+		<p><b>Colimateur :</b>
+			<span id="marker-string"></span>
+			<select id="marker-select">
+				<option value="dec" selected="selected">Degrés décimaux</option>
+				<option value="dms">Deg Min Sec</option>
+				<option class="xy" value="swiss">Suisse</option>
+				<option value="utm">UTM</option>
+			</select>
+		</p>
+
+		<p><input id="marker-json" name="geojson" size="50" value='{"type":"Point","coordinates":[6.14,46.2]}' /></p>
+		<p> 
 			Longitude :
-			<input type="text" name="lon" size="12" maxlength="12"> (WGS84)&nbsp;
-			 <span style="display:none" class="epsg-21781"> / X : <input type="text" name="x" size="7" maxlength="12"> (CH 1903)</span>
+			<input id="marker-lon" type="text" name="lon" size="12" maxlength="12" value="12" /> (WGS84)&nbsp;
+			<span class="xy"> / X : <input id="marker-x" type="text" name="x" size="7" maxlength="12"> (CH 1903)</span> 
 		</p>
 		<p>
 			Latitude :
-			<input type="text" name="lat" size="12" maxlength="12"> (WGS84)&nbsp;
-			<span style="display:none" class="epsg-21781"> / Y : <input type="text" name="y" size="7" maxlength="12"></span>
+			<input id="marker-lat" type="text" name="lat" size="12" maxlength="12"> (WGS84)&nbsp;
+			<span class="xy"> / Y : <input id="marker-y" type="text" value="21" name="y" size="7" maxlength="12"></span>
 		</p>
 	</div>
 
-	<p><a onclick="viseur.centerMap()" style="color:blue;cursor:pointer">
-		Center the map on the cusor
-	</a></p>
-
-	<p><a onclick="viseur.centerMarker()" style="color:blue;cursor:pointer">
-		Move the cusor at the center of the map
-	</a></p>
+	<p>Double clic sur la carte y déplace le curseur.</p>
 
 	<script>
-//BEST cadre et viseur SVG / inline
-const cadre = layerEditGeoJson({
-		displayPointId: 'fix-marker',
-		singlePoint: true,
-		geoJson: {
-			type: 'Point',
-			coordinates: [2, 48],
-		},
-		styleOptions: {
-			image: new ol.style.Icon({
-				src: 'images/cadre.png',
-				imgSize: [31, 43], // IE compatibility
-			}),
-		},
-	}),
-	viseur = layerEditGeoJson({
-		displayPointId: 'drag-marker',
-		geoJsonId: 'drag-marker-json',
-		dragPoint: true,
-		singlePoint: true,
-		styleOptions: {
-			image: new ol.style.Icon({
-				src: 'images/viseur.png',
-				imgSize: [30, 30], // IE compatibility
-			}),
-		},
-		// Remove FeatureCollection packing of the point
-		saveFeatures: function(coordinates, format) {
-			return format.writeGeometry(
-				new ol.geom.Point(coordinates.points[0]), {
-					featureProjection: 'EPSG:3857',
-					decimals: 5,
-				}
-			);
-		},
-	});
-
 new ol.Map({
 	target: 'map',
 	view: new ol.View({
@@ -121,8 +87,15 @@ new ol.Map({
 		new ol.layer.Tile({
 			source: new ol.source.OSM(),
 		}),
-		cadre,
-		viseur,
+		layerMarker({
+			src: 'images/cadre.png',
+			prefix: 'cadre',
+		}),
+		layerMarker({
+			src: 'images/viseur.png',
+			focus: 15,
+			dragable: true,
+		}),
 	],
 });
 	</script>

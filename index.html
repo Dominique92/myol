@@ -10,15 +10,7 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link href="examples/images/favicon.png" rel="icon" type="image/png" />
-
-	<!-- Polyfill iOS : Amélioration du pseudo full screen pour les cartes pour d'anciennes versions d'iOS/Safari -->
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-	<!-- IE test -->
-	<script nomodule>
-		location.href = 'examples/ie11.html';;
-	</script>
+	<link href="examples/images/favicon.png" rel="apple-touch-icon" />
 
 	<!-- Openlayers -->
 	<link  href="ol/ol.css" type="text/css" rel="stylesheet">
@@ -49,17 +41,7 @@ Based on https://openlayers.org
 	<a style="float:right" href="https://github.com/Dominique92/MyOl/">GITHUB &#9654;</a>
 
 	<div id="map"></div>
-
-	<div id="additional-selector">
-		<hr />
-		Chemineur
-		<input type="checkbox" name="geobb-features" checked="checked" />
-		<ul>
-			<li><input type="checkbox" name="geobb-features" value="3" />Refuge</li>
-			<li><input type="checkbox" name="geobb-features" value="8" />Abri</li>
-			<li><input type="checkbox" name="geobb-features" value="23" />Montagne</li>
-		</ul>
-	</div>
+	<input id="marker-json" size="50" value='{"type":"Point","coordinates":[2.34,48.86]}' />
 
 	<script>
 // Must be after the <div id="map"> tag
@@ -81,13 +63,17 @@ new ol.Map({
 			minResolution: 300,
 			distance: 30,
 		}),
+		layerMarker({
+			src: 'examples/images/viseur.png',
+			dragable: true,
+		}),
 	],
 });
 	</script>
 
 	<h1 style="clear:both">MyOl</h1>
 	<p>Set of js functions adding some facilities to <a href="https://openlayers.org/">Openlayers</a></p>
-	<p>See doc & details on <a href="https://github.com/DC92/dev/tree/master/assets/MyOl">GITHUB</a></p>
+	<p>See doc & details on <a href="https://github.com/Dominique92/MyOl">GITHUB</a></p>
 	<p><a href="examples">Overview</a></p>
 	<p><a href="examples/layerSwitcher.html">Layer switcher</a></p>
 	<p><a href="examples/layerTile.html">Layer tile</a></p>

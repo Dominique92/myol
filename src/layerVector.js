@@ -1,239 +1,160 @@
 /**
- * This file adds some facilities to ol.layer.Vector
+ * Adds some facilities to ol.layer.Vector
  */
+//jshint esversion: 9
 
 /**
  * Layer to display remote geoJson
  * Styles, icons & labels
  *
  * Options:
- * selectorName : <input name="SELECTORNAME"> url arguments selector
- * selectorName : <TAG id="SELECTORNAME-status"></TAG> display loading status
- * urlFunction: function(options, bbox, selection, extent, resolution, projection) returning the XHR url
- * convertProperties: function(properties, feature, options) who extract a list of data from the XHR to be available as feature.display.XXX
- * styleOptionsFunction: function(feature, properties, options) returning options of the style of the features
- * styleOptionsClusterFunction: function(feature, properties, options) returning options of the style of the cluster bullets
- * hoverStyleOptionsFunction: function(feature, properties, options) returning options of the style when hovering the features
+ * selectName : <input name="SELECT_NAME"> url arguments selector
+   can be several SELECT_NAME_1,SELECT_NAME_2,...
+   display loading status <TAG id="SELECT_NAME-status"></TAG>
+   No selectName will display the layer
+   No selector with selectName will hide the layer
+ * callBack : function to call when selected 
+ * urlArgsFnc: function(layer_options, bbox, selections, extent, resolution, projection)
+   returning an object describing the args. The .url member defines the url
+ * convertProperties: function(properties, feature, options) convert some server properties to the one displayed by this package
+ * styleOptFnc: function(feature, properties, options) returning options of the style of the features
+ * styleOptClusterFnc: function(feature, properties, options) returning options of the style of the cluster bullets
+ * hoverStyleOptFnc: function(feature, properties, options) returning options of the style when hovering the features
  * source.Vector options : format, strategy, attributions, ...
+ * altLayer : another layer to add to the map with this one (for resolution depending layers)
  */
 function layerVector(opt) {
-	const options = Object.assign({
-			zIndex: 10, // Features : above the base layer (zIndex = 1)
-			format: new ol.format.GeoJSON(),
-			strategy: ol.loadingstrategy.bbox,
-			styleOptionsClusterFunction: styleOptionsCluster,
-		}, opt),
-
-		// Source & layer
-		source = new ol.source.Vector(Object.assign({
+	const options = {
+			selectName: '',
+			callBack: function() {
+				layer.setVisible(
+					!selectNames[0] || // No selector name
+					selectVectorLayer(selectNames[0]).length // By default, visibility depends on the first selector only
+				);
+				source.refresh();
+			},
+			styleOptClusterFnc: styleOptCluster,
+			...opt
+		},
+		selectNames = (options.selectName || '').split(','),
+		format = new ol.format.GeoJSON(),
+		source = new ol.source.Vector({
 			url: url,
-		}, options)),
-
-		layer = new ol.layer.Vector(Object.assign({
+			format: format,
+			strategy: ol.loadingstrategy.bbox,
+			...options
+		}),
+		layer = new ol.layer.Vector({
 			source: source,
 			style: style,
-		}, options)),
+			zIndex: 10, // Features : above the base layer (zIndex = 1)
+			...options
+		}),
+		statusEl = document.getElementById(selectNames[0] + '-status'); // XHR download tracking
 
-		elLabel = document.createElement('span'), //HACK to render the html entities in canvas
-		statusEl = document.getElementById(options.selectorName + '-status'); // XHR download tracking
+	layer.setMapInternal = function(map) {
+		//HACK execute actions on Map init
+		ol.layer.Vector.prototype.setMapInternal.call(this, map);
 
+		// Add the alternate layer if any
+		if (options.altLayer)
+			map.addLayer(options.altLayer);
+
+		// Add a layer to manage hovered features (once for a map)
+		if (!map.layerHover && !options.noHover)
+			map.layerHover = layerHover(map);
+	};
+
+	layer.hoverStyleOptFnc = options.hoverStyleOptFnc; // Embark hover style to render hovering
+	selectNames.map(name => selectVectorLayer(name, options.callBack)); // Setup the selector managers
+	options.callBack(); // Init parameters depending on the selector
+
+	// Default url callback function for the layer
+	function url(extent, resolution, projection) {
+		const args = options.urlArgsFnc(
+				options, // Layer options
+				ol.proj.transformExtent( // BBox
+					extent,
+					projection.getCode(), // Map projection
+					'EPSG:4326' // Received projection
+				)
+				.map(c => c.toFixed(4)), // Round to 4 digits
+				selectNames.map(name => selectVectorLayer(name).join(',')), // Array of string: selected values separated with ,
+				extent,
+				resolution
+			),
+			query = [];
+
+		// Add a version param depending on last change date to reload if modified
+		if (sessionStorage.myol_lastChangeTime)
+			args.v = parseInt((sessionStorage.myol_lastChangeTime % 100000000) / 10000);
+
+		for (const a in args)
+			if (a != 'url' && args[a])
+				query.push(a + '=' + args[a]);
+
+		return args.url + '?' + query.join('&');
+	}
+
+	// Display loading status
 	if (statusEl)
 		source.on(['featuresloadstart', 'featuresloadend', 'featuresloaderror'], function(evt) {
 			if (!statusEl.textContent.includes('error'))
-				statusEl.textContent = '';
+				statusEl.innerHTML = '';
 
-			//BEST status hors limites zoom
+			//BEST status out of zoom bounds
 			switch (evt.type) {
 				case 'featuresloadstart':
-					statusEl.textContent = 'Chargement...';
+					statusEl.innerHTML = '&#8987;';
 					break;
 				case 'featuresloaderror':
-					statusEl.textContent = 'Erreur !';
+					statusEl.innerHTML = 'Erreur !';
 			}
 		});
 
-	// url callback function for the layer
-	function url(extent, resolution, projection) {
-		const selection = readCheckbox(options.selectorName);
+	format.readFeatures = function(doc, opt) {
+		const json = JSONparse(doc);
 
-		return options.urlFunction(
-			options, // Layer options
-			ol.proj.transformExtent( // BBox
-				extent,
-				projection.getCode(), // Map projection
-				'EPSG:4326' // Received projection
-			).map(function(c) {
-				return c.toFixed(4); // Round to 4 digits
-			}),
-			typeof selection == 'object' ? selection : [],
-			extent, resolution, projection
-		);
-	}
+		// For all features
+		json.features.map(feature => {
+			// Generate a pseudo id if none
+			if (!feature.id)
+				feature.id = JSON.stringify(feature.properties).replace(/\D/g, '') % 987654;
 
-	// Modify a geoJson url argument depending on checkboxes
-	memCheckbox(options.selectorName, function(selection) {
-		const visible = typeof selection == 'object' ? selection.length : selection === true;
+			// Callback function to convert some server properties to the one displayed by this package
+			if (typeof options.convertProperties == 'function')
+				feature.properties = {
+					...feature.properties,
+					...options.convertProperties(feature.properties, options),
+				};
 
-		layer.setVisible(visible);
-		if (visible)
-			source.refresh();
-	});
+			// Add +- 0.00005° (5m) random to each coordinate to separate the points having the same coordinates
+			if (feature.geometry.type == 'Point ') {
+				const rnd = (feature.id / 3.14).toString().split('.');
 
-	// Callback function to define feature display from the properties received from the server
-	source.on('featuresloadend', function(evt) {
-		for (let f in evt.features) {
-			// These options will be displayed by the hover response
-			//HACK attach this function to each feature to access it when hovering without layer context
-			evt.features[f].hoverStyleOptionsFunction = options.hoverStyleOptionsFunction;
+				feature.geometry.coordinates[0] += ('0.0000' + rnd[0]) - 0.00005;
+				feature.geometry.coordinates[1] += ('0.0000' + rnd[1]) - 0.00005;
+			}
+			return feature;
+		});
 
-			// Compute data to be used to display the feature
-			evt.features[f].display = typeof options.convertProperties == 'function' ?
-				options.convertProperties(
-					evt.features[f].getProperties(),
-					evt.features[f],
-					options
-				) : {};
-
-			// Detect lines or polygons
-			evt.features[f].display.area =
-				ol.extent.getArea(evt.features[f].getGeometry().getExtent());
-		}
-	});
+		return ol.format.GeoJSON.prototype.readFeatures.call(this, JSON.stringify(json), opt);
+	};
 
 	// Style callback function for the layer
 	function style(feature) {
-		const properties = feature.getProperties();
+		const properties = feature.getProperties(),
+			styleOptFnc = properties.features || properties.cluster ?
+			options.styleOptClusterFnc :
+			options.styleOptFnc;
 
-		return displayStyle(
-			feature,
-			properties.features || properties.cluster ?
-			options.styleOptionsClusterFunction :
-			options.styleOptionsFunction
-		);
-	}
-
-	// Function to display different styles
-	function displayStyle(feature, styleOptionsFunction) {
-		if (typeof styleOptionsFunction == 'function') {
-			const styleOptions = styleOptionsFunction(
-				feature, Object.assign(feature.getProperties(),
-					feature.display),
-				options
+		if (typeof styleOptFnc == 'function')
+			return new ol.style.Style(
+				styleOptFnc(
+					feature,
+					properties
+				)
 			);
-
-			//HACK to render the html entities in the canvas
-			if (styleOptions && styleOptions.text) {
-				elLabel.innerHTML = styleOptions.text.getText();
-
-				if (elLabel.innerHTML) {
-					styleOptions.text.setText(
-						elLabel.textContent[0].toUpperCase() + elLabel.textContent.substring(1)
-					);
-				}
-			}
-
-			return new ol.style.Style(styleOptions);
-		}
-	}
-
-	// Display labels on hovering & click
-	// on features of vector layers having the following properties :
-	// hover : text on top of the picture
-	// url : go to a new URL when we click on the feature
-	//BEST label attached to the cursor for lines & poly
-
-	//HACK attach an hover listener once when the map is defined
-	ol.Map.prototype.render = function() {
-		if (!this.hoverListenerInstalled && this.getView()) {
-			this.hoverListenerInstalled = true;
-			initHover(this);
-		}
-
-		return ol.PluggableMap.prototype.render.call(this);
-	};
-
-	function initHover(map) {
-		// Layer to display an hovered features
-		const hoverSource = new ol.source.Vector(),
-			hoverLayer = new ol.layer.Vector({
-				source: hoverSource,
-				zIndex: 30, // Hover : above the the features
-				style: function(feature) {
-					return displayStyle(feature, feature.hoverStyleOptionsFunction);
-				},
-			});
-
-		map.addLayer(hoverLayer);
-
-		// Leaving the map reset hovering
-		window.addEventListener('mousemove', function(evt) {
-			const divRect = map.getTargetElement().getBoundingClientRect();
-
-			// The mouse is outside of the map
-			if (evt.clientX < divRect.left || divRect.right < evt.clientX ||
-				evt.clientY < divRect.top || divRect.bottom < evt.clientY)
-				mouseEvent({});
-		});
-
-		map.on(['pointermove', 'click'], mouseEvent);
-		map.getView().on('change:resolution', mouseEvent); // For WRI massifs
-
-		function mouseEvent(evt) {
-			const originalEvent = evt.originalEvent || evt,
-				// Get the hovered feature
-				feature = map.forEachFeatureAtPixel(
-					map.getEventPixel(originalEvent),
-					function(feature) {
-						return feature;
-					}, {
-						hitTolerance: 6, // Default 0
-					});
-
-			// Update the display of hovered feature
-			if (map.hoveredFeature !== feature && !options.noLabel) {
-				if (map.hoveredFeature)
-					hoverSource.clear();
-
-				if (feature)
-					hoverSource.addFeature(feature);
-
-				map.hoveredFeature = feature;
-			}
-
-			if (feature && !options.noClick) {
-				const features = feature.get('features') || [feature],
-					display = Object.assign({},
-						features[0].getProperties(), // Get first or alone feature
-						features[0].display
-					),
-					geom = feature.getGeometry();
-
-				// Set the cursor if hover a clicable feature
-				map.getViewport().style.cursor = display.url || display.cluster ? 'pointer' : '';
-
-				// Click actions
-				if (evt.type == 'click' && display) {
-					if (features.length == 1 && display.url) {
-						// Single feature
-						if (originalEvent.ctrlKey)
-							window.open(display.url, '_blank').focus();
-						else
-						if (originalEvent.shiftKey)
-							// To specify feature open a new window
-							window.open(display.url, '_blank', 'resizable=yes').focus();
-						else
-							window.location.href = display.url;
-					}
-					// Cluster
-					else if (geom && (features.length > 1 || display.cluster))
-						map.getView().animate({
-							zoom: map.getView().getZoom() + 2,
-							center: geom.getCoordinates(),
-						});
-				}
-			} else
-				map.getViewport().style.cursor = '';
-		}
 	}
 
 	return layer;
@@ -242,49 +163,50 @@ function layerVector(opt) {
 /**
  * Clustering features
  */
-function layerVectorCluster(options) {
-	// Detailed layer
-	const layer = layerVector(options);
-
-	// No clustering
-	if (!options.distance)
-		return layer;
-
-	// Clusterized source
-	const clusterSource = new ol.source.Cluster({
+function layerVectorCluster(opt) {
+	const options = {
+			distance: 30, // Minimum distance between clusters
+			density: 1000, // Maximum number of displayed clusters
+			...opt
+		},
+		layer = layerVector(options), // Basic layer (with all the points)
+		clusterSource = new ol.source.Cluster({
 			source: layer.getSource(),
-			distance: options.distance,
-			geometryFunction: geometryFunction,
+			geometryFunction: geometryFnc,
 			createCluster: createCluster,
+			distance: options.distance,
 		}),
-
-		// Clusterized layer
-		clusterLayer = new ol.layer.Vector(Object.assign({
+		clusterLayer = new ol.layer.Vector({
 			source: clusterSource,
-			style: clusterStyle,
+			style: (feature, resolution) => layer.getStyleFunction()(feature, resolution),
 			visible: layer.getVisible(),
 			zIndex: layer.getZIndex(),
-		}, options));
+			...options
+		});
+
+
+	clusterLayer.setMapInternal = layer.setMapInternal; //HACK execute actions on Map init
+	clusterLayer.hoverStyleOptFnc = options.hoverStyleOptFnc; // Embark hover style to render hovering
 
 	// Propagate setVisible following the selector status
-	layer.on('change:visible', function() {
-		clusterLayer.setVisible(this.getVisible());
-	});
+	layer.on('change:visible', () =>
+		clusterLayer.setVisible(layer.getVisible())
+	);
 
 	// Tune the clustering distance depending on the zoom level
-	let previousResolution;
-	clusterLayer.on('prerender', function(evt) {
-		const resolution = evt.frameState.viewState.resolution,
-			distance = resolution < 10 ? 0 : Math.min(options.distance, resolution);
+	clusterLayer.on('prerender', evt => {
+		const surface = evt.context.canvas.width * evt.context.canvas.height, // Map pixels number
+			distanceMinCluster = Math.min(
+				evt.frameState.viewState.resolution, // No clusterisation on low resolution zooms
+				Math.max(options.distance, Math.sqrt(surface / options.density))
+			);
 
-		if (previousResolution != resolution) // Only when changed
-			clusterSource.setDistance(distance);
-
-		previousResolution = resolution;
+		if (clusterSource.getDistance() != distanceMinCluster) // Only when changed
+			clusterSource.setDistance(distanceMinCluster);
 	});
 
 	// Generate a center point to manage clusterisations
-	function geometryFunction(feature) {
+	function geometryFnc(feature) {
 		const extent = feature.getGeometry().getExtent(),
 			pixelSemiPerimeter = (extent[2] - extent[0] + extent[3] - extent[1]) / this.resolution;
 
@@ -312,128 +234,16 @@ function layerVectorCluster(options) {
 		});
 	}
 
-	// Style callback function for the layer
-	function clusterStyle(feature, resolution) {
-		const features = feature.get('features'),
-			style = layer.getStyleFunction();
-
-		if (features)
-			feature.hoverStyleOptionsFunction = options.hoverStyleOptionsFunction;
-
-		return style(feature, resolution);
-	}
-
 	return clusterLayer;
 }
 
 /**
- * Get checkboxes values of inputs having the same name
- * selectorName {string}
- * Return an array of the selected inputs
- */
-function readCheckbox(selectorName, withOn) {
-	const inputEls = document.getElementsByName(selectorName);
-
-	// Specific case of a single on/off <input>
-	if (inputEls.length == 1)
-		return inputEls[0].checked ? [inputEls[0].value] : [];
-
-	// Read each <input> checkbox
-	const selection = [];
-	for (let e = 0; e < inputEls.length; e++)
-		if (inputEls[e].checked &&
-			(inputEls[e].value != 'on' || withOn)) // Avoid the first check in a list
-			selection.push(inputEls[e].value);
-
-	return selection;
-}
-
-/**
- * Manage checkbox inputs having the same name
- * selectorName {string}
- * callback {function(selection)} action when the button is clicked
- *
- * Mem / recover the checkboxes in localStorage, url args or hash
- * Manages a global flip-flop of the same named <input> checkboxes
- */
-function memCheckbox(selectorName, callback) {
-	const inputEls = document.getElementsByName(selectorName),
-		values = typeof localStorage['myol_' + selectorName] != 'undefined' ?
-		localStorage['myol_' + selectorName] :
-		readCheckbox(selectorName, true).join(',');
-
-	// Set the <inputs> accordingly with the localStorage or url args
-	if (inputEls)
-		for (let e = 0; e < inputEls.length; e++) { //BEST ?? HACK for doesn't work on element array
-			// Set inputs following localStorage & args
-			inputEls[e].checked =
-				values.indexOf(inputEls[e].value) != -1 || // That one is declared
-				values.split(',').indexOf('on') != -1; // The "all" (= "on") is set
-
-			// Compute the all check && init the localStorage if data has been given by the url
-			checkEl(inputEls[e]);
-
-			// Attach the action
-			inputEls[e].addEventListener('click', onClick);
-		}
-
-	function onClick(evt) {
-		checkEl(evt.target); // Do the "all" check verification
-
-		// Mem the data in the localStorage
-		const selection = readCheckbox(selectorName);
-
-		if (selectorName)
-			localStorage['myol_' + selectorName] = typeof selection == 'object' ? selection.join(',') : selection ? 'on' : '';
-
-		if (inputEls.length && typeof callback == 'function')
-			callback(selection);
-	}
-
-	// Check on <input> & set the "All" input accordingly
-	function checkEl(target) {
-		let allIndex = -1, // Index of the "all" <input> if any
-			allCheck = true; // Are all others checked ?
-
-		for (let e = 0; e < inputEls.length; e++) { //BEST ??
-			if (target.value == 'on') // If the "all" <input> is checked (who has a default value = "on")
-				inputEls[e].checked = target.checked; // Force all the others to the same
-			else if (inputEls[e].value == 'on') // The "all" <input>
-				allIndex = e;
-			else if (!inputEls[e].checked)
-				allCheck = false; // Uncheck the "all" <input> if one other is unchecked
-		}
-
-		// Check the "all" <input> if all others are
-		if (allIndex != -1)
-			inputEls[allIndex].checked = allCheck;
-	}
-
-	const selection = readCheckbox(selectorName);
-
-	//BEST common code with function onClick(evt) {
-	if (inputEls.length && typeof callback == 'function')
-		callback(selection);
-
-	return selection;
-}
-
-/**
- * BBOX strategy when the url returns a limited number of features in the BBox
- * We do need to reload when the zoom in
- */
-ol.loadingstrategy.bboxLimit = function(extent, resolution) {
-	if (this.bboxLimitResolution > resolution) // When zoom in
-		this.refresh(); // Force the loading of all areas
-	this.bboxLimitResolution = resolution; // Mem resolution for further requests
-	return [extent];
-};
-
-/**
  * Some usefull style functions
  */
+
 // Get icon from an URL
-function styleOptionsIcon(iconUrl) {
+//BEST BUG general : send cookies to server, event non secure
+function styleOptIcon(iconUrl) {
 	if (iconUrl)
 		return {
 			image: new ol.style.Icon({
@@ -443,18 +253,18 @@ function styleOptionsIcon(iconUrl) {
 }
 
 // Get icon from chemineur.fr
-function styleOptionsIconChemineur(iconName) {
+function styleOptIconChemineur(iconName) {
 	if (iconName) {
 		const icons = iconName.split(' ');
 
 		iconName = icons[0] + (icons.length > 1 ? '_' + icons[1] : ''); // Limit to 2 type names & ' ' -> '_'
 
-		return styleOptionsIcon('//chemineur.fr/ext/Dominique92/GeoBB/icones/' + iconName + '.' + iconCanvasExt());
+		return styleOptIcon('//chemineur.fr/ext/Dominique92/GeoBB/icones/' + iconName + '.' + iconCanvasExt());
 	}
 }
 
 // Display a label with some data about the feature
-function styleOptionsFullLabel(properties) {
+function styleOptFullLabel(feature, properties) {
 	let text = [],
 		line = [];
 
@@ -463,7 +273,7 @@ function styleOptionsFullLabel(properties) {
 		let includeCluster = !!properties.cluster;
 
 		for (let f in properties.features) {
-			const name = properties.features[f].getProperties().name || properties.features[f].display.name;
+			const name = properties.features[f].getProperties().name;
 			if (name)
 				text.push(name);
 			if (properties.features[f].getProperties().cluster)
@@ -498,43 +308,43 @@ function styleOptionsFullLabel(properties) {
 			text.push('&copy;' + properties.attribution);
 	}
 
-	return styleOptionsLabel(text.join('\n'), properties, true);
+	return styleOptLabel(text.join('\n'), feature, properties, true);
 }
 
 // Display a label with only the name
-function styleOptionsLabel(text, properties, important) {
-	const styleTextOptions = {
-		text: text,
-		font: '14px Calibri,sans-serif',
-		padding: [1, 1, 0, 3],
-		fill: new ol.style.Fill({
-			color: 'black',
-		}),
-		backgroundFill: new ol.style.Fill({
-			color: 'white',
-		}),
-		backgroundStroke: new ol.style.Stroke({
-			color: 'blue',
-			width: important ? 1 : 0.3,
-		}),
-		overflow: important,
-	};
+function styleOptLabel(text, feature, properties, important) {
 
-	// For points
-	if (!properties.area)
-		Object.assign(styleTextOptions, {
-			textBaseline: 'bottom',
-			offsetY: -14, // Above the icon
-		});
+	const elLabel = document.createElement('span'),
+		area = ol.extent.getArea(feature.getGeometry().getExtent()), // Detect lines or polygons
+		styleTextOptions = {
+			textBaseline: area ? 'middle' : 'bottom',
+			offsetY: area ? 0 : -14, // Above the icon
+			padding: [1, 1, 0, 3],
+			font: '14px Calibri,sans-serif',
+			fill: new ol.style.Fill({
+				color: 'black',
+			}),
+			backgroundFill: new ol.style.Fill({
+				color: 'white',
+			}),
+			backgroundStroke: new ol.style.Stroke({
+				color: 'blue',
+				width: important ? 1 : 0.3,
+			}),
+			overflow: important,
+		};
+
+	//HACK to render the html entities in the canvas
+	elLabel.innerHTML = text;
+	styleTextOptions.text = elLabel.innerHTML;
 
 	return {
 		text: new ol.style.Text(styleTextOptions),
-		zIndex: 40, // Label : above the the features & editor
 	};
 }
 
 // Apply a color and transparency to a polygon
-function styleOptionsPolygon(color, transparency) { // color = #rgb, transparency = 0 to 1
+function styleOptPolygon(color, transparency) { // color = #rgb, transparency = 0 to 1
 	if (color)
 		return {
 			fill: new ol.style.Fill({
@@ -549,7 +359,7 @@ function styleOptionsPolygon(color, transparency) { // color = #rgb, transparenc
 }
 
 // Style of a cluster bullet (both local & server cluster
-function styleOptionsCluster(feature, properties) {
+function styleOptCluster(feature, properties) {
 	let nbClusters = parseInt(properties.cluster || 0);
 
 	for (let f in properties.features)
@@ -570,4 +380,165 @@ function styleOptionsCluster(feature, properties) {
 			font: '14px Calibri,sans-serif',
 		}),
 	};
+}
+
+/**
+ * Global hovering functions layer
+   To be declared & added once for a map
+ */
+function layerHover(map) {
+	const source = new ol.source.Vector(),
+		layer = new ol.layer.Vector({
+			source: source,
+		});
+
+	map.addLayer(layer);
+
+	// Leaving the map reset hovering
+	window.addEventListener('mousemove', evt => {
+		const divRect = map.getTargetElement().getBoundingClientRect();
+
+		// The mouse is outside of the map
+		if (evt.clientX < divRect.left || divRect.right < evt.clientX ||
+			evt.clientY < divRect.top || divRect.bottom < evt.clientY)
+			source.clear();
+	});
+
+	map.on(['pointermove', 'click'], (evt) => {
+		// Find hovered feature
+		const map = evt.target,
+			found = map.forEachFeatureAtPixel(
+				map.getEventPixel(evt.originalEvent),
+				hoverFeature, {
+					hitTolerance: 6, // Default 0
+				}
+			);
+
+		// Erase existing hover if nothing found
+		map.getViewport().style.cursor = found ? 'pointer' : '';
+		if (!found)
+			source.clear();
+
+		function hoverFeature(hoveredFeature, hoveredLayer) {
+			const hoveredProperties = hoveredFeature.getProperties();
+
+			// Click on a feature
+			if (evt.type == 'click') {
+				if (hoveredProperties.url) {
+					// Open a new tag
+					if (evt.originalEvent.ctrlKey)
+						window.open(hoveredProperties.url, '_blank').focus();
+					else
+						// Open a new window
+						if (evt.originalEvent.shiftKey)
+							window.open(hoveredProperties.url, '_blank', 'resizable=yes').focus();
+						else
+							// Go on the same window
+							window.location.href = hoveredProperties.url;
+				}
+				// Cluster
+				else if (hoveredProperties.features)
+					map.getView().animate({
+						zoom: map.getView().getZoom() + 2,
+						center: hoveredProperties.geometry.getCoordinates(),
+					});
+			}
+
+			// Over the hover (Label ?)
+			if (hoveredLayer.ol_uid == layer.ol_uid)
+				return true; // Don't undisplay it
+
+			// Hover a feature
+			if (typeof hoveredLayer.hoverStyleOptFnc == 'function') {
+				source.clear();
+				source.addFeature(hoveredFeature);
+				layer.setStyle(new ol.style.Style(
+					hoveredLayer.hoverStyleOptFnc(
+						hoveredFeature,
+						hoveredProperties
+					)
+				));
+				layer.setZIndex(hoveredLayer.getZIndex() + 2); // Tune the hoverLayer zIndex just above the hovered layer
+
+				return hoveredFeature; // Don't continue
+			}
+		}
+	});
+
+	return layer;
+}
+
+/**
+ * BBOX strategy when the url returns a limited number of features in the BBox
+ * We do need to reload when the zoom in
+ */
+ol.loadingstrategy.bboxLimit = function(extent, resolution) {
+	if (this.bboxLimitResolution > resolution) // When zoom in
+		this.refresh(); // Force the loading of all areas
+	this.bboxLimitResolution = resolution; // Mem resolution for further requests
+	return [extent];
+};
+
+/**
+ * Manage a collection of checkboxes with the same name
+ * There can be several selectors for one layer
+ * A selector can be used by several layers
+ * The checkbox without value check / uncheck the others
+ * Current selection is saved in window.localStorage
+ * name : input names
+ * callBack : callback function (this reset the checkboxes)
+ * You can force the values in window.localStorage[simplified name]
+ * Return return an array of selected values
+ */
+function selectVectorLayer(name, callBack) {
+	const selectEls = [...document.getElementsByName(name)],
+		safeName = 'myol_' + name.replace(/[^a-z]/ig, ''),
+		init = (localStorage[safeName] || '').split(',');
+
+	// Init
+	if (typeof callBack == 'function') {
+		selectEls.forEach(el => {
+			el.checked =
+				init.includes(el.value) ||
+				init.includes('all') ||
+				init.join(',') == el.value;
+			el.addEventListener('click', onClick);
+		});
+		onClick();
+	}
+
+	function onClick(evt) {
+		// Test the "all" box & set other boxes
+		if (evt && evt.target.value == 'all')
+			selectEls
+			.forEach(el => el.checked = evt.target.checked);
+
+		// Test if all values are checked
+		const allChecked = selectEls
+			.filter(el => !el.checked && el.value != 'all');
+
+		// Set the "all" box
+		selectEls
+			.forEach(el => {
+				if (el.value == 'all')
+					el.checked = !allChecked.length;
+			});
+
+		// Save the current status
+		if (selection().length)
+			localStorage[safeName] = selection().join(',');
+		else
+			delete localStorage[safeName];
+
+		if (evt)
+			callBack(selection());
+	}
+
+	function selection() {
+		return selectEls
+			.filter(el => el.checked && el.value != 'all')
+			.map(el => el.value);
+	}
+
+	return selection();
 }

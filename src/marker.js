@@ -1,32 +1,43 @@
 /**
  * Marker position display & edit
- * Requires myol:onadd
  * Options:
- *   src : url of the marker image
- *   prefix : id prefix of input/output values
- *   focus : center & zoom on the marker
- *   dragable : can draw the marker to edit position
+   src : url of the marker image
+   prefix : id prefix of input/output values
+   focus : center & zoom on the marker
+   dragable : can draw the marker to edit position
  */
-function layerMarker(options) {
-	const els = [],
-		point = new ol.geom.Point([0, 0]),
-		layer = new ol.layer.Vector(Object.assign({
-			source: new ol.source.Vector({
-				features: [new ol.Feature(point)],
-			}),
-			zIndex: 1,
+//jshint esversion: 9
+
+function layerMarker(opt) {
+	const options = {
+			position: [0, 0],
+			...opt
+		},
+		els = [],
+		point = new ol.geom.Point(options.position),
+		source = new ol.source.Vector({
+			features: [new ol.Feature(point)],
+		}),
+		layer = new ol.layer.Vector({
+			source: source,
+			zIndex: 20, // Above points (zIndex = 10)
 			style: new ol.style.Style({
 				image: new ol.style.Icon({
 					anchor: [0.5, 0.5],
 					src: options.src,
 				}),
 			}),
-		}, options));
+			...options
+		});
 
 	// Initialise specific projection
 	if (typeof proj4 == 'function') {
 		// Swiss
-		proj4.defs('EPSG:21781', '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=660.077,13.551,369.344,2.484,1.783,2.939,5.66 +units=m +no_defs');
+		proj4.defs('EPSG:21781',
+			'+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 ' +
+			'+k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel ' +
+			'+towgs84=660.077,13.551,369.344,2.484,1.783,2.939,5.66 +units=m +no_defs'
+		);
 
 		// UTM zones
 		for (let u = 1; u <= 60; u++) {
@@ -49,26 +60,78 @@ function layerMarker(options) {
 	els.json.onchange();
 
 	// Read new values
-	function onChange() {
-		const fieldName = this.id.match(/-([a-z])/);
+	function onChange(evt) {
+		if (evt) // If a field has changed
+			// Mark last change time to be able to reload vector layer if changed
+			sessionStorage.myol_lastChangeTime = Date.now();
 
-		if (fieldName) {
-			if (fieldName[1] == 'j') { // json
-				const json = (els.json.value).match(/([-0-9\.]+)[, ]*([-0-9\.]+)/);
-
-				if (json)
-					changeLL(json.slice(1), 'EPSG:4326', true);
-			} else
-			if (fieldName[1] == 'l') // lon | lat
-				changeLL([els.lon.value, els.lat.value], 'EPSG:4326', true);
-			else
-			if (typeof proj4 == 'function') // x | y
-				changeLL([parseInt(els.x.value), parseInt(els.y.value)], 'EPSG:21781', true);
-		}
+		// Find changed input type from tne input id
+		const idMatch = this.id.match(/-([a-z]+)/); //BEST strict mode, 'this' will be undefined... and others
+		if (idMatch)
+			switch (idMatch[1]) {
+				case 'json':
+					const json = (els.json.value).match(/([-0-9\.]+)[, ]*([-0-9\.]+)/);
+					if (json)
+						changeLL(json.slice(1), 'EPSG:4326', true);
+					break;
+				case 'lon':
+				case 'lat':
+					changeLL([els.lon.value, els.lat.value], 'EPSG:4326', true);
+					break;
+				case 'x':
+				case 'y':
+					if (typeof proj4 == 'function') // x | y
+						changeLL([parseInt(els.x.value), parseInt(els.y.value)], 'EPSG:21781', true);
+					break;
+			}
 	}
 
+	layer.setMapInternal = function(map) {
+		map.once('loadstart', () => { // Hack to be noticed at map init
+			const pc = point.getCoordinates(),
+				view = map.getView();
+
+			// Focus map on the marker
+			if (options.focus) {
+				if (pc[0] && pc[1])
+					view.setCenter(pc);
+				else
+					// If no position given, put the marker on the center of the visible map
+					changeLL(view.getCenter(), 'EPSG:3857', view);
+
+				view.setZoom(options.focus);
+			}
+
+			// Edit the marker position
+			if (options.dragable) {
+				// Drag the marker
+				map.addInteraction(new ol.interaction.Pointer({
+					handleDownEvent: function(evt) {
+						// Mark last change time
+						sessionStorage.myol_lastChangeTime = Date.now();
+
+						return map.getFeaturesAtPixel(evt.pixel, {
+							layerFilter: function(l) {
+								return l.ol_uid == layer.ol_uid;
+							}
+						}).length;
+					},
+					handleDragEvent: function(evt) {
+						changeLL(evt.coordinate, 'EPSG:3857', view);
+					},
+				}));
+
+				// Get the marker at the dblclick position
+				map.on('dblclick', function(evt) {
+					changeLL(evt.coordinate, 'EPSG:3857', view);
+					return false;
+				});
+			}
+		});
+	};
+
 	// Display values
-	function changeLL(ll, projection, focus) {
+	function changeLL(ll, projection, focus, view) {
 		if (ll[0] && ll[1]) {
 			// Wrap +-180°
 			const bounds = ol.proj.transform([180, 85], 'EPSG:4326', projection);
@@ -82,8 +145,8 @@ function layerMarker(options) {
 			point.setCoordinates(ll3857);
 
 			// Move the map
-			if (focus && layer.map_)
-				layer.map_.getView().setCenter(ll3857);
+			if (focus && view)
+				view.setCenter(ll3857);
 
 			// Populate inputs
 			els.lon.value = Math.round(ll4326[0] * 100000) / 100000;
@@ -126,46 +189,6 @@ function layerMarker(options) {
 			els.string.textContent = strings[els.select.value || 'dec'];
 		}
 	}
-
-	layer.once('myol:onadd', function(evt) {
-		const map = evt.map,
-			view = map.getView(),
-			pc = point.getCoordinates();
-
-		// Focus map on the marker
-		if (options.focus) {
-			if (pc[0] && pc[1])
-				view.setCenter(pc);
-			else
-				// If no position given, put the marker on the center of the visible map
-				changeLL(view.getCenter(), 'EPSG:3857');
-
-			view.setZoom(options.focus);
-		}
-
-		// Edit the marker position
-		if (options.dragable) {
-			// Drag the marker
-			map.addInteraction(new ol.interaction.Pointer({
-				handleDownEvent: function(evt) {
-					return map.getFeaturesAtPixel(evt.pixel, {
-						layerFilter: function(l) {
-							return l.ol_uid == layer.ol_uid;
-						}
-					}).length;
-				},
-				handleDragEvent: function(evt) {
-					changeLL(evt.coordinate, 'EPSG:3857');
-				},
-			}));
-
-			// Get the marker at the dblclick position
-			map.on('dblclick', function(evt) {
-				changeLL(evt.coordinate, 'EPSG:3857');
-				return false;
-			});
-		}
-	});
 
 	return layer;
 }

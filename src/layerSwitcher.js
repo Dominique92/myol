@@ -2,39 +2,42 @@
  * Layer switcher
  * Need to include layerSwitcher.css
  */
-//BEST alt key to swith layers / transparency
-function controlLayerSwitcher(baseLayers, options) {
-	baseLayers = baseLayers || layersCollection();
-	options = options || {};
+//jshint esversion: 9
 
-	const control = new ol.control.Control({
-			element: document.createElement('div'),
+//BEST how do we do on touch terminal ? alt key to switch layers / transparency
+//BEST no lift when open/close submenu
+function controlLayerSwitcher(options) {
+	const control = controlButton({
+			className: 'myol-button-switcher',
+			label: '&#x274F;',
+			submenuHTML: '<div id="myol-ls-range">' +
+				'<input type="range" title="Glisser pour faire varier la tranparence">' +
+				'<span>Ctrl+click: multicouches</span>' +
+				'</div>',
+			render: render,
+			...options
 		}),
+		baseLayers = Object.fromEntries(
+			Object.entries(options.layers)
+			.filter(([_, v]) => v != null) // Remove empty layers
+		),
 		layerNames = Object.keys(baseLayers),
 		baselayer = location.href.match(/baselayer=([^\&]+)/);
-	let transparentBaseLayerName = '';
 
-	// Get baselayer from url ?
+	let transparentBaseLayerName,
+		rangeContainerEl;
+
+	// Get baselayer from url if any
 	if (baselayer)
 		localStorage.myol_baselayer = decodeURI(baselayer[1]);
 
-	// Build html transparency slider
-	const rangeContainerEl = document.createElement('div');
-	rangeContainerEl.innerHTML =
-		'<input type="range" id="layerSlider" title="Glisser pour faire varier la tranparence">' +
-		'<span>Ctrl+click: multicouches</span>';
-	rangeContainerEl.firstChild.oninput = displayTransparencyRange;
+	// HACK run when the control is attached to the map
+	function render(evt) {
+		if (!control.render) // Only once
+			return;
+		control.render = null;
 
-	control.setMap = function(map) {
-		ol.control.Control.prototype.setMap.call(this, map);
-
-		// control.element is defined when attached to the map
-		control.element.className = 'ol-control ol-control-switcher';
-		control.element.innerHTML = '<button><i>&#x274F;</i></button>';
-		control.element.appendChild(rangeContainerEl);
-		control.element.onmouseover = function() {
-			control.element.classList.add('ol-control-switcher-open');
-		};
+		const map = evt.target;
 
 		// Hide the selector when the cursor is out of the selector
 		map.on('pointermove', function(evt) {
@@ -42,62 +45,62 @@ function controlLayerSwitcher(baseLayers, options) {
 				max_y = control.element.offsetHeight + 20;
 
 			if (evt.pixel[0] < max_x || evt.pixel[1] > max_y)
-				control.element.classList.remove('ol-control-switcher-open');
+				control.element.classList.remove('myol-button-switcher-open');
 		});
 
+		// Build html transparency slider
+		rangeContainerEl = document.getElementById('myol-ls-range');
+		rangeContainerEl.firstChild.oninput = displayTransparencyRange;
+
 		// Build html baselayers selectors
-		for (let name in baseLayers)
-			if (baseLayers[name]) { // Don't dispatch null layers (whose declaraton failed)
-				// Make all choices an array of layers
-				if (!baseLayers[name].length)
-					baseLayers[name] = [baseLayers[name]];
+		for (let name in baseLayers) {
+			const labelEl = document.createElement('label');
 
-				const selectionEl = document.createElement('div'),
-					inputId = 'l' + baseLayers[name][0].ol_uid + (name ? '-' + name : '');
+			labelEl.innerHTML = '<input type="checkbox" value="' + name + '" ' + ' />' + name;
+			labelEl.firstChild.onclick = selectBaseLayer; //BEST resorb all firstChild
+			control.submenuEl.appendChild(labelEl);
 
-				control.element.appendChild(selectionEl);
-				selectionEl.innerHTML =
-					'<input type="checkbox" name="baseLayer ' +
-					'"id="' + inputId + '" value="' + name + '" ' + ' />' +
-					'<label for="' + inputId + '">' + name + '</label>';
-				selectionEl.firstChild.onclick = selectBaseLayer;
-				baseLayers[name].inputEl = selectionEl.firstChild; // Mem it for further ops
+			// Make all choices an array of layers
+			if (!baseLayers[name].length)
+				baseLayers[name] = [baseLayers[name]];
 
-				for (let l = 0; l < baseLayers[name].length; l++) {
-					baseLayers[name][l].setVisible(false); // Don't begin to get the tiles yet
-					map.addLayer(baseLayers[name][l]);
-				}
+			// Mem it for further ops
+			baseLayers[name].inputEl = labelEl.firstChild; //BEST resorb
+
+			// Display the selected layer
+			for (let l = 0; l < baseLayers[name].length; l++) {
+				baseLayers[name][l].setVisible(false); // Don't begin to get the tiles yet
+				map.addLayer(baseLayers[name][l]);
 			}
+		}
 
-		displayBaseLayers(); // Init layers
+		// Init layers
+		displayBaseLayers();
 
 		// Attach html additional selector
-		const additionalSelector = document.getElementById(
-			options.additionalSelectorId ||
-			'additional-selector'
-		);
+		const selectExtEl = document.getElementById(options.selectExtId);
 
-		//BEST other id don't use the css
-		if (additionalSelector) {
-			control.element.appendChild(additionalSelector);
+		if (selectExtEl) {
+			selectExtEl.classList.add('select-ext');
+			control.submenuEl.appendChild(selectExtEl);
 			// Unmask the selector if it has been @ the declaration
-			additionalSelector.style.display = '';
+			selectExtEl.style.display = '';
 		}
-	};
+	}
 
 	function selectBaseLayer(evt) {
-		// 1 seule couche
+		// Single layer
 		if (!evt || !evt.ctrlKey || this.value == localStorage.myol_baselayer) {
 			transparentBaseLayerName = '';
 			localStorage.myol_baselayer = this.value;
 		}
-		// Il y a une deuxième couche aprés celle existante
+		// There is a second layer after the existing one
 		else if (layerNames.indexOf(localStorage.myol_baselayer) <
 			layerNames.indexOf(this.value)) {
 			transparentBaseLayerName = this.value;
 			// localStorage.myol_baselayer don't change
 		}
-		// Il y a une deuxième couche avant celle existante
+		// There is a second layer before the existing one
 		else {
 			transparentBaseLayerName = localStorage.myol_baselayer;
 			localStorage.myol_baselayer = this.value;
@@ -110,23 +113,22 @@ function controlLayerSwitcher(baseLayers, options) {
 	function displayBaseLayers() {
 		// Baselayer default is the first of the selection
 		if (!baseLayers[localStorage.myol_baselayer])
-			localStorage.myol_baselayer = Object.keys(baseLayers)[0];
+			localStorage.myol_baselayer = layerNames[0];
 
-		for (let name in baseLayers)
-			if (baseLayers[name]) {
-				const visible =
-					name == localStorage.myol_baselayer ||
-					name == transparentBaseLayerName;
+		for (let name in baseLayers) {
+			const visible =
+				name == localStorage.myol_baselayer ||
+				name == transparentBaseLayerName;
 
-				// Write the checks
-				baseLayers[name].inputEl.checked = visible;
+			// Write the checks
+			baseLayers[name].inputEl.checked = visible;
 
-				// Make the right layers visible
-				for (let l = 0; l < baseLayers[name].length; l++) {
-					baseLayers[name][l].setVisible(visible);
-					baseLayers[name][l].setOpacity(1);
-				}
+			// Make the right layers visible
+			for (let l = 0; l < baseLayers[name].length; l++) {
+				baseLayers[name][l].setVisible(visible);
+				baseLayers[name][l].setOpacity(1);
 			}
+		}
 
 		displayTransparencyRange();
 	}
@@ -138,9 +140,9 @@ function controlLayerSwitcher(baseLayers, options) {
 					rangeContainerEl.firstChild.value / 100
 				);
 
-			rangeContainerEl.className = 'double-layer';
+			rangeContainerEl.className = 'myol-double-layer';
 		} else
-			rangeContainerEl.className = 'single-layer';
+			rangeContainerEl.className = 'myol-single-layer';
 	}
 
 	return control;

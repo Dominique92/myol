@@ -7,69 +7,82 @@
  * Control button
  * Abstract definition to be used by other control buttons definitions
  */
-//BEST left aligned buttons when screen vertical
-function controlButton(options) {
-	options = Object.assign({
-		element: document.createElement('div'),
-		buttonBackgroundColors: ['white', 'white'], // Also define the button states numbers
-		className: 'ol-button',
-		activate: function() {}, // Call back when the button is clicked. Argument = satus number (0, 1, ...)
-	}, options);
-
-	const control = new ol.control.Control(options),
+function controlButton(opt) {
+	const options = {
+			element: document.createElement('div'),
+			className: '',
+			...opt
+		},
+		control = new ol.control.Control(options),
 		buttonEl = document.createElement('button');
 
-	control.element.className = 'ol-button ol-unselectable ol-control ' + options.className;
-	control.element.title = options.title; // {string} displayed when the control is hovered.
-	if (options.label)
-		buttonEl.innerHTML = options.label;
-	if (options.label !== null)
-		control.element.appendChild(buttonEl);
-
-	buttonEl.addEventListener('click', function(evt) {
-		evt.preventDefault();
-		control.toggle();
-	});
-
-	// Add selectors below the button
-	if (options.question) {
-		control.questionEl = document.createElement('div');
-		control.questionEl.innerHTML = options.question;
-		control.questionEl.className = 'ol-control-hidden';
-
-		control.element.appendChild(control.questionEl);
-		control.element.onmouseover = function() {
-			control.questionEl.className = 'ol-control-question';
-		};
-		control.element.onmouseout = function() {
-			control.questionEl.className = 'ol-control-hidden';
-		};
+	// Add submenu below the button
+	if (options.submenuEl)
+		control.submenuEl = options.submenuEl;
+	else if (options.submenuId)
+		control.submenuEl = document.getElementById(options.submenuId);
+	else {
+		control.submenuEl = document.createElement('div');
+		if (options.submenuHTML)
+			control.submenuEl.innerHTML = options.submenuHTML;
 	}
 
-	// Toggle the button status & aspect
-	control.state = 0;
+	// Display the button only if there are no label or submenu
+	if (!options.label || !control.submenuEl || !control.submenuEl.innerHTML)
+		return control;
 
-	control.toggle = function(newActive, group) {
-		// Toggle by default
-		if (newActive === undefined)
-			newActive = control.state + 1;
+	// Populate control & button
+	buttonEl.setAttribute('type', 'button');
+	buttonEl.innerHTML = options.label;
+	control.element.appendChild(buttonEl);
+	control.element.className = 'ol-control myol-button ' + options.className;
 
-		// Unselect all other controlButtons from the same group
-		if (newActive && options.group)
-			control.getMap().getControls().forEach(function(c) {
-				if (c != control &&
-					typeof c.toggle == 'function') // Only for controlButtons
-					c.toggle(0, options.group);
-			});
+	// Add submenu
+	control.element.appendChild(control.submenuEl);
 
-		// Execute the requested change
-		if (control.state != newActive &&
-			(!group || group == options.group)) { // Only for the concerned controls
-			control.state = newActive % options.buttonBackgroundColors.length;
-			buttonEl.style.backgroundColor = options.buttonBackgroundColors[control.state];
-			options.activate(control.state);
-		}
-	};
+	// Assign button actions
+	control.element.addEventListener('mouseover', action);
+	control.element.addEventListener('mouseout', action);
+	buttonEl.addEventListener('click', action);
+
+	function action(evt) {
+		if (evt.type == 'mouseover')
+			control.element.classList.add('myol-button-hover');
+		else // mouseout | click
+			control.element.classList.remove('myol-button-hover');
+
+		if (evt.type == 'click') // Mouse click & touch
+			control.element.classList.toggle('myol-button-selected');
+
+		// Close other open buttons
+		for (let el of document.getElementsByClassName('myol-button'))
+			if (el != control.element)
+				el.classList.remove('myol-button-selected');
+	}
+
+	// Close submenu when click or touch on the map
+	document.addEventListener('click', evt => {
+		const hoveredEl = document.elementFromPoint(evt.x, evt.y);
+
+		if (hoveredEl && hoveredEl.tagName == 'CANVAS')
+			control.element.classList.remove('myol-button-selected');
+	});
+
+	// Assign control.function to submenu elements events
+	// with attribute ctrlOnClic="function" or ctrlOnChange="function"
+	for (let el of control.submenuEl.getElementsByTagName('*'))
+		['OnClick', 'OnChange'].forEach(evtName => {
+			const evtFnc = el.getAttribute('ctrl' + evtName);
+			if (evtFnc)
+				el[evtName.toLowerCase()] = function(evt) {
+					// Check at execution time if control.function() is defined
+					//BEST Functions declared within loops referencing an outer scoped variable may lead to confusing semantics.
+					if (typeof control[evtFnc] == 'function')
+						control[evtFnc](evt);
+
+					return false; // Don't continue on href
+				};
+		});
 
 	return control;
 }
@@ -79,18 +92,23 @@ function controlButton(options) {
  * "map" url hash or localStorage: zoom=<ZOOM> lon=<LON> lat=<LAT>
  * Don't set view when you declare the map
  */
-function controlPermalink(options) {
-	const aEl = document.createElement('a'),
+function controlPermalink(opt) {
+	const options = {
+			//BEST init with bbox option
+			init: true, // {true | false} use url hash or localStorage to position the map.
+			setUrl: false, // {true | false} Change url hash when moving the map.
+			display: false, // {true | false} Display permalink link the map.
+			hash: '?', // {?, #} the permalink delimiter after the url
+			...opt
+		},
 		control = new ol.control.Control({
 			element: document.createElement('div'),
 			render: render,
 		}),
-		urlMod =
-		// zoom=<zoom>&lon=<lon>&lat=<lat>
-		location.href.replace(
-			// map=<zoom>/<lon>/<lat>
-			/map=([0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/,
-			'zoom=$1&lon=$2&lat=$3'
+		aEl = document.createElement('a'),
+		urlMod = location.href.replace( // Get value from params with priority url / ? / #
+			/map=([0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/, // map=<zoom>/<lon>/<lat>
+			'zoom=$1&lon=$2&lat=$3' // zoom=<zoom>&lon=<lon>&lat=<lat>
 		) +
 		// Last values
 		'zoom=' + localStorage.myol_zoom +
@@ -99,15 +117,8 @@ function controlPermalink(options) {
 		// Default
 		'zoom=6&lon=2&lat=47';
 
-	options = Object.assign({
-		init: true, // {true | false} use url hash or localStorage to position the map.
-		setUrl: false, // {true | false} Change url hash when moving the map.
-		display: false, // {true | false} Display permalink link the map.
-		hash: '?', // {?, #} the permalink delimiter after the url
-	}, options);
-
 	if (options.display) {
-		control.element.className = 'ol-permalink';
+		control.element.className = 'myol-permalink';
 		aEl.innerHTML = 'Permalink';
 		aEl.title = 'Generate a link with map zoom & position';
 		control.element.appendChild(aEl);
@@ -149,15 +160,16 @@ function controlPermalink(options) {
 /**
  * Control to display the mouse position
  */
-function controlMousePosition() {
+function controlMousePosition(options) {
 	return new ol.control.MousePosition({
 		projection: 'EPSG:4326',
-		className: 'ol-coordinate',
-		undefinedHTML: String.fromCharCode(0), //HACK hide control when mouse is out of the map
+		className: 'myol-coordinate',
+		placeholder: String.fromCharCode(0), // Hide control when mouse is out of the map
 
 		coordinateFormat: function(mouse) {
-			if (ol.gpsPosition) {
-				const ll4326 = ol.proj.transform(ol.gpsPosition, 'EPSG:3857', 'EPSG:4326'),
+			//BEST find better than ol.gpsValues to share info
+			if (ol.gpsValues && ol.gpsValues.position) {
+				const ll4326 = ol.proj.transform(ol.gpsValues.position, 'EPSG:3857', 'EPSG:4326'),
 					distance = ol.sphere.getDistance(mouse, ll4326);
 
 				return distance < 1000 ?
@@ -166,6 +178,7 @@ function controlMousePosition() {
 			} else
 				return ol.coordinate.createStringXY(4)(mouse);
 		},
+		...options
 	});
 }
 
@@ -174,15 +187,14 @@ function controlMousePosition() {
  * option hoverStyle style the hovered feature
  */
 function controlLengthLine() {
-	const control = new ol.control.Control({
-		element: document.createElement('div'), // div to display the measure
-	});
-	control.element.className = 'ol-length-line';
+	const control = controlButton(); //HACK button not visible
+
+	control.element.className = 'myol-length-line';
 
 	control.setMap = function(map) { //HACK execute actions on Map init
 		ol.control.Control.prototype.setMap.call(this, map);
 
-		map.on('pointermove', function(evt) {
+		map.on('pointermove', evt => {
 			control.element.innerHTML = ''; // Clear the measure if hover no feature
 
 			// Find new features to hover
@@ -198,11 +210,15 @@ function controlLengthLine() {
 		if (feature) {
 			const length = ol.sphere.getLength(feature.getGeometry());
 
-			control.element.innerHTML = length < 1000 ?
-				(Math.round(length)) + ' m' :
-				(Math.round(length / 10) / 100) + ' km';
+			if (length) {
+				control.element.innerHTML =
+					length < 1000 ?
+					(Math.round(length)) + ' m' :
+					(Math.round(length / 10) / 100) + ' km';
+
+				return false; // Continue detection (for editor that has temporary layers)
+			}
 		}
-		return false; // Continue detection (for editor that has temporary layers)
 	}
 	return control;
 }
@@ -211,20 +227,22 @@ function controlLengthLine() {
  * Control to display set preload of depth upper level tiles
  * This prepares the browser to become offline
  */
-function controlTilesBuffer(depth) {
-	const control = new ol.control.Control({
-		element: document.createElement('div'), //HACK no button
-	});
+function controlTilesBuffer(opt) {
+	const options = {
+			depth: 3,
+			...opt
+		},
+		control = controlButton(); //HACK no button
 
 	control.setMap = function(map) { //HACK execute actions on Map init
 		ol.control.Control.prototype.setMap.call(this, map);
 
 		// Action on each layer
-		//TODO too much load on basic browsing
-		map.on('precompose', function() {
-			map.getLayers().forEach(function(layer) {
+		//BEST too much load on basic browsing
+		map.on('precompose', () => {
+			map.getLayers().forEach(layer => {
 				if (typeof layer.setPreload == 'function')
-					layer.setPreload(depth);
+					layer.setPreload(options.depth);
 			});
 		});
 	};
@@ -234,445 +252,65 @@ function controlTilesBuffer(depth) {
 
 /**
  * Geocoder
- * Requires https://github.com/jonataswalker/ol-geocoder/tree/master/dist
+ * Requires https://github.com/jonataswalker/ol-geocoder/
  */
 function controlGeocoder(options) {
-	options = Object.assign({
-		title: 'Recherche sur la carte',
-	}, options);
-
 	if (typeof Geocoder != 'function') // Vérify if geocoder is available
-		return new ol.control.Control({
-			element: document.createElement('div'), //HACK no button
-		});
+		return controlButton(); //HACK no button
 
 	const geocoder = new Geocoder('nominatim', {
-		provider: 'osm',
-		lang: 'fr-FR',
-		autoComplete: false, // Else keep list of many others
-		keepOpen: true, // Else bug "no internet"
-		placeholder: options.title, // Initialization of the input field
+			placeholder: 'Recherche par nom sur la carte', // Initialization of the input field
+			...options
+		}),
+		controlEl = geocoder.element.firstElementChild;
+
+	// Avoid submit of a form including the map
+	geocoder.element.getElementsByTagName('input')[0]
+		.addEventListener('keypress', evt =>
+			evt.stopImmediatePropagation()
+		);
+
+	geocoder.on('addresschosen', evt =>
+		evt.target.getMap().getView().fit(evt.bbox)
+	);
+
+	// Close other opened buttons when hover with a mouse
+	geocoder.element.addEventListener('pointerover', () => {
+		for (let el of document.getElementsByClassName('myol-button-selected'))
+			el.classList.remove('myol-button-selected');
 	});
 
-	// Move the button at the same level than the other control's buttons
-	const buttonEl = geocoder.element.firstElementChild.firstElementChild;
-	buttonEl.innerHTML = '&#x1F50D;';
-	buttonEl.title = options.title;
-	geocoder.element.appendChild(buttonEl);
+	// Close submenu when hover another button
+	document.addEventListener('pointerout', evt => {
+		const hoveredEl = document.elementFromPoint(evt.x, evt.y);
+
+		if (hoveredEl && hoveredEl.tagName == 'BUTTON')
+			controlEl.classList.remove('gcd-gl-expanded');
+	});
 
 	return geocoder;
-}
-
-/**
- * GPS control
- * Requires controlButton
- */
-function controlGPS() {
-	let view, geolocation, nbLoc, position, heading, accuracy, altitude, speed;
-
-	// Display status, altitude & speed
-	const displayEl = document.createElement('div'),
-
-		control = controlButton({
-			className: 'ol-button ol-gps',
-			label: '&#x2295;',
-			buttonBackgroundColors: [ // Define 4 states button
-				'white', // 0 : inactive
-				'orange', // 1 : waiting physical GPS sensor position & altitude
-				'lime', // 2 : active, centered & oriented
-				'grey', // 3 : active, do not centered nor oriented
-				//BEST No orange wait position when no real GPS captor
-			],
-			title: 'Centrer sur la position GPS',
-			activate: function(state) {
-				if (geolocation) {
-					geolocation.setTracking(state !== 0);
-					graticuleLayer.setVisible(state !== 0);
-					nbLoc = 0;
-					if (!state && view) {
-						view.setRotation(0, 0); // Set north to top
-						displayEl.innerHTML = '';
-						displayEl.classList.remove('ol-control-gps');
-					}
-				}
-				ol.gpsPosition = null;
-			}
-		}),
-
-		// Graticule
-		graticuleFeature = new ol.Feature(),
-		northGraticuleFeature = new ol.Feature(),
-		graticuleLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({
-				features: [graticuleFeature, northGraticuleFeature],
-			}),
-			zIndex: 20, // Above the features
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(128,128,255,0.2)',
-				}),
-				stroke: new ol.style.Stroke({
-					color: '#20b',
-					lineDash: [16, 14],
-					width: 1,
-				}),
-			}),
-		});
-
-	control.element.appendChild(displayEl);
-
-	graticuleFeature.setStyle(new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: '#000',
-			lineDash: [16, 14],
-			width: 1,
-		}),
-	}));
-
-	northGraticuleFeature.setStyle(new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: '#c00',
-			lineDash: [16, 14],
-			width: 1,
-		}),
-	}));
-
-	control.setMap = function(map) {
-		//HACK execute actions on Map init
-		ol.control.Control.prototype.setMap.call(this, map);
-
-		view = map.getView();
-		map.addLayer(graticuleLayer);
-
-		geolocation = new ol.Geolocation({
-			projection: view.getProjection(),
-			trackingOptions: {
-				enableHighAccuracy: true,
-				maximumAge: 1000,
-				timeout: 1000,
-			},
-		});
-
-		// Trigger position
-		geolocation.on('change:position', renderPosition);
-		map.on('moveend', renderPosition); // Refresh graticule after map zoom
-		function renderPosition() {
-			position = geolocation.getPosition();
-			accuracy = geolocation.getAccuracyGeometry();
-			renderGPS();
-		}
-
-		// Triggers data display
-		geolocation.on(['change:altitude', 'change:speed', 'change:tracking'], function() {
-			speed = Math.round(geolocation.getSpeed() * 36) / 10;
-			altitude = geolocation.getAltitude();
-			renderGPS();
-		});
-
-		// Browser heading from the inertial & magnetic sensors
-		window.addEventListener('deviceorientationabsolute', function(evt) {
-			if (evt.absolute) { // Breaks support for non-absolute browsers, like firefox mobile
-				heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
-				renderGPS();
-			}
-		});
-
-		geolocation.on('error', function(error) {
-			console.log('Geolocation error: ' + error.message);
-		});
-	};
-
-	function renderGPS() {
-		// Display data under the button
-		let displays = [];
-
-		if (control.state) {
-			if (altitude)
-				displays.push(Math.round(altitude) + ' m');
-
-			if (!isNaN(speed))
-				displays.push(speed + ' km/h');
-
-			if (altitude === undefined)
-				displays = ['GPS sync...'];
-			else if (control.state == 1)
-				control.toggle(); // Go directly to state 2
-		}
-
-		displayEl.innerHTML = displays.join(', ');
-		displayEl.classList[displays.length ? 'add' : 'remove']('ol-control-gps');
-
-		// Render position & graticule
-		if (control.state && position &&
-			(control.state > 1 || altitude !== undefined)) { // Position on GPS signal only on state 1
-			const map = control.getMap(),
-				// Estimate the viewport size to draw visible graticule
-				hg = map.getCoordinateFromPixel([0, 0]),
-				bd = map.getCoordinateFromPixel(map.getSize()),
-				far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10,
-
-				// The graticule
-				geometry = [
-					new ol.geom.MultiLineString([
-						[
-							[position[0] - far, position[1]],
-							[position[0] + far, position[1]]
-						],
-						[
-							[position[0], position[1]],
-							[position[0], position[1] - far]
-						],
-					]),
-				],
-
-				// Color north in red
-				northGeometry = [
-					new ol.geom.LineString([
-						[position[0], position[1]],
-						[position[0], position[1] + far]
-					]),
-				];
-
-			graticuleFeature.setGeometry(new ol.geom.GeometryCollection(geometry));
-			northGraticuleFeature.setGeometry(new ol.geom.GeometryCollection(northGeometry));
-
-			// The accuracy circle
-			const accuracy = geolocation.getAccuracyGeometry();
-			if (accuracy)
-				geometry.push(accuracy);
-
-			if (control.state == 2) {
-				// Center the map
-				view.setCenter(position);
-
-				if (!nbLoc) { // Only the first time after activation
-					view.setZoom(17); // Zoom on the area
-
-					map.dispatchEvent({
-						type: 'myol:ongpsactivate',
-					});
-				}
-
-				nbLoc++;
-
-				// Orientation
-				if (heading)
-					view.setRotation(
-						Math.PI / 180 * (heading - screen.orientation.angle), // Delivered ° reverse clockwize
-						0
-					);
-			}
-
-			// For other controls usage
-			ol.gpsPosition = position;
-		}
-	}
-
-	return control;
-}
-
-/**
- * GPX file loader control
- * Requires controlButton
- */
-//BEST export / import names and links
-//BEST Chemineur dans MyOl => Traduction sym (symbole export GPS ?)
-//BEST misc formats
-function controlLoadGPX(options) {
-	options = Object.assign({
-		label: '&#x1F4C2;',
-		title: 'Visualiser un fichier GPX sur la carte',
-		activate: function() {
-			inputEl.click();
-		},
-	}, options);
-
-	const inputEl = document.createElement('input'),
-		format = new ol.format.GPX(),
-		reader = new FileReader(),
-		control = controlButton(options);
-
-	inputEl.type = 'file';
-	inputEl.addEventListener('change', function() {
-		if (inputEl.files)
-			reader.readAsText(inputEl.files[0]);
-	});
-
-	reader.onload = function() {
-		const map = control.getMap(),
-			features = format.readFeatures(reader.result, {
-				dataProjection: 'EPSG:4326',
-				featureProjection: 'EPSG:3857',
-			}),
-			added = map.dispatchEvent({
-				type: 'myol:onfeatureload', // Warn layerEditGeoJson that we uploaded some features
-				features: features,
-			});
-
-		if (added !== false) { // If one used the feature
-			// Display the track on the map
-			const source = new ol.source.Vector({
-					format: format,
-					features: features,
-				}),
-				layer = new ol.layer.Vector({
-					source: source,
-					style: function(feature) {
-						const properties = feature.getProperties(),
-							styleOptions = {
-								stroke: new ol.style.Stroke({
-									color: 'blue',
-									width: 3,
-								}),
-							};
-
-						if (properties.sym)
-							styleOptions.image = new ol.style.Icon({
-								src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
-							});
-
-						return new ol.style.Style(styleOptions);
-					},
-				});
-			map.addLayer(layer);
-		}
-
-		// Zoom the map on the added features
-		const extent = ol.extent.createEmpty();
-		for (let f in features)
-			ol.extent.extend(extent, features[f].getGeometry().getExtent());
-		if (ol.extent.isEmpty(extent))
-			alert('Fichier GPX vide');
-		else
-			map.getView().fit(extent, {
-				maxZoom: 17,
-				size: map.getSize(),
-				padding: [5, 5, 5, 5],
-			});
-	};
-	return control;
-}
-
-/**
- * File downloader control
- * Requires controlButton
- */
-function controlDownload(options) {
-	options = Object.assign({
-		label: '&#x1F4E5;',
-		buttonBackgroundColors: ['white'],
-		className: 'ol-button ol-download',
-		title: 'Cliquer sur un format ci-dessous\n' +
-			'pour obtenir un fichier contenant\n' +
-			'les éléments visibles dans la fenêtre.\n' +
-			'(la liste peut être incomplète pour les grandes zones)',
-		question: '<span/>', // Invisible but generates a questionEl <div>
-		fileName: document.title || 'openlayers',
-		activate: download,
-	}, options);
-
-	const hiddenEl = document.createElement('a'),
-		control = controlButton(options);
-	hiddenEl.target = '_self';
-	hiddenEl.style = 'display:none';
-	document.body.appendChild(hiddenEl);
-
-	const formats = {
-		GPX: 'application/gpx+xml',
-		KML: 'vnd.google-earth.kml+xml',
-		GeoJSON: 'application/json',
-	};
-	for (let f in formats) {
-		const el = document.createElement('p');
-		el.onclick = download;
-		el.innerHTML = f;
-		el.id = formats[f];
-		el.title = 'Obtenir un fichier ' + f;
-		control.questionEl.appendChild(el);
-	}
-
-	function download() { //formatName, mime
-		const formatName = this.textContent || 'GPX', //BEST get first value as default
-			mime = this.id,
-			format = new ol.format[formatName](),
-			map = control.getMap();
-		let features = [],
-			extent = map.getView().calculateExtent();
-
-		// Get all visible features
-		if (options.savedLayer)
-			getFeatures(options.savedLayer);
-		else
-			map.getLayers().forEach(getFeatures);
-
-		function getFeatures(layer) {
-			if (layer.getSource() && layer.getSource().forEachFeatureInExtent) // For vector layers only
-				layer.getSource().forEachFeatureInExtent(extent, function(feature) {
-					if (!layer.marker_) //BEST find a better way to don't save the cursor
-						features.push(feature);
-				});
-		}
-
-		const data = format.writeFeatures(features, {
-				dataProjection: 'EPSG:4326',
-				featureProjection: 'EPSG:3857',
-				decimals: 5,
-			})
-			// Beautify the output
-			.replace(/<[a-z]*>(0|null|[\[object Object\]|[NTZa:-]*)<\/[a-z]*>/g, '')
-			.replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
-			.replace(/<Data name="copy"><value>[a-z_\.]*<\/value><\/Data>|,"copy":"[a-z_\.]*"/g, '')
-			.replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
-			.replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
-			.replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
-			.replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
-			.replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1'),
-
-			file = new Blob([data], {
-				type: mime,
-			});
-
-		hiddenEl.download = options.fileName + '.' + formatName.toLowerCase();
-		hiddenEl.href = URL.createObjectURL(file);
-		hiddenEl.click();
-	}
-	return control;
 }
 
 /**
  * Print control
  * Requires controlButton
  */
-function controlPrint() {
+function controlPrint(options) {
 	const control = controlButton({
-		className: 'ol-button ol-print',
-		title: 'Pour imprimer la carte:\n' +
-			'choisir l‘orientation,\n' +
-			'zoomer et déplacer,\n' +
-			'cliquer sur l‘icône imprimante.',
-		question: '<input type="radio" name="print-orientation" id="ol-po0" value="0" />' +
-			'<label for="ol-po0">Portrait A4</label><br />' +
-			'<input type="radio" name="print-orientation" id="ol-po1" value="1" />' +
-			'<label for="ol-po1">Paysage A4</label>',
-		activate: function() {
-			resizeDraft(control.getMap());
-			control.getMap().once('rendercomplete', function() {
-				window.print();
-				location.reload();
-			});
-		},
+		label: '&#x1F5A8;',
+		className: 'myol-button-print',
+		submenuHTML: '<p>Pour imprimer la carte:</p>' +
+			'<p>-Choisir portrait ou paysage,</p>' +
+			'<p>-zoomer et déplacer la carte dans le format,</p>' +
+			'<p>-imprimer.</p>' +
+			'<label><input type="radio" name="myol-po" value="0" ctrlonchange="resizeDraftPrint">Portrait A4</label>' +
+			'<label><input type="radio" name="myol-po" value="1" ctrlonchange="resizeDraftPrint">Paysage A4</label>' +
+			'<a onclick="printMap()">Imprimer</a>' +
+			'<a onclick="location.reload()">Annuler</a>',
+		...options
 	});
 
-	control.setMap = function(map) { //HACK execute actions on Map init
-		ol.control.Control.prototype.setMap.call(this, map);
-
-		const poEls = document.getElementsByName('print-orientation');
-
-		for (let i in poEls)
-			poEls[i].onchange = resizeDraft;
-	};
-
-	function resizeDraft() {
+	control.resizeDraftPrint = function() {
 		const map = control.getMap(),
 			mapEl = map.getTargetElement(),
 			poElcs = document.querySelectorAll('input[name=print-orientation]:checked'),
@@ -709,34 +347,60 @@ function controlPrint() {
 					location.reload();
 				});
 		});
-	}
+	};
+
+	printMap = function() {
+		control.resizeDraftPrint();
+		control.getMap().once('rendercomplete', function() {
+			window.print();
+			location.reload();
+		});
+	};
 
 	return control;
 }
 
 /**
+ * Help control
+ * Requires controlButton
+ * Display help contained in <TAG id="<options.submenuId>">
+ */
+function controlHelp(options) {
+	return controlButton({
+		label: '?',
+		...options
+	});
+}
+
+/**
  * Controls examples
  */
-function controlsCollection(options) {
-	options = options || {};
+function controlsCollection(opt) {
+	options = {
+		supplementaryControls: [],
+		...opt
+	};
 
 	return [
 		// Top left
-		new ol.control.Zoom(),
-		new ol.control.FullScreen(),
-		controlGeocoder(),
-		controlGPS(options.controlGPS),
-		controlLoadGPX(),
-		controlDownload(options.controlDownload),
-		controlPrint(),
+		new ol.control.Zoom(options.Zoom),
+		new ol.control.FullScreen(options.FullScreen),
+		controlGeocoder(options.Geocoder),
+		controlGPS(options.GPS),
+		controlLoadGPX(options.LoadGPX),
+		controlDownload(options.Download),
+		controlPrint(options.Print),
+		controlHelp(options.Help),
 
 		// Bottom left
-		controlLengthLine(),
-		controlMousePosition(),
-		new ol.control.ScaleLine(),
+		controlLengthLine(options.LengthLine),
+		controlMousePosition(options.Mouseposition),
+		new ol.control.ScaleLine(options.ScaleLine),
 
 		// Bottom right
-		controlPermalink(options.permalink),
-		new ol.control.Attribution(),
+		controlPermalink(options.Permalink),
+		new ol.control.Attribution(options.Attribution),
+
+		...options.supplementaryControls
 	];
 }

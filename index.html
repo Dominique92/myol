@@ -13,15 +13,15 @@ Based on https://openlayers.org
 	<link href="examples/images/favicon.png" rel="apple-touch-icon" />
 
 	<!-- Openlayers -->
-	<link  href="ol/ol.css" type="text/css" rel="stylesheet">
+	<link href="ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="ol/ol.js"></script>
 
 	<!-- Recherche par nom -->
-	<link  href="geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
+	<link href="geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
 	<script src="geocoder/ol-geocoder.js"></script>
 
 	<!-- My Openlayers -->
-	<link  href="myol.css" type="text/css" rel="stylesheet">
+	<link href="myol.css" type="text/css" rel="stylesheet">
 	<script src="myol.js"></script>
 
 	<style>
@@ -31,6 +31,11 @@ Based on https://openlayers.org
 			max-width: 600px;
 			height: 80vw;
 			max-height: 400px;
+		}
+		.layer-select {
+			float: left;
+			border-right: solid;
+			padding: 5px
 		}
 	</style>
 </head>
@@ -43,6 +48,14 @@ Based on https://openlayers.org
 	<div id="map"></div>
 	<input id="marker-json" size="50" value='{"type":"Point","coordinates":[2.34,48.86]}' />
 
+	<div id="select-ext" >
+		<hr />
+		<label>chemineur.fr <input type="checkbox" name="select-chem" value="all" /></label>
+		<label><input type="checkbox" name="select-chem" value="3" />Refuge</label>
+		<label><input type="checkbox" name="select-chem" value="8" />Abri</label>
+		<label><input type="checkbox" name="select-chem" value="23" />Montagne</label>
+	</div>
+
 	<script>
 // Must be after the <div id="map"> tag
 new ol.Map({
@@ -50,18 +63,14 @@ new ol.Map({
 	view: new ol.View({
 		enableRotation: false,
 	}),
-	controls: controlsCollection().concat(controlLayerSwitcher()),
+	controls: controlsCollection()
+		.concat(controlLayerSwitcher({
+			layers: layerTileCollection(),
+			selectExtId: 'select-ext',
+		})),
 	layers: [
-		layerGeoBB({
-			selectorName: 'geobb-features',
-			maxResolution: 300,
-			distance: 30,
-		}),
-		layerGeoBB({
-			selectorName: 'geobb-features',
-			subLayer: 'cluster',
-			minResolution: 300,
-			distance: 30,
+		layerClusterGeoBB({ // Chemineur
+			selectName: 'select-chem',
 		}),
 		layerMarker({
 			src: 'examples/images/viseur.png',

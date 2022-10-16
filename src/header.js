@@ -1,5 +1,5 @@
-// Validators adapters
-/* jshint esversion: 6 */
+// Ease validators
+/* jshint esversion: 9 */
 if (!ol) var ol = {};
 
 /**
@@ -19,40 +19,44 @@ if (location.hash == '###')
 /**
  * Display misc values
  */
-// OL version
-try {
-	new ol.style.Icon(); // Try incorrect action
-} catch (err) { // to get Assert url
-	console.log('Ol ' + err.message.match('/v([0-9\.]+)/')[1]);
-}
-// localStorage
-let myol_localArgs = [];
-for (let i = 0; i < localStorage.length; i++) {
-	myol_localArgs.push(
-		localStorage.key(i) + ': ' +
-		localStorage.getItem(localStorage.key(i)));
-}
-console.log(myol_localArgs.join('\n'));
+(async function() {
+	let data = ['Openlayers ' + ol.version];
 
-/**
- * Warn layers when added to the map
- */
-//BEST DELETE (used by marker.js & editor.js)
-ol.Map.prototype.handlePostRender = function() {
-	ol.PluggableMap.prototype.handlePostRender.call(this);
+	// myol storages in the subdomain
+	['localStorage', 'sessionStorage'].forEach(s => {
+		if (window[s].length)
+			data.push(s + ':');
 
-	const map = this;
-	map.getLayers().forEach(function(layer) {
-		if (!layer.map_) {
-			layer.map_ = map;
-
-			layer.dispatchEvent({
-				type: 'myol:onadd',
-				map: map,
-			});
-		}
+		Object.keys(window[s])
+			.filter(k => k.substring(0, 5) == 'myol_')
+			.forEach(k => data.push('  ' + k + ': ' + window[s].getItem(k)));
 	});
-};
+
+	// Registered service workers in the scope
+	if ('serviceWorker' in navigator)
+		await navigator.serviceWorker.getRegistrations().then(registrations => {
+			if (registrations.length) {
+				data.push('service-workers:'); //BEST BUG displayed event when we have nothing
+
+				for (let registration of registrations)
+					if (registration.active)
+						data.push('  ' + registration.active.scriptURL);
+			}
+		});
+
+	if (typeof caches == 'object')
+		await caches.keys().then(function(names) {
+			if (names.length) {
+				data.push('caches:');
+
+				for (let name of names)
+					data.push('  ' + name);
+			}
+		});
+
+	// Final display
+	console.info(data.join('\n'));
+})();
 
 /**
  * Json parsing errors log
@@ -75,6 +79,7 @@ if (window.PointerEvent === undefined) {
 	script.src = 'https://unpkg.com/elm-pep';
 	document.head.appendChild(script);
 }
+
 // Icon extension depending on the OS (IOS 12 dosn't support SVG)
 function iconCanvasExt() {
 	//BEST OBSOLETE navigator.userAgent => navigator.userAgentData

@@ -1,11 +1,13 @@
 /**
  * GPS control
  * Requires controlButton
+ * Need to include controls.js & controls.css
  */
 //jshint esversion: 9
 
 function controlGPS(options) {
 	const subMenu = location.href.match(/(https|localhost)/) ?
+		//BEST use .html content / option
 		'<p>Localisation GPS:</p>' +
 		'<label>' +
 		'<input type="radio" name="myol-gps-source" value="0" ctrlonchange="renderGPS" checked="checked" />' +
@@ -21,7 +23,6 @@ function controlGPS(options) {
 		'<input type="radio" name="myol-gps-display" value="2" ctrlonchange="renderGPS" />' +
 		'Centre et oriente la carte <span>(3)</span></label>' +
 
-		//BEST use .html content / option
 		'<hr /><p>(1) plus précis en extérieur mais plus lent à initialiser, ' +
 		'nécessite un capteur et une réception GPS.</p>' +
 		'<p>(2) plus précis et rapide en intérieur ou en zone urbaine ' +
@@ -38,11 +39,11 @@ function controlGPS(options) {
 			className: 'myol-button-gps',
 			label: '&#x2295;',
 			submenuHTML: subMenu,
-			...options
+			...options,
 		}),
 
 		// Graticule
-		graticuleFeature = new ol.Feature(),
+		graticuleFeature = new ol.Feature(), //BEST Use ol.layer.Graticule
 		northGraticuleFeature = new ol.Feature(),
 		graticuleLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({
@@ -95,7 +96,7 @@ function controlGPS(options) {
 				enableHighAccuracy: true,
 				maximumAge: 1000,
 				timeout: 1000,
-				...options
+				...options,
 			},
 		});
 		geolocation.on('change', control.renderGPS);

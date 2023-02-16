@@ -3,7 +3,6 @@
  * Requires JSONparse, controlButton (from src/controls.js)
  */
 //jshint esversion: 9
-
 function layerEditGeoJson(opt) {
 	const options = {
 			format: new ol.format.GeoJSON(),
@@ -28,41 +27,8 @@ function layerEditGeoJson(opt) {
 						})
 					.replace(/"properties":\{[^\}]*\}/, '"properties":null');
 			},
-			// Drag lines or Polygons
-			styleOptions: {
-				// Lines or polygons border
-				stroke: new ol.style.Stroke({
-					color: 'red',
-					width: 2,
-				}),
-				// Polygons
-				fill: new ol.style.Fill({
-					color: 'rgba(0,0,255,0.2)',
-				}),
-			},
-			// Hover / modify / create
-			editStyleOptions: {
-				// Edit position marker
-				image: new ol.style.Circle({
-					radius: 4,
-					stroke: new ol.style.Stroke({
-						color: 'red',
-						width: 2,
-					}),
-				}),
-				// Lines or polygons border
-				stroke: new ol.style.Stroke({
-					color: 'red',
-					width: 4,
-				}),
-				// Polygons
-				fill: new ol.style.Fill({
-					color: 'rgba(255,0,0,0.3)',
-				}),
-			},
-			...opt
+			...opt,
 		},
-
 		labels = ['&#x1F58D;', '&#xD17;', '&#X23E2;'], // Modify, Line, Polygon
 		control = controlButton({
 			className: 'myol-button-edit',
@@ -84,12 +50,55 @@ function layerEditGeoJson(opt) {
 					'</label>') +
 				'<hr/><div id="myol-help-edit"></div>',
 		}),
-
 		geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
 		geoJsonValue = geoJsonEl ? geoJsonEl.value : '',
-		displayStyle = new ol.style.Style(options.styleOptions),
-		editStyle = new ol.style.Style(options.editStyleOptions),
+		styleDisplay = new ol.style.Style({
+			// Lines or polygons border
+			stroke: new ol.style.Stroke({
+				color: 'red',
+				width: 2,
+			}),
+			// Polygons
+			fill: new ol.style.Fill({
+				color: 'rgba(0,0,255,0.2)',
+			}),
+		}),
+		editStyle = function(feature) {
+			const textStyle = {
+				scale: feature.getGeometry().getType() == 'LineString' ? 1.5 : 0,
+				placement: 'line',
+				textAlign: 'end',
+				text: 'D',
+				offsetY: -7,
+			};
 
+			return [
+				new ol.style.Style({
+					image: new ol.style.Circle({ // Marker
+						radius: 4,
+						stroke: new ol.style.Stroke({
+							color: 'red',
+							width: 2,
+						}),
+					}),
+					stroke: new ol.style.Stroke({ // Lines or polygons border
+						color: 'red',
+						width: 4,
+					}),
+					fill: new ol.style.Fill({ // Polygons
+						color: 'rgba(255,0,0,0.3)',
+					}),
+					text: new ol.style.Text(textStyle), // Direction
+				}),
+				new ol.style.Style({
+					text: new ol.style.Text({
+						...textStyle,
+						textAlign: 'start',
+						text: 'A',
+					}),
+				}),
+			];
+		},
 		features = options.readFeatures(),
 		source = new ol.source.Vector({
 			features: features,
@@ -98,9 +107,8 @@ function layerEditGeoJson(opt) {
 		layer = new ol.layer.Vector({
 			source: source,
 			zIndex: 20, // Editor & cursor : above the features
-			style: displayStyle,
+			style: styleDisplay,
 		}),
-
 		interactions = [
 			new ol.interaction.Modify({ // 0 Modify
 				source: source,
@@ -126,7 +134,9 @@ function layerEditGeoJson(opt) {
 		];
 
 	// Manage hover to save modify actions integrity
-	let hoveredFeature = null;
+	let hoveredFeature = null,
+		selectedVertex = null, // Vertex where to split a line if reverseLine = false
+		reverseLine = false; // Then reverse the segment where selectedVertex is
 
 	control.layer = layer; // For user's usage
 
@@ -190,9 +200,6 @@ function layerEditGeoJson(opt) {
 		//BEST move only one summit when dragging
 		//BEST Ctrl+Alt+click on summit : delete the line or poly
 
-		// Mark last change time
-		sessionStorage.myol_lastChangeTime = Date.now();
-
 		// Ctrl+Alt+click on segment : delete the line or poly
 		if (evt.mapBrowserEvent.originalEvent.ctrlKey &&
 			evt.mapBrowserEvent.originalEvent.altKey) {
@@ -212,15 +219,21 @@ function layerEditGeoJson(opt) {
 		const newFeature = interactions[3].snapTo(
 			evt.mapBrowserEvent.pixel,
 			evt.mapBrowserEvent.coordinate,
-			interactions[3].getMap()
+			control.getMap()
 		);
 
 		if (evt.mapBrowserEvent.originalEvent.altKey && newFeature)
-			optimiseEdited(newFeature.vertex);
+			selectedVertex = newFeature.vertex;
+
+		if (evt.mapBrowserEvent.originalEvent.shiftKey && newFeature) {
+			selectedVertex = newFeature.vertex;
+			reverseLine = true;
+		}
 
 		// Finish
 		optimiseEdited();
-		hoveredFeature = null; // Recover hovering
+		hoveredFeature = selectedVertex = null;
+		reverseLine = false;
 	});
 
 	// End of line & poly drawing
@@ -271,19 +284,18 @@ function layerEditGeoJson(opt) {
 
 		// If no more hovered, return to the normal style
 		if (!nbFeaturesAtPixel && !evt.originalEvent.buttons && hoveredFeature) {
-			hoveredFeature.setStyle(displayStyle);
+			hoveredFeature.setStyle(styleDisplay); //TODO should clear style / styleDisplay has wrong arguments
 			hoveredFeature = null;
 		}
 	}
 
-	function optimiseEdited(deleteCoords) {
+	function optimiseEdited() {
 		const coordinates = optimiseFeatures(
 			source.getFeatures(),
 			options.help[1],
 			options.help[2],
 			true,
-			true,
-			deleteCoords
+			true
 		);
 
 		// Recreate features
@@ -304,15 +316,15 @@ function layerEditGeoJson(opt) {
 	}
 
 	// Refurbish Lines & Polygons
-	// Split lines having a summit at deleteCoords
-	function optimiseFeatures(features, withLines, withPolygons, merge, holes, deleteCoords) {
+	// Split lines having a summit at selectedVertex
+	function optimiseFeatures(features, withLines, withPolygons, merge, holes) {
 		const points = [],
 			lines = [],
 			polys = [];
 
 		// Get all edited features as array of coordinates
 		for (let f in features)
-			flatFeatures(features[f].getGeometry(), points, lines, polys, deleteCoords);
+			flatFeatures(features[f].getGeometry(), points, lines, polys);
 
 		for (let a in lines)
 			// Exclude 1 coordinate features (points)
@@ -390,12 +402,12 @@ function layerEditGeoJson(opt) {
 		};
 	}
 
-	function flatFeatures(geom, points, lines, polys, deleteCoords) {
+	function flatFeatures(geom, points, lines, polys) {
 		// Expand geometryCollection
 		if (geom.getType() == 'GeometryCollection') {
 			const geometries = geom.getGeometries();
 			for (let g in geometries)
-				flatFeatures(geometries[g], points, lines, polys, deleteCoords);
+				flatFeatures(geometries[g], points, lines, polys);
 		}
 		// Point
 		else if (geom.getType().match(/point$/i))
@@ -404,25 +416,36 @@ function layerEditGeoJson(opt) {
 		// line & poly
 		else
 			// Get lines or polyons as flat array of coordinates
-			flatCoord(lines, geom.getCoordinates(), deleteCoords);
+			flatCoord(lines, geom.getCoordinates());
 	}
 
 	// Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
-	// at the same level & split if one point = deleteCoords
-	function flatCoord(existingCoords, newCoords, deleteCoords) {
-		if (typeof newCoords[0][0] == 'object') // Multi*
-			for (let c1 in newCoords)
-				flatCoord(existingCoords, newCoords[c1], deleteCoords);
-		else {
-			existingCoords.push([]); // Add a new segment
+	// at the same level & split if one point = selectedVertex
+	function flatCoord(lines, coords) {
+		let begCoords = [], // Coords before the selectedVertex
+			selectedLine = false;
 
-			for (let c2 in newCoords)
-				if (deleteCoords && compareCoords(newCoords[c2], deleteCoords))
-					existingCoords.push([]); // Ignore this point and add a new segment
-				else
-					// Stack on the last existingCoords array
-					existingCoords[existingCoords.length - 1].push(newCoords[c2]);
-		}
+		// Multi*
+		if (typeof coords[0][0] == 'object')
+			for (let c1 in coords)
+				flatCoord(lines, coords[c1]);
+
+		// 	LineString
+		else if (selectedVertex) {
+			while (coords.length) {
+				const c = coords.shift();
+				if (compareCoords(c, selectedVertex)) {
+					selectedLine = true;
+					break; // Ignore this point and stop selection
+				} else
+					begCoords.push(c);
+			}
+			if (reverseLine && selectedLine)
+				lines.push(begCoords.concat(coords).reverse());
+			else
+				lines.push(begCoords, coords);
+		} else
+			lines.push(coords);
 	}
 
 	function compareCoords(a, b) {

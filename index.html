@@ -63,13 +63,15 @@ new ol.Map({
 	view: new ol.View({
 		enableRotation: false,
 	}),
-	controls: controlsCollection()
-		.concat(controlLayerSwitcher({
+	controls: [
+		...controlsCollection(),
+		controlLayerSwitcher({
 			layers: layerTileCollection(),
 			selectExtId: 'select-ext',
-		})),
+		}),
+	],
 	layers: [
-		layerClusterGeoBB({ // Chemineur
+		layerChemineur({
 			selectName: 'select-chem',
 		}),
 		layerMarker({

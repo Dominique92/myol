@@ -11,7 +11,7 @@ function controlButton(opt) {
 	const options = {
 			element: document.createElement('div'),
 			className: '',
-			...opt
+			...opt,
 		},
 		control = new ol.control.Control(options),
 		buttonEl = document.createElement('button');
@@ -99,7 +99,7 @@ function controlPermalink(opt) {
 			setUrl: false, // {true | false} Change url hash when moving the map.
 			display: false, // {true | false} Display permalink link the map.
 			hash: '?', // {?, #} the permalink delimiter after the url
-			...opt
+			...opt,
 		},
 		control = new ol.control.Control({
 			element: document.createElement('div'),
@@ -107,7 +107,7 @@ function controlPermalink(opt) {
 		}),
 		aEl = document.createElement('a'),
 		urlMod = location.href.replace( // Get value from params with priority url / ? / #
-			/map=([0-9\.]+)\/([-0-9\.]+)\/([-0-9\.]+)/, // map=<zoom>/<lon>/<lat>
+			/map=([0-9\.]+)\/(-?[0-9\.]+)\/(-?[0-9\.]+)/, // map=<zoom>/<lon>/<lat>
 			'zoom=$1&lon=$2&lat=$3' // zoom=<zoom>&lon=<lon>&lat=<lat>
 		) +
 		// Last values
@@ -134,8 +134,8 @@ function controlPermalink(opt) {
 			view.setZoom(urlMod.match(/zoom=([0-9\.]+)/)[1]);
 
 			view.setCenter(ol.proj.transform([
-				urlMod.match(/lon=([-0-9\.]+)/)[1],
-				urlMod.match(/lat=([-0-9\.]+)/)[1],
+				urlMod.match(/lon=(-?[0-9\.]+)/)[1],
+				urlMod.match(/lat=(-?[0-9\.]+)/)[1],
 			], 'EPSG:4326', 'EPSG:3857'));
 		}
 
@@ -178,13 +178,12 @@ function controlMousePosition(options) {
 			} else
 				return ol.coordinate.createStringXY(4)(mouse);
 		},
-		...options
+		...options,
 	});
 }
 
 /**
- * Control to display the length of an hovered line
- * option hoverStyle style the hovered feature
+ * Control to display the length & height difference of an hovered line
  */
 function controlLengthLine() {
 	const control = controlButton(); //HACK button not visible
@@ -204,17 +203,48 @@ function controlLengthLine() {
 		});
 	};
 
+	function getFlatCoordinates(geometry) {
+		let fcs = [];
+
+		if (geometry.stride == 3)
+			fcs = geometry.flatCoordinates;
+
+		if (geometry.getType() == 'GeometryCollection')
+			for (let g of geometry.getGeometries())
+				fcs.push(...getFlatCoordinates(g));
+
+		return fcs;
+	}
+
 	//BEST calculate distance to the ends
 	function calculateLength(feature) {
-		// Display the line length
 		if (feature) {
-			const length = ol.sphere.getLength(feature.getGeometry());
+			let geometry = feature.getGeometry(),
+				length = ol.sphere.getLength(geometry),
+				fcs = getFlatCoordinates(geometry),
+				denivPos = 0,
+				denivNeg = 0;
 
+			// Height difference calculation
+			for (let c = 5; c < fcs.length; c += 3) {
+				const d = fcs[c] - fcs[c - 3];
+
+				if (d > 0)
+					denivPos += d;
+				else
+					denivNeg -= d;
+			}
+
+			// Display
 			if (length) {
 				control.element.innerHTML =
+					// Line length
 					length < 1000 ?
 					(Math.round(length)) + ' m' :
-					(Math.round(length / 10) / 100) + ' km';
+					(Math.round(length / 10) / 100) + ' km' +
+					// Height difference
+					(denivPos ? ' +' + denivPos + ' m' : '') +
+					(denivNeg ? ' -' + denivNeg + ' m' : '');
 
 				return false; // Continue detection (for editor that has temporary layers)
 			}
@@ -230,7 +260,7 @@ function controlLengthLine() {
 function controlTilesBuffer(opt) {
 	const options = {
 			depth: 3,
-			...opt
+			...opt,
 		},
 		control = controlButton(); //HACK no button
 
@@ -260,7 +290,7 @@ function controlGeocoder(options) {
 
 	const geocoder = new Geocoder('nominatim', {
 			placeholder: 'Recherche par nom sur la carte', // Initialization of the input field
-			...options
+			...options,
 		}),
 		controlEl = geocoder.element.firstElementChild;
 
@@ -307,13 +337,13 @@ function controlPrint(options) {
 			'<label><input type="radio" name="myol-po" value="1" ctrlonchange="resizeDraftPrint">Paysage A4</label>' +
 			'<a onclick="printMap()">Imprimer</a>' +
 			'<a onclick="location.reload()">Annuler</a>',
-		...options
+		...options,
 	});
 
 	control.resizeDraftPrint = function() {
 		const map = control.getMap(),
 			mapEl = map.getTargetElement(),
-			poElcs = document.querySelectorAll('input[name=print-orientation]:checked'),
+			poElcs = document.querySelectorAll('input[name=myol-po]:checked'),
 			orientation = poElcs.length ? parseInt(poElcs[0].value) : 0;
 
 		mapEl.style.maxHeight = mapEl.style.maxWidth =
@@ -368,7 +398,7 @@ function controlPrint(options) {
 function controlHelp(options) {
 	return controlButton({
 		label: '?',
-		...options
+		...options,
 	});
 }
 
@@ -376,9 +406,9 @@ function controlHelp(options) {
  * Controls examples
  */
 function controlsCollection(opt) {
-	options = {
-		supplementaryControls: [],
-		...opt
+	const options = {
+		supplementaryControls: [], //BEST resorb
+		...opt,
 	};
 
 	return [

@@ -7,13 +7,14 @@
 //BEST export / import names and links
 //BEST Chemineur symbols in MyOl => translation sym (export symbols GPS ?)
 //BEST misc formats
-function controlLoadGPX(options) {
-	const control = controlButton({
-		label: '&#x1F4C2;',
-		submenuHTML: '<p>Importer un fichier au format GPX:</p>' +
-			'<input type="file" accept=".gpx" ctrlOnChange="loadFile" />',
-		...options
-	});
+function controlLoadGPX(opt) {
+	const options = {
+			label: '&#x1F4C2;',
+			submenuHTML: '<p>Importer un fichier au format GPX:</p>' +
+				'<input type="file" accept=".gpx" ctrlOnChange="loadFile" />',
+			...opt,
+		},
+		control = controlButton(options);
 
 	control.loadURL = async function(evt) {
 		const xhr = new XMLHttpRequest();
@@ -25,6 +26,18 @@ function controlLoadGPX(options) {
 		xhr.send();
 	};
 
+	// Load file at init
+	if (options.initFile) {
+		const xhr = new XMLHttpRequest();
+		xhr.open('GET', options.initFile);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == 4 && xhr.status == 200)
+				loadText(xhr.responseText);
+		};
+		xhr.send();
+	}
+
+	// Load file on demand
 	control.loadFile = function(evt) {
 		const reader = new FileReader();
 
@@ -56,20 +69,17 @@ function controlLoadGPX(options) {
 				gpxLayer = new ol.layer.Vector({
 					source: gpxSource,
 					style: function(feature) {
-						const properties = feature.getProperties(),
-							styleOptions = {
-								stroke: new ol.style.Stroke({
-									color: 'blue',
-									width: 3,
-								}),
-							};
+						const properties = feature.getProperties();
 
-						if (properties.sym)
-							styleOptions.image = new ol.style.Icon({
+						return new ol.style.Style({
+							stroke: new ol.style.Stroke({
+								color: 'blue',
+								width: 3,
+							}),
+							image: properties.sym ? new ol.style.Icon({
 								src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
-							});
-
-						return new ol.style.Style(styleOptions);
+							}) : null,
+						});
 					},
 				});
 			map.addLayer(gpxLayer);
@@ -112,7 +122,7 @@ function controlDownload(opt) {
 				'<a ctrlOnClick="download" id="KML" mime="vnd.google-earth.kml+xml">KML</a>' +
 				'<a ctrlOnClick="download" id="GeoJSON" mime="application/json">GeoJSON</a>',
 			fileName: document.title || 'openlayers', //BEST name from feature
-			...opt
+			...opt,
 		},
 		control = controlButton(options),
 		hiddenEl = document.createElement('a');

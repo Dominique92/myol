@@ -20,7 +20,7 @@ if (location.hash == '###')
  * Display misc values
  */
 (async function() {
-	let data = ['Openlayers ' + ol.version];
+	let data = ['Openlayers ' + ol.util.VERSION];
 
 	// myol storages in the subdomain
 	['localStorage', 'sessionStorage'].forEach(s => {
@@ -28,7 +28,6 @@ if (location.hash == '###')
 			data.push(s + ':');
 
 		Object.keys(window[s])
-			.filter(k => k.substring(0, 5) == 'myol_')
 			.forEach(k => data.push('  ' + k + ': ' + window[s].getItem(k)));
 	});
 
@@ -49,8 +48,13 @@ if (location.hash == '###')
 			if (names.length) {
 				data.push('caches:');
 
-				for (let name of names)
+				for (let name of names) {
 					data.push('  ' + name);
+
+					//BEST TEMPORARY (til Jun,2023) : Delete previous version of MyOl cache
+					if (name == 'myGpsCache')
+						caches.delete(name);
+				}
 			}
 		});
 
@@ -66,23 +70,6 @@ function JSONparse(json) {
 	try {
 		return JSON.parse(json);
 	} catch (returnCode) {
-		console.log(returnCode + ' parsing : "' + json + '" ' + new Error().stack);
+		console.error(returnCode + '\nParsing "' + json + '"\n' + new Error().stack);
 	}
-}
-
-/**
- * IOS 12 support
- */
-//HACK for pointer events (IOS < 13)
-if (window.PointerEvent === undefined) {
-	const script = document.createElement('script');
-	script.src = 'https://unpkg.com/elm-pep';
-	document.head.appendChild(script);
-}
-
-// Icon extension depending on the OS (IOS 12 dosn't support SVG)
-function iconCanvasExt() {
-	//BEST OBSOLETE navigator.userAgent => navigator.userAgentData
-	const iOSVersion = navigator.userAgent.match(/iPhone OS ([0-9]+)/);
-	return iOSVersion && iOSVersion[1] < 13 ? 'png' : 'svg';
 }

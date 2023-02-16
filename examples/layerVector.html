@@ -15,9 +15,10 @@ Based on https://openlayers.org
 	<!-- Openlayers -->
 	<link href="../ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="../ol/ol.js"></script>
+	<script src="../proj4/proj4-src.js"></script>
 
 	<!-- My Openlayers -->
-	<script src="../src/header.js"></script><!-- For JSONparse & layerVector -->
+	<script src="../src/header.js"></script><!-- For JSONparse -->
 	<script src="../src/layerVector.js"></script>
 	<script src="../src/layerVectorCollection.js"></script>
 
@@ -62,7 +63,7 @@ Based on https://openlayers.org
 			<span id="select-prc-status"></span>
 		</label><br /><label>
 			Chemineur
-			<input type="checkbox" name="select-chem" value="3,8,20,23" />
+			<input type="checkbox" name="select-chem" value="3,8,64" />
 			<span id="select-chem-status"></span>
 		</label><br /><label>
 			Camptocamp.org
@@ -97,6 +98,10 @@ Based on https://openlayers.org
 		<label><input type="checkbox" name="select-wri" value="23" />point d'eau</label>
 		<label><input type="checkbox" name="select-wri" value="6" />sommet</label>
 		<label><input type="checkbox" name="select-wri" value="3" />passage délicat</label>
+		<br /><label>
+			<input type="checkbox" name="select-refuges" value="4" />
+			Style refuges.info
+		</label>
 	</div>
 
 	<div class="layer-select">
@@ -112,7 +117,7 @@ Based on https://openlayers.org
 		<label><input type="checkbox" name="select-osm" value='["amenity"="shelter"]["shelter_type"="basic_hut"]' />Abri</label>
 		<label><input type="checkbox" name="select-osm" value='["tourism"="camp_site"]' />Camping</label>
 		<label><input type="checkbox" name="select-osm"
-			value='["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["natural"="spring"]+["man_made"="water_well"]'/>Point d'eau</label>
+			value='["natural"="spring"]+["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["man_made"="water_well"]'/>Point d'eau</label>
 		<label><input type="checkbox" name="select-osm" value='["highway"="bus_stop"]' />Bus</label>
 		<label><input type="checkbox" name="select-osm" value='["amenity"="parking"]["access"!="private"]' />Parking</label>
 		<label><input type="checkbox" name="select-osm" value='["amenity"="restaurant"]' />Restaurant</label>
@@ -125,17 +130,20 @@ Based on https://openlayers.org
 
 	<script>
 // Force selectors
-localStorage.myol_selectwri = 'all';
+//localStorage.myol_selectwri = 'all';
 
 new ol.Map({
 	target: 'map',
 	view: new ol.View({
 		center: ol.proj.transform([5.7, 45.2], 'EPSG:4326', 'EPSG:3857'),
+		center: ol.proj.transform([5.64711, 45.20281], 'EPSG:4326', 'EPSG:3857'),
 		zoom: 12,
+		zoom: 15,
 	}),
 	controls: [
 		new ol.control.Zoom(),
 		new ol.control.FullScreen(),
+		new ol.control.ScaleLine(),
 	],
 	layers: [
 		// Background layer
@@ -143,16 +151,42 @@ new ol.Map({
 			source: new ol.source.OSM(),
 		}),
 		...layerVectorCollection({
+			prc: {
+				selectName: 'select-prc',
+			},
+			chemineur: {
+				host: '//chem6.c92.fr/', //TODO DELETE
+				selectName: 'select-chem',
+			},
+			c2c: {
+				selectName: 'select-c2c',
+			},
+			alpages: {
+				selectName: 'select-alpages',
+			},
 			wri: {
 				selectName: 'select-wri,select-massif', // 2 selectors for one layer
 			},
-			alpages: {
-				extraParams: function() {
-					return {
-						forums: '3,4,5',
-					}
-				},
+			osm: {
+				selectName: 'select-osm',
 			},
+		}),
+		layerClusterWri({
+			host: '//dom.refuges.info/', //TODO DELETE
+			selectName: 'select-refuges',
+			// Display a single label above each icon
+			styleOptionsDisplay: function(feature, properties, layer, resolution) {
+				if (!properties.cluster || resolution < layer.options.maxResolutionDegroup)
+					return styleOptionsLabel(feature, properties.nom || properties.name); // Points || clusters
+			},
+			// Don't display attribution on labels
+			convertProperties: {
+				attribution: null,
+			},
+		}),
+		// WRI area layer for refuges.info
+		layerWriAreas({
+			selectName: 'select-massifs',
 		}),
 	],
 });

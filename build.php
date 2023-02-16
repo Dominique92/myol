@@ -15,7 +15,6 @@ echo "<p>";
 
 $css[] = get ('controls.css');
 $css[] = get ('layerSwitcher.css');
-$css[] = get ('marker.css');
 $css[] = get ('editor.css');
 file_put_contents ('myol.css', implode ('
 
@@ -37,11 +36,10 @@ echo 'TO myol.js</p>';
 
 function get ($file) {
 	echo "$file, ";
-	return "/* FILE src/$file */\n".
-		preg_replace (
-			'/\n?[ \t]*\/\/([A-Z]|jshint)[^\n]*/', '',
-			file_get_contents ('src/'.$file)
-		);
+	return preg_replace (
+		"/\n?[ \t]*\/\/([A-Z]|jshint)[^\n]*/", "",
+		file_get_contents ("src/$file")
+	);
 }
 ?>
 

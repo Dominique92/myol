@@ -1,13 +1,11 @@
 import Control from 'ol/control/Control';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-
 import {
   CONTROL_TYPE,
   DEFAULT_OPTIONS,
   FEATURE_SRC
 } from '../konstants';
-
 import {
   Html
 } from './html';
@@ -57,7 +55,7 @@ export default class Base extends Control {
 
     super({
       element: container,
-	  ...options,
+      ...options,
     });
 
     if (!(this instanceof Base)) return new Base();

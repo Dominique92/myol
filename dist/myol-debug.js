@@ -60122,6 +60122,7 @@ var myol = (function () {
           addressdetails: 1,
           limit: 10,
           countrycodes: '',
+          viewbox: '',
           'accept-language': 'en-US',
         },
       };
@@ -60137,6 +60138,7 @@ var myol = (function () {
           addressdetails: this.settings.params.addressdetails,
           limit: opt.limit || this.settings.params.limit,
           countrycodes: opt.countrycodes || this.settings.params.countrycodes,
+          viewbox: opt.viewbox || this.settings.params.viewbox,
           'accept-language': opt.lang || this.settings.params['accept-language'],
         },
       };
@@ -60537,6 +60539,7 @@ var myol = (function () {
         key: this.options.key,
         lang: this.options.lang,
         countrycodes: this.options.countrycodes,
+        viewbox: this.options.viewbox,
         limit: this.options.limit,
       });
 
@@ -60827,7 +60830,7 @@ var myol = (function () {
 
       super({
         element: container,
-  	  ...options,
+        ...options,
       });
 
       if (!(this instanceof Base)) return new Base();

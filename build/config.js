@@ -10,6 +10,7 @@ import {
 const banner = readFileSync('./build/banner.js', 'utf-8');
 //TODO dist without ol...
 //TODO banner on .css
+//TODO rollup date in dist
 
 export default [{
   // Full myol / compressed library

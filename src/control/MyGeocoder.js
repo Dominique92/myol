@@ -5,9 +5,9 @@
  */
 
 // Geocoder
-import '../../geocoder/package/dist/ol-geocoder.css';
+import '../../geocoder/dist/ol-geocoder.css';
 import './myGeocoder.css'; // After ol-geocoder.css
-import Geocoder from '../../geocoder/code/src/base';
+import Geocoder from '../../geocoder/src/base';
 
 //TODO BUG n'ouvre pas au survol
 export class MyGeocoder extends Geocoder {

@@ -59761,17 +59761,17 @@ var myol = (function () {
   function mergeOptions(obj1, obj2) {
     const obj3 = {};
 
-    for (const key in obj1) {
+    Object.keys(obj1).forEach((key) => {
       if (Object.prototype.hasOwnProperty.call(obj1, key)) {
         obj3[key] = obj1[key];
       }
-    }
+    });
 
-    for (const key in obj2) {
+    Object.keys(obj2).forEach((key) => {
       if (Object.prototype.hasOwnProperty.call(obj2, key)) {
         obj3[key] = obj2[key];
       }
-    }
+    });
 
     return obj3;
   }
@@ -59806,10 +59806,6 @@ var myol = (function () {
     return window.performance.now();
   }
 
-  function flyTo(map, coord, duration = 500, resolution = 2.388657133911758) {
-    map.getView().animate({ duration, resolution }, { duration, center: coord });
-  }
-
   function randomId(prefix) {
     const id = now().toString(36);
 
@@ -59820,7 +59816,6 @@ var myol = (function () {
     return /^\d+$/u.test(str);
   }
 
-  /* eslint-disable optimize-regex/optimize-regex */
   /* eslint-disable prefer-named-capture-group */
 
   /**
@@ -59913,7 +59908,9 @@ var myol = (function () {
       if (node[1].classname) elem.className = node[1].classname;
 
       if (node[1].attr) {
-        const { attr } = node[1];
+        const {
+          attr
+        } = node[1];
 
         if (Array.isArray(attr)) {
           let i = -1;
@@ -59941,7 +59938,6 @@ var myol = (function () {
   }
 
   function classRegex(classname) {
-    // eslint-disable-next-line security/detect-non-literal-regexp
     return new RegExp(`(^|\\s+) ${classname} (\\s+|$)`, 'u');
   }
 
@@ -59993,7 +59989,10 @@ var myol = (function () {
       if (this.options.targetType === TARGET_TYPE.INPUT) {
         containerClass = `${klasses$1.namespace} ${klasses$1.inputText.container}`;
         container = createElement(
-          ['div', { id: VARS.containerId, classname: containerClass }],
+          ['div', {
+            id: VARS.containerId,
+            classname: containerClass
+          }],
           Html.input
         );
         elements = {
@@ -60006,7 +60005,10 @@ var myol = (function () {
       } else {
         containerClass = `${klasses$1.namespace} ${klasses$1.glass.container}`;
         container = createElement(
-          ['div', { id: VARS.containerId, classname: containerClass }],
+          ['div', {
+            id: VARS.containerId,
+            classname: containerClass
+          }],
           Html.glass
         );
         elements = {
@@ -60110,9 +60112,10 @@ var myol = (function () {
     /**
      * @constructor
      */
-    constructor() {
+    constructor(options) {
       this.settings = {
         url: 'https://nominatim.openstreetmap.org/search',
+        ...options,
 
         params: {
           q: '',
@@ -60260,8 +60263,7 @@ var myol = (function () {
           query: options.query,
           key: options.key,
 
-          includeNeighborhood:
-            options.includeNeighborhood || this.settings.params.includeNeighborhood,
+          includeNeighborhood: options.includeNeighborhood || this.settings.params.includeNeighborhood,
 
           maxResults: options.maxResults || this.settings.params.maxResults,
         },
@@ -60269,7 +60271,9 @@ var myol = (function () {
     }
 
     handleResponse(results) {
-      const { resources } = results.resourceSets[0];
+      const {
+        resources
+      } = results.resourceSets[0];
 
       if (resources.length === 0) return [];
 
@@ -60372,9 +60376,9 @@ var myol = (function () {
     return Object.keys(obj)
       .reduce((acc, k) => {
         acc.push(
-          typeof obj[k] === 'object'
-            ? toQueryString(obj[k])
-            : `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
+          typeof obj[k] === 'object' ?
+          toQueryString(obj[k]) :
+          `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
         );
 
         return acc;
@@ -60392,7 +60396,9 @@ var myol = (function () {
 
   function jsonp(url, key, callback) {
     // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
-    const { head } = document;
+    const {
+      head
+    } = document;
     const script = document.createElement('script');
     // generate minimally unique name for callback function
     const callbackName = `f${Math.round(Math.random() * Date.now())}`;
@@ -60440,21 +60446,24 @@ var myol = (function () {
       this.layer = new LayerVector({
         name: this.layerName,
         source: new SourceVector(),
+        displayInLayerSwitcher: false,
       });
 
       this.options = base.options;
       // provider is either the name of a built-in provider as a string or an
       // object that implements the provider API
       this.options.provider =
-        typeof this.options.provider === 'string'
-          ? this.options.provider.toLowerCase()
-          : this.options.provider;
+        typeof this.options.provider === 'string' ?
+        this.options.provider.toLowerCase() :
+        this.options.provider;
       this.provider = this.newProvider();
 
       this.els = els;
       this.lastQuery = '';
       this.container = this.els.container;
-      this.registeredListeners = { mapClick: false };
+      this.registeredListeners = {
+        mapClick: false
+      };
       this.setListeners();
     }
 
@@ -60469,22 +60478,21 @@ var myol = (function () {
       };
       const query = (evt) => {
         const value = evt.target.value.trim();
-        const hit = evt.key
-          ? evt.key === 'Enter'
-          : evt.which
-          ? evt.which === 13
-          : evt.keyCode
-          ? evt.keyCode === 13
-          : false;
+        const hit = evt.key ?
+          evt.key === 'Enter' :
+          evt.which ?
+          evt.which === 13 :
+          evt.keyCode ?
+          evt.keyCode === 13 :
+          false;
 
         if (hit) {
           evt.preventDefault();
           this.query(value);
         }
       };
-      // eslint-disable-next-line unicorn/consistent-function-scoping
       const stopBubbling = (evt) => evt.stopPropagation();
-      const reset = (evt) => {
+      const reset = () => {
         this.els.input.focus();
         this.els.input.value = '';
         this.lastQuery = '';
@@ -60494,9 +60502,9 @@ var myol = (function () {
       const handleValue = (evt) => {
         const value = evt.target.value.trim();
 
-        value.length !== 0
-          ? removeClass(this.els.reset, klasses.hidden)
-          : addClass(this.els.reset, klasses.hidden);
+        value.length !== 0 ?
+          removeClass(this.els.reset, klasses.hidden) :
+          addClass(this.els.reset, klasses.hidden);
 
         if (this.options.autoComplete && value !== lastQuery) {
           lastQuery = value;
@@ -60564,7 +60572,7 @@ var myol = (function () {
             this.listenMapClick();
           }
         })
-        .catch((err) => {
+        .catch(() => {
           removeClass(this.els.reset, klasses.spin);
 
           const li = createElement('li', '<h5>Error! No internet connection?</h5>');
@@ -60611,7 +60619,9 @@ var myol = (function () {
       const projection = map.getView().getProjection();
       const coord = transform$1(coord_, 'EPSG:4326', projection);
 
-      let { bbox } = place;
+      let {
+        bbox
+      } = place;
 
       if (bbox) {
         bbox = transformExtent(
@@ -60629,7 +60639,7 @@ var myol = (function () {
 
       this.options.keepOpen === false && this.clearResults(true);
 
-      if (this.options.preventDefault === true) {
+      if (this.options.preventDefault === true || this.options.preventMarker === true) {
         this.Base.dispatchEvent({
           type: EVENT_TYPE.ADDRESSCHOSEN,
           address,
@@ -60638,12 +60648,6 @@ var myol = (function () {
           place,
         });
       } else {
-        if (bbox) {
-          map.getView().fit(bbox, { duration: 500 });
-        } else {
-          flyTo(map, coord);
-        }
-
         const feature = this.createFeature(coord, address);
 
         this.Base.dispatchEvent({
@@ -60654,6 +60658,20 @@ var myol = (function () {
           bbox,
           place,
         });
+      }
+
+      if (this.options.preventDefault !== true && this.options.preventPanning !== true) {
+        if (bbox) {
+          map.getView().fit(bbox, {
+            duration: 500,
+          });
+        } else {
+          map.getView().animate({
+            center: coord,
+            resolution: this.options.defaultFlyResolution || 1,
+            duration: 500,
+          });
+        }
       }
     }
 
@@ -60697,7 +60715,7 @@ var myol = (function () {
     newProvider() {
       switch (this.options.provider) {
         case PROVIDERS.OSM:
-          return new OpenStreet();
+          return new OpenStreet(this.options);
         case PROVIDERS.MAPQUEST:
           return new MapQuest();
         case PROVIDERS.PHOTON:
@@ -60738,8 +60756,7 @@ var myol = (function () {
 
       // one-time fire click
       mapElement.addEventListener(
-        'click',
-        {
+        'click', {
           handleEvent(evt) {
             that.clearResults(true);
             mapElement.removeEventListener(evt.type, this, false);
@@ -60751,9 +60768,9 @@ var myol = (function () {
     }
 
     clearResults(collapse) {
-      collapse && this.options.targetType === TARGET_TYPE.GLASS
-        ? this.collapse()
-        : removeAllChildren(this.els.result);
+      collapse && this.options.targetType === TARGET_TYPE.GLASS ?
+        this.collapse() :
+        removeAllChildren(this.els.result);
     }
 
     getSource() {
@@ -60793,12 +60810,15 @@ var myol = (function () {
       assert(typeof options === 'object', '@param `options` should be object!');
 
       DEFAULT_OPTIONS.featureStyle = [
-        new Style$1({ image: new Icon$1({ scale: 0.7, src: FEATURE_SRC }) }),
+        new Style$1({
+          image: new Icon$1({
+            scale: 0.7,
+            src: FEATURE_SRC
+          })
+        }),
       ];
 
-      let container;
-
-      let $nominatim;
+      let container, $nominatim;
 
       const $html = new Html(options);
 
@@ -60806,7 +60826,10 @@ var myol = (function () {
         container = $html.els.container;
       }
 
-      super({ element: container });
+      super({
+        element: container,
+  	  ...options,
+      });
 
       if (!(this instanceof Base)) return new Base();
 

@@ -8,8 +8,8 @@ import * as tileLayercollection from './TileLayerCollection';
 import * as vectorLayerCollection from './VectorLayerCollection';
 
 export default {
-	...myVectorLayer,
-	Marker: Marker,
-	tile: tileLayercollection,
-	vector: vectorLayerCollection,
+  ...myVectorLayer,
+  Marker: Marker,
+  tile: tileLayercollection,
+  vector: vectorLayerCollection,
 };

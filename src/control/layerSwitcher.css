@@ -2,12 +2,15 @@
 .myol-button-switcher {
   float: right !important;
 }
-.myol-button-switcher > button {
+
+.myol-button-switcher>button {
   font-style: italic;
 }
-.myol-button-switcher > div {
+
+.myol-button-switcher>div {
   right: 0;
 }
+
 .select-ext {
   background: #fcffd1 !important;
 }

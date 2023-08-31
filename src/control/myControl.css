@@ -1,5 +1,5 @@
 /* PhpBB compatibility */
-.ol-overlaycontainer-stopevent > div:not(.ol-control) {
+.ol-overlaycontainer-stopevent>div:not(.ol-control) {
   margin: 0;
 }
 
@@ -10,6 +10,7 @@
 .myol-length-line {
   font-size: 12px;
 }
+
 .myol-coordinate {
   position: absolute;
   bottom: 30px;
@@ -19,6 +20,7 @@
   background: rgba(0, 60, 136, 0.3);
   color: white;
 }
+
 .myol-length-line {
   position: absolute;
   bottom: 52px;
@@ -28,10 +30,12 @@
   background: rgba(0, 60, 136, 0.3);
   color: white;
 }
+
 .myol-coordinate:empty,
 .myol-length-line:empty {
   display: none;
 }
+
 .myol-permalink {
   position: absolute;
   bottom: 35px;
@@ -40,6 +44,7 @@
   border-radius: 8px 0 0 8px;
   background: rgba(0, 60, 136, 0.3);
 }
+
 .ol-attribution button,
 .ol-attribution button:focus {
   font-size: 14px !important;
@@ -51,6 +56,7 @@
     /* Hide the header, footer & margins */
     margin: 0;
   }
+
   body {
     margin: 1mm 0 0 1mm;
     padding: 0;
@@ -61,11 +67,13 @@
   .ol-attribution {
     display: flex !important;
   }
+
   .ol-attribution ul {
     display: block !important;
   }
+
   .ol-attribution button,
-  .ol-overlaycontainer-stopevent > div {
+  .ol-overlaycontainer-stopevent>div {
     display: none;
   }
 }

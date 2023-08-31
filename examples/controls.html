@@ -10,19 +10,9 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="images/logo-dark.svg" rel="icon" type="image/svg">
-	<link href="images/favicon.png" rel="apple-touch-icon" />
 
-<<<<<<< .mine
 	<link href="ressources/style.css" rel="stylesheet">
 
-||||||| .r42
-	<!-- Polyfill iOS : Amélioration du pseudo full screen pour les cartes pour d'anciennes versions d'iOS/Safari -->
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-=======
->>>>>>> .r46
-<<<<<<< .mine
 	<!-- Simulation of importing myol -->
 	<script> // apache (production)
 		if (window.origin.split(':').length == 2) {
@@ -34,17 +24,7 @@ Based on https://openlayers.org
 		import myol from '../build/index'; // At this place, mysteriously do not import out of npm vite context
 		window.myol = myol; // Declare a myol global variable
 	</script>
-||||||| .r42
-	<!-- Openlayers -->
-	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
-	<script src="../ol/ol.js"></script>
-=======
-	<!-- Openlayers -->
-	<link href="../ol/ol.css" type="text/css" rel="stylesheet">
-	<script src="../ol/ol.js"></script>
->>>>>>> .r46
 
-<<<<<<< .mine
 	<!-- The main script must be defer or module to be run after the myol import -->
 	<script type="module">
 		new ol.Map({
@@ -73,45 +53,6 @@ Based on https://openlayers.org
 			],
 		});
 	</script>
-||||||| .r42
-	<!-- Recherche par nom -->
-	<link  href="../geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
-	<script src="../geocoder/ol-geocoder.js"></script>
-
-	<!-- My Openlayers -->
-	<link  href="../src/controls.css" type="text/css" rel="stylesheet">
-	<script src="../src/controls.js"></script>
-
-	<!-- This exemple -->
-	<style>
-		#map {
-			width: 100%;
-			max-width: 600px;
-			height: 80vw;
-			max-height: 400px;
-		}
-	</style>
-=======
-	<!-- Recherche par nom -->
-	<link href="../geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
-	<script src="../geocoder/ol-geocoder.js"></script>
-
-	<!-- My Openlayers -->
-	<link href="../src/controls.css" type="text/css" rel="stylesheet">
-	<script src="../src/controls.js"></script>
-	<script src="../src/files.js"></script>
-	<script src="../src/gps.js"></script>
-
-	<!-- This exemple -->
-	<style>
-		#map {
-			width: 100%;
-			max-width: 600px;
-			height: 80vw;
-			max-height: 400px;
-		}
-	</style>
->>>>>>> .r46
 </head>
 
 <body>
@@ -123,17 +64,10 @@ Based on https://openlayers.org
 		<ul>
 			<li>Full screen</li>
 			<li>Geocoder</li>
-<<<<<<< .mine
 			<li>Print</li>
 			<li>Length of a line</li>
 			<li>Load GPX file</li>
 			<li>Download GPX file</li>
-||||||| .r42
-			<li>GPS</li>
-			<li>Load GPX file</li>
-			<li>Download GPX file</li>
-=======
->>>>>>> .r46
 		</ul>
 	<p><a href="../src/Geolocation.js">src/Geolocation.js</a> adds GPS position control:
 		<ul>
@@ -144,138 +78,13 @@ Based on https://openlayers.org
 			<li>Geocoder</li>
 		</ul>
 	</p>
-	<p><a href="../src/files.js">src/files.js</a> adds some file management controls:
-		<ul>
-			<li>Load GPX file</li>
-			<li>Download GPX file</li>
-		</ul>
-	<p><a href="../src/gps.js">src/gps.js</a> adds GPS position controls:
-		<ul>
-			<li>GPS</li>
-		</ul>
-	</p>
 
 	<div>
 		<div id="map" class="map"></div>
 	</div>
 
-<<<<<<< .mine
 	<div id="myol-help">
 		<p>Ceci est un exemple d'aide.</p>
 	</div>
-||||||| .r42
-	<script>
-new ol.Map({
-	target: 'map',
-	layers: [
-		new ol.layer.Tile({
-			source: new ol.source.OSM(),
-		}),
-	],
-	controls: controlsCollection({
-		permalink: {
-			display: true,
-		},
-	}),
-});
-	</script>
-	<script src="print_script.js"></script>
-
-	<h4 style="margin-bottom:0">Tests</h4>
-	<div>Test each control</div>
-=======
-	<div id="myol-help">
-		<p>Ceci est un exemple d'aide.</p>
-	</div>
-
-	<script>
-const geojsonObject = {
-		"type": "FeatureCollection",
-		"features": [{
-			"type": "Feature",
-			"geometry": {
-				"type": "LineString",
-				"coordinates": [
-					[0, 58e5, 10],
-					[4e5, 62e5, 20],
-				],
-			},
-		}, {
-			"type": "Feature",
-			"id": "37815",
-			"geometry": {
-				"type": "GeometryCollection",
-				"geometries": [{
-					"type": "LineString",
-					"coordinates": [
-						[0, 62e5, 30],
-						[4e5, 62e5, 60],
-						[4e5, 58e5, 50],
-					]
-				}, {
-					"type": "LineString",
-					"coordinates": [
-						[4e5, 58e5, 50],
-						[0, 62e5, 30],
-					]
-				}]
-			}
-		}, {
-			"type": "Feature",
-			"geometry": {
-				"type": "MultiPolygon",
-				"coordinates": [
-					[
-						[
-							[-1.6e6, 6.4e6],
-							[0, 6.4e6],
-							[0, 8e6],
-						],
-						[
-							[-1.4e6, 6.5e6],
-							[-0.5e6, 6.5e6],
-							[-0.5e6, 7.4e6],
-						],
-					],
-				],
-			},
-		}],
-	},
-	vectorLayer = new ol.layer.Vector({
-		source: new ol.source.Vector({
-			features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-		}),
-		style: new ol.style.Style({
-			stroke: new ol.style.Stroke({
-				color: 'blue',
-			}),
-			fill: new ol.style.Fill({
-				color: 'rgba(0, 0, 255, 0.3)',
-			}),
-		}),
-	});
-
-new ol.Map({
-	target: 'map',
-	layers: [
-		new ol.layer.Tile({
-			source: new ol.source.OSM(),
-		}),
-	],
-	controls: controlsCollection({
-		permalink: {
-			display: true,
-		},
-		Help: {
-			submenuId: 'myol-help',
-		},
-	}),
-});
-	</script>
-	<script src="print_script.js"></script>
-
-	<h4 style="margin-bottom:0">Tests</h4>
-	<div>Test each control</div>
->>>>>>> .r46
 </body>
 </html>

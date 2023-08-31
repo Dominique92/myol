@@ -17,8 +17,7 @@ export default [{
 		node(),
 		cjs(),
 		css({
-			minify: true,
-			output: 'myol-min.css',
+			output: 'myol.css',
 		}),
 		json(),
 		terser(),

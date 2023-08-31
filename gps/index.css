@@ -6,9 +6,7 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
-	overflow: hidden;
 }
-<<<<<<< .mine
 #myol-help-gps {
   left: 0;
   width: 100%;
@@ -16,14 +14,3 @@ body,
 @viewport {
   viewport-fit: cover;
 }
-||||||| .r41
-#liste a {
-	cursor: pointer;
-}=======
-.ol-full-screen {
-	display: none;
-}
-#myol-gps-help {
-	left: 0;
-	width: 100%;
-}>>>>>>> .r46

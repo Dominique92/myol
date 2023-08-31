@@ -10,9 +10,7 @@ Based on https://openlayers.org
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="examples/images/logo-dark.svg" rel="icon" type="image/svg">
-	<link href="examples/images/favicon.png" rel="apple-touch-icon" />
 
-<<<<<<< .mine
 	<script> // apache (production)
 		if (window.origin.split(':').length == 2) {
 			document.write('<link href="dist/myol.css" type="text/css" rel="stylesheet">');
@@ -44,57 +42,12 @@ Based on https://openlayers.org
 		});
 	</script>
 
-||||||| .r42
-	<!-- Polyfill iOS : Amélioration du pseudo full screen pour les cartes pour d'anciennes versions d'iOS/Safari -->
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-	<!-- IE test -->
-	<script nomodule>
-		location.href = 'examples/ie11.html';;
-	</script>
-
-=======
->>>>>>> .r46
-<<<<<<< .mine
-||||||| .r42
-	<!-- Openlayers -->
-	<link  href="ol/ol.css" type="text/css" rel="stylesheet">
-	<script src="ol/ol.js"></script>
-
-	<!-- Recherche par nom -->
-	<link  href="geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
-	<script src="geocoder/ol-geocoder.js"></script>
-
-	<!-- My Openlayers -->
-	<link  href="myol.css" type="text/css" rel="stylesheet">
-	<script src="myol.js"></script>
-
-=======
-	<!-- Openlayers -->
-	<link href="ol/ol.css" type="text/css" rel="stylesheet">
-	<script src="ol/ol.js"></script>
-
-	<!-- Recherche par nom -->
-	<link href="geocoder/ol-geocoder.min.css" type="text/css" rel="stylesheet">
-	<script src="geocoder/ol-geocoder.js"></script>
-
-	<!-- My Openlayers -->
-	<link href="myol.css" type="text/css" rel="stylesheet">
-	<script src="myol.js"></script>
-
->>>>>>> .r46
 	<style>
 		#map {
 			clear: both;
 			width: 100%;
 			max-width: 600px;
 			height: 400px;
-		}
-		.layer-select {
-			float: left;
-			border-right: solid;
-			padding: 5px
 		}
 	</style>
 </head>
@@ -118,9 +71,7 @@ Based on https://openlayers.org
 	<br><br>
 
 	<div id="map"></div>
-	<input id="marker-json" size="50" value='{"type":"Point","coordinates":[2.34,48.86]}' />
 
-<<<<<<< .mine
 	<p id="select-ext">
 		<label>chemineur.fr <input type="checkbox" name="select-chem" value="all"></label>
 		<label><input type="checkbox" name="select-chem" value="3">Refuge</label>
@@ -128,102 +79,12 @@ Based on https://openlayers.org
 		<label><input type="checkbox" name="select-chem" value="23">Montagne</label>
 	</p>
 	<input id="marker-json" size="50" value='{"type":"Point","coordinates":[2.34,48.86]}'>
-||||||| .r42
-	<div id="additional-selector">
-		<hr />
-		Chemineur
-		<input type="checkbox" name="geobb-features" checked="checked" />
-		<ul>
-			<li><input type="checkbox" name="geobb-features" value="3" />Refuge</li>
-			<li><input type="checkbox" name="geobb-features" value="8" />Abri</li>
-			<li><input type="checkbox" name="geobb-features" value="23" />Montagne</li>
-		</ul>
-	</div>
-=======
-	<div id="select-ext" >
-		<hr />
-		<label>chemineur.fr <input type="checkbox" name="select-chem" value="all" /></label>
-		<label><input type="checkbox" name="select-chem" value="3" />Refuge</label>
-		<label><input type="checkbox" name="select-chem" value="8" />Abri</label>
-		<label><input type="checkbox" name="select-chem" value="23" />Montagne</label>
-	</div>
->>>>>>> .r46
 
-<<<<<<< .mine
-||||||| .r42
-	<script>
-// Must be after the <div id="map"> tag
-new ol.Map({
-	target: 'map',
-	view: new ol.View({
-		enableRotation: false,
-	}),
-	controls: controlsCollection().concat(controlLayerSwitcher()),
-	layers: [
-		layerGeoBB({
-			selectorName: 'geobb-features',
-			maxResolution: 300,
-			distance: 30,
-		}),
-		layerGeoBB({
-			selectorName: 'geobb-features',
-			subLayer: 'cluster',
-			minResolution: 300,
-			distance: 30,
-		}),
-	],
-});
-	</script>
-
-=======
-	<script>
-// Must be after the <div id="map"> tag
-new ol.Map({
-	target: 'map',
-	view: new ol.View({
-		enableRotation: false,
-	}),
-	controls: [
-		...controlsCollection(),
-		controlLayerSwitcher({
-			layers: layerTileCollection(),
-			selectExtId: 'select-ext',
-		}),
-	],
-	layers: [
-		layerChemineur({
-			selectName: 'select-chem',
-		}),
-		layerMarker({
-			src: 'examples/images/viseur.png',
-			dragable: true,
-		}),
-	],
-});
-	</script>
-
->>>>>>> .r46
 	<h1 style="clear:both">MyOl</h1>
-<<<<<<< .mine
 	<p>Js library adding some facilities to <a href="https://openlayers.org/">Openlayers</a></p>
 	<p><a href="examples/LayerSwitcher.html">Layer switcher</a></p>
 	<p><a href="examples/tileLayer.html">Tile layer</a></p>
 	<p><a href="examples/vectorLayer.html">Vector layer</a></p>
-||||||| .r42
-	<p>Set of js functions adding some facilities to <a href="https://openlayers.org/">Openlayers</a></p>
-	<p>See doc & details on <a href="https://github.com/DC92/dev/tree/master/assets/MyOl">GITHUB</a></p>
-	<p><a href="examples">Overview</a></p>
-	<p><a href="examples/layerSwitcher.html">Layer switcher</a></p>
-	<p><a href="examples/layerTile.html">Layer tile</a></p>
-	<p><a href="examples/layerVector.html">Layer vector</a></p>
-=======
-	<p>Set of js functions adding some facilities to <a href="https://openlayers.org/">Openlayers</a></p>
-	<p>See doc & details on <a href="https://github.com/Dominique92/MyOl">GITHUB</a></p>
-	<p><a href="examples">Overview</a></p>
-	<p><a href="examples/layerSwitcher.html">Layer switcher</a></p>
-	<p><a href="examples/layerTile.html">Layer tile</a></p>
-	<p><a href="examples/layerVector.html">Layer vector</a></p>
->>>>>>> .r46
 	<p><a href="examples/controls.html">Controls</a></p>
 	<p><a href="examples/marker.html">Marker</a></p>
 	<p><a href="examples/editor.html">Editor</a></p>

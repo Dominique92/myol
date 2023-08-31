@@ -1,17 +1,7 @@
 {
-	"name": "MyGPS",
-	"id": "MyGPS",
-<<<<<<< .mine
+	"name": "My GPS",
 	"short_name": "GPS",
 	"id": "MyGPS",
-||||||| .r41
-	"display": "fullscreen",
-	"start_url": "index.html",
-=======
-	"display": "fullscreen",
-	"scope": "./",
-	"start_url": "index.php",
->>>>>>> .r46
 	"icons": [{
 		"src": "favicon.png",
 		"sizes": "64x64",

@@ -6,45 +6,174 @@ Based on https://openlayers.org
 -->
 <html>
 <head>
-	<title>My layer switcher</title>
+	<title>My Openlayers layer switcher</title>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link href="images/favicon.png" rel="icon" type="image/png" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="images/logo-dark.svg" rel="icon" type="image/svg">
 	<link href="images/favicon.png" rel="apple-touch-icon" />
 
+<<<<<<< .mine
+	<link href="ressources/style.css" rel="stylesheet">
+||||||| .r42
+	<!-- Openlayers -->
+	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
+	<script src="../ol/ol.js"></script>
+=======
 	<!-- Openlayers -->
 	<link href="../ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="../ol/ol.js"></script>
+>>>>>>> .r46
 
+<<<<<<< .mine
+	<!-- Simulation of importing myol -->
+	<script> // apache (production)
+		if (window.origin.split(':').length == 2) {
+			document.write('<link href="../dist/myol.css" type="text/css" rel="stylesheet">');
+			document.write('<script src="../dist/myol-debug.js"><&#47;script>');
+		}
+	</script>
+	<script type="module"> // vite nmp (test)
+		import myol from '../build/index'; // At this place, mysteriously do not import out of npm vite context
+		window.myol = myol; // Declare a myol global variable
+	</script>
+||||||| .r42
+	<!-- My Openlayers -->
+	<link  href="../src/layerSwitcher.css" type="text/css" rel="stylesheet">
+	<script src="../src/layerSwitcher.js"></script>
+=======
 	<!-- My Openlayers -->
 	<link href="../src/controls.css" type="text/css" rel="stylesheet">
 	<script src="../src/controls.js"></script>
 	<link href="../src/layerSwitcher.css" type="text/css" rel="stylesheet">
 	<script src="../src/layerSwitcher.js"></script>
+>>>>>>> .r46
 
-	<style>
-		#map {
-			width: 100%;
-			max-width: 600px;
-			height: 80vw;
-			max-height: 400px;
-		}
-	</style>
+	<!-- The main script must be defer or module to be run after the myol import -->
+	<script type="module">
+		const baseLayers = {
+				Stamen: new ol.layer.Tile({
+					source: new ol.source.Stamen({
+						layer: 'terrain',
+					}),
+				}),
+				'OSM org': new ol.layer.Tile({
+					source: new ol.source.OSM(),
+				}),
+				'Null': null,
+				'Hidden': new ol.layer.Tile({
+					hidden: true,
+				}),
+				Watercolor: new ol.layer.Tile({
+					source: new ol.source.Stamen({
+						layer: 'watercolor',
+					}),
+				}),
+			},
+			countries = new ol.layer.Vector({
+				source: new ol.source.Vector({
+					url: 'ressources/switzerland.geojson',
+					format: new ol.format.GeoJSON(),
+				}),
+				zIndex: 2, // Above the base layer
+			});
+
+		new ol.Map({
+			target: 'map',
+			view: new ol.View({
+				center: ol.proj.transform([4, 47], 'EPSG:4326', 'EPSG:3857'), // France + Swiss
+				zoom: 5,
+			}),
+			controls: [
+				new myol.control.LayerSwitcher({
+					layers: baseLayers,
+					selectExtId: 'select-ext',
+				}),
+				new ol.control.Attribution({
+					collapsed: false,
+				}),
+			],
+			layers: [countries],
+		});
+
+		document.getElementById('toggle-countries')
+			.addEventListener('click', evt =>
+				countries.setVisible(evt.target.checked)
+			);
+	</script>
 </head>
 
 <body>
-	<a style="float:right" href="layerTile.html">Layer tile &#9654;</a>
-	<a style="float:right;margin-right:15px" href="..">HOME</a>
+	<a style="float:right" href="tileLayer.html">Next &#9654;</a>
+	<a style="float:right;margin-right:15px" href="..">Home</a>
 	<h1 style="margin:0">Layer switcher</h1>
-	<a style="float:right" href="https://github.com/Dominique92/MyOl/">GITHUB &#9654;</a>
-	<p><a href="../src/layerSwitcher.js">src/layerSwitcher.js</a> add a tinny efficient layer switcher for both base & vector layers.</p>
+	<a style="float:right" href="https://github.com/Dominique92/MyOl/">Github &#9654;</a>
+	<p><a href="../src/LayerSwitcher.js">src/LayerSwitcher.js</a> add a tinny efficient layer switcher for both base & vector layers.</p>
 
+<<<<<<< .mine
+	<div id="map" class="map"></div>
+	<div id="select-ext">
+		<hr>
+		<label>Countries <input id="toggle-countries" type="checkbox" checked="checked"></label>
+||||||| .r42
+	<div id="map"></div>
+
+	<div id="additional-selector" >
+		<hr />
+		Countries <input type="checkbox" checked="checked" onChange="countries.setVisible(this.checked)" />
+=======
 	<div id="map"></div>
 
 	<div id="select-ext">
 		<hr />
 		<label>Countries <input type="checkbox" checked="checked" onChange="countries.setVisible(this.checked)" /></label>
+>>>>>>> .r46
 	</div>
+<<<<<<< .mine
+||||||| .r42
+
+	<script>
+// Vectorlayer 
+const countries = new ol.layer.Vector({
+	source: new ol.source.Vector({
+		url: 'https://openlayers.org/en/latest/examples/data/geojson/countries.geojson',
+		format: new ol.format.GeoJSON(),
+	}),
+	zIndex: 2, // Above the base layer
+});
+
+new ol.Map({
+	target: 'map',
+	view: new ol.View({
+		center: [700000, 5600000],
+		zoom: 5,
+	}),
+	controls: [
+		new ol.control.Zoom(),
+		controlLayerSwitcher({
+			Stamen: new ol.layer.Tile({
+				source: new ol.source.Stamen({
+					layer: 'terrain',
+				}),
+			}),
+			'OSM org': new ol.layer.Tile({
+				source: new ol.source.OSM(),
+			}),
+			Watercolor: new ol.layer.Tile({
+				source: new ol.source.Stamen({
+					layer: 'watercolor',
+				}),
+			}),
+		}),
+	],
+	layers: [countries],
+});
+	</script>
+	<script src="print_script.js"></script>
+
+	<h4 style="margin-bottom:0">Tests</h4>
+	<div>Change baselayer</div>
+	<div>Uncheck "Countries"</div>
+=======
 
 	<script>
 // Vectorlayer
@@ -91,5 +220,6 @@ new ol.Map({
 	<h4 style="margin-bottom:0">Tests</h4>
 	<div>Change baselayer</div>
 	<div>Uncheck "Countries"</div>
+>>>>>>> .r46
 </body>
 </html>

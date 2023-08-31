@@ -6,19 +6,77 @@ Based on https://openlayers.org
 -->
 <html>
 <head>
-	<title>My Openlayers</title>
+	<title>My Openlayers markers</title>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link href="images/favicon.png" rel="icon" type="image/png" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="images/logo-dark.svg" rel="icon" type="image/svg">
 	<link href="images/favicon.png" rel="apple-touch-icon" />
 
+<<<<<<< .mine
+	<link href="ressources/style.css" rel="stylesheet">
+||||||| .r42
+	<!-- Openlayers -->
+	<link  href="../ol/ol.css" type="text/css" rel="stylesheet">
+	<script src="../ol/ol.js"></script>
+=======
 	<!-- Openlayers -->
 	<link href="../ol/ol.css" type="text/css" rel="stylesheet">
 	<script src="../ol/ol.js"></script>
+>>>>>>> .r46
 
-	<!-- Proj4 projections Swiss -->
-	<script src="../proj4/proj4-src.js"></script>
+	<!-- Simulation of importing myol -->
+	<script> // apache (production)
+		if (window.origin.split(':').length == 2) {
+			document.write('<link href="../dist/myol.css" type="text/css" rel="stylesheet">');
+			document.write('<script src="../dist/myol-debug.js"><&#47;script>');
+		}
+	</script>
+	<script type="module"> // vite nmp (test)
+		import myol from '../build/index'; // At this place, mysteriously do not import out of npm vite context
+		window.myol = myol; // Declare a myol global variable
+	</script>
 
+<<<<<<< .mine
+	<!-- The main script must be defer or module to be run after the myol import -->
+	<script type="module">
+		new ol.Map({
+			target: 'map',
+			view: new ol.View({
+				center: ol.proj.transform([2, 47], 'EPSG:4326', 'EPSG:3857'), // France
+				zoom: 5,
+			}),
+			layers: [
+				new ol.layer.Tile({
+					source: new ol.source.OSM(),
+				}),
+				new myol.layer.Marker({
+					src: 'images/cadre.png',
+					prefix: 'cadre',
+				}),
+				new myol.layer.Marker({
+					src: 'images/viseur.png',
+					focus: 15, // Overload position & zoom to marker
+					dragable: true,
+				}),
+			],
+		});
+	</script>
+||||||| .r42
+	<!-- My Openlayers -->
+	<script src="../src/header.js"></script>
+	<link  href="../src/controls.css" type="text/css" rel="stylesheet">
+	<script src="../src/controls.js"></script>
+	<script src="../src/editor.js"></script>
+
+	<style>
+		#map {
+			width: 100%;
+			max-width: 600px;
+			height: 80vw;
+			max-height: 400px;
+		}
+	</style>
+=======
 	<!-- My Openlayers -->
 	<link href="../src/controls.css" type="text/css" rel="stylesheet">
 	<script src="../src/controls.js"></script>
@@ -32,22 +90,50 @@ Based on https://openlayers.org
 			max-height: 400px;
 		}
 	</style>
+>>>>>>> .r46
 </head>
 
 <body>
-	<a style="float:right" href="editor.html">Editor &#9654;</a>
-	<a style="float:right;margin-right:15px" href="..">HOME</a>
+	<a style="float:right" href="editor.html">Next &#9654;</a>
+	<a style="float:right;margin-right:15px" href="..">Home</a>
 	<h1 style="margin:0">Position marker</h1>
-	<a style="float:right" href="https://github.com/Dominique92/MyOl/">GITHUB &#9654;</a>
-	<p><a href="../src/editor.js">src/editor.js</a> adds marker position display & edit</p>
+	<a style="float:right" href="https://github.com/Dominique92/MyOl/">Github &#9654;</a>
+	<p><a href="../src/Editor.js">src/Editor.js</a> lines & polygons position display & edit</p>
 
-	<div id="map"></div>
+	<div id="map" class="map"></div>
 
 	<!-- Fixed marker -->
+<<<<<<< .mine
+	<input type="hidden" id="cadre-json" value='{"type":"Point","coordinates":[2.34,48.86]}'></p>
+	<p><b>Cadre :</b> <span id="cadre-string"></span></p>
+||||||| .r42
+	<p><b>Cadre :</b> <span id="fix-marker"></span></p>
+=======
 	<input type="hidden" id="cadre-json" value='{"type":"Point","coordinates":[2.34,48.86]}' /></p>
 	<p><b>Cadre :</b> <span id="cadre-string"></span></p>
+>>>>>>> .r46
 
 	<!-- Draggable marker -->
+<<<<<<< .mine
+	<div>
+		<p><b>Colimateur :</b>
+			<span id="marker-string"></span>
+			<select id="marker-select">
+				<option value="dec" selected="selected">Degrés décimaux</option>
+				<option value="dms">Deg Min Sec</option>
+				<option class="xy" value="swiss">Suisse</option>
+				<option value="utm">UTM</option>
+			</select>
+		</p><p>
+||||||| .r42
+	<b>Viseur :</b>
+	<input type="text" id="drag-marker-json" style="width:50%" value='{
+		"type": "Point",
+		"coordinates": [7,47]
+	}' />
+	<div id="drag-marker">
+		<p>
+=======
 	<div>
 		<p><b>Colimateur :</b>
 			<span id="marker-string"></span>
@@ -60,16 +146,106 @@ Based on https://openlayers.org
 		</p><p>
 			<input id="marker-json" name="geojson" size="50" value='{"type":"Point","coordinates":[6.14,46.2]}' />
 		</p><p>
+>>>>>>> .r46
 			Longitude :
+<<<<<<< .mine
+			<input id="marker-lon" type="text" name="lon" size="12" maxlength="12"> (WGS84)&nbsp;
+			<span class="xy"> / X : <input id="marker-x" type="text" name="x" size="7" maxlength="12"> (CH 1903)</span>
+		</p><p>
+||||||| .r42
+			<input type="text" name="lon" size="12" maxlength="12"> (WGS84)&nbsp;
+			 <span style="display:none" class="epsg-21781"> / X : <input type="text" name="x" size="7" maxlength="12"> (CH 1903)</span>
+		</p>
+		<p>
+=======
 			<input id="marker-lon" type="text" name="lon" size="12" maxlength="12" /> (WGS84)&nbsp;
 			<span class="xy"> / X : <input id="marker-x" type="text" name="x" size="7" maxlength="12"> (CH 1903)</span>
 		</p><p>
+>>>>>>> .r46
 			Latitude :
+<<<<<<< .mine
+			<input id="marker-lat" type="text" name="lat" size="12" maxlength="12"> (WGS84)&nbsp;
+			<span class="xy"> / Y : <input id="marker-y" type="text" name="y" size="7" maxlength="12"></span>
+		</p><p>
+			Double clic sur la carte y déplace le curseur.
+		</p><p>
+			<input id="marker-json" name="geojson" size="50" value='{"type":"Point","coordinates":[6.145,46.2]}'>
+||||||| .r42
+			<input type="text" name="lat" size="12" maxlength="12"> (WGS84)&nbsp;
+			<span style="display:none" class="epsg-21781"> / Y : <input type="text" name="y" size="7" maxlength="12"></span>
+=======
 			<input id="marker-lat" type="text" name="lat" size="12" maxlength="12" /> (WGS84)&nbsp;
 			<span class="xy"> / Y : <input id="marker-y" type="text" name="y" size="7" maxlength="12"></span>
+>>>>>>> .r46
 		</p>
 	</div>
 
+<<<<<<< .mine
+||||||| .r42
+	<p><a onclick="viseur.centerMap()" style="color:blue;cursor:pointer">
+		Center the map on the cusor
+	</a></p>
+
+	<p><a onclick="viseur.centerMarker()" style="color:blue;cursor:pointer">
+		Move the cusor at the center of the map
+	</a></p>
+
+	<script>
+//BEST cadre et viseur SVG / inline
+const cadre = layerEditGeoJson({
+		displayPointId: 'fix-marker',
+		singlePoint: true,
+		geoJson: {
+			type: 'Point',
+			coordinates: [2, 48],
+		},
+		styleOptions: {
+			image: new ol.style.Icon({
+				src: 'images/cadre.png',
+				imgSize: [31, 43], // IE compatibility
+			}),
+		},
+	}),
+	viseur = layerEditGeoJson({
+		displayPointId: 'drag-marker',
+		geoJsonId: 'drag-marker-json',
+		dragPoint: true,
+		singlePoint: true,
+		styleOptions: {
+			image: new ol.style.Icon({
+				src: 'images/viseur.png',
+				imgSize: [30, 30], // IE compatibility
+			}),
+		},
+		// Remove FeatureCollection packing of the point
+		saveFeatures: function(coordinates, format) {
+			return format.writeGeometry(
+				new ol.geom.Point(coordinates.points[0]), {
+					featureProjection: 'EPSG:3857',
+					decimals: 5,
+				}
+			);
+		},
+	});
+
+new ol.Map({
+	target: 'map',
+	view: new ol.View({
+		center: [200000, 5800000],
+		zoom: 6,
+	}),
+	layers: [
+		new ol.layer.Tile({
+			source: new ol.source.OSM(),
+		}),
+		cadre,
+		viseur,
+	],
+});
+	</script>
+	<script src="print_script.js"></script>
+
+=======
 	<p>Double clic sur la carte y déplace le curseur.</p>
 
 	<script>
@@ -101,6 +277,7 @@ new ol.Map({
 	</script>
 	<script src="print_script.js"></script>
 
+>>>>>>> .r46
 	<h4 style="margin-bottom:0">Tests</h4>
 	<div>Look at fix marker & display</div>
 	<div>Move dragable marker</div>

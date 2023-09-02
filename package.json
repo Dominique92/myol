@@ -1,5 +1,21 @@
 {
-  "name": "myol",
+  "name": "@myol/myol",
+  "version": "1.0.0",
+  "description": "This package adds many features to Openlayer https://openlayers.org/",
+  "author": "Dominique Cavailhez",
+  "homepage": "https://github.com/Dominique92/MyOl#readme",
+  "license": "MIT",
+  "main": "dist/myol.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dominique92/MyOl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dominique92/MyOl/issues"
+  },
+  "keywords": [
+    "Openlayers"
+  ],
   "type": "module",
   "scripts": {
     "build": "rollup -c build/config.js",

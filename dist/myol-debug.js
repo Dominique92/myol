@@ -70025,7 +70025,7 @@ var myol = (function () {
   myol.ol = ol; // Packing Openlayers native functions in the bundle
 
   // Trace in the console
-  console.log('OL V' + ol.util.VERSION);
+  console.log('Ol v' + ol.util.VERSION);
 
   return myol;
 

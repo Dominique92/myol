@@ -23,8 +23,9 @@
     "beautify": "js-beautify -s=2 build/*.js examples/*.html examples/ressources/* examples/wri/* src/*.*s src/control/* src/layer/* package.json"
   },
   "dependencies": {
-    "ol": "7.5.2",
-    "proj4": "2.9.0"
+    "ol": "latest",
+    "proj4": "latest",
+    "@myol/geocoder": "latest"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "latest",

@@ -3,12 +3,10 @@ import cjs from '@rollup/plugin-commonjs'; // Convert CommonJS module into ES mo
 import css from 'rollup-plugin-import-css'; // Collect css
 import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser'; // Rollup plugin to minify generated es bundle
-import {
-  readFileSync, // Read banner file
-} from 'fs';
+import * as fs from 'fs';
 
-const banner = readFileSync('./build/banner.js', 'utf-8');
-//TODO dist without ol...
+const banner = fs.readFileSync('./build/banner.js', 'utf-8');
+//TODO dist without no included ol...
 //TODO banner on .css
 //TODO rollup date in dist
 
@@ -19,7 +17,8 @@ export default [{
     node(),
     cjs(),
     css({
-      output: 'myol.css',
+      minify: true,
+      output: 'myol-min.css',
     }),
     json(),
     terser(),
@@ -28,12 +27,6 @@ export default [{
     name: 'myol',
     banner,
     file: 'dist/myol.js',
-    format: 'umd',
-    sourcemap: true,
-  }, {
-    name: 'myol',
-    banner,
-    file: '../gps/myol/myol.js',
     format: 'umd',
     sourcemap: true,
   }],
@@ -52,11 +45,6 @@ export default [{
     name: 'myol',
     banner,
     file: 'dist/myol-debug.js',
-    format: 'iife',
-  }, {
-    name: 'myol',
-    banner,
-    file: '../gps/myol/myol-debug.js',
     format: 'iife',
   }],
 }];

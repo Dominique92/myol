@@ -1,6 +1,7 @@
 // This file defines the contents of the dist/myol.css & dist/myol libraries
 // This contains all what is necessary for refuges.info & chemineur.fr websites
 
+import '../build/banner.css';
 import ol from '../src/ol'; //TODO make a build without ol (for separate ol load)
 import myol from '../src';
 

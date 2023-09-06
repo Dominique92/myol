@@ -58618,7 +58618,7 @@ var myol = (function () {
     constructor(options) {
       super({
         // MyButton options
-        label: '&#128424;',
+        label: '&#9113;',
         className: 'myol-button-print',
         subMenuHTML: '<p>Pour imprimer la carte:</p>' +
           '<p>-Choisir portrait ou paysage,</p>' +
@@ -60114,7 +60114,7 @@ var myol = (function () {
     constructor(options) {
       this.settings = {
         url: 'https://nominatim.openstreetmap.org/search',
-        ...options,
+        ...options, // Allow custom URL for osm provider https://github.com/Dominique92/ol-geocoder/issues/266
 
         params: {
           q: '',
@@ -60447,7 +60447,7 @@ var myol = (function () {
       this.layer = new LayerVector({
         name: this.layerName,
         source: new SourceVector(),
-        displayInLayerSwitcher: false,
+        displayInLayerSwitcher: false, // Remove search layer from legend https://github.com/Dominique92/ol-geocoder/issues/256
       });
 
       this.options = base.options;
@@ -60627,6 +60627,8 @@ var myol = (function () {
 
       if (bbox) {
         bbox = transformExtent(
+          // https://nominatim.org/release-docs/latest/api/Output/#boundingbox
+          // Requires parseFloat on negative bbox entries
           [parseFloat(bbox[2]), parseFloat(bbox[0]), parseFloat(bbox[3]), parseFloat(bbox[1])], // SNWE -> WSEN
           'EPSG:4326',
           projection
@@ -60642,6 +60644,7 @@ var myol = (function () {
       this.options.keepOpen === false && this.clearResults(true);
 
       if (this.options.preventDefault === true || this.options.preventMarker === true) {
+        // No display change
         this.Base.dispatchEvent({
           type: EVENT_TYPE.ADDRESSCHOSEN,
           address,
@@ -60650,6 +60653,7 @@ var myol = (function () {
           place,
         });
       } else {
+        // Display a marker
         const feature = this.createFeature(coord, address);
 
         this.Base.dispatchEvent({
@@ -60663,6 +60667,7 @@ var myol = (function () {
       }
 
       if (this.options.preventDefault !== true && this.options.preventPanning !== true) {
+        // Move & zoom to the position
         if (bbox) {
           map.getView().fit(bbox, {
             duration: 500,
@@ -60670,7 +60675,8 @@ var myol = (function () {
         } else {
           map.getView().animate({
             center: coord,
-            resolution: this.options.defaultFlyResolution || 1,
+            // ol-geocoder results are too much zoomed -in Dominique92/ol-geocoder#235
+            resolution: this.options.defaultFlyResolution || 10, // Meters per pixel
             duration: 500,
           });
         }
@@ -60792,6 +60798,8 @@ var myol = (function () {
     }
   }
 
+  /*DCMM*/{var _r=' == ',_v=123456;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n";}else _r+=_v;console.log(_r);}
+
   /**
    * @class Base
    * @extends {ol.control.Control}
@@ -60820,7 +60828,8 @@ var myol = (function () {
         }),
       ];
 
-      let container, $nominatim;
+      let container,
+  	$nominatim;
 
       const $html = new Html(options);
 
@@ -60830,7 +60839,7 @@ var myol = (function () {
 
       super({
         element: container,
-        ...options,
+        ...options, // Allows to add ol.control.Control options (as target:)
       });
 
       if (!(this instanceof Base)) return new Base();

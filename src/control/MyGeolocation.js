@@ -236,6 +236,7 @@ export class MyGeolocation extends MyButton {
 /**
  * Control to display the mouse position
  */
+//TODO make special file
 export class MyMousePosition extends ol.control.MousePosition {
   constructor(options) {
     super({
@@ -263,4 +264,4 @@ export class MyMousePosition extends ol.control.MousePosition {
   }
 }
 
-export default MyGeolocation;
+export default MyGeolocation; //TODO move up

@@ -24,6 +24,7 @@ export class MyControl extends ol.control.Control {
 /**
  * Control to display the length & height difference of an hovered line
  */
+//TODO make special file
 export class LengthLine extends MyControl {
   constructor() {
     super(); //HACK button not visible
@@ -101,6 +102,7 @@ export class LengthLine extends MyControl {
  * "map" url hash or localStorage: zoom=<ZOOM> lon=<LON> lat=<LAT>
  * Don't set view when you declare the map
  */
+//TODO make special file
 export class Permalink extends MyControl {
   constructor(options) {
     super({
@@ -170,6 +172,7 @@ export class Permalink extends MyControl {
  * Control to display set preload of depth upper level tiles
  * This prepares the browser to become offline
  */
+//TODO make special file
 export class TilesBuffer extends MyControl {
   constructor(options) {
     super({

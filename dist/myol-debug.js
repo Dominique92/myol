@@ -59888,6 +59888,7 @@ var myol = (function () {
   /**
    * Control to display the length & height difference of an hovered line
    */
+  //TODO make special file
   class LengthLine extends MyControl {
     constructor() {
       super(); //HACK button not visible
@@ -59965,6 +59966,7 @@ var myol = (function () {
    * "map" url hash or localStorage: zoom=<ZOOM> lon=<LON> lat=<LAT>
    * Don't set view when you declare the map
    */
+  //TODO make special file
   class Permalink extends MyControl {
     constructor(options) {
       super({
@@ -60034,6 +60036,7 @@ var myol = (function () {
    * Control to display set preload of depth upper level tiles
    * This prepares the browser to become offline
    */
+  //TODO make special file
   class TilesBuffer extends MyControl {
     constructor(options) {
       super({
@@ -60133,302 +60136,6 @@ var myol = (function () {
           el.classList.remove('myol-button-selected');
     }
   };
-
-  /**
-   * GPX file loader control
-   */
-  class Load extends MyButton$1 {
-    constructor(options = {}) {
-      super({
-        // MyButton options
-        label: '&#128194;', //TODO trouver un autre symbole
-        subMenuHTML: '<p>Importer un fichier de points ou de traces</p>' +
-          '<input type="file" accept=".gpx,.kml,.geojson">',
-
-        // Load options
-        // initFileUrl, url of a gpx file to be uploaded at the init
-
-        ...options, //HACK default when options is undefined
-      });
-
-      // Register action listeners
-      this.element.querySelectorAll('input')
-        .forEach(el =>
-          el.addEventListener('change', evt => this.change(evt))
-        );
-
-      // Load file at init
-      if (options.initFileUrl) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', options.initFileUrl);
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState == 4 && xhr.status == 200)
-            this.loadText(xhr.responseText, options.initFileUrl);
-        };
-        xhr.send();
-      }
-
-      this.reader = new FileReader();
-    }
-
-    change(evt) {
-      const blob = evt.target.files[0];
-
-      this.reader.readAsText(blob);
-      this.reader.onload = () => this.loadText(this.reader.result, blob.name);
-    }
-
-    loadUrl(url) {
-      if (url)
-        fetch(url)
-        .then(response => response.text())
-        .then(text => this.loadText(text, url));
-    }
-
-    loadText(text, url) {
-      const map = this.getMap(),
-        formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
-        loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
-        receivedLat = text.match(/lat="-?([0-9]+)/), // Received projection depending on the first value
-        receivedProjection = receivedLat && receivedLat.length && parseInt(receivedLat[1]) > 100 ? 'EPSG:3857' : 'EPSG:4326',
-        features = loadFormat.readFeatures(text, {
-          dataProjection: receivedProjection,
-          featureProjection: map.getView().getProjection(), // Map projection
-        }),
-        added = map.dispatchEvent({
-          type: 'myol:onfeatureload', // Warn Editor that we uploaded some features
-          features: features,
-        });
-
-      if (added !== false) { // If none used the feature
-        // Display the track on the map
-        const gpxSource = new ol.source.Vector({
-            format: loadFormat,
-            features: features,
-          }),
-          gpxLayer = new ol.layer.Vector({
-            source: gpxSource,
-            style: feature => {
-              const properties = feature.getProperties();
-
-              return new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: 'blue',
-                  width: 2,
-                }),
-                image: properties.sym ? new ol.style.Icon({
-                  src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
-                }) : null,
-              });
-            },
-          });
-
-        map.addLayer(gpxLayer);
-
-        // Zoom the map on the added features
-        const fileExtent = gpxSource.getExtent();
-
-        if (ol.extent.isEmpty(fileExtent))
-          alert(url + ' ne comporte pas de point ni de trace.');
-        else
-          map.getView().fit(
-            fileExtent, {
-              maxZoom: 17,
-              padding: [5, 5, 5, 5],
-            });
-      }
-
-      // Close the submenu
-      this.element.classList.remove('myol-display-submenu');
-    }
-  }
-
-  /**
-   * File downloader control
-   */
-  //BEST BUG incompatible with clusters
-  class Download extends MyButton$1 {
-    constructor(options) {
-      super({
-        // MyButton options
-        label: '&#128229;',
-        subMenuHTML: '<p>Cliquer sur un format ci-dessous pour obtenir un fichier ' +
-          'contenant les éléments visibles dans la fenêtre:</p>' +
-          '<a mime="application/gpx+xml">GPX</a>' +
-          '<a mime="vnd.google-earth.kml+xml">KML</a>' +
-          '<a mime="application/json">GeoJSON</a>',
-        fileName: document.title || 'openlayers', //BEST name from feature
-
-        ...options,
-      });
-
-      this.hiddenEl = document.createElement('a');
-      this.hiddenEl.target = '_self';
-      this.hiddenEl.style = 'display:none';
-      document.body.appendChild(this.hiddenEl);
-
-      // Register action listeners
-      this.element.querySelectorAll('a')
-        .forEach(el => {
-          el.addEventListener('click', evt => this.action(evt));
-        });
-    }
-
-    action(evt) {
-      const map = this.getMap(),
-        formatName = evt.target.innerText,
-        downloadFormat = new ol.format[formatName](),
-        mime = evt.target.getAttribute('mime');
-      let features = [],
-        extent = map.getView().calculateExtent();
-
-      // Get all visible features
-      if (this.options.savedLayer)
-        getFeatures(this.options.savedLayer);
-      else
-        map.getLayers().forEach(getFeatures); //BEST what about (args)
-
-      function getFeatures(savedLayer) { //BEST put in method
-        if (savedLayer.getSource() &&
-          savedLayer.getSource().forEachFeatureInExtent) // For vector layers only
-          savedLayer.getSource().forEachFeatureInExtent(extent, feature => {
-            if (!savedLayer.getProperties().dragable) // Don't save the cursor
-              features.push(feature);
-          });
-      }
-
-      if (formatName == 'GPX')
-        // Transform *Polygons in linestrings
-        for (let f in features) {
-          const geometry = features[f].getGeometry();
-
-          if (geometry.getType().includes('Polygon')) {
-            geometry.getCoordinates().forEach(coords => {
-              if (typeof coords[0][0] == 'number')
-                // Polygon
-                features.push(new ol.Feature(new ol.geom.LineString(coords)));
-              else
-                // MultiPolygon
-                coords.forEach(subCoords =>
-                  features.push(new ol.Feature(new ol.geom.LineString(subCoords)))
-                );
-            });
-          }
-        }
-
-      const data = downloadFormat.writeFeatures(features, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: map.getView().getProjection(), // Map projection
-          decimals: 5,
-        })
-        // Beautify the output
-        .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/g, '')
-        .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
-        .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/g, '')
-        .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
-        .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
-        .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
-        .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
-        .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
-        .replace(/ ([cvx])/g, '\n\t$1'),
-
-        file = new Blob([data], {
-          type: mime,
-        });
-
-      this.hiddenEl.download = this.options.fileName + '.' + formatName.toLowerCase();
-      this.hiddenEl.href = URL.createObjectURL(file);
-      this.hiddenEl.click();
-
-      // Close the submenu
-      this.element.classList.remove('myol-display-submenu');
-    }
-  }
-
-  /**
-   * Print control
-   */
-  class Print extends MyButton$1 {
-    constructor(options) {
-      super({
-        // MyButton options
-        label: '&#9113;',
-        className: 'myol-button-print',
-        subMenuHTML: '<p>Pour imprimer la carte:</p>' +
-          '<p>-Choisir portrait ou paysage,</p>' +
-          '<p>-zoomer et déplacer la carte dans le format,</p>' +
-          '<p>-imprimer.</p>' +
-          '<label><input type="radio" value="0">Portrait A4</label>' +
-          '<label><input type="radio" value="1">Paysage A4</label>' +
-          '<a id="print">Imprimer</a>' +
-          '<a onclick="location.reload()">Annuler</a>',
-
-        ...options,
-      });
-
-      // Register action listeners
-      this.element.querySelectorAll('input,a')
-        .forEach(el => {
-          el.addEventListener('click', evt => this.action(evt));
-        });
-
-      // To return without print
-      document.addEventListener('keydown', evt => {
-        if (evt.key == 'Escape')
-          setTimeout(() => { // Delay reload for FF & Opera
-            location.reload();
-          });
-      });
-    }
-
-    action(evt) {
-      const map = this.getMap(),
-        mapEl = map.getTargetElement(),
-        poElcs = this.element.querySelectorAll('input:checked'), // Selected orientation inputs
-        orientation = poElcs.length ? parseInt(poElcs[0].value) : 0; // Selected orientation or portrait
-
-      // Change map size & style
-      mapEl.style.maxHeight = mapEl.style.maxWidth =
-        mapEl.style.float = 'none';
-      mapEl.style.width = orientation == 0 ? '208mm' : '295mm';
-      mapEl.style.height = orientation == 0 ? '295mm' : '208mm';
-      map.setSize([mapEl.clientWidth, mapEl.clientHeight]);
-
-      // Set style portrait / landscape
-      const styleSheet = document.createElement('style');
-      styleSheet.type = 'text/css';
-      styleSheet.innerText = '@page {size: ' + (orientation == 0 ? 'portrait' : 'landscape') + '}';
-      document.head.appendChild(styleSheet);
-
-      // Hide all but the map
-      document.body.appendChild(mapEl);
-      for (let child = document.body.firstElementChild; child !== null; child = child.nextSibling)
-        if (child.style && child !== mapEl)
-          child.style.display = 'none';
-
-      // Finer zoom not dependent on the baselayer's levels
-      map.getView().setConstrainResolution(false);
-      map.addInteraction(new ol.interaction.MouseWheelZoom({
-        maxDelta: 0.1,
-      }));
-
-      // Finally print if required
-      if (evt.target.id == 'print')
-        map.once('rendercomplete', () => {
-          window.print();
-          location.reload();
-        });
-    }
-  }
-
-  var myButton = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    Download: Download,
-    Load: Load,
-    MyButton: MyButton$1,
-    Print: Print,
-    default: MyButton$1
-  });
 
   /**
    * Controls.js
@@ -60734,6 +60441,7 @@ var myol = (function () {
   /**
    * Control to display the mouse position
    */
+  //TODO make special file
   class MyMousePosition extends ol.control.MousePosition {
     constructor(options) {
       super({
@@ -60760,6 +60468,7 @@ var myol = (function () {
       });
     }
   }
+   //TODO move up
 
   var myGeolocation = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -60776,7 +60485,7 @@ var myol = (function () {
 
   // Editor
   class Editor extends MyButton$1 {
-    constructor(options) {
+    constructor(options = {}) {
       super({
         // Mybutton options
         label: 'E', // To be defined by changeModeEdit
@@ -61279,6 +60988,299 @@ var myol = (function () {
       if (!b)
         return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
       return a[0] == b[0] && a[1] == b[1]; // 2 coordinates
+    }
+  }
+
+  /**
+   * Print control
+   */
+
+
+  class Print extends MyButton$1 {
+    constructor(options) {
+      super({
+        // MyButton options
+        label: '&#9113;',
+        className: 'myol-button-print',
+        subMenuHTML: '<p>Pour imprimer la carte:</p>' +
+          '<p>-Choisir portrait ou paysage,</p>' +
+          '<p>-zoomer et déplacer la carte dans le format,</p>' +
+          '<p>-imprimer.</p>' +
+          '<label><input type="radio" value="0">Portrait A4</label>' +
+          '<label><input type="radio" value="1">Paysage A4</label>' +
+          '<a id="print">Imprimer</a>' +
+          '<a onclick="location.reload()">Annuler</a>',
+
+        ...options,
+      });
+
+      // Register action listeners
+      this.element.querySelectorAll('input,a')
+        .forEach(el => {
+          el.addEventListener('click', evt => this.action(evt));
+        });
+
+      // To return without print
+      document.addEventListener('keydown', evt => {
+        if (evt.key == 'Escape')
+          setTimeout(() => { // Delay reload for FF & Opera
+            location.reload();
+          });
+      });
+    }
+
+    action(evt) {
+      const map = this.getMap(),
+        mapEl = map.getTargetElement(),
+        poElcs = this.element.querySelectorAll('input:checked'), // Selected orientation inputs
+        orientation = poElcs.length ? parseInt(poElcs[0].value) : 0; // Selected orientation or portrait
+
+      // Change map size & style
+      mapEl.style.maxHeight = mapEl.style.maxWidth =
+        mapEl.style.float = 'none';
+      mapEl.style.width = orientation == 0 ? '208mm' : '295mm';
+      mapEl.style.height = orientation == 0 ? '295mm' : '208mm';
+      map.setSize([mapEl.clientWidth, mapEl.clientHeight]);
+
+      // Set style portrait / landscape
+      const styleSheet = document.createElement('style');
+      styleSheet.type = 'text/css';
+      styleSheet.innerText = '@page {size: ' + (orientation == 0 ? 'portrait' : 'landscape') + '}';
+      document.head.appendChild(styleSheet);
+
+      // Hide all but the map
+      document.body.appendChild(mapEl);
+      for (let child = document.body.firstElementChild; child !== null; child = child.nextSibling)
+        if (child.style && child !== mapEl)
+          child.style.display = 'none';
+
+      // Finer zoom not dependent on the baselayer's levels
+      map.getView().setConstrainResolution(false);
+      map.addInteraction(new ol.interaction.MouseWheelZoom({
+        maxDelta: 0.1,
+      }));
+
+      // Finally print if required
+      if (evt.target.id == 'print')
+        map.once('rendercomplete', () => {
+          window.print();
+          location.reload();
+        });
+    }
+  }
+
+  /**
+   * File downloader control
+   */
+
+
+  //BEST BUG incompatible with clusters
+  class Download extends MyButton$1 {
+    constructor(options) {
+      super({
+        // MyButton options
+        label: '&#128229;',
+        subMenuHTML: '<p>Cliquer sur un format ci-dessous pour obtenir un fichier ' +
+          'contenant les éléments visibles dans la fenêtre:</p>' +
+          '<a mime="application/gpx+xml">GPX</a>' +
+          '<a mime="vnd.google-earth.kml+xml">KML</a>' +
+          '<a mime="application/json">GeoJSON</a>',
+        fileName: document.title || 'openlayers', //BEST name from feature
+
+        ...options,
+      });
+
+      this.hiddenEl = document.createElement('a');
+      this.hiddenEl.target = '_self';
+      this.hiddenEl.style = 'display:none';
+      document.body.appendChild(this.hiddenEl);
+
+      // Register action listeners
+      this.element.querySelectorAll('a')
+        .forEach(el => {
+          el.addEventListener('click', evt => this.action(evt));
+        });
+    }
+
+    action(evt) {
+      const map = this.getMap(),
+        formatName = evt.target.innerText,
+        downloadFormat = new ol.format[formatName](),
+        mime = evt.target.getAttribute('mime');
+      let features = [],
+        extent = map.getView().calculateExtent();
+
+      // Get all visible features
+      if (this.options.savedLayer)
+        getFeatures(this.options.savedLayer);
+      else
+        map.getLayers().forEach(getFeatures); //BEST what about (args)
+
+      function getFeatures(savedLayer) { //BEST put in method
+        if (savedLayer.getSource() &&
+          savedLayer.getSource().forEachFeatureInExtent) // For vector layers only
+          savedLayer.getSource().forEachFeatureInExtent(extent, feature => {
+            if (!savedLayer.getProperties().dragable) // Don't save the cursor
+              features.push(feature);
+          });
+      }
+
+      if (formatName == 'GPX')
+        // Transform *Polygons in linestrings
+        for (let f in features) {
+          const geometry = features[f].getGeometry();
+
+          if (geometry.getType().includes('Polygon')) {
+            geometry.getCoordinates().forEach(coords => {
+              if (typeof coords[0][0] == 'number')
+                // Polygon
+                features.push(new ol.Feature(new ol.geom.LineString(coords)));
+              else
+                // MultiPolygon
+                coords.forEach(subCoords =>
+                  features.push(new ol.Feature(new ol.geom.LineString(subCoords)))
+                );
+            });
+          }
+        }
+
+      const data = downloadFormat.writeFeatures(features, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: map.getView().getProjection(), // Map projection
+          decimals: 5,
+        })
+        // Beautify the output
+        .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/g, '')
+        .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
+        .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/g, '')
+        .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
+        .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
+        .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
+        .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
+        .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
+        .replace(/ ([cvx])/g, '\n\t$1'),
+
+        file = new Blob([data], {
+          type: mime,
+        });
+
+      this.hiddenEl.download = this.options.fileName + '.' + formatName.toLowerCase();
+      this.hiddenEl.href = URL.createObjectURL(file);
+      this.hiddenEl.click();
+
+      // Close the submenu
+      this.element.classList.remove('myol-display-submenu');
+    }
+  }
+
+  /**
+   * GPX file loader control
+   */
+
+
+  class Load extends MyButton$1 {
+    constructor(options = {}) {
+      super({
+        // MyButton options
+        label: '&#128194;', //TODO trouver un autre symbole
+        subMenuHTML: '<p>Importer un fichier de points ou de traces</p>' +
+          '<input type="file" accept=".gpx,.kml,.geojson">',
+
+        // Load options
+        // initFileUrl, url of a gpx file to be uploaded at the init
+
+        ...options, //HACK default when options is undefined
+      });
+
+      // Register action listeners
+      this.element.querySelectorAll('input')
+        .forEach(el =>
+          el.addEventListener('change', evt => this.change(evt))
+        );
+
+      // Load file at init
+      if (options.initFileUrl) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', options.initFileUrl);
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState == 4 && xhr.status == 200)
+            this.loadText(xhr.responseText, options.initFileUrl);
+        };
+        xhr.send();
+      }
+
+      this.reader = new FileReader();
+    }
+
+    change(evt) {
+      const blob = evt.target.files[0];
+
+      this.reader.readAsText(blob);
+      this.reader.onload = () => this.loadText(this.reader.result, blob.name);
+    }
+
+    loadUrl(url) {
+      if (url)
+        fetch(url)
+        .then(response => response.text())
+        .then(text => this.loadText(text, url));
+    }
+
+    loadText(text, url) {
+      const map = this.getMap(),
+        formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
+        loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
+        receivedLat = text.match(/lat="-?([0-9]+)/), // Received projection depending on the first value
+        receivedProjection = receivedLat && receivedLat.length && parseInt(receivedLat[1]) > 100 ? 'EPSG:3857' : 'EPSG:4326',
+        features = loadFormat.readFeatures(text, {
+          dataProjection: receivedProjection,
+          featureProjection: map.getView().getProjection(), // Map projection
+        }),
+        added = map.dispatchEvent({
+          type: 'myol:onfeatureload', // Warn Editor that we uploaded some features
+          features: features,
+        });
+
+      if (added !== false) { // If none used the feature
+        // Display the track on the map
+        const gpxSource = new ol.source.Vector({
+            format: loadFormat,
+            features: features,
+          }),
+          gpxLayer = new ol.layer.Vector({
+            source: gpxSource,
+            style: feature => {
+              const properties = feature.getProperties();
+
+              return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                  color: 'blue',
+                  width: 2,
+                }),
+                image: properties.sym ? new ol.style.Icon({
+                  src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
+                }) : null,
+              });
+            },
+          });
+
+        map.addLayer(gpxLayer);
+
+        // Zoom the map on the added features
+        const fileExtent = gpxSource.getExtent();
+
+        if (ol.extent.isEmpty(fileExtent))
+          alert(url + ' ne comporte pas de point ni de trace.');
+        else
+          map.getView().fit(
+            fileExtent, {
+              maxZoom: 17,
+              padding: [5, 5, 5, 5],
+            });
+      }
+
+      // Close the submenu
+      this.element.classList.remove('myol-display-submenu');
     }
   }
 
@@ -62644,16 +62646,6 @@ var myol = (function () {
    */
 
 
-  var control = {
-    ...myButton,
-    ...myControl,
-    ...myGeolocation,
-    Editor: Editor,
-    LayerSwitcher: LayerSwitcher,
-    MyGeocoder: MyGeocoder,
-    collection: collection$1,
-  };
-
   /**
    * Controls examples
    */
@@ -62684,6 +62676,19 @@ var myol = (function () {
       ...options.supplementaryControls,
     ];
   }
+
+  var control = {
+    MyButton: MyButton$1,
+    ...myControl,
+    ...myGeolocation,
+    Editor: Editor,
+    LayerSwitcher: LayerSwitcher,
+    MyGeocoder: MyGeocoder,
+    Print: Print,
+    Download: Download,
+    Load: Load,
+    collection: collection$1,
+  };
 
   function globals(defs) {
     defs('EPSG:4326', "+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees");

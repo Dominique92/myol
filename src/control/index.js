@@ -2,23 +2,16 @@
  * This file defines the myol.control exports
  */
 
-import * as myButton from './MyButton';
+import MyButton from './MyButton';
 import * as myControl from './MyControl';
 import * as myGeolocation from './MyGeolocation';
 import Editor from './Editor';
+import Print from './Print';
+import Download from './Download';
+import Load from './Load';
 import LayerSwitcher from './LayerSwitcher';
 import MyGeocoder from './MyGeocoder';
 import ol from '../../src/ol';
-
-export default {
-  ...myButton,
-  ...myControl,
-  ...myGeolocation,
-  Editor: Editor,
-  LayerSwitcher: LayerSwitcher,
-  MyGeocoder: MyGeocoder,
-  collection,
-};
 
 /**
  * Controls examples
@@ -35,9 +28,9 @@ export function collection(opt) {
     new ol.control.FullScreen(options.fullScreen),
     new MyGeocoder(options.geocoder),
     new myGeolocation.MyGeolocation(options.geolocation),
-    new myButton.Load(options.load),
-    new myButton.Download(options.download),
-    new myButton.Print(options.print),
+    new Load(options.load),
+    new Download(options.download),
+    new Print(options.print),
 
     // Bottom left
     new myControl.LengthLine(options.lengthLine),
@@ -50,3 +43,16 @@ export function collection(opt) {
     ...options.supplementaryControls,
   ];
 }
+
+export default {
+  MyButton,
+  ...myControl,
+  ...myGeolocation,
+  Editor: Editor,
+  LayerSwitcher: LayerSwitcher,
+  MyGeocoder: MyGeocoder,
+  Print: Print,
+  Download: Download,
+  Load: Load,
+  collection,
+};

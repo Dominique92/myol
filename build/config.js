@@ -10,6 +10,23 @@ const banner = fs.readFileSync('./build/banner.js', 'utf-8');
 //TODO rollup date, version & module name in dist from package
 
 export default [{
+  // Full myol / debug library
+  input: 'build/index.js',
+  plugins: [
+    node(),
+    cjs(),
+    css({
+      output: 'myol.css',
+    }),
+    json(),
+  ],
+  output: [{
+    name: 'myol',
+    banner,
+    file: 'dist/myol-debug.js',
+    format: 'iife',
+  }],
+}, {
   // Full myol / compressed library
   input: 'build/index.js',
   plugins: [
@@ -28,22 +45,5 @@ export default [{
     file: 'dist/myol.js',
     format: 'umd',
     sourcemap: true,
-  }],
-}, {
-  // Full myol / debug library
-  input: 'build/index.js',
-  plugins: [
-    node(),
-    cjs(),
-    css({
-      output: 'myol.css',
-    }),
-    json(),
-  ],
-  output: [{
-    name: 'myol',
-    banner,
-    file: 'dist/myol-debug.js',
-    format: 'iife',
   }],
 }];

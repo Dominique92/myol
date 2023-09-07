@@ -4,10 +4,9 @@
  */
 
 import ol from '../../src/ol'; //BEST come back to direct import (optim ???)
-import './MyControl.css';
 import MyButton from './myButton';
 
-export class MyGeolocation extends MyButton {
+export default class MyGeolocation extends MyButton {
   constructor(options) {
     const subMenu = location.href.match(/(https|localhost)/) ?
       //BEST use .html content / option
@@ -232,36 +231,3 @@ export class MyGeolocation extends MyButton {
       this.element.classList.remove('myol-display-submenu');
   }
 }
-
-/**
- * Control to display the mouse position
- */
-//TODO make special file
-export class MyMousePosition extends ol.control.MousePosition {
-  constructor(options) {
-    super({
-      // From MousePosition options
-      className: 'myol-coordinate',
-      projection: 'EPSG:4326',
-      placeholder: String.fromCharCode(0), // Hide control when mouse is out of the map
-
-      coordinateFormat: mouse => {
-        //BEST find better than window.gpsValues to share info
-        //BEST BUG : show distance even if GPS off
-        if (window.gpsValues && window.gpsValues.position) {
-          const ll4326 = ol.proj.transform(window.gpsValues.position, 'EPSG:3857', 'EPSG:4326'),
-            distance = ol.sphere.getDistance(mouse, ll4326);
-
-          return distance < 1000 ?
-            (Math.round(distance)) + ' m' :
-            (Math.round(distance / 10) / 100) + ' km';
-        } else
-          return ol.coordinate.createStringXY(4)(mouse);
-      },
-
-      ...options,
-    });
-  }
-}
-
-export default MyGeolocation; //TODO move up

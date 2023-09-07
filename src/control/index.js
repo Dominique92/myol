@@ -4,8 +4,9 @@
 
 import MyButton from './MyButton';
 import * as myControl from './MyControl';
-import * as myGeolocation from './MyGeolocation';
+import MyGeolocation from './MyGeolocation';
 import Editor from './Editor';
+import MyMousePosition from './MyMousePosition';
 import Print from './Print';
 import Download from './Download';
 import Load from './Load';
@@ -47,8 +48,9 @@ export function collection(opt) {
 export default {
   MyButton,
   ...myControl,
-  ...myGeolocation,
+  MyGeolocation: MyGeolocation,
   Editor: Editor,
+  MyMousePosition: MyMousePosition,
   LayerSwitcher: LayerSwitcher,
   MyGeocoder: MyGeocoder,
   Print: Print,

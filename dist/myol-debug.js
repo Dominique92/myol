@@ -59886,189 +59886,6 @@ var myol = (function () {
   }
 
   /**
-   * Control to display the length & height difference of an hovered line
-   */
-  //TODO make special file
-  class LengthLine extends MyControl {
-    constructor() {
-      super(); //HACK button not visible
-
-      this.element.className = 'myol-length-line';
-    }
-
-    setMap(map) {
-      super.setMap(map);
-
-      map.on('pointermove', evt => {
-        this.element.innerHTML = ''; // Clear the measure if hover no feature
-
-        // Find new features to hover
-        map.forEachFeatureAtPixel(
-          evt.pixel,
-          feature => this.calculateLength(feature), {
-            hitTolerance: 6, // Default is 0
-          });
-      });
-    }
-
-    //BEST calculate distance to the ends
-    calculateLength(feature) {
-      if (feature) {
-        let geometry = feature.getGeometry(),
-          length = ol.sphere.getLength(geometry),
-          fcs = this.getFlatCoordinates(geometry),
-          denivPos = 0,
-          denivNeg = 0;
-
-        // Height difference calculation
-        for (let c = 5; c < fcs.length; c += 3) {
-          const d = fcs[c] - fcs[c - 3];
-
-          if (d > 0)
-            denivPos += d;
-          else
-            denivNeg -= d;
-        }
-
-        // Display
-        //TODO BUG display length of GPS colimator
-        if (length) {
-          this.element.innerHTML =
-            // Line length
-            length < 1000 ?
-            (Math.round(length)) + ' m' :
-            (Math.round(length / 10) / 100) + ' km' +
-            // Height difference
-            (denivPos ? ' +' + denivPos + ' m' : '') +
-            (denivNeg ? ' -' + denivNeg + ' m' : '');
-
-          return false; // Continue detection (for editor that has temporary layers)
-        }
-      }
-    }
-
-    getFlatCoordinates(geometry) {
-      let fcs = [];
-
-      if (geometry.stride == 3)
-        fcs = geometry.flatCoordinates;
-
-      if (geometry.getType() == 'GeometryCollection')
-        for (let g of geometry.getGeometries())
-          fcs.push(...this.getFlatCoordinates(g));
-
-      return fcs;
-    }
-  }
-
-  /**
-   * Permalink control
-   * "map" url hash or localStorage: zoom=<ZOOM> lon=<LON> lat=<LAT>
-   * Don't set view when you declare the map
-   */
-  //TODO make special file
-  class Permalink extends MyControl {
-    constructor(options) {
-      super({
-        // Permalink options
-        init: true, // {true | false} use url hash or localStorage to position the map.
-        setUrl: false, // {true | false} Change url hash when moving the map.
-        display: false, // {true | false} Display permalink link the map.
-        hash: '?', // {?, #} the permalink delimiter after the url
-        //BEST init with bbox option
-
-        ...options,
-      });
-
-      if (this.options.display) {
-        this.element.className = 'myol-permalink';
-        this.aEl = document.createElement('a');
-        this.aEl.innerHTML = 'Permalink';
-        this.aEl.title = 'Generate a link with map zoom & position';
-        this.element.appendChild(this.aEl);
-      }
-    }
-
-    render(evt) {
-      const view = evt.map.getView(),
-        urlMod = location.href.replace( // Get value from params with priority url / ? / #
-          /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/, // map=<zoom>/<lon>/<lat>
-          'zoom=$1&lon=$2&lat=$3' // zoom=<zoom>&lon=<lon>&lat=<lat>
-        ) +
-        // Last values
-        'zoom=' + localStorage.myol_zoom +
-        'lon=' + localStorage.myol_lon +
-        'lat=' + localStorage.myol_lat +
-        // Default
-        'zoom=6&lon=2&lat=47';
-
-
-      // Set center & zoom at the init
-      if (this.options.init) {
-        this.options.init = false; // Only once
-
-        view.setZoom(urlMod.match(/zoom=([0-9.]+)/)[1]);
-
-        view.setCenter(ol.proj.transform([
-          urlMod.match(/lon=(-?[0-9.]+)/)[1],
-          urlMod.match(/lat=(-?[0-9.]+)/)[1],
-        ], 'EPSG:4326', 'EPSG:3857'));
-      }
-
-      // Set the permalink with current map zoom & position
-      if (view.getCenter()) {
-        const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
-          newParams = 'map=' +
-          (localStorage.myol_zoom = Math.round(view.getZoom() * 10) / 10) + '/' +
-          (localStorage.myol_lon = Math.round(ll4326[0] * 10000) / 10000) + '/' +
-          (localStorage.myol_lat = Math.round(ll4326[1] * 10000) / 10000);
-
-        if (this.options.display)
-          this.aEl.href = this.options.hash + newParams;
-
-        if (this.options.setUrl)
-          location.href = '#' + newParams;
-      }
-    }
-  }
-
-  /**
-   * Control to display set preload of depth upper level tiles
-   * This prepares the browser to become offline
-   */
-  //TODO make special file
-  class TilesBuffer extends MyControl {
-    constructor(options) {
-      super({
-        depth: 2,
-        ...options,
-      });
-    }
-
-    setMap(map) {
-      super.setMap(map);
-
-      // Action on each layer
-      //BEST too much load on basic browsing
-      map.on('precompose', () => {
-        map.getLayers().forEach(layer => {
-          if (typeof layer.setPreload == 'function')
-            layer.setPreload(this.options.depth);
-        });
-      });
-    }
-  }
-
-  var myControl = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    LengthLine: LengthLine,
-    MyControl: MyControl,
-    Permalink: Permalink,
-    TilesBuffer: TilesBuffer,
-    default: MyControl
-  });
-
-  /**
    * Controls.js
    * Add some usefull controls without buttons
    */
@@ -60138,344 +59955,108 @@ var myol = (function () {
   };
 
   /**
-   * Controls.js
-   * Add some usefull controls without buttons
+   * File downloader control
    */
 
 
-  /**
-   * Control button
-   * Abstract class to be used by other control buttons definitions
-   */
-  class MyButton extends MyControl {
+  //BEST BUG incompatible with clusters
+  class Download extends MyButton$1 {
     constructor(options) {
-      // MyButton options
-      // className : to be added to the control.element
-      // label : one unicode character to decorate the button
-      // subMenuId : id of an existing html containing the scrolling menu 
-      // subMenuHTML : html code of the scrolling menu 
-      super(options);
-
-      // Add submenu below the button
-      if (this.options.subMenuId)
-        this.subMenuEl = document.getElementById(this.options.subMenuId);
-      else {
-        this.subMenuEl = document.createElement('div');
-        if (this.options.subMenuHTML)
-          this.subMenuEl.innerHTML = this.options.subMenuHTML;
-      }
-
-      // Display the button only if there are no label or submenu
-      if (this.options.label && this.subMenuEl && this.subMenuEl.innerHTML) {
-        // Create a button
-        const buttonEl = document.createElement('button');
-        buttonEl.setAttribute('type', 'button');
-        buttonEl.innerHTML = this.options.label;
-        buttonEl.addEventListener('click', evt => this.buttonAction(evt));
-
-        // Populate the control
-        this.element.className = 'ol-control myol-button' + (this.options.className ? ' ' + this.options.className : '');
-        this.element.appendChild(buttonEl); // Add the button
-        this.element.appendChild(this.subMenuEl); // Add the submenu
-        this.element.addEventListener('mouseover', evt => this.buttonAction(evt));
-        this.element.addEventListener('mouseout', evt => this.buttonAction(evt));
-
-        // Close the submenu when click or touch on the map
-        document.addEventListener('click', evt => {
-          const el = document.elementFromPoint(evt.x, evt.y);
-
-          if (el && el.tagName == 'CANVAS')
-            this.element.classList.remove('myol-button-selected');
-        });
-      }
-    }
-
-    buttonAction(evt) {
-      if (evt.type == 'mouseover')
-        this.element.classList.add('myol-button-hover');
-      else // mouseout | click
-        this.element.classList.remove('myol-button-hover');
-
-      if (evt.type == 'click') // Mouse click & touch
-        this.element.classList.toggle('myol-button-selected');
-
-      // Close other open buttons
-      for (let el of document.getElementsByClassName('myol-button'))
-        if (el != this.element)
-          el.classList.remove('myol-button-selected');
-    }
-  }
-
-  /**
-   * Geolocation control
-   * Display status, altitude & speed
-   */
-
-
-  class MyGeolocation extends MyButton {
-    constructor(options) {
-      const subMenu = location.href.match(/(https|localhost)/) ?
-        //BEST use .html content / option
-        '<p>Localisation GPS:</p>' +
-        '<label>' +
-        '<input type="radio" name="myol-gps-source" value="0" checked="checked">' +
-        'Inactif</label><label>' +
-        '<input type="radio" name="myol-gps-source" value="1">' +
-        'Position GPS <span>(1) extérieur</span></label><label>' +
-        '<input type="radio" name="myol-gps-source" value="2">' +
-        'Position GPS ou IP <span>(2) intérieur</span></label><hr><label>' +
-        '<input type="radio" name="myol-gps-display" value="0" checked="checked">' +
-        'Graticule, carte libre</label><label>' +
-        '<input type="radio" name="myol-gps-display" value="1">' +
-        'Centre la carte, nord en haut</label><label>' +
-        '<input type="radio" name="myol-gps-display" value="2">' +
-        'Centre et oriente la carte <span>(3)</span></label>' +
-
-        '<hr><p>(1) plus précis en extérieur mais plus lent à initialiser, ' +
-        'nécessite un capteur et une réception GPS.</p>' +
-        '<p>(2) plus précis et rapide en intérieur ou en zone urbaine ' +
-        'mais peut être très erroné en extérieur à l&apos;initialisation. ' +
-        'Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>' +
-        '<p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>' :
-
-        // Si on est en http
-        '<p>L&apos;utilisation du GPS nécessite https</p>' +
-        '<a href="' + document.location.href.replace('http:', 'https:') + '">Passer en https<a>';
-
       super({
         // MyButton options
-        className: 'myol-button-gps',
-        label: '&#8853;',
-        subMenuHTML: subMenu,
-        //BEST subMenuId: 'myol-gps',
-
-        // ol.Geolocation options
-        // https://www.w3.org/TR/geolocation/#position_options_interface
-        enableHighAccuracy: true,
-        maximumAge: 1000,
-        timeout: 1000,
+        label: '&#128229;',
+        subMenuHTML: '<p>Cliquer sur un format ci-dessous pour obtenir un fichier ' +
+          'contenant les éléments visibles dans la fenêtre:</p>' +
+          '<a mime="application/gpx+xml">GPX</a>' +
+          '<a mime="vnd.google-earth.kml+xml">KML</a>' +
+          '<a mime="application/json">GeoJSON</a>',
+        fileName: document.title || 'openlayers', //BEST name from feature
 
         ...options,
       });
 
-      // Add status display element
-      this.statusEl = document.createElement('p');
-      this.element.appendChild(this.statusEl);
+      this.hiddenEl = document.createElement('a');
+      this.hiddenEl.target = '_self';
+      this.hiddenEl.style = 'display:none';
+      document.body.appendChild(this.hiddenEl);
 
       // Register action listeners
-      this.element.querySelectorAll('input')
+      this.element.querySelectorAll('a')
         .forEach(el => {
-          el.addEventListener('change', evt => this.action(evt));
+          el.addEventListener('click', evt => this.action(evt));
         });
-
-      // Graticule
-      this.graticuleFeature = new ol.Feature(); //BEST Use layer Graticule
-      this.northGraticuleFeature = new ol.Feature();
-
-      this.graticuleLayer = new ol.layer.Vector({
-        source: new ol.source.Vector({
-          features: [this.graticuleFeature, this.northGraticuleFeature],
-        }),
-        zIndex: 300, // Above the features
-        style: new ol.style.Style({
-          fill: new ol.style.Fill({
-            color: 'rgba(128,128,255,0.2)',
-          }),
-          stroke: new ol.style.Stroke({
-            color: '#20b',
-            lineDash: [16, 14],
-            width: 1,
-          }),
-        }),
-      });
-
-      this.graticuleFeature.setStyle(new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: '#000',
-          lineDash: [16, 14],
-          width: 1,
-        }),
-      }));
-
-      this.northGraticuleFeature.setStyle(new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: '#c00',
-          lineDash: [16, 14],
-          width: 1,
-        }),
-      }));
-
-      window.gpsValues = {}; // Store the measures for internal use & other controls
-
-      // Browser heading from the inertial & magnetic sensors
-      window.addEventListener('deviceorientationabsolute', evt => {
-        window.gpsValues.heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
-        this.action(evt);
-      });
-    }
-
-    setMap(map) {
-      super.setMap(map);
-
-      map.addLayer(this.graticuleLayer);
-      map.on('moveend', evt => this.action(evt)); // Refresh graticule after map zoom
-
-      this.geolocation = new ol.Geolocation({
-        projection: map.getView().getProjection(),
-        trackingOptions: this.options,
-        ...this.options,
-      });
-      this.geolocation.on('change', evt => this.action(evt));
-      this.geolocation.on('error', error => {
-        console.log('Geolocation error: ' + error.message);
-      });
     }
 
     action(evt) {
-      const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
-        displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),
-        displayEls = document.getElementsByName('myol-gps-display'),
-        sourceLevel = sourceLevelEl ? parseInt(sourceLevelEl.value) : 0, // On/off, GPS, GPS&WiFi
-        displayLevel = displayLevelEl ? parseInt(displayLevelEl.value) : 0, // Graticule & sourceLevel
-        map = this.getMap(),
-        view = map ? map.getView() : null;
+      const map = this.getMap(),
+        formatName = evt.target.innerText,
+        downloadFormat = new ol.format[formatName](),
+        mime = evt.target.getAttribute('mime');
+      let features = [],
+        extent = map.getView().calculateExtent();
 
-      // Tune the tracking level
-      if (evt.target.name == 'myol-gps-source') {
-        this.geolocation.setTracking(sourceLevel > 0);
-        this.graticuleLayer.setVisible(false);
-        window.gpsValues = {}; // Reset the values
-        if (!sourceLevel)
-          displayEls[0].checked = true;
-        if (sourceLevel && displayLevel == 0)
-          displayEls[2].checked = true;
+      // Get all visible features
+      if (this.options.savedLayer)
+        getFeatures(this.options.savedLayer);
+      else
+        map.getLayers().forEach(getFeatures); //BEST what about (args)
+
+      function getFeatures(savedLayer) { //BEST put in method
+        if (savedLayer.getSource() &&
+          savedLayer.getSource().forEachFeatureInExtent) // For vector layers only
+          savedLayer.getSource().forEachFeatureInExtent(extent, feature => {
+            if (!savedLayer.getProperties().dragable) // Don't save the cursor
+              features.push(feature);
+          });
       }
 
-      // Get geolocation values
-      ['Position', 'AccuracyGeometry', 'Speed', 'Altitude'].forEach(valueName => {
-        const value = this.geolocation['get' + valueName]();
-        if (value)
-          window.gpsValues[valueName.toLowerCase()] = value;
-      });
+      if (formatName == 'GPX')
+        // Transform *Polygons in linestrings
+        for (let f in features) {
+          const geometry = features[f].getGeometry();
 
-      // State 1 only takes positions from the GPS (which have an altitude)
-      if (sourceLevel == 1 && !window.gpsValues.altitude)
-        window.gpsValues.position = null;
-
-      // Render position & graticule
-      if (map && view && sourceLevel && window.gpsValues.position) {
-        // Estimate the viewport size to draw a visible graticule
-        const p = window.gpsValues.position,
-          hg = map.getCoordinateFromPixel([0, 0]),
-          bd = map.getCoordinateFromPixel(map.getSize()),
-          far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10,
-          // The graticule
-          geometry = [
-            new ol.geom.MultiLineString([
-              [
-                [p[0] - far, p[1]],
-                [p[0] + far, p[1]]
-              ],
-              [
-                [p[0], p[1]],
-                [p[0], p[1] - far]
-              ],
-            ]),
-          ],
-          // Color north in red
-          northGeometry = [
-            new ol.geom.LineString([
-              [p[0], p[1]],
-              [p[0], p[1] + far]
-            ]),
-          ];
-
-        // The accuracy circle
-        if (window.gpsValues.accuracygeometry)
-          geometry.push(window.gpsValues.accuracygeometry);
-
-        this.graticuleFeature.setGeometry(new ol.geom.GeometryCollection(geometry));
-        this.northGraticuleFeature.setGeometry(new ol.geom.GeometryCollection(northGeometry));
-
-        // Center the map
-        if (displayLevel > 0)
-          view.setCenter(p);
-
-        // Orientation
-        if (!sourceLevel || displayLevel == 1)
-          view.setRotation(0);
-        else if (window.gpsValues.heading && displayLevel == 2)
-          view.setRotation(
-            Math.PI / 180 * (window.gpsValues.heading - screen.orientation.angle) // Delivered ° reverse clockwize
-          );
-
-        // Zoom on the area
-        if (!window.gpsValues.isZoomed) { // Only the first time after activation
-          window.gpsValues.isZoomed = true;
-          view.setZoom(17);
-
-          // Close submenu when GPS locates
-          this.element.classList.remove('myol-button-hover');
-          this.element.classList.remove('myol-button-selected');
+          if (geometry.getType().includes('Polygon')) {
+            geometry.getCoordinates().forEach(coords => {
+              if (typeof coords[0][0] == 'number')
+                // Polygon
+                features.push(new ol.Feature(new ol.geom.LineString(coords)));
+              else
+                // MultiPolygon
+                coords.forEach(subCoords =>
+                  features.push(new ol.Feature(new ol.geom.LineString(subCoords)))
+                );
+            });
+          }
         }
-        this.graticuleLayer.setVisible(true);
-      } else
-        view.setRotation(0); // Return to inactive state
 
-      // Display data under the button
-      let status = window.gpsValues.position ? '' : 'Sync...'; //TODO BUG never see Sync...
-      if (window.gpsValues.altitude) {
-        status = Math.round(window.gpsValues.altitude) + ' m';
-        if (window.gpsValues.speed)
-          status += ' ' + (Math.round(window.gpsValues.speed * 36) / 10) + ' km/h';
-      }
-      if (this.statusEl)
-        this.statusEl.innerHTML = sourceLevel ? status : '';
+      const data = downloadFormat.writeFeatures(features, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: map.getView().getProjection(), // Map projection
+          decimals: 5,
+        })
+        // Beautify the output
+        .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/g, '')
+        .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
+        .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/g, '')
+        .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
+        .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
+        .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
+        .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
+        .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
+        .replace(/ ([cvx])/g, '\n\t$1'),
+
+        file = new Blob([data], {
+          type: mime,
+        });
+
+      this.hiddenEl.download = this.options.fileName + '.' + formatName.toLowerCase();
+      this.hiddenEl.href = URL.createObjectURL(file);
+      this.hiddenEl.click();
 
       // Close the submenu
-      if (evt.target.name) // Only when an input is hit
-        this.element.classList.remove('myol-display-submenu');
+      this.element.classList.remove('myol-display-submenu');
     }
   }
-
-  /**
-   * Control to display the mouse position
-   */
-  //TODO make special file
-  class MyMousePosition extends ol.control.MousePosition {
-    constructor(options) {
-      super({
-        // From MousePosition options
-        className: 'myol-coordinate',
-        projection: 'EPSG:4326',
-        placeholder: String.fromCharCode(0), // Hide control when mouse is out of the map
-
-        coordinateFormat: mouse => {
-          //BEST find better than window.gpsValues to share info
-          //BEST BUG : show distance even if GPS off
-          if (window.gpsValues && window.gpsValues.position) {
-            const ll4326 = ol.proj.transform(window.gpsValues.position, 'EPSG:3857', 'EPSG:4326'),
-              distance = ol.sphere.getDistance(mouse, ll4326);
-
-            return distance < 1000 ?
-              (Math.round(distance)) + ' m' :
-              (Math.round(distance / 10) / 100) + ' km';
-          } else
-            return ol.coordinate.createStringXY(4)(mouse);
-        },
-
-        ...options,
-      });
-    }
-  }
-   //TODO move up
-
-  var myGeolocation = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    MyGeolocation: MyGeolocation,
-    MyMousePosition: MyMousePosition,
-    default: MyGeolocation
-  });
 
   /**
    * Editor.js
@@ -60992,184 +60573,194 @@ var myol = (function () {
   }
 
   /**
-   * Print control
+   * LayerSwitcher.js
    */
 
 
-  class Print extends MyButton$1 {
+  //BEST how do we do on touch terminal ? alt key to switch layers / transparency
+  //BEST keep selector open when click on the button (as other buttons)
+  class LayerSwitcher extends MyButton$1 {
     constructor(options) {
       super({
         // MyButton options
-        label: '&#9113;',
-        className: 'myol-button-print',
-        subMenuHTML: '<p>Pour imprimer la carte:</p>' +
-          '<p>-Choisir portrait ou paysage,</p>' +
-          '<p>-zoomer et déplacer la carte dans le format,</p>' +
-          '<p>-imprimer.</p>' +
-          '<label><input type="radio" value="0">Portrait A4</label>' +
-          '<label><input type="radio" value="1">Paysage A4</label>' +
-          '<a id="print">Imprimer</a>' +
-          '<a onclick="location.reload()">Annuler</a>',
+        className: 'myol-button-switcher',
+        label: '&#10063;',
+        subMenuHTML: '<div>',
 
         ...options,
       });
 
-      // Register action listeners
-      this.element.querySelectorAll('input,a')
-        .forEach(el => {
-          el.addEventListener('click', evt => this.action(evt));
-        });
+      // Filter null or hidden layers
+      this.layers = {};
+      for (let name in options.layers)
+        if (options.layers[name] && !options.layers[name].getProperties().hidden)
+          this.layers[name] = options.layers[name];
 
-      // To return without print
-      document.addEventListener('keydown', evt => {
-        if (evt.key == 'Escape')
-          setTimeout(() => { // Delay reload for FF & Opera
-            location.reload();
-          });
+      // Get baselayer from url hash (#baselayer=...) if any
+      const bl = location.href.match(/baselayer=([^&]+)/);
+      if (bl)
+        localStorage.myol_baselayer = decodeURI(bl[1]);
+
+      this.sliderEl = document.createElement('input');
+      this.sliderEl.type = 'range';
+      this.sliderEl.title = 'Glisser pour faire varier la tranparence';
+      this.sliderEl.oninput = () => this.displayTransparencyRange();
+    }
+
+    setMap(map) {
+      super.setMap(map);
+
+      for (let name in this.layers) {
+        // Build html layers selectors
+        this.subMenuEl.insertAdjacentHTML('beforeend', '<label><input type="checkbox" name="baselayer" value="' + name + '">' + name + '</label>');
+
+        // Make layers available for display
+        this.layers[name].setVisible(false); // Don't begin to get the tiles yet (Necessary for Bing)
+        map.addLayer(this.layers[name]);
+      }
+      this.selectorEls = this.element.querySelectorAll('input[name="baselayer"]');
+      this.action(); // Display active layer
+      this.subMenuEl.insertAdjacentHTML('beforeend', '<p>Ctrl+click: multicouches</p>');
+
+      // Attach html additional selector (must be there to be after base layers)
+      const selectExtEl = document.getElementById(this.options.selectExtId);
+      if (selectExtEl) {
+        selectExtEl.classList.add('select-ext');
+        this.subMenuEl.appendChild(selectExtEl);
+        selectExtEl.style.display = ''; // Unmask the selector if it has been at the declaration
+      }
+
+      // Register action listeners
+      this.element.querySelectorAll('input[name=baselayer]')
+        .forEach(el =>
+          el.addEventListener('click', evt =>
+            this.action(evt)
+          )
+        );
+
+      // Hide the selector when the cursor is out of the selector
+      map.on('pointermove', evt => {
+        const max_x = map.getTargetElement().offsetWidth - this.element.offsetWidth - 20,
+          max_y = this.element.offsetHeight + 20;
+
+        if (evt.pixel[0] < max_x || evt.pixel[1] > max_y)
+          this.element.classList.remove('myol-button-switcher-open');
       });
     }
 
     action(evt) {
-      const map = this.getMap(),
-        mapEl = map.getTargetElement(),
-        poElcs = this.element.querySelectorAll('input:checked'), // Selected orientation inputs
-        orientation = poElcs.length ? parseInt(poElcs[0].value) : 0; // Selected orientation or portrait
+      // Clean checks
+      if (evt && !evt.ctrlKey) {
+        this.selectorEls.forEach(el => el.checked = false);
+        evt.target.checked = true;
+      }
+      if (!this.element.querySelector('input[name="baselayer"]:checked'))
+        (this.element.querySelector('input[value="' + localStorage.myol_baselayer + '"]') ||
+          this.selectorEls[0]
+        ).checked = true;
 
-      // Change map size & style
-      mapEl.style.maxHeight = mapEl.style.maxWidth =
-        mapEl.style.float = 'none';
-      mapEl.style.width = orientation == 0 ? '208mm' : '295mm';
-      mapEl.style.height = orientation == 0 ? '295mm' : '208mm';
-      map.setSize([mapEl.clientWidth, mapEl.clientHeight]);
+      const selectedEls = this.element.querySelectorAll('input[name="baselayer"]:checked');
 
-      // Set style portrait / landscape
-      const styleSheet = document.createElement('style');
-      styleSheet.type = 'text/css';
-      styleSheet.innerText = '@page {size: ' + (orientation == 0 ? 'portrait' : 'landscape') + '}';
-      document.head.appendChild(styleSheet);
+      localStorage.myol_baselayer = selectedEls[0].value;
+      this.sliderEl.value = 50;
+      this.sliderEl.remove();
+      this.transparentlayer = null;
 
-      // Hide all but the map
-      document.body.appendChild(mapEl);
-      for (let child = document.body.firstElementChild; child !== null; child = child.nextSibling)
-        if (child.style && child !== mapEl)
-          child.style.display = 'none';
+      // Display the layers & slider
+      this.selectorEls.forEach(el => {
+        this.layers[el.value].setVisible(el.checked);
+        this.layers[el.value].setOpacity(1);
 
-      // Finer zoom not dependent on the baselayer's levels
-      map.getView().setConstrainResolution(false);
-      map.addInteraction(new ol.interaction.MouseWheelZoom({
-        maxDelta: 0.1,
-      }));
+        if (el.checked && selectedEls.length > 1) {
+          el.parentElement.after(this.sliderEl);
+          this.transparentlayer = this.layers[el.value];
+        }
+      });
 
-      // Finally print if required
-      if (evt.target.id == 'print')
-        map.once('rendercomplete', () => {
-          window.print();
-          location.reload();
-        });
+      this.displayTransparencyRange();
+    }
+
+    displayTransparencyRange() {
+      if (this.transparentlayer)
+        this.transparentlayer.setOpacity(this.sliderEl.value / 100);
     }
   }
 
   /**
-   * File downloader control
+   * LengthLine control
+   * Control to display the length & height difference of an hovered line
    */
 
 
-  //BEST BUG incompatible with clusters
-  class Download extends MyButton$1 {
-    constructor(options) {
-      super({
-        // MyButton options
-        label: '&#128229;',
-        subMenuHTML: '<p>Cliquer sur un format ci-dessous pour obtenir un fichier ' +
-          'contenant les éléments visibles dans la fenêtre:</p>' +
-          '<a mime="application/gpx+xml">GPX</a>' +
-          '<a mime="vnd.google-earth.kml+xml">KML</a>' +
-          '<a mime="application/json">GeoJSON</a>',
-        fileName: document.title || 'openlayers', //BEST name from feature
+  class LengthLine extends MyControl {
+    constructor() {
+      super(); //HACK button not visible
 
-        ...options,
-      });
-
-      this.hiddenEl = document.createElement('a');
-      this.hiddenEl.target = '_self';
-      this.hiddenEl.style = 'display:none';
-      document.body.appendChild(this.hiddenEl);
-
-      // Register action listeners
-      this.element.querySelectorAll('a')
-        .forEach(el => {
-          el.addEventListener('click', evt => this.action(evt));
-        });
+      this.element.className = 'myol-length-line';
     }
 
-    action(evt) {
-      const map = this.getMap(),
-        formatName = evt.target.innerText,
-        downloadFormat = new ol.format[formatName](),
-        mime = evt.target.getAttribute('mime');
-      let features = [],
-        extent = map.getView().calculateExtent();
+    setMap(map) {
+      super.setMap(map);
 
-      // Get all visible features
-      if (this.options.savedLayer)
-        getFeatures(this.options.savedLayer);
-      else
-        map.getLayers().forEach(getFeatures); //BEST what about (args)
+      map.on('pointermove', evt => {
+        this.element.innerHTML = ''; // Clear the measure if hover no feature
 
-      function getFeatures(savedLayer) { //BEST put in method
-        if (savedLayer.getSource() &&
-          savedLayer.getSource().forEachFeatureInExtent) // For vector layers only
-          savedLayer.getSource().forEachFeatureInExtent(extent, feature => {
-            if (!savedLayer.getProperties().dragable) // Don't save the cursor
-              features.push(feature);
+        // Find new features to hover
+        map.forEachFeatureAtPixel(
+          evt.pixel,
+          feature => this.calculateLength(feature), {
+            hitTolerance: 6, // Default is 0
           });
-      }
+      });
+    }
 
-      if (formatName == 'GPX')
-        // Transform *Polygons in linestrings
-        for (let f in features) {
-          const geometry = features[f].getGeometry();
+    //BEST calculate distance to the ends
+    calculateLength(feature) {
+      if (feature) {
+        let geometry = feature.getGeometry(),
+          length = ol.sphere.getLength(geometry),
+          fcs = this.getFlatCoordinates(geometry),
+          denivPos = 0,
+          denivNeg = 0;
 
-          if (geometry.getType().includes('Polygon')) {
-            geometry.getCoordinates().forEach(coords => {
-              if (typeof coords[0][0] == 'number')
-                // Polygon
-                features.push(new ol.Feature(new ol.geom.LineString(coords)));
-              else
-                // MultiPolygon
-                coords.forEach(subCoords =>
-                  features.push(new ol.Feature(new ol.geom.LineString(subCoords)))
-                );
-            });
-          }
+        // Height difference calculation
+        for (let c = 5; c < fcs.length; c += 3) {
+          const d = fcs[c] - fcs[c - 3];
+
+          if (d > 0)
+            denivPos += d;
+          else
+            denivNeg -= d;
         }
 
-      const data = downloadFormat.writeFeatures(features, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: map.getView().getProjection(), // Map projection
-          decimals: 5,
-        })
-        // Beautify the output
-        .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/g, '')
-        .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
-        .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/g, '')
-        .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
-        .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
-        .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
-        .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
-        .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
-        .replace(/ ([cvx])/g, '\n\t$1'),
+        // Display
+        //TODO BUG display length of GPS colimator
+        if (length) {
+          this.element.innerHTML =
+            // Line length
+            length < 1000 ?
+            (Math.round(length)) + ' m' :
+            (Math.round(length / 10) / 100) + ' km' +
+            // Height difference
+            (denivPos ? ' +' + denivPos + ' m' : '') +
+            (denivNeg ? ' -' + denivNeg + ' m' : '');
 
-        file = new Blob([data], {
-          type: mime,
-        });
+          return false; // Continue detection (for editor that has temporary layers)
+        }
+      }
+    }
 
-      this.hiddenEl.download = this.options.fileName + '.' + formatName.toLowerCase();
-      this.hiddenEl.href = URL.createObjectURL(file);
-      this.hiddenEl.click();
+    getFlatCoordinates(geometry) {
+      let fcs = [];
 
-      // Close the submenu
-      this.element.classList.remove('myol-display-submenu');
+      if (geometry.stride == 3)
+        fcs = geometry.flatCoordinates;
+
+      if (geometry.getType() == 'GeometryCollection')
+        for (let g of geometry.getGeometries())
+          fcs.push(...this.getFlatCoordinates(g));
+
+      return fcs;
     }
   }
 
@@ -61281,120 +60872,6 @@ var myol = (function () {
 
       // Close the submenu
       this.element.classList.remove('myol-display-submenu');
-    }
-  }
-
-  /**
-   * LayerSwitcher.js
-   */
-
-
-  //BEST how do we do on touch terminal ? alt key to switch layers / transparency
-  //BEST keep selector open when click on the button (as other buttons)
-  class LayerSwitcher extends MyButton$1 {
-    constructor(options) {
-      super({
-        // MyButton options
-        className: 'myol-button-switcher',
-        label: '&#10063;',
-        subMenuHTML: '<div>',
-
-        ...options,
-      });
-
-      // Filter null or hidden layers
-      this.layers = {};
-      for (let name in options.layers)
-        if (options.layers[name] && !options.layers[name].getProperties().hidden)
-          this.layers[name] = options.layers[name];
-
-      // Get baselayer from url hash (#baselayer=...) if any
-      const bl = location.href.match(/baselayer=([^&]+)/);
-      if (bl)
-        localStorage.myol_baselayer = decodeURI(bl[1]);
-
-      this.sliderEl = document.createElement('input');
-      this.sliderEl.type = 'range';
-      this.sliderEl.title = 'Glisser pour faire varier la tranparence';
-      this.sliderEl.oninput = () => this.displayTransparencyRange();
-    }
-
-    setMap(map) {
-      super.setMap(map);
-
-      for (let name in this.layers) {
-        // Build html layers selectors
-        this.subMenuEl.insertAdjacentHTML('beforeend', '<label><input type="checkbox" name="baselayer" value="' + name + '">' + name + '</label>');
-
-        // Make layers available for display
-        this.layers[name].setVisible(false); // Don't begin to get the tiles yet (Necessary for Bing)
-        map.addLayer(this.layers[name]);
-      }
-      this.selectorEls = this.element.querySelectorAll('input[name="baselayer"]');
-      this.action(); // Display active layer
-      this.subMenuEl.insertAdjacentHTML('beforeend', '<p>Ctrl+click: multicouches</p>');
-
-      // Attach html additional selector (must be there to be after base layers)
-      const selectExtEl = document.getElementById(this.options.selectExtId);
-      if (selectExtEl) {
-        selectExtEl.classList.add('select-ext');
-        this.subMenuEl.appendChild(selectExtEl);
-        selectExtEl.style.display = ''; // Unmask the selector if it has been at the declaration
-      }
-
-      // Register action listeners
-      this.element.querySelectorAll('input[name=baselayer]')
-        .forEach(el =>
-          el.addEventListener('click', evt =>
-            this.action(evt)
-          )
-        );
-
-      // Hide the selector when the cursor is out of the selector
-      map.on('pointermove', evt => {
-        const max_x = map.getTargetElement().offsetWidth - this.element.offsetWidth - 20,
-          max_y = this.element.offsetHeight + 20;
-
-        if (evt.pixel[0] < max_x || evt.pixel[1] > max_y)
-          this.element.classList.remove('myol-button-switcher-open');
-      });
-    }
-
-    action(evt) {
-      // Clean checks
-      if (evt && !evt.ctrlKey) {
-        this.selectorEls.forEach(el => el.checked = false);
-        evt.target.checked = true;
-      }
-      if (!this.element.querySelector('input[name="baselayer"]:checked'))
-        (this.element.querySelector('input[value="' + localStorage.myol_baselayer + '"]') ||
-          this.selectorEls[0]
-        ).checked = true;
-
-      const selectedEls = this.element.querySelectorAll('input[name="baselayer"]:checked');
-
-      localStorage.myol_baselayer = selectedEls[0].value;
-      this.sliderEl.value = 50;
-      this.sliderEl.remove();
-      this.transparentlayer = null;
-
-      // Display the layers & slider
-      this.selectorEls.forEach(el => {
-        this.layers[el.value].setVisible(el.checked);
-        this.layers[el.value].setOpacity(1);
-
-        if (el.checked && selectedEls.length > 1) {
-          el.parentElement.after(this.sliderEl);
-          this.transparentlayer = this.layers[el.value];
-        }
-      });
-
-      this.displayTransparencyRange();
-    }
-
-    displayTransparencyRange() {
-      if (this.transparentlayer)
-        this.transparentlayer.setOpacity(this.sliderEl.value / 100);
     }
   }
 
@@ -62642,6 +62119,518 @@ var myol = (function () {
   }
 
   /**
+   * Controls.js
+   * Add some usefull controls without buttons
+   */
+
+
+  /**
+   * Control button
+   * Abstract class to be used by other control buttons definitions
+   */
+  class MyButton extends MyControl {
+    constructor(options) {
+      // MyButton options
+      // className : to be added to the control.element
+      // label : one unicode character to decorate the button
+      // subMenuId : id of an existing html containing the scrolling menu 
+      // subMenuHTML : html code of the scrolling menu 
+      super(options);
+
+      // Add submenu below the button
+      if (this.options.subMenuId)
+        this.subMenuEl = document.getElementById(this.options.subMenuId);
+      else {
+        this.subMenuEl = document.createElement('div');
+        if (this.options.subMenuHTML)
+          this.subMenuEl.innerHTML = this.options.subMenuHTML;
+      }
+
+      // Display the button only if there are no label or submenu
+      if (this.options.label && this.subMenuEl && this.subMenuEl.innerHTML) {
+        // Create a button
+        const buttonEl = document.createElement('button');
+        buttonEl.setAttribute('type', 'button');
+        buttonEl.innerHTML = this.options.label;
+        buttonEl.addEventListener('click', evt => this.buttonAction(evt));
+
+        // Populate the control
+        this.element.className = 'ol-control myol-button' + (this.options.className ? ' ' + this.options.className : '');
+        this.element.appendChild(buttonEl); // Add the button
+        this.element.appendChild(this.subMenuEl); // Add the submenu
+        this.element.addEventListener('mouseover', evt => this.buttonAction(evt));
+        this.element.addEventListener('mouseout', evt => this.buttonAction(evt));
+
+        // Close the submenu when click or touch on the map
+        document.addEventListener('click', evt => {
+          const el = document.elementFromPoint(evt.x, evt.y);
+
+          if (el && el.tagName == 'CANVAS')
+            this.element.classList.remove('myol-button-selected');
+        });
+      }
+    }
+
+    buttonAction(evt) {
+      if (evt.type == 'mouseover')
+        this.element.classList.add('myol-button-hover');
+      else // mouseout | click
+        this.element.classList.remove('myol-button-hover');
+
+      if (evt.type == 'click') // Mouse click & touch
+        this.element.classList.toggle('myol-button-selected');
+
+      // Close other open buttons
+      for (let el of document.getElementsByClassName('myol-button'))
+        if (el != this.element)
+          el.classList.remove('myol-button-selected');
+    }
+  }
+
+  /**
+   * Geolocation control
+   * Display status, altitude & speed
+   */
+
+
+  class MyGeolocation extends MyButton {
+    constructor(options) {
+      const subMenu = location.href.match(/(https|localhost)/) ?
+        //BEST use .html content / option
+        '<p>Localisation GPS:</p>' +
+        '<label>' +
+        '<input type="radio" name="myol-gps-source" value="0" checked="checked">' +
+        'Inactif</label><label>' +
+        '<input type="radio" name="myol-gps-source" value="1">' +
+        'Position GPS <span>(1) extérieur</span></label><label>' +
+        '<input type="radio" name="myol-gps-source" value="2">' +
+        'Position GPS ou IP <span>(2) intérieur</span></label><hr><label>' +
+        '<input type="radio" name="myol-gps-display" value="0" checked="checked">' +
+        'Graticule, carte libre</label><label>' +
+        '<input type="radio" name="myol-gps-display" value="1">' +
+        'Centre la carte, nord en haut</label><label>' +
+        '<input type="radio" name="myol-gps-display" value="2">' +
+        'Centre et oriente la carte <span>(3)</span></label>' +
+
+        '<hr><p>(1) plus précis en extérieur mais plus lent à initialiser, ' +
+        'nécessite un capteur et une réception GPS.</p>' +
+        '<p>(2) plus précis et rapide en intérieur ou en zone urbaine ' +
+        'mais peut être très erroné en extérieur à l&apos;initialisation. ' +
+        'Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>' +
+        '<p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>' :
+
+        // Si on est en http
+        '<p>L&apos;utilisation du GPS nécessite https</p>' +
+        '<a href="' + document.location.href.replace('http:', 'https:') + '">Passer en https<a>';
+
+      super({
+        // MyButton options
+        className: 'myol-button-gps',
+        label: '&#8853;',
+        subMenuHTML: subMenu,
+        //BEST subMenuId: 'myol-gps',
+
+        // ol.Geolocation options
+        // https://www.w3.org/TR/geolocation/#position_options_interface
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 1000,
+
+        ...options,
+      });
+
+      // Add status display element
+      this.statusEl = document.createElement('p');
+      this.element.appendChild(this.statusEl);
+
+      // Register action listeners
+      this.element.querySelectorAll('input')
+        .forEach(el => {
+          el.addEventListener('change', evt => this.action(evt));
+        });
+
+      // Graticule
+      this.graticuleFeature = new ol.Feature(); //BEST Use layer Graticule
+      this.northGraticuleFeature = new ol.Feature();
+
+      this.graticuleLayer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+          features: [this.graticuleFeature, this.northGraticuleFeature],
+        }),
+        zIndex: 300, // Above the features
+        style: new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'rgba(128,128,255,0.2)',
+          }),
+          stroke: new ol.style.Stroke({
+            color: '#20b',
+            lineDash: [16, 14],
+            width: 1,
+          }),
+        }),
+      });
+
+      this.graticuleFeature.setStyle(new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#000',
+          lineDash: [16, 14],
+          width: 1,
+        }),
+      }));
+
+      this.northGraticuleFeature.setStyle(new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#c00',
+          lineDash: [16, 14],
+          width: 1,
+        }),
+      }));
+
+      window.gpsValues = {}; // Store the measures for internal use & other controls
+
+      // Browser heading from the inertial & magnetic sensors
+      window.addEventListener('deviceorientationabsolute', evt => {
+        window.gpsValues.heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
+        this.action(evt);
+      });
+    }
+
+    setMap(map) {
+      super.setMap(map);
+
+      map.addLayer(this.graticuleLayer);
+      map.on('moveend', evt => this.action(evt)); // Refresh graticule after map zoom
+
+      this.geolocation = new ol.Geolocation({
+        projection: map.getView().getProjection(),
+        trackingOptions: this.options,
+        ...this.options,
+      });
+      this.geolocation.on('change', evt => this.action(evt));
+      this.geolocation.on('error', error => {
+        console.log('Geolocation error: ' + error.message);
+      });
+    }
+
+    action(evt) {
+      const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
+        displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),
+        displayEls = document.getElementsByName('myol-gps-display'),
+        sourceLevel = sourceLevelEl ? parseInt(sourceLevelEl.value) : 0, // On/off, GPS, GPS&WiFi
+        displayLevel = displayLevelEl ? parseInt(displayLevelEl.value) : 0, // Graticule & sourceLevel
+        map = this.getMap(),
+        view = map ? map.getView() : null;
+
+      // Tune the tracking level
+      if (evt.target.name == 'myol-gps-source') {
+        this.geolocation.setTracking(sourceLevel > 0);
+        this.graticuleLayer.setVisible(false);
+        window.gpsValues = {}; // Reset the values
+        if (!sourceLevel)
+          displayEls[0].checked = true;
+        if (sourceLevel && displayLevel == 0)
+          displayEls[2].checked = true;
+      }
+
+      // Get geolocation values
+      ['Position', 'AccuracyGeometry', 'Speed', 'Altitude'].forEach(valueName => {
+        const value = this.geolocation['get' + valueName]();
+        if (value)
+          window.gpsValues[valueName.toLowerCase()] = value;
+      });
+
+      // State 1 only takes positions from the GPS (which have an altitude)
+      if (sourceLevel == 1 && !window.gpsValues.altitude)
+        window.gpsValues.position = null;
+
+      // Render position & graticule
+      if (map && view && sourceLevel && window.gpsValues.position) {
+        // Estimate the viewport size to draw a visible graticule
+        const p = window.gpsValues.position,
+          hg = map.getCoordinateFromPixel([0, 0]),
+          bd = map.getCoordinateFromPixel(map.getSize()),
+          far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10,
+          // The graticule
+          geometry = [
+            new ol.geom.MultiLineString([
+              [
+                [p[0] - far, p[1]],
+                [p[0] + far, p[1]]
+              ],
+              [
+                [p[0], p[1]],
+                [p[0], p[1] - far]
+              ],
+            ]),
+          ],
+          // Color north in red
+          northGeometry = [
+            new ol.geom.LineString([
+              [p[0], p[1]],
+              [p[0], p[1] + far]
+            ]),
+          ];
+
+        // The accuracy circle
+        if (window.gpsValues.accuracygeometry)
+          geometry.push(window.gpsValues.accuracygeometry);
+
+        this.graticuleFeature.setGeometry(new ol.geom.GeometryCollection(geometry));
+        this.northGraticuleFeature.setGeometry(new ol.geom.GeometryCollection(northGeometry));
+
+        // Center the map
+        if (displayLevel > 0)
+          view.setCenter(p);
+
+        // Orientation
+        if (!sourceLevel || displayLevel == 1)
+          view.setRotation(0);
+        else if (window.gpsValues.heading && displayLevel == 2)
+          view.setRotation(
+            Math.PI / 180 * (window.gpsValues.heading - screen.orientation.angle) // Delivered ° reverse clockwize
+          );
+
+        // Zoom on the area
+        if (!window.gpsValues.isZoomed) { // Only the first time after activation
+          window.gpsValues.isZoomed = true;
+          view.setZoom(17);
+
+          // Close submenu when GPS locates
+          this.element.classList.remove('myol-button-hover');
+          this.element.classList.remove('myol-button-selected');
+        }
+        this.graticuleLayer.setVisible(true);
+      } else
+        view.setRotation(0); // Return to inactive state
+
+      // Display data under the button
+      let status = window.gpsValues.position ? '' : 'Sync...'; //TODO BUG never see Sync...
+      if (window.gpsValues.altitude) {
+        status = Math.round(window.gpsValues.altitude) + ' m';
+        if (window.gpsValues.speed)
+          status += ' ' + (Math.round(window.gpsValues.speed * 36) / 10) + ' km/h';
+      }
+      if (this.statusEl)
+        this.statusEl.innerHTML = sourceLevel ? status : '';
+
+      // Close the submenu
+      if (evt.target.name) // Only when an input is hit
+        this.element.classList.remove('myol-display-submenu');
+    }
+  }
+
+  /**
+   * Control to display the mouse position
+   */
+
+
+  class MyMousePosition extends ol.control.MousePosition {
+    constructor(options) {
+      super({
+        // From MousePosition options
+        className: 'myol-coordinate',
+        projection: 'EPSG:4326',
+        placeholder: String.fromCharCode(0), // Hide control when mouse is out of the map
+
+        coordinateFormat: mouse => {
+          //BEST find better than window.gpsValues to share info
+          //BEST BUG : show distance even if GPS off
+          if (window.gpsValues && window.gpsValues.position) {
+            const ll4326 = ol.proj.transform(window.gpsValues.position, 'EPSG:3857', 'EPSG:4326'),
+              distance = ol.sphere.getDistance(mouse, ll4326);
+
+            return distance < 1000 ?
+              (Math.round(distance)) + ' m' :
+              (Math.round(distance / 10) / 100) + ' km';
+          } else
+            return ol.coordinate.createStringXY(4)(mouse);
+        },
+
+        ...options,
+      });
+    }
+  }
+
+  /**
+   * Permalink control
+   * "map" url hash or localStorage: zoom=<ZOOM> lon=<LON> lat=<LAT>
+   * Don't set view when you declare the map
+   */
+
+
+  class Permalink extends MyControl {
+    constructor(options) {
+      super({
+        // Permalink options
+        init: true, // {true | false} use url hash or localStorage to position the map.
+        setUrl: false, // {true | false} Change url hash when moving the map.
+        display: false, // {true | false} Display permalink link the map.
+        hash: '?', // {?, #} the permalink delimiter after the url
+        //BEST init with bbox option
+
+        ...options,
+      });
+
+      if (this.options.display) {
+        this.element.className = 'myol-permalink';
+        this.aEl = document.createElement('a');
+        this.aEl.innerHTML = 'Permalink';
+        this.aEl.title = 'Generate a link with map zoom & position';
+        this.element.appendChild(this.aEl);
+      }
+    }
+
+    render(evt) {
+      const view = evt.map.getView(),
+        urlMod = location.href.replace( // Get value from params with priority url / ? / #
+          /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/, // map=<zoom>/<lon>/<lat>
+          'zoom=$1&lon=$2&lat=$3' // zoom=<zoom>&lon=<lon>&lat=<lat>
+        ) +
+        // Last values
+        'zoom=' + localStorage.myol_zoom +
+        'lon=' + localStorage.myol_lon +
+        'lat=' + localStorage.myol_lat +
+        // Default
+        'zoom=6&lon=2&lat=47';
+
+
+      // Set center & zoom at the init
+      if (this.options.init) {
+        this.options.init = false; // Only once
+
+        view.setZoom(urlMod.match(/zoom=([0-9.]+)/)[1]);
+
+        view.setCenter(ol.proj.transform([
+          urlMod.match(/lon=(-?[0-9.]+)/)[1],
+          urlMod.match(/lat=(-?[0-9.]+)/)[1],
+        ], 'EPSG:4326', 'EPSG:3857'));
+      }
+
+      // Set the permalink with current map zoom & position
+      if (view.getCenter()) {
+        const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
+          newParams = 'map=' +
+          (localStorage.myol_zoom = Math.round(view.getZoom() * 10) / 10) + '/' +
+          (localStorage.myol_lon = Math.round(ll4326[0] * 10000) / 10000) + '/' +
+          (localStorage.myol_lat = Math.round(ll4326[1] * 10000) / 10000);
+
+        if (this.options.display)
+          this.aEl.href = this.options.hash + newParams;
+
+        if (this.options.setUrl)
+          location.href = '#' + newParams;
+      }
+    }
+  }
+
+  /**
+   * Print control
+   */
+
+
+  class Print extends MyButton$1 {
+    constructor(options) {
+      super({
+        // MyButton options
+        label: '&#9113;',
+        className: 'myol-button-print',
+        subMenuHTML: '<p>Pour imprimer la carte:</p>' +
+          '<p>-Choisir portrait ou paysage,</p>' +
+          '<p>-zoomer et déplacer la carte dans le format,</p>' +
+          '<p>-imprimer.</p>' +
+          '<label><input type="radio" value="0">Portrait A4</label>' +
+          '<label><input type="radio" value="1">Paysage A4</label>' +
+          '<a id="print">Imprimer</a>' +
+          '<a onclick="location.reload()">Annuler</a>',
+
+        ...options,
+      });
+
+      // Register action listeners
+      this.element.querySelectorAll('input,a')
+        .forEach(el => {
+          el.addEventListener('click', evt => this.action(evt));
+        });
+
+      // To return without print
+      document.addEventListener('keydown', evt => {
+        if (evt.key == 'Escape')
+          setTimeout(() => { // Delay reload for FF & Opera
+            location.reload();
+          });
+      });
+    }
+
+    action(evt) {
+      const map = this.getMap(),
+        mapEl = map.getTargetElement(),
+        poElcs = this.element.querySelectorAll('input:checked'), // Selected orientation inputs
+        orientation = poElcs.length ? parseInt(poElcs[0].value) : 0; // Selected orientation or portrait
+
+      // Change map size & style
+      mapEl.style.maxHeight = mapEl.style.maxWidth =
+        mapEl.style.float = 'none';
+      mapEl.style.width = orientation == 0 ? '208mm' : '295mm';
+      mapEl.style.height = orientation == 0 ? '295mm' : '208mm';
+      map.setSize([mapEl.clientWidth, mapEl.clientHeight]);
+
+      // Set style portrait / landscape
+      const styleSheet = document.createElement('style');
+      styleSheet.type = 'text/css';
+      styleSheet.innerText = '@page {size: ' + (orientation == 0 ? 'portrait' : 'landscape') + '}';
+      document.head.appendChild(styleSheet);
+
+      // Hide all but the map
+      document.body.appendChild(mapEl);
+      for (let child = document.body.firstElementChild; child !== null; child = child.nextSibling)
+        if (child.style && child !== mapEl)
+          child.style.display = 'none';
+
+      // Finer zoom not dependent on the baselayer's levels
+      map.getView().setConstrainResolution(false);
+      map.addInteraction(new ol.interaction.MouseWheelZoom({
+        maxDelta: 0.1,
+      }));
+
+      // Finally print if required
+      if (evt.target.id == 'print')
+        map.once('rendercomplete', () => {
+          window.print();
+          location.reload();
+        });
+    }
+  }
+
+  /**
+   * TilesBuffer control
+   * Control to display set preload of depth upper level tiles
+   * This prepares the browser to become offline
+   */
+
+
+  class TilesBuffer extends MyControl {
+    constructor(options) {
+      super({
+        depth: 2,
+        ...options,
+      });
+    }
+
+    setMap(map) {
+      super.setMap(map);
+
+      // Action on each layer
+      //BEST too much load on basic browsing
+      map.on('precompose', () => {
+        map.getLayers().forEach(layer => {
+          if (typeof layer.setPreload == 'function')
+            layer.setPreload(this.options.depth);
+        });
+      });
+    }
+  }
+
+  /**
    * This file defines the myol.control exports
    */
 
@@ -62678,15 +62667,19 @@ var myol = (function () {
   }
 
   var control = {
-    MyButton: MyButton$1,
-    ...myControl,
-    ...myGeolocation,
+    Download: Download,
     Editor: Editor,
     LayerSwitcher: LayerSwitcher,
-    MyGeocoder: MyGeocoder,
-    Print: Print,
-    Download: Download,
+    LengthLine: LengthLine,
     Load: Load,
+    MyButton: MyButton$1,
+    MyControl: MyControl,
+    MyGeocoder: MyGeocoder,
+    MyGeolocation: MyGeolocation,
+    MyMousePosition: MyMousePosition,
+    Permalink: Permalink,
+    Print: Print,
+    TilesBuffer: TilesBuffer,
     collection: collection$1,
   };
 

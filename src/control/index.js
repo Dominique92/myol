@@ -2,16 +2,19 @@
  * This file defines the myol.control exports
  */
 
-import MyButton from './MyButton';
-import * as myControl from './MyControl';
-import MyGeolocation from './MyGeolocation';
-import Editor from './Editor';
-import MyMousePosition from './MyMousePosition';
-import Print from './Print';
 import Download from './Download';
-import Load from './Load';
+import Editor from './Editor';
 import LayerSwitcher from './LayerSwitcher';
+import LengthLine from './LengthLine';
+import Load from './Load';
+import MyButton from './MyButton';
+import MyControl from './MyControl';
 import MyGeocoder from './MyGeocoder';
+import MyGeolocation from './MyGeolocation';
+import MyMousePosition from './MyMousePosition';
+import Permalink from './Permalink';
+import Print from './Print';
+import TilesBuffer from './TilesBuffer';
 import ol from '../../src/ol';
 
 /**
@@ -28,14 +31,14 @@ export function collection(opt) {
     new ol.control.Zoom(options.zoom),
     new ol.control.FullScreen(options.fullScreen),
     new MyGeocoder(options.geocoder),
-    new myGeolocation.MyGeolocation(options.geolocation),
+    new MyGeolocation(options.geolocation),
     new Load(options.load),
     new Download(options.download),
     new Print(options.print),
 
     // Bottom left
-    new myControl.LengthLine(options.lengthLine),
-    new myGeolocation.MyMousePosition(options.myMouseposition),
+    new LengthLine(options.lengthLine),
+    new MyMousePosition(options.myMouseposition),
     new ol.control.ScaleLine(options.scaleLine),
 
     // Bottom right
@@ -46,15 +49,18 @@ export function collection(opt) {
 }
 
 export default {
-  MyButton,
-  ...myControl,
-  MyGeolocation: MyGeolocation,
-  Editor: Editor,
-  MyMousePosition: MyMousePosition,
-  LayerSwitcher: LayerSwitcher,
-  MyGeocoder: MyGeocoder,
-  Print: Print,
   Download: Download,
+  Editor: Editor,
+  LayerSwitcher: LayerSwitcher,
+  LengthLine: LengthLine,
   Load: Load,
+  MyButton: MyButton,
+  MyControl: MyControl,
+  MyGeocoder: MyGeocoder,
+  MyGeolocation: MyGeolocation,
+  MyMousePosition: MyMousePosition,
+  Permalink: Permalink,
+  Print: Print,
+  TilesBuffer: TilesBuffer,
   collection,
 };

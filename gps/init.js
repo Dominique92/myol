@@ -1,6 +1,7 @@
 /* global ol, myol, layersKeys */ // eslint context
 
 console.log('MyGPS version LAST_CHANGE_TIME');
+//TODO GPS version in help
 
 // Ask user to reload the PWA when a new version is loaded
 navigator.serviceWorker.addEventListener('controllerchange', () => {

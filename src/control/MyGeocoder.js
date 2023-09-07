@@ -11,6 +11,7 @@ import './myGeocoder.css'; // After ol-geocoder.css
 import Geocoder from '@myol/geocoder/src/base';
 
 //TODO BUG n'ouvre pas au survol
+//TODO BUG n'affiche pas le picto envoi
 export class MyGeocoder extends Geocoder {
   constructor(options) {
     super('nominatim', {

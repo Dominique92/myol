@@ -31,9 +31,9 @@ Based on https://openlayers.org
   <!-- The main script must be defer or module to be run after the myol import -->
   <script type="module">
     const baseLayers = {
-        Stamen: new ol.layer.Tile({
-          source: new ol.source.Stamen({
-            layer: 'terrain',
+        StadiaMaps: new ol.layer.Tile({
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_terrain',
           }),
         }),
         'OSM org': new ol.layer.Tile({
@@ -44,8 +44,8 @@ Based on https://openlayers.org
           hidden: true,
         }),
         Watercolor: new ol.layer.Tile({
-          source: new ol.source.Stamen({
-            layer: 'watercolor',
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_watercolor',
           }),
         }),
       },

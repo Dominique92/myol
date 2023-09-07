@@ -77,7 +77,7 @@ var myol = (function () {
     evt.stopPropagation();
   }
 
-  var BaseEvent$1 = BaseEvent;
+  var Event = BaseEvent;
 
   /**
    * @module ol/ObjectEventType
@@ -506,7 +506,7 @@ var myol = (function () {
         return;
       }
 
-      const evt = isString ? new BaseEvent$1(event) : /** @type {Event} */ (event);
+      const evt = isString ? new Event(event) : /** @type {Event} */ (event);
       if (!evt.target) {
         evt.target = this.eventTarget_ || this;
       }
@@ -972,7 +972,7 @@ var myol = (function () {
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '7.5.2';
+  const VERSION = '8.1.0';
 
   /**
    * @module ol/Object
@@ -982,7 +982,7 @@ var myol = (function () {
    * @classdesc
    * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
    */
-  class ObjectEvent extends BaseEvent$1 {
+  class ObjectEvent extends Event {
     /**
      * @param {string} type The event type.
      * @param {string} key The property name.
@@ -1130,6 +1130,14 @@ var myol = (function () {
     }
 
     /**
+     * Get an object of all property names and values.
+     * @return {Object<string, *>?} Object.
+     */
+    getPropertiesInternal() {
+      return this.values_;
+    }
+
+    /**
      * @return {boolean} The object has properties.
      */
     hasProperties() {
@@ -1236,118 +1244,16 @@ var myol = (function () {
   var BaseObject$1 = BaseObject;
 
   /**
-   * @module ol/AssertionError
-   */
-
-  /** @type {Object<number, string>} */
-  const messages = {
-    1: 'The view center is not defined',
-    2: 'The view resolution is not defined',
-    3: 'The view rotation is not defined',
-    4: '`image` and `src` cannot be provided at the same time',
-    5: '`imgSize` must be set when `image` is provided',
-    7: '`format` must be set when `url` is set',
-    8: 'Unknown `serverType` configured',
-    9: '`url` must be configured or set using `#setUrl()`',
-    10: 'The default `geometryFunction` can only handle `Point` geometries',
-    11: '`options.featureTypes` must be an Array',
-    12: '`options.geometryName` must also be provided when `options.bbox` is set',
-    13: 'Invalid corner',
-    14: 'Invalid color',
-    15: 'Tried to get a value for a key that does not exist in the cache',
-    16: 'Tried to set a value for a key that is used already',
-    17: '`resolutions` must be sorted in descending order',
-    18: 'Either `origin` or `origins` must be configured, never both',
-    19: 'Number of `tileSizes` and `resolutions` must be equal',
-    20: 'Number of `origins` and `resolutions` must be equal',
-    22: 'Either `tileSize` or `tileSizes` must be configured, never both',
-    24: 'Invalid extent or geometry provided as `geometry`',
-    25: 'Cannot fit empty extent provided as `geometry`',
-    26: 'Features must have an id set',
-    27: 'Features must have an id set',
-    28: '`renderMode` must be `"hybrid"` or `"vector"`',
-    30: 'The passed `feature` was already added to the source',
-    31: 'Tried to enqueue an `element` that was already added to the queue',
-    32: 'Transformation matrix cannot be inverted',
-    33: 'Invalid units',
-    34: 'Invalid geometry layout',
-    36: 'Unknown SRS type',
-    37: 'Unknown geometry type found',
-    38: '`styleMapValue` has an unknown type',
-    39: 'Unknown geometry type',
-    40: 'Expected `feature` to have a geometry',
-    41: 'Expected an `ol/style/Style` or an array of `ol/style/Style.js`',
-    42: 'Question unknown, the answer is 42',
-    43: 'Expected `layers` to be an array or a `Collection`',
-    47: 'Expected `controls` to be an array or an `ol/Collection`',
-    48: 'Expected `interactions` to be an array or an `ol/Collection`',
-    49: 'Expected `overlays` to be an array or an `ol/Collection`',
-    50: '`options.featureTypes` should be an Array',
-    51: 'Either `url` or `tileJSON` options must be provided',
-    52: 'Unknown `serverType` configured',
-    53: 'Unknown `tierSizeCalculation` configured',
-    55: 'The {-y} placeholder requires a tile grid with extent',
-    56: 'mapBrowserEvent must originate from a pointer event',
-    57: 'At least 2 conditions are required',
-    59: 'Invalid command found in the PBF',
-    60: 'Missing or invalid `size`',
-    61: 'Cannot determine IIIF Image API version from provided image information JSON',
-    62: 'A `WebGLArrayBuffer` must either be of type `ELEMENT_ARRAY_BUFFER` or `ARRAY_BUFFER`',
-    64: 'Layer opacity must be a number',
-    66: '`forEachFeatureAtCoordinate` cannot be used on a WebGL layer if the hit detection logic has not been enabled. This is done by providing adequate shaders using the `hitVertexShader` and `hitFragmentShader` properties of `WebGLPointsLayerRenderer`',
-    67: 'A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both',
-    68: 'A VectorTile source can only be rendered if it has a projection compatible with the view projection',
-    69: '`width` or `height` cannot be provided together with `scale`',
-  };
-
-  /**
-   * Error object thrown when an assertion failed. This is an ECMA-262 Error,
-   * extended with a `code` property.
-   * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error.
-   */
-  class AssertionError extends Error {
-    /**
-     * @param {number} code Error code.
-     */
-    constructor(code) {
-      const message = messages[code];
-
-      super(message);
-
-      /**
-       * Error code. The meaning of the code can be found on
-       * https://openlayers.org/en/latest/doc/errors/ (replace `latest` with
-       * the version found in the OpenLayers script's header comment if a version
-       * other than the latest is used).
-       * @type {number}
-       * @deprecated ol/AssertionError and error codes will be removed in v8.0
-       * @api
-       */
-      this.code = code;
-
-      /**
-       * @type {string}
-       */
-      this.name = 'AssertionError';
-
-      // Re-assign message, see https://github.com/Rich-Harris/buble/issues/40
-      this.message = message;
-    }
-  }
-
-  var AssertionError$1 = AssertionError;
-
-  /**
    * @module ol/asserts
    */
 
   /**
    * @param {*} assertion Assertion we expected to be truthy.
-   * @param {number} errorCode Error code.
+   * @param {string} errorMessage Error message.
    */
-  function assert$1(assertion, errorCode) {
+  function assert$1(assertion, errorMessage) {
     if (!assertion) {
-      throw new AssertionError$1(errorCode);
+      throw new Error(errorMessage);
     }
   }
 
@@ -1672,7 +1578,10 @@ var myol = (function () {
     if (Array.isArray(obj)) {
       styles = obj;
     } else {
-      assert$1(typeof (/** @type {?} */ (obj).getZIndex) === 'function', 41); // Expected an `import("./style/Style.js").Style` or an array of `import("./style/Style.js").Style`
+      assert$1(
+        typeof (/** @type {?} */ (obj).getZIndex) === 'function',
+        'Expected an `ol/style/Style` or an array of `ol/style/Style.js`'
+      );
       const style = /** @type {import("./style/Style.js").default} */ (obj);
       styles = [style];
     }
@@ -1906,7 +1815,7 @@ var myol = (function () {
    */
   function makeInverse(target, source) {
     const det = determinant(source);
-    assert$1(det !== 0, 32); // Transformation matrix cannot be inverted
+    assert$1(det !== 0, 'Transformation matrix cannot be inverted');
 
     const a = source[0];
     const b = source[1];
@@ -2027,7 +1936,7 @@ var myol = (function () {
    * @return {Extent} Extent.
    * @api
    */
-  function buffer$1(extent, value, dest) {
+  function buffer(extent, value, dest) {
     if (dest) {
       dest[0] = extent[0] - value;
       dest[1] = extent[1] - value;
@@ -2473,7 +2382,7 @@ var myol = (function () {
     } else if (corner === 'top-right') {
       coordinate = getTopRight(extent);
     } else {
-      assert$1(false, 13); // Invalid corner
+      throw new Error('Invalid corner');
     }
     return coordinate;
   }
@@ -2901,7 +2810,7 @@ var myol = (function () {
     applyTransform: applyTransform,
     approximatelyEquals: approximatelyEquals,
     boundingExtent: boundingExtent,
-    buffer: buffer$1,
+    buffer: buffer,
     clone: clone,
     closestSquaredDistanceXY: closestSquaredDistanceXY,
     containsCoordinate: containsCoordinate,
@@ -3700,6 +3609,17 @@ var myol = (function () {
   function toFixed(n, decimals) {
     const factor = Math.pow(10, decimals);
     return Math.round(n * factor) / factor;
+  }
+
+  /**
+   * Rounds a number to the nearest integer value considering only the given number
+   * of decimal digits (with rounding on the final digit).
+   * @param {number} n The input number.
+   * @param {number} decimals The maximum number of decimal digits.
+   * @return {number} The nearest integer.
+   */
+  function round(n, decimals) {
+    return Math.round(toFixed(n, decimals));
   }
 
   /**
@@ -8523,7 +8443,7 @@ var myol = (function () {
    * @classdesc
    * Events emitted on [GeolocationPositionError](https://developer.mozilla.org/en-US/docs/Web/API/GeolocationPositionError).
    */
-  class GeolocationError extends BaseEvent$1 {
+  class GeolocationError extends Event {
     /**
      * @param {GeolocationPositionError} error error object.
      */
@@ -8936,7 +8856,7 @@ var myol = (function () {
    * type.
    * @template T
    */
-  class CollectionEvent extends BaseEvent$1 {
+  class CollectionEvent extends Event {
     /**
      * @param {import("./CollectionEventType.js").default} type Type.
      * @param {T} element Element.
@@ -9236,7 +9156,7 @@ var myol = (function () {
     assertUnique_(elem, except) {
       for (let i = 0, ii = this.array_.length; i < ii; ++i) {
         if (this.array_[i] === elem && i !== except) {
-          throw new AssertionError$1(58);
+          throw new Error('Duplicate item added to a unique collection');
         }
       }
     }
@@ -9419,7 +9339,7 @@ var myol = (function () {
       color.push(1);
       normalize(color);
     } else {
-      assert$1(false, 14); // Invalid color
+      throw new Error('Invalid color');
     }
     return color;
   }
@@ -9622,7 +9542,7 @@ var myol = (function () {
    * @property {boolean} [visible=true] Visibility.
    * @property {import("../extent.js").Extent} [extent] The bounding extent for layer rendering.  The layer will not be
    * rendered outside of this extent.
-   * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
+   * @property {number | undefined} [zIndex] The z-index for layer rendering.  At rendering time, the layers
    * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
    * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
    * method was used.
@@ -9688,7 +9608,10 @@ var myol = (function () {
 
       properties[LayerProperty.OPACITY] =
         options.opacity !== undefined ? options.opacity : 1;
-      assert$1(typeof properties[LayerProperty.OPACITY] === 'number', 64); // Layer opacity must be a number
+      assert$1(
+        typeof properties[LayerProperty.OPACITY] === 'number',
+        'Layer opacity must be a number'
+      );
 
       properties[LayerProperty.VISIBLE] =
         options.visible !== undefined ? options.visible : true;
@@ -9797,7 +9720,8 @@ var myol = (function () {
     }
 
     /**
-     * Return the maximum resolution of the layer.
+     * Return the maximum resolution of the layer. Returns Infinity if
+     * the layer has no maximum resolution set.
      * @return {number} The maximum resolution of the layer.
      * @observable
      * @api
@@ -9807,7 +9731,8 @@ var myol = (function () {
     }
 
     /**
-     * Return the minimum resolution of the layer.
+     * Return the minimum resolution of the layer. Returns 0 if
+     * the layer has no minimum resolution set.
      * @return {number} The minimum resolution of the layer.
      * @observable
      * @api
@@ -9817,7 +9742,8 @@ var myol = (function () {
     }
 
     /**
-     * Return the minimum zoom level of the layer.
+     * Return the minimum zoom level of the layer. Returns -Infinity if
+     * the layer has no minimum zoom set.
      * @return {number} The minimum zoom level of the layer.
      * @observable
      * @api
@@ -9827,7 +9753,8 @@ var myol = (function () {
     }
 
     /**
-     * Return the maximum zoom level of the layer.
+     * Return the maximum zoom level of the layer. Returns Infinity if
+     * the layer has no maximum zoom set.
      * @return {number} The maximum zoom level of the layer.
      * @observable
      * @api
@@ -9867,13 +9794,13 @@ var myol = (function () {
 
     /**
      * Return the Z-index of the layer, which is used to order layers before
-     * rendering. The default Z-index is 0.
-     * @return {number} The Z-index of the layer.
+     * rendering. Returns undefined if the layer is unmanaged.
+     * @return {number|undefined} The Z-index of the layer.
      * @observable
      * @api
      */
     getZIndex() {
-      return /** @type {number} */ (this.get(LayerProperty.Z_INDEX));
+      return /** @type {number|undefined} */ (this.get(LayerProperty.Z_INDEX));
     }
 
     /**
@@ -9947,7 +9874,7 @@ var myol = (function () {
      * @api
      */
     setOpacity(opacity) {
-      assert$1(typeof opacity === 'number', 64); // Layer opacity must be a number
+      assert$1(typeof opacity === 'number', 'Layer opacity must be a number');
       this.set(LayerProperty.OPACITY, opacity);
     }
 
@@ -11498,11 +11425,11 @@ var myol = (function () {
       const center = /** @type {!import("./coordinate.js").Coordinate} */ (
         this.getCenterInternal()
       );
-      assert$1(center, 1); // The view center is not defined
+      assert$1(center, 'The view center is not defined');
       const resolution = /** @type {!number} */ (this.getResolution());
-      assert$1(resolution !== undefined, 2); // The view resolution is not defined
+      assert$1(resolution !== undefined, 'The view resolution is not defined');
       const rotation = /** @type {!number} */ (this.getRotation());
-      assert$1(rotation !== undefined, 3); // The view rotation is not defined
+      assert$1(rotation !== undefined, 'The view rotation is not defined');
 
       return getForViewAndSize(center, resolution, rotation, size);
     }
@@ -11835,10 +11762,13 @@ var myol = (function () {
         Array.isArray(geometryOrExtent) ||
           typeof (/** @type {?} */ (geometryOrExtent).getSimplifiedGeometry) ===
             'function',
-        24
-      ); // Invalid extent or geometry provided as `geometry`
+        'Invalid extent or geometry provided as `geometry`'
+      );
       if (Array.isArray(geometryOrExtent)) {
-        assert$1(!isEmpty(geometryOrExtent), 25); // Cannot fit empty extent provided as `geometry`
+        assert$1(
+          !isEmpty(geometryOrExtent),
+          'Cannot fit empty extent provided as `geometry`'
+        );
         const extent = fromUserExtent(geometryOrExtent, this.getProjection());
         geometry = fromExtent(extent);
       } else if (geometryOrExtent.getType() === 'Circle') {
@@ -12701,7 +12631,7 @@ var myol = (function () {
    * @property {boolean} visible Visible.
    * @property {boolean} managed Managed.
    * @property {import("../extent.js").Extent} [extent] Extent.
-   * @property {number} zIndex ZIndex.
+   * @property {number | undefined} zIndex ZIndex.
    * @property {number} maxResolution Maximum resolution.
    * @property {number} minResolution Minimum resolution.
    * @property {number} minZoom Minimum zoom.
@@ -13069,12 +12999,11 @@ var myol = (function () {
               /** @type {import("../render/Event.js").default} */ (evt);
             const layerStatesArray = renderEvent.frameState.layerStatesArray;
             const layerState = this.getLayerState(false);
-            // A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both.
             assert$1(
               !layerStatesArray.some(function (arrayLayerState) {
                 return arrayLayerState.layer === layerState.layer;
               }),
-              67
+              'A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both.'
             );
             layerStatesArray.push(layerState);
           },
@@ -13406,7 +13335,7 @@ var myol = (function () {
    */
 
 
-  class RenderEvent extends BaseEvent$1 {
+  class RenderEvent extends Event {
     /**
      * @param {import("./EventType.js").default} type Type.
      * @param {import("../transform.js").Transform} [inversePixelTransform] Transform for
@@ -14132,7 +14061,7 @@ var myol = (function () {
       context.globalAlpha *= opacity;
     }
     if (transform) {
-      context.setTransform.apply(context, transform);
+      context.transform.apply(context, transform);
     }
 
     if (/** @type {*} */ (labelOrImage).contextInstructions) {
@@ -14369,7 +14298,7 @@ var myol = (function () {
    * the group or one of its child groups.  When a layer group is added to or removed from another layer group,
    * a single event will be triggered (instead of one per layer in the group added or removed).
    */
-  class GroupEvent extends BaseEvent$1 {
+  class GroupEvent extends Event {
     /**
      * @param {EventType} type The event type.
      * @param {BaseLayer} layer The layer.
@@ -14478,7 +14407,10 @@ var myol = (function () {
         if (Array.isArray(layers)) {
           layers = new Collection$1(layers.slice(), {unique: true});
         } else {
-          assert$1(typeof (/** @type {?} */ (layers).getArray) === 'function', 43); // Expected `layers` to be an array or a `Collection`
+          assert$1(
+            typeof (/** @type {?} */ (layers).getArray) === 'function',
+            'Expected `layers` to be an array or a `Collection`'
+          );
         }
       } else {
         layers = new Collection$1(undefined, {unique: true});
@@ -14702,7 +14634,7 @@ var myol = (function () {
    * Events emitted as map events are instances of this type.
    * See {@link module:ol/Map~Map} for which events trigger a map event.
    */
-  class MapEvent extends BaseEvent$1 {
+  class MapEvent extends Event {
     /**
      * @param {string} type Event type.
      * @param {import("./Map.js").default} map Map.
@@ -15487,7 +15419,10 @@ var myol = (function () {
      * @return {boolean} The element was added to the queue.
      */
     enqueue(element) {
-      assert$1(!(this.keyFunction_(element) in this.queuedElements_), 31); // Tried to enqueue an `element` that was already added to the queue
+      assert$1(
+        !(this.keyFunction_(element) in this.queuedElements_),
+        'Tried to enqueue an `element` that was already added to the queue'
+      );
       const priority = this.priorityFunction_(element);
       if (priority != DROP) {
         this.elements_.push(element);
@@ -17268,7 +17203,7 @@ var myol = (function () {
    * @return {boolean} True.
    * @api
    */
-  const always = TRUE;
+  const always$1 = TRUE;
 
   /**
    * Return `true` if the event has an "action"-producing mouse button.
@@ -17395,7 +17330,10 @@ var myol = (function () {
     const pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (
       mapBrowserEvent
     ).originalEvent;
-    assert$1(pointerEvent !== undefined, 56); // mapBrowserEvent must originate from a pointer event
+    assert$1(
+      pointerEvent !== undefined,
+      'mapBrowserEvent must originate from a pointer event'
+    );
     // see https://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
     return pointerEvent.pointerType == 'mouse';
   };
@@ -17413,7 +17351,10 @@ var myol = (function () {
     const pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (
       mapBrowserEvent
     ).originalEvent;
-    assert$1(pointerEvent !== undefined, 56); // mapBrowserEvent must originate from a pointer event
+    assert$1(
+      pointerEvent !== undefined,
+      'mapBrowserEvent must originate from a pointer event'
+    );
     return pointerEvent.isPrimary && pointerEvent.button === 0;
   };
 
@@ -17904,7 +17845,7 @@ var myol = (function () {
    * Events emitted by {@link module:ol/interaction/DragBox~DragBox} instances are instances of
    * this type.
    */
-  class DragBoxEvent extends BaseEvent$1 {
+  class DragBoxEvent extends Event {
     /**
      * @param {string} type The event type.
      * @param {import("../coordinate.js").Coordinate} coordinate The event coordinate.
@@ -18639,7 +18580,7 @@ var myol = (function () {
           ? options.constrainResolution
           : false;
 
-      const condition = options.condition ? options.condition : always;
+      const condition = options.condition ? options.condition : always$1;
 
       /**
        * @private
@@ -19273,27 +19214,6 @@ var myol = (function () {
    * @module ol/size
    */
 
-  /**
-   * An array of numbers representing a size: `[width, height]`.
-   * @typedef {Array<number>} Size
-   * @api
-   */
-
-  /**
-   * Returns a buffered size.
-   * @param {Size} size Size.
-   * @param {number} num The amount by which to buffer.
-   * @param {Size} [dest] Optional reusable size array.
-   * @return {Size} The buffered size.
-   */
-  function buffer(size, num, dest) {
-    if (dest === undefined) {
-      dest = [0, 0];
-    }
-    dest[0] = size[0] + 2 * num;
-    dest[1] = size[1] + 2 * num;
-    return dest;
-  }
 
   /**
    * Determines if a size has a positive area.
@@ -21110,8 +21030,8 @@ var myol = (function () {
       } else {
         assert$1(
           typeof (/** @type {?} */ (options.controls).getArray) === 'function',
-          47
-        ); // Expected `controls` to be an array or an `import("./Collection.js").Collection`
+          'Expected `controls` to be an array or an `ol/Collection.js`'
+        );
         controls = options.controls;
       }
     }
@@ -21125,8 +21045,8 @@ var myol = (function () {
         assert$1(
           typeof (/** @type {?} */ (options.interactions).getArray) ===
             'function',
-          48
-        ); // Expected `interactions` to be an array or an `import("./Collection.js").Collection`
+          'Expected `interactions` to be an array or an `ol/Collection.js`'
+        );
         interactions = options.interactions;
       }
     }
@@ -21139,8 +21059,8 @@ var myol = (function () {
       } else {
         assert$1(
           typeof (/** @type {?} */ (options.overlays).getArray) === 'function',
-          49
-        ); // Expected `overlays` to be an array or an `import("./Collection.js").Collection`
+          'Expected `overlays` to be an array or an `ol/Collection.js`'
+        );
         overlays = options.overlays;
       }
     } else {
@@ -22050,7 +21970,7 @@ var myol = (function () {
    * @return {Document} Document.
    * @api
    */
-  function parse$1(xml) {
+  function parse$2(xml) {
     return new DOMParser().parseFromString(xml, 'application/xml');
   }
 
@@ -22505,7 +22425,7 @@ var myol = (function () {
         return null;
       }
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         return this.readFeatureFromDocument(doc, options);
       }
       if (isDocument(source)) {
@@ -22552,7 +22472,7 @@ var myol = (function () {
         return [];
       }
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         return this.readFeaturesFromDocument(doc, options);
       }
       if (isDocument(source)) {
@@ -22607,7 +22527,7 @@ var myol = (function () {
         return null;
       }
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         return this.readGeometryFromDocument(doc, options);
       }
       if (isDocument(source)) {
@@ -22651,7 +22571,7 @@ var myol = (function () {
         return null;
       }
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         return this.readProjectionFromDocument(doc);
       }
       if (isDocument(source)) {
@@ -23192,7 +23112,7 @@ var myol = (function () {
    * Number of decimal digits to consider in integer values when rounding.
    * @type {number}
    */
-  const DECIMALS = 5;
+  const DECIMALS$1 = 5;
 
   /**
    * @typedef {Object} Options
@@ -23255,8 +23175,8 @@ var myol = (function () {
           },
           true
         ),
-        17
-      ); // `resolutions` must be sorted in descending order
+        '`resolutions` must be sorted in descending order'
+      );
 
       // check if we've got a consistent zoom factor and origin
       let zoomFactor;
@@ -23298,7 +23218,10 @@ var myol = (function () {
       this.origins_ = null;
       if (options.origins !== undefined) {
         this.origins_ = options.origins;
-        assert$1(this.origins_.length == this.resolutions_.length, 20); // Number of `origins` and `resolutions` must be equal
+        assert$1(
+          this.origins_.length == this.resolutions_.length,
+          'Number of `origins` and `resolutions` must be equal'
+        );
       }
 
       const extent = options.extent;
@@ -23309,8 +23232,8 @@ var myol = (function () {
 
       assert$1(
         (!this.origin_ && this.origins_) || (this.origin_ && !this.origins_),
-        18
-      ); // Either `origin` or `origins` must be configured, never both
+        'Either `origin` or `origins` must be configured, never both'
+      );
 
       /**
        * @private
@@ -23319,7 +23242,10 @@ var myol = (function () {
       this.tileSizes_ = null;
       if (options.tileSizes !== undefined) {
         this.tileSizes_ = options.tileSizes;
-        assert$1(this.tileSizes_.length == this.resolutions_.length, 19); // Number of `tileSizes` and `resolutions` must be equal
+        assert$1(
+          this.tileSizes_.length == this.resolutions_.length,
+          'Number of `tileSizes` and `resolutions` must be equal'
+        );
       }
 
       /**
@@ -23335,8 +23261,8 @@ var myol = (function () {
       assert$1(
         (!this.tileSize_ && this.tileSizes_) ||
           (this.tileSize_ && !this.tileSizes_),
-        22
-      ); // Either `tileSize` or `tileSizes` must be configured, never both
+        'Either `tileSize` or `tileSizes` must be configured, never both'
+      );
 
       /**
        * @private
@@ -23676,11 +23602,11 @@ var myol = (function () {
       let tileCoordY = (scale * (origin[1] - y)) / resolution / tileSize[1];
 
       if (reverseIntersectionPolicy) {
-        tileCoordX = ceil(tileCoordX, DECIMALS) - 1;
-        tileCoordY = ceil(tileCoordY, DECIMALS) - 1;
+        tileCoordX = ceil(tileCoordX, DECIMALS$1) - 1;
+        tileCoordY = ceil(tileCoordY, DECIMALS$1) - 1;
       } else {
-        tileCoordX = floor(tileCoordX, DECIMALS);
-        tileCoordY = floor(tileCoordY, DECIMALS);
+        tileCoordX = floor(tileCoordX, DECIMALS$1);
+        tileCoordY = floor(tileCoordY, DECIMALS$1);
       }
 
       return createOrUpdate(z, tileCoordX, tileCoordY, opt_tileCoord);
@@ -23710,11 +23636,11 @@ var myol = (function () {
       let tileCoordY = (origin[1] - y) / resolution / tileSize[1];
 
       if (reverseIntersectionPolicy) {
-        tileCoordX = ceil(tileCoordX, DECIMALS) - 1;
-        tileCoordY = ceil(tileCoordY, DECIMALS) - 1;
+        tileCoordX = ceil(tileCoordX, DECIMALS$1) - 1;
+        tileCoordY = ceil(tileCoordY, DECIMALS$1) - 1;
       } else {
-        tileCoordX = floor(tileCoordX, DECIMALS);
-        tileCoordY = floor(tileCoordY, DECIMALS);
+        tileCoordX = floor(tileCoordX, DECIMALS$1);
+        tileCoordY = floor(tileCoordY, DECIMALS$1);
       }
 
       return createOrUpdate(z, tileCoordX, tileCoordY, opt_tileCoord);
@@ -26146,7 +26072,7 @@ var myol = (function () {
           pointResolution /= 1609.3472;
         }
       } else {
-        assert$1(false, 33); // Invalid units
+        throw new Error('Invalid units');
       }
 
       let i = 3 * Math.floor(Math.log(minWidth * pointResolution) / Math.log(10));
@@ -28542,7 +28468,7 @@ var myol = (function () {
         } else if (crs['type'] === 'EPSG') {
           projection = get$2('EPSG:' + crs['properties']['code']);
         } else {
-          assert$1(false, 36); // Unknown SRS type
+          throw new Error('Unknown SRS type');
         }
       } else {
         projection = this.dataProjection;
@@ -30214,7 +30140,7 @@ var myol = (function () {
      * Get the image element for the symbolizer.
      * @abstract
      * @param {number} pixelRatio Pixel ratio.
-     * @return {HTMLCanvasElement|HTMLVideoElement|HTMLImageElement} Image element.
+     * @return {import('../DataTile.js').ImageLike} Image element.
      */
     getImage(pixelRatio) {
       return abstract();
@@ -30222,7 +30148,7 @@ var myol = (function () {
 
     /**
      * @abstract
-     * @return {HTMLCanvasElement|HTMLVideoElement|HTMLImageElement} Image element.
+     * @return {import('../DataTile.js').ImageLike} Image element.
      */
     getHitDetectionImage() {
       return abstract();
@@ -30354,7 +30280,7 @@ var myol = (function () {
    */
 
   /**
-   * @param {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} image Image element.
+   * @param {import('./DataTile.js').ImageLike} image Image element.
    * @param {function():any} loadHandler Load callback function.
    * @param {function():any} errorHandler Error callback function.
    * @return {function():void} Callback to stop listening.
@@ -30403,6 +30329,51 @@ var myol = (function () {
   }
 
   /**
+   * Loads an image.
+   * @param {HTMLImageElement} image Image, not yet loaded.
+   * @param {string} [src] `src` attribute of the image. Optional, not required if already present.
+   * @return {Promise<HTMLImageElement>} Promise resolving to an `HTMLImageElement`.
+   * @api
+   */
+  function load(image, src) {
+    return new Promise((resolve, reject) => {
+      function handleLoad() {
+        unlisten();
+        resolve(image);
+      }
+      function handleError() {
+        unlisten();
+        reject(new Error('Image load error'));
+      }
+      function unlisten() {
+        image.removeEventListener('load', handleLoad);
+        image.removeEventListener('error', handleError);
+      }
+      image.addEventListener('load', handleLoad);
+      image.addEventListener('error', handleError);
+      if (src) {
+        image.src = src;
+      }
+    });
+  }
+
+  /**
+   * @param {HTMLImageElement} image Image, not yet loaded.
+   * @param {string} [src] `src` attribute of the image. Optional, not required if already present.
+   * @return {Promise<HTMLImageElement>} Promise resolving to an `HTMLImageElement`.
+   */
+  function decodeFallback(image, src) {
+    if (src) {
+      image.src = src;
+    }
+    return IMAGE_DECODE
+      ? new Promise((resolve, reject) =>
+          image.decode().then(() => resolve(image), reject)
+        )
+      : load(image);
+  }
+
+  /**
    * @module ol/style/IconImage
    */
 
@@ -30414,25 +30385,24 @@ var myol = (function () {
 
   class IconImage extends EventTarget {
     /**
-     * @param {HTMLImageElement|HTMLCanvasElement} image Image.
+     * @param {HTMLImageElement|HTMLCanvasElement|ImageBitmap} image Image.
      * @param {string|undefined} src Src.
-     * @param {import("../size.js").Size} size Size.
      * @param {?string} crossOrigin Cross origin.
      * @param {import("../ImageState.js").default} imageState Image state.
      * @param {import("../color.js").Color} color Color.
      */
-    constructor(image, src, size, crossOrigin, imageState, color) {
+    constructor(image, src, crossOrigin, imageState, color) {
       super();
 
       /**
        * @private
-       * @type {HTMLImageElement|HTMLCanvasElement}
+       * @type {HTMLImageElement|HTMLCanvasElement|ImageBitmap}
        */
       this.hitDetectionImage_ = null;
 
       /**
        * @private
-       * @type {HTMLImageElement|HTMLCanvasElement}
+       * @type {HTMLImageElement|HTMLCanvasElement|ImageBitmap}
        */
       this.image_ = image;
 
@@ -30456,21 +30426,16 @@ var myol = (function () {
 
       /**
        * @private
-       * @type {?function():void}
-       */
-      this.unlisten_ = null;
-
-      /**
-       * @private
        * @type {import("../ImageState.js").default}
        */
-      this.imageState_ = imageState;
+      this.imageState_ = imageState === undefined ? ImageState.IDLE : imageState;
 
       /**
        * @private
-       * @type {import("../size.js").Size}
+       * @type {import("../size.js").Size|null}
        */
-      this.size_ = size;
+      this.size_ =
+        image && image.width && image.height ? [image.width, image.height] : null;
 
       /**
        * @private
@@ -30529,7 +30494,6 @@ var myol = (function () {
      */
     handleImageError_() {
       this.imageState_ = ImageState.ERROR;
-      this.unlistenImage_();
       this.dispatchChangeEvent_();
     }
 
@@ -30538,19 +30502,13 @@ var myol = (function () {
      */
     handleImageLoad_() {
       this.imageState_ = ImageState.LOADED;
-      if (this.size_) {
-        this.image_.width = this.size_[0];
-        this.image_.height = this.size_[1];
-      } else {
-        this.size_ = [this.image_.width, this.image_.height];
-      }
-      this.unlistenImage_();
+      this.size_ = [this.image_.width, this.image_.height];
       this.dispatchChangeEvent_();
     }
 
     /**
      * @param {number} pixelRatio Pixel ratio.
-     * @return {HTMLImageElement|HTMLCanvasElement} Image or Canvas element.
+     * @return {HTMLImageElement|HTMLCanvasElement|ImageBitmap} Image or Canvas element or image bitmap.
      */
     getImage(pixelRatio) {
       if (!this.image_) {
@@ -30577,7 +30535,7 @@ var myol = (function () {
     }
 
     /**
-     * @return {HTMLImageElement|HTMLCanvasElement} Image element.
+     * @return {HTMLImageElement|HTMLCanvasElement|ImageBitmap} Image element.
      */
     getHitDetectionImage() {
       if (!this.image_) {
@@ -30625,15 +30583,20 @@ var myol = (function () {
 
       this.imageState_ = ImageState.LOADING;
       try {
-        /** @type {HTMLImageElement} */ (this.image_).src = this.src_;
+        if (this.src_ !== undefined) {
+          /** @type {HTMLImageElement} */ (this.image_).src = this.src_;
+        }
       } catch (e) {
         this.handleImageError_();
       }
-      this.unlisten_ = listenImage(
-        this.image_,
-        this.handleImageLoad_.bind(this),
-        this.handleImageError_.bind(this)
-      );
+      if (this.image_ instanceof HTMLImageElement) {
+        decodeFallback(this.image_, this.src_)
+          .then((image) => {
+            this.image_ = image;
+            this.handleImageLoad_();
+          })
+          .catch(this.handleImageError_.bind(this));
+      }
     }
 
     /**
@@ -30667,34 +30630,30 @@ var myol = (function () {
 
       this.canvas_[pixelRatio] = canvas;
     }
-
-    /**
-     * Discards event handlers which listen for load completion or errors.
-     *
-     * @private
-     */
-    unlistenImage_() {
-      if (this.unlisten_) {
-        this.unlisten_();
-        this.unlisten_ = null;
-      }
-    }
   }
 
   /**
-   * @param {HTMLImageElement|HTMLCanvasElement} image Image.
-   * @param {string} src Src.
-   * @param {import("../size.js").Size} size Size.
+   * @param {HTMLImageElement|HTMLCanvasElement|ImageBitmap} image Image.
+   * @param {string} cacheKey Src.
    * @param {?string} crossOrigin Cross origin.
    * @param {import("../ImageState.js").default} imageState Image state.
    * @param {import("../color.js").Color} color Color.
    * @return {IconImage} Icon image.
    */
-  function get$1(image, src, size, crossOrigin, imageState, color) {
-    let iconImage = shared.get(src, crossOrigin, color);
+  function get$1(image, cacheKey, crossOrigin, imageState, color) {
+    let iconImage =
+      cacheKey === undefined
+        ? undefined
+        : shared.get(cacheKey, crossOrigin, color);
     if (!iconImage) {
-      iconImage = new IconImage(image, src, size, crossOrigin, imageState, color);
-      shared.set(src, crossOrigin, color, iconImage);
+      iconImage = new IconImage(
+        image,
+        image instanceof HTMLImageElement ? image.src || undefined : cacheKey,
+        crossOrigin,
+        imageState,
+        color
+      );
+      shared.set(cacheKey, crossOrigin, color, iconImage);
     }
     return iconImage;
   }
@@ -30731,11 +30690,7 @@ var myol = (function () {
    * @property {null|string} [crossOrigin] The `crossOrigin` attribute for loaded images. Note that you must provide a
    * `crossOrigin` value if you want to access pixel data with the Canvas renderer.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image for more detail.
-   * @property {HTMLImageElement|HTMLCanvasElement} [img] Image object for the icon. If the `src` option is not provided then the
-   * provided image must already be loaded. And in that case, it is required
-   * to provide the size of the image, with the `imgSize` option.
-   * @property {import("../size.js").Size} [imgSize] Image size in pixels. Only required if `img` is set and `src` is not.
-   * The provided `imgSize` needs to match the actual size of the image.
+   * @property {HTMLImageElement|HTMLCanvasElement|ImageBitmap} [img] Image object for the icon.
    * @property {Array<number>} [displacement=[0, 0]] Displacement of the icon in pixels.
    * Positive values will shift the icon right and up.
    * @property {number} [opacity=1] Opacity of the icon.
@@ -30857,44 +30812,45 @@ var myol = (function () {
       this.crossOrigin_ =
         options.crossOrigin !== undefined ? options.crossOrigin : null;
 
-      /**
-       * @type {HTMLImageElement|HTMLCanvasElement}
-       */
       const image = options.img !== undefined ? options.img : null;
 
-      /**
-       * @private
-       * @type {import("../size.js").Size|undefined}
-       */
-      this.imgSize_ = options.imgSize;
+      let cacheKey = options.src;
 
-      /**
-       * @type {string|undefined}
-       */
-      let src = options.src;
+      assert$1(
+        !(cacheKey !== undefined && image),
+        '`image` and `src` cannot be provided at the same time'
+      );
 
-      assert$1(!(src !== undefined && image), 4); // `image` and `src` cannot be provided at the same time
-      assert$1(!image || (image && this.imgSize_), 5); // `imgSize` must be set when `image` is provided
-
-      if ((src === undefined || src.length === 0) && image) {
-        src = /** @type {HTMLImageElement} */ (image).src || getUid(image);
+      if ((cacheKey === undefined || cacheKey.length === 0) && image) {
+        cacheKey = /** @type {HTMLImageElement} */ (image).src || getUid(image);
       }
-      assert$1(src !== undefined && src.length > 0, 6); // A defined and non-empty `src` or `image` must be provided
+      assert$1(
+        cacheKey !== undefined && cacheKey.length > 0,
+        'A defined and non-empty `src` or `image` must be provided'
+      );
 
-      // `width` or `height` cannot be provided together with `scale`
       assert$1(
         !(
           (options.width !== undefined || options.height !== undefined) &&
           options.scale !== undefined
         ),
-        69
+        '`width` or `height` cannot be provided together with `scale`'
       );
 
-      /**
-       * @type {import("../ImageState.js").default}
-       */
-      const imageState =
-        options.src !== undefined ? ImageState.IDLE : ImageState.LOADED;
+      let imageState;
+      if (options.src !== undefined) {
+        imageState = ImageState.IDLE;
+      } else if (image !== undefined) {
+        if (image instanceof HTMLImageElement) {
+          if (image.complete) {
+            imageState = image.src ? ImageState.LOADED : ImageState.IDLE;
+          } else {
+            imageState = ImageState.LOADING;
+          }
+        } else {
+          imageState = ImageState.LOADED;
+        }
+      }
 
       /**
        * @private
@@ -30908,8 +30864,7 @@ var myol = (function () {
        */
       this.iconImage_ = get$1(
         image,
-        /** @type {string} */ (src),
-        this.imgSize_ !== undefined ? this.imgSize_ : null,
+        /** @type {string} */ (cacheKey),
         this.crossOrigin_,
         imageState,
         this.color_
@@ -30948,13 +30903,10 @@ var myol = (function () {
           [width, height] = options.size;
         } else {
           const image = this.getImage(1);
-          if (
-            image instanceof HTMLCanvasElement ||
-            (image.src && image.complete)
-          ) {
+          if (image.width && image.height) {
             width = image.width;
             height = image.height;
-          } else {
+          } else if (image instanceof HTMLImageElement) {
             this.initialOptions_ = options;
             const onload = () => {
               this.unlistenImageChange(onload);
@@ -30997,7 +30949,7 @@ var myol = (function () {
         scale = this.getScale();
         scale = Array.isArray(scale) ? scale.slice() : scale;
       }
-      const clone = new Icon({
+      return new Icon({
         anchor: this.anchor_.slice(),
         anchorOrigin: this.anchorOrigin_,
         anchorXUnits: this.anchorXUnits_,
@@ -31007,7 +30959,6 @@ var myol = (function () {
             ? this.color_.slice()
             : this.color_ || undefined,
         crossOrigin: this.crossOrigin_,
-        imgSize: this.imgSize_,
         offset: this.offset_.slice(),
         offsetOrigin: this.offsetOrigin_,
         opacity: this.getOpacity(),
@@ -31021,7 +30972,6 @@ var myol = (function () {
         displacement: this.getDisplacement().slice(),
         declutterMode: this.getDeclutterMode(),
       });
-      return clone;
     }
 
     /**
@@ -31107,7 +31057,8 @@ var myol = (function () {
     /**
      * Get the image icon.
      * @param {number} pixelRatio Pixel ratio.
-     * @return {HTMLImageElement|HTMLCanvasElement} Image or Canvas element.
+     * @return {HTMLImageElement|HTMLCanvasElement|ImageBitmap} Image or Canvas element. If the Icon
+     * style was configured with `src` or with a not let loaded `img`, an `ImageBitmap` will be returned.
      * @api
      */
     getImage(pixelRatio) {
@@ -31139,7 +31090,7 @@ var myol = (function () {
     }
 
     /**
-     * @return {HTMLImageElement|HTMLCanvasElement} Image element.
+     * @return {HTMLImageElement|HTMLCanvasElement|ImageBitmap} Image element.
      */
     getHitDetectionImage() {
       return this.iconImage_.getHitDetectionImage();
@@ -31556,6 +31507,7 @@ var myol = (function () {
    * @property {import("../colorlike.js").ColorLike} [strokeStyle] StrokeStyle.
    * @property {number} strokeWidth StrokeWidth.
    * @property {number} size Size.
+   * @property {CanvasLineCap} lineCap LineCap.
    * @property {Array<number>|null} lineDash LineDash.
    * @property {number} lineDashOffset LineDashOffset.
    * @property {CanvasLineJoin} lineJoin LineJoin.
@@ -31962,6 +31914,7 @@ var myol = (function () {
      * @protected
      */
     createRenderOptions() {
+      let lineCap = defaultLineCap;
       let lineJoin = defaultLineJoin;
       let miterLimit = 0;
       let lineDash = null;
@@ -31985,6 +31938,10 @@ var myol = (function () {
         if (lineJoin === undefined) {
           lineJoin = defaultLineJoin;
         }
+        lineCap = this.stroke_.getLineCap();
+        if (lineCap === undefined) {
+          lineCap = defaultLineCap;
+        }
         miterLimit = this.stroke_.getMiterLimit();
         if (miterLimit === undefined) {
           miterLimit = defaultMiterLimit;
@@ -31999,6 +31956,7 @@ var myol = (function () {
         strokeStyle: strokeStyle,
         strokeWidth: strokeWidth,
         size: size,
+        lineCap: lineCap,
         lineDash: lineDash,
         lineDashOffset: lineDashOffset,
         lineJoin: lineJoin,
@@ -32044,6 +32002,7 @@ var myol = (function () {
           context.setLineDash(renderOptions.lineDash);
           context.lineDashOffset = renderOptions.lineDashOffset;
         }
+        context.lineCap = renderOptions.lineCap;
         context.lineJoin = renderOptions.lineJoin;
         context.miterLimit = renderOptions.miterLimit;
         context.stroke();
@@ -32661,7 +32620,10 @@ var myol = (function () {
       if (Array.isArray(obj)) {
         styles = obj;
       } else {
-        assert$1(typeof (/** @type {?} */ (obj).getZIndex) === 'function', 41); // Expected an `Style` or an array of `Style`
+        assert$1(
+          typeof (/** @type {?} */ (obj).getZIndex) === 'function',
+          'Expected an `Style` or an array of `Style`'
+        );
         const style = /** @type {Style} */ (obj);
         styles = [style];
       }
@@ -34010,7 +33972,7 @@ var myol = (function () {
         return undefined;
       }
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         return this.readNameFromDocument(doc);
       }
       if (isDocument(source)) {
@@ -34073,7 +34035,7 @@ var myol = (function () {
     readNetworkLinks(source) {
       const networkLinks = [];
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         extend$3(networkLinks, this.readNetworkLinksFromDocument(doc));
       } else if (isDocument(source)) {
         extend$3(
@@ -34143,7 +34105,7 @@ var myol = (function () {
     readRegion(source) {
       const regions = [];
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         extend$3(regions, this.readRegionFromDocument(doc));
       } else if (isDocument(source)) {
         extend$3(
@@ -34216,7 +34178,7 @@ var myol = (function () {
     readCamera(source) {
       const cameras = [];
       if (typeof source === 'string') {
-        const doc = parse$1(source);
+        const doc = parse$2(source);
         extend$3(cameras, this.readCameraFromDocument(doc));
       } else if (isDocument(source)) {
         extend$3(
@@ -35154,7 +35116,7 @@ var myol = (function () {
       } else if (type == 'GeometryCollection') {
         multiGeometry = new GeometryCollection$1(geometries);
       } else {
-        assert$1(false, 37); // Unknown geometry type found
+        throw new Error('Unknown geometry type found');
       }
     } else {
       multiGeometry = new GeometryCollection$1(geometries);
@@ -35504,7 +35466,7 @@ var myol = (function () {
     } else if (typeof styleMapValue === 'string') {
       placemarkObject['styleUrl'] = styleMapValue;
     } else {
-      assert$1(false, 38); // `styleMapValue` has an unknown type
+      throw new Error('`styleMapValue` has an unknown type');
     }
   }
 
@@ -35726,7 +35688,7 @@ var myol = (function () {
     } else if (layout == 'XYZ' || layout == 'XYZM') {
       dimension = 3;
     } else {
-      assert$1(false, 34); // Invalid geometry layout
+      throw new Error('Invalid geometry layout');
     }
 
     const ii = coordinates.length;
@@ -36258,7 +36220,7 @@ var myol = (function () {
           ) {
             geometries.push(geometry);
           } else {
-            assert$1(false, 39); // Unknown geometry type
+            throw new Error('Unknown geometry type');
           }
         });
       factory = GEOMETRY_NODE_FACTORY;
@@ -36272,7 +36234,7 @@ var myol = (function () {
       geometries = /** @type {MultiPolygon} */ (geometry).getPolygons();
       factory = POLYGON_NODE_FACTORY;
     } else {
-      assert$1(false, 39); // Unknown geometry type
+      throw new Error('Unknown geometry type');
     }
     pushSerializeAndPop(
       context,
@@ -37596,350 +37558,1974 @@ var myol = (function () {
   }
 
   /**
-   * @module ol/style/flat
+   * @module ol/expr/expression
    */
 
 
   /**
-   * For static styling, the [layer.setStyle()]{@link module:ol/layer/Vector~VectorLayer#setStyle} method
-   * can be called with an object literal that has fill, stroke, text, icon, regular shape, and/or circle properties.
-   * @api
-   *
-   * @typedef {FlatFill & FlatStroke & FlatText & FlatIcon & FlatShape & FlatCircle} FlatStyle
+   * @fileoverview This module includes types and functions for parsing array encoded expressions.
+   * The result of parsing an encoded expression is one of the specific expression classes.
+   * During parsing, information is added to the parsing context about the data accessed by the
+   * expression.
+   */
+
+  let numTypes = 0;
+  const BooleanType = 1 << numTypes++;
+  const NumberType = 1 << numTypes++;
+  const StringType = 1 << numTypes++;
+  const ColorType = 1 << numTypes++;
+  const NumberArrayType = 1 << numTypes++;
+  const AnyType = Math.pow(2, numTypes) - 1;
+
+  const typeNames = {
+    [BooleanType]: 'boolean',
+    [NumberType]: 'number',
+    [StringType]: 'string',
+    [ColorType]: 'color',
+    [NumberArrayType]: 'number[]',
+  };
+
+  const namedTypes = Object.keys(typeNames).map(Number).sort(ascending);
+
+  /**
+   * Get a string representation for a type.
+   * @param {number} type The type.
+   * @return {string} The type name.
+   */
+  function typeName(type) {
+    const names = [];
+    for (const namedType of namedTypes) {
+      if (includesType(type, namedType)) {
+        names.push(typeNames[namedType]);
+      }
+    }
+    if (names.length === 0) {
+      return 'untyped';
+    }
+    if (names.length < 3) {
+      return names.join(' or ');
+    }
+    return names.slice(0, -1).join(', ') + ', or ' + names[names.length - 1];
+  }
+
+  /**
+   * @param {number} broad The broad type.
+   * @param {number} specific The specific type.
+   * @return {boolean} The broad type includes the specific type.
+   */
+  function includesType(broad, specific) {
+    return (broad & specific) === specific;
+  }
+
+  /**
+   * @param {number} oneType One type.
+   * @param {number} otherType Another type.
+   * @return {boolean} The set of types overlap (share a common specific type)
+   */
+  function overlapsType(oneType, otherType) {
+    return !!(oneType & otherType);
+  }
+
+  /**
+   * @typedef {boolean|number|string|Array<number>} LiteralValue
+   */
+
+  class LiteralExpression {
+    /**
+     * @param {number} type The value type.
+     * @param {LiteralValue} value The literal value.
+     */
+    constructor(type, value) {
+      this.type = type;
+      this.value = value;
+    }
+  }
+
+  class CallExpression {
+    /**
+     * @param {number} type The return type.
+     * @param {string} operator The operator.
+     * @param {...Expression} args The arguments.
+     */
+    constructor(type, operator, ...args) {
+      this.type = type;
+      this.operator = operator;
+      this.args = args;
+    }
+  }
+
+  /**
+   * @typedef {LiteralExpression|CallExpression} Expression
    */
 
   /**
-   * A flat style literal or an array of the same.
-   *
-   * @typedef {FlatStyle|Array<FlatStyle>} FlatStyleLike
+   * @typedef {Object} ParsingContext
+   * @property {Set<string>} variables Variables referenced with the 'var' operator.
+   * @property {Set<string>} properties Properties referenced with the 'get' operator.
    */
 
   /**
-   * Fill style properties applied to polygon features.
-   *
-   * @typedef {Object} FlatFill
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [fill-color] The fill color.
+   * @return {ParsingContext} A new parsing context.
+   */
+  function newParsingContext() {
+    return {
+      variables: new Set(),
+      properties: new Set(),
+    };
+  }
+
+  /**
+   * @typedef {LiteralValue|Array} EncodedExpression
    */
 
   /**
-   * Stroke style properties applied to line strings and polygon boundaries.  To apply a stroke, at least one of
-   * `stroke-color` or `stroke-width` must be provided.
-   *
-   * @typedef {Object} FlatStroke
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [stroke-color] The stroke color.
-   * @property {number} [stroke-width] Stroke pixel width.
-   * @property {CanvasLineCap} [stroke-line-cap='round'] Line cap style: `butt`, `round`, or `square`.
-   * @property {CanvasLineJoin} [stroke-line-join='round'] Line join style: `bevel`, `round`, or `miter`.
-   * @property {Array<number>} [stroke-line-dash] Line dash pattern.
-   * @property {number} [stroke-line-dash-offset=0] Line dash offset.
-   * @property {number} [stroke-miter-limit=10] Miter limit.
+   * @param {EncodedExpression} encoded The encoded expression.
+   * @param {ParsingContext} context The parsing context.
+   * @return {Expression} The parsed expression result.
+   */
+  function parse$1(encoded, context) {
+    switch (typeof encoded) {
+      case 'boolean': {
+        return new LiteralExpression(BooleanType, encoded);
+      }
+      case 'number': {
+        return new LiteralExpression(NumberType, encoded);
+      }
+      case 'string': {
+        return new LiteralExpression(StringType, encoded);
+      }
+    }
+
+    if (!Array.isArray(encoded)) {
+      throw new Error('Expression must be an array or a primitive value');
+    }
+
+    if (encoded.length === 0) {
+      throw new Error('Empty expression');
+    }
+
+    if (typeof encoded[0] === 'string') {
+      return parseCallExpression(encoded, context);
+    }
+
+    for (const item of encoded) {
+      if (typeof item !== 'number') {
+        throw new Error('Expected an array of numbers');
+      }
+    }
+
+    let type = NumberArrayType;
+    if (encoded.length === 3 || encoded.length === 4) {
+      type |= ColorType;
+    }
+
+    return new LiteralExpression(type, encoded);
+  }
+
+  /**
+   * @type {Object<string, string>}
+   */
+  const Ops = {
+    Number: 'number',
+    String: 'string',
+    Get: 'get',
+    Var: 'var',
+    Any: 'any',
+    All: 'all',
+    Not: '!',
+    Resolution: 'resolution',
+    Equal: '==',
+    NotEqual: '!=',
+    GreaterThan: '>',
+    GreaterThanOrEqualTo: '>=',
+    LessThan: '<',
+    LessThanOrEqualTo: '<=',
+    Multiply: '*',
+    Divide: '/',
+    Add: '+',
+    Subtract: '-',
+    Clamp: 'clamp',
+    Mod: '%',
+    Pow: '^',
+    Abs: 'abs',
+    Floor: 'floor',
+    Ceil: 'ceil',
+    Round: 'round',
+    Sin: 'sin',
+    Cos: 'cos',
+    Atan: 'atan',
+    Sqrt: 'sqrt',
+    Match: 'match',
+  };
+
+  /**
+   * @typedef {function(Array, ParsingContext):Expression} Parser
    */
 
   /**
-   * Label style properties applied to all features.  At a minimum, a `text-value` must be provided.
-   *
-   * @typedef {Object} FlatText
-   * @property {string|Array<string>} [text-value] Text content or rich text content. For plain text provide a string, which can
-   * contain line breaks (`\n`). For rich text provide an array of text/font tuples. A tuple consists of the text to
-   * render and the font to use (or `''` to use the text style's font). A line break has to be a separate tuple (i.e. `'\n', ''`).
-   * **Example:** `['foo', 'bold 10px sans-serif', ' bar', 'italic 10px sans-serif', ' baz', '']` will yield "**foo** *bar* baz".
-   * **Note:** Rich text is not supported for `'text-placement': 'line'` or the immediate rendering API.
-   * @property {string} [text-font] Font style as CSS `font` value, see:
-   * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font. Default is `'10px sans-serif'`
-   * @property {number} [text-max-angle=Math.PI/4] When `text-placement` is set to `'line'`, allow a maximum angle between adjacent characters.
-   * The expected value is in radians, and the default is 45° (`Math.PI / 4`).
-   * @property {number} [text-offset-x=0] Horizontal text offset in pixels. A positive will shift the text right.
-   * @property {number} [text-offset-y=0] Vertical text offset in pixels. A positive will shift the text down.
-   * @property {boolean} [text-overflow=false] For polygon labels or when `placement` is set to `'line'`, allow text to exceed
-   * the width of the polygon at the label position or the length of the path that it follows.
-   * @property {import("./Text.js").TextPlacement} [text-placement='point'] Text placement.
-   * @property {number} [text-repeat] Repeat interval in pixels. When set, the text will be repeated at this interval. Only available when
-   * `text-placement` is set to `'line'`. Overrides `text-align`.
-   * @property {number|import("../size.js").Size} [text-scale] Scale.
-   * @property {boolean} [text-rotate-with-view=false] Whether to rotate the text with the view.
-   * @property {number} [text-rotation=0] Rotation in radians (positive rotation clockwise).
-   * @property {CanvasTextAlign} [text-align] Text alignment. Possible values: `'left'`, `'right'`, `'center'`, `'end'` or `'start'`.
-   * Default is `'center'` for `'text-placement': 'point'`. For `'text-placement': 'line'`, the default is to let the renderer choose a
-   * placement where `text-max-angle` is not exceeded.
-   * @property {import('./Text.js').TextJustify} [text-justify] Text justification within the text box.
-   * If not set, text is justified towards the `textAlign` anchor.
-   * Otherwise, use options `'left'`, `'center'`, or `'right'` to justify the text within the text box.
-   * **Note:** `text-justify` is ignored for immediate rendering and also for `'text-placement': 'line'`.
-   * @property {CanvasTextBaseline} [text-baseline='middle'] Text base line. Possible values: `'bottom'`, `'top'`, `'middle'`, `'alphabetic'`,
-   * `'hanging'`, `'ideographic'`.
-   * @property {Array<number>} [text-padding=[0, 0, 0, 0]] Padding in pixels around the text for decluttering and background. The order of
-   * values in the array is `[top, right, bottom, left]`.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [text-fill-color] The fill color. Specify `'none'` to avoid hit detection on the fill.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [text-background-fill-color] The fill color.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [text-stroke-color] The stroke color.
-   * @property {CanvasLineCap} [text-stroke-line-cap='round'] Line cap style: `butt`, `round`, or `square`.
-   * @property {CanvasLineJoin} [text-stroke-line-join='round'] Line join style: `bevel`, `round`, or `miter`.
-   * @property {Array<number>} [text-stroke-line-dash] Line dash pattern.
-   * @property {number} [text-stroke-line-dash-offset=0] Line dash offset.
-   * @property {number} [text-stroke-miter-limit=10] Miter limit.
-   * @property {number} [text-stroke-width] Stroke pixel width.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [text-background-stroke-color] The stroke color.
-   * @property {CanvasLineCap} [text-background-stroke-line-cap='round'] Line cap style: `butt`, `round`, or `square`.
-   * @property {CanvasLineJoin} [text-background-stroke-line-join='round'] Line join style: `bevel`, `round`, or `miter`.
-   * @property {Array<number>} [text-background-stroke-line-dash] Line dash pattern.
-   * @property {number} [text-background-stroke-line-dash-offset=0] Line dash offset.
-   * @property {number} [text-background-stroke-miter-limit=10] Miter limit.
-   * @property {number} [text-background-stroke-width] Stroke pixel width.
+   * @type {Object<string, Parser>}
+   */
+  const parsers = {
+    [Ops.Number]: createParser(withArgs(1, Infinity, AnyType), NumberType),
+    [Ops.String]: createParser(withArgs(1, Infinity, AnyType), StringType),
+    [Ops.Get]: createParser(withGetArgs, AnyType),
+    [Ops.Var]: createParser(withVarArgs, AnyType),
+    [Ops.Resolution]: createParser(withNoArgs, NumberType),
+    [Ops.Any]: createParser(withArgs(2, Infinity, BooleanType), BooleanType),
+    [Ops.All]: createParser(withArgs(2, Infinity, BooleanType), BooleanType),
+    [Ops.Not]: createParser(withArgs(1, 1, BooleanType), BooleanType),
+    [Ops.Equal]: createParser(withArgs(2, 2, AnyType), BooleanType),
+    [Ops.NotEqual]: createParser(withArgs(2, 2, AnyType), BooleanType),
+    [Ops.GreaterThan]: createParser(withArgs(2, 2, AnyType), BooleanType),
+    [Ops.GreaterThanOrEqualTo]: createParser(
+      withArgs(2, 2, AnyType),
+      BooleanType
+    ),
+    [Ops.LessThan]: createParser(withArgs(2, 2, AnyType), BooleanType),
+    [Ops.LessThanOrEqualTo]: createParser(withArgs(2, 2, AnyType), BooleanType),
+    [Ops.Multiply]: createParser(withArgs(2, Infinity, NumberType), NumberType),
+    [Ops.Divide]: createParser(withArgs(2, 2, NumberType), NumberType),
+    [Ops.Add]: createParser(withArgs(2, Infinity, NumberType), NumberType),
+    [Ops.Subtract]: createParser(withArgs(2, 2, NumberType), NumberType),
+    [Ops.Clamp]: createParser(withArgs(3, 3, NumberType), NumberType),
+    [Ops.Mod]: createParser(withArgs(2, 2, NumberType), NumberType),
+    [Ops.Pow]: createParser(withArgs(2, 2, NumberType), NumberType),
+    [Ops.Abs]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Floor]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Ceil]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Round]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Sin]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Cos]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Atan]: createParser(withArgs(1, 2, NumberType), NumberType),
+    [Ops.Sqrt]: createParser(withArgs(1, 1, NumberType), NumberType),
+    [Ops.Match]: createParser(
+      withArgs(4, Infinity, StringType | NumberType),
+      AnyType
+    ),
+  };
+
+  /**
+   * @typedef {function(Array, ParsingContext):Array<Expression>} ArgValidator
    */
 
   /**
-   * Icon style properties applied to point features.  One of `icon-src` or `icon-img` must be provided to render
-   * points with an icon.
-   *
-   * @typedef {Object} FlatIcon
-   * @property {string} [icon-src] Image source URI.
-   * @property {HTMLImageElement|HTMLCanvasElement} [icon-img] Image object for the icon. If the `icon-src` option is not provided then the
-   * provided image must already be loaded. And in that case, it is required
-   * to provide the size of the image, with the `icon-img-size` option.
-   * @property {import("../size.js").Size} [icon-img-size] Image size in pixels. Only required if `icon-img` is set and `icon-src` is not.
-   * The provided size needs to match the actual size of the image.
-   * @property {Array<number>} [icon-anchor=[0.5, 0.5]] Anchor. Default value is the icon center.
-   * @property {import("./Icon.js").IconOrigin} [icon-anchor-origin='top-left'] Origin of the anchor: `bottom-left`, `bottom-right`,
-   * `top-left` or `top-right`.
-   * @property {import("./Icon.js").IconAnchorUnits} [icon-anchor-x-units='fraction'] Units in which the anchor x value is
-   * specified. A value of `'fraction'` indicates the x value is a fraction of the icon. A value of `'pixels'` indicates
-   * the x value in pixels.
-   * @property {import("./Icon.js").IconAnchorUnits} [icon-anchor-y-units='fraction'] Units in which the anchor y value is
-   * specified. A value of `'fraction'` indicates the y value is a fraction of the icon. A value of `'pixels'` indicates
-   * the y value in pixels.
-   * @property {import("../color.js").Color|string} [icon-color] Color to tint the icon. If not specified,
-   * the icon will be left as is.
-   * @property {null|string} [icon-cross-origin] The `crossOrigin` attribute for loaded images. Note that you must provide a
-   * `icon-cross-origin` value if you want to access pixel data with the Canvas renderer.
-   * See https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image for more detail.
-   * @property {Array<number>} [icon-offset=[0, 0]] Offset, which, together with the size and the offset origin, define the
-   * sub-rectangle to use from the original icon image.
-   * @property {Array<number>} [icon-displacement=[0,0]] Displacement of the icon.
-   * @property {import("./Icon.js").IconOrigin} [icon-offset-origin='top-left'] Origin of the offset: `bottom-left`, `bottom-right`,
-   * `top-left` or `top-right`.
-   * @property {number} [icon-opacity=1] Opacity of the icon.
-   * @property {number|import("../size.js").Size} [icon-scale=1] Scale.
-   * @property {number} [icon-width] Width of the icon. If not specified, the actual image width will be used. Cannot be combined
-   * with `scale`.
-   * @property {number} [icon-height] Height of the icon. If not specified, the actual image height will be used. Cannot be combined
-   * with `scale`.
-   * @property {number} [icon-rotation=0] Rotation in radians (positive rotation clockwise).
-   * @property {boolean} [icon-rotate-with-view=false] Whether to rotate the icon with the view.
-   * @property {import("../size.js").Size} [icon-size] Icon size in pixel. Can be used together with `icon-offset` to define the
-   * sub-rectangle to use from the origin (sprite) icon image.
-   * @property {"declutter"|"obstacle"|"none"|undefined} [icon-declutter-mode] Declutter mode
+   * @type ArgValidator
+   */
+  function withGetArgs(encoded, context) {
+    if (encoded.length !== 2) {
+      throw new Error('Expected 1 argument for get operation');
+    }
+    const arg = parse$1(encoded[1], context);
+    if (!(arg instanceof LiteralExpression)) {
+      throw new Error('Expected a literal argument for get operation');
+    }
+    if (typeof arg.value !== 'string') {
+      throw new Error('Expected a string argument for get operation');
+    }
+    context.properties.add(arg.value);
+    return [arg];
+  }
+
+  /**
+   * @type ArgValidator
+   */
+  function withVarArgs(encoded, context) {
+    if (encoded.length !== 2) {
+      throw new Error('Expected 1 argument for var operation');
+    }
+    const arg = parse$1(encoded[1], context);
+    if (!(arg instanceof LiteralExpression)) {
+      throw new Error('Expected a literal argument for var operation');
+    }
+    if (typeof arg.value !== 'string') {
+      throw new Error('Expected a string argument for get operation');
+    }
+    context.variables.add(arg.value);
+    return [arg];
+  }
+
+  /**
+   * @type ArgValidator
+   */
+  function withNoArgs(encoded, context) {
+    const operation = encoded[0];
+    if (encoded.length !== 1) {
+      throw new Error(`Expected no arguments for ${operation} operation`);
+    }
+    return [];
+  }
+
+  /**
+   * @param {number} minArgs The minimum number of arguments.
+   * @param {number} maxArgs The maximum number of arguments.
+   * @param {number} argType The argument type.
+   * @return {ArgValidator} The argument validator
+   */
+  function withArgs(minArgs, maxArgs, argType) {
+    return function (encoded, context) {
+      const operation = encoded[0];
+      const argCount = encoded.length - 1;
+      if (minArgs === maxArgs) {
+        if (argCount !== minArgs) {
+          const plural = minArgs === 1 ? '' : 's';
+          throw new Error(
+            `Expected ${minArgs} argument${plural} for operation ${operation}, got ${argCount}`
+          );
+        }
+      } else if (argCount < minArgs || argCount > maxArgs) {
+        throw new Error(
+          `Expected ${minArgs} to ${maxArgs} arguments for operation ${operation}, got ${argCount}`
+        );
+      }
+
+      /**
+       * @type {Array<Expression>}
+       */
+      const args = new Array(argCount);
+      for (let i = 0; i < argCount; ++i) {
+        const expression = parse$1(encoded[i + 1], context);
+        if (!overlapsType(argType, expression.type)) {
+          const gotType = typeName(argType);
+          const expectedType = typeName(expression.type);
+          throw new Error(
+            `Unexpected type for argument ${i} of ${operation} operation` +
+              ` : got ${gotType} but expected ${expectedType}`
+          );
+        }
+        args[i] = expression;
+      }
+
+      return args;
+    };
+  }
+
+  /**
+   * @param {ArgValidator} argValidator The argument validator.
+   * @param {number} returnType The return type.
+   * @return {Parser} The parser.
+   */
+  function createParser(argValidator, returnType) {
+    return function (encoded, context) {
+      const operator = encoded[0];
+      const args = argValidator(encoded, context);
+      return new CallExpression(returnType, operator, ...args);
+    };
+  }
+
+  /**
+   * @param {Array} encoded The encoded expression.
+   * @param {ParsingContext} context The parsing context.
+   * @return {Expression} The parsed expression.
+   */
+  function parseCallExpression(encoded, context) {
+    const operator = encoded[0];
+
+    const parser = parsers[operator];
+    if (!parser) {
+      throw new Error(`Unknown operator: ${operator}`);
+    }
+    return parser(encoded, context);
+  }
+
+  /**
+   * @module ol/expr/cpu
+   */
+
+
+  /**
+   * @fileoverview This module includes functions to build expressions for evaluation on the CPU.
+   * Building is composed of two steps: parsing and compiling.  The parsing step takes an encoded
+   * expression and returns an instance of one of the expression classes.  The compiling step takes
+   * the expression instance and returns a function that can be evaluated in to return a literal
+   * value.  The evaluator function should do as little allocation and work as possible.
    */
 
   /**
-   * Regular shape style properties for rendering point features.  At least `shape-points` must be provided.
-   *
-   * @typedef {Object} FlatShape
-   * @property {number} [shape-points] Number of points for stars and regular polygons. In case of a polygon, the number of points
-   * is the number of sides.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [shape-fill-color] The fill color.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [shape-stroke-color] The stroke color.
-   * @property {number} [shape-stroke-width] Stroke pixel width.
-   * @property {CanvasLineCap} [shape-stroke-line-cap='round'] Line cap style: `butt`, `round`, or `square`.
-   * @property {CanvasLineJoin} [shape-stroke-line-join='round'] Line join style: `bevel`, `round`, or `miter`.
-   * @property {Array<number>} [shape-stroke-line-dash] Line dash pattern.
-   * @property {number} [shape-stroke-line-dash-offset=0] Line dash offset.
-   * @property {number} [shape-stroke-miter-limit=10] Miter limit.
-   * @property {number} [shape-radius] Radius of a regular polygon.
-   * @property {number} [shape-radius1] First radius of a star. Ignored if radius is set.
-   * @property {number} [shape-radius2] Second radius of a star.
-   * @property {number} [shape-angle=0] Shape's angle in radians. A value of 0 will have one of the shape's point facing up.
-   * @property {Array<number>} [shape-displacement=[0,0]] Displacement of the shape
-   * @property {number} [shape-rotation=0] Rotation in radians (positive rotation clockwise).
-   * @property {boolean} [shape-rotate-with-view=false] Whether to rotate the shape with the view.
-   * @property {number|import("../size.js").Size} [shape-scale=1] Scale. Unless two dimensional scaling is required a better
-   * result may be obtained with appropriate settings for `shape-radius`, `shape-radius1` and `shape-radius2`.
-   * @property {"declutter"|"obstacle"|"none"|undefined} [shape-declutter-mode] Declutter mode.
+   * @typedef {Object} EvaluationContext
+   * @property {Object} properties The values for properties used in 'get' expressions.
+   * @property {Object} variables The values for variables used in 'var' expressions.
+   * @property {number} resolution The map resolution.
    */
 
   /**
-   * Circle style properties for rendering point features.  At least `circle-radius` must be provided.
+   * @return {EvaluationContext} A new evaluation context.
+   */
+  function newEvaluationContext() {
+    return {
+      variables: {},
+      properties: {},
+      resolution: NaN,
+    };
+  }
+
+  /**
+   * @typedef {function(EvaluationContext):import("./expression.js").LiteralValue} ExpressionEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):boolean} BooleanEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):number} NumberEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):string} StringEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):(Array<number>|string)} ColorLikeEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):Array<number>} NumberArrayEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):Array<number>} CoordinateEvaluator
+   */
+
+  /**
+   * @typedef {function(EvaluationContext):(Array<number>|number)} SizeLikeEvaluator
+   */
+
+  /**
+   * @param {import('./expression.js').EncodedExpression} encoded The encoded expression.
+   * @param {number} type The expected type.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {ExpressionEvaluator} The expression evaluator.
+   */
+  function buildExpression(encoded, type, context) {
+    const expression = parse$1(encoded, context);
+    if (!overlapsType(type, expression.type)) {
+      const expected = typeName(type);
+      const actual = typeName(expression.type);
+      throw new Error(
+        `Expected expression to be of type ${expected}, got ${actual}`
+      );
+    }
+    return compileExpression(expression);
+  }
+
+  /**
+   * @param {import("./expression.js").Expression} expression The expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {ExpressionEvaluator} The evaluator function.
+   */
+  function compileExpression(expression, context) {
+    if (expression instanceof LiteralExpression) {
+      return function () {
+        return expression.value;
+      };
+    }
+    const operator = expression.operator;
+    switch (operator) {
+      case Ops.Number:
+      case Ops.String: {
+        return compileAssertionExpression(expression);
+      }
+      case Ops.Get:
+      case Ops.Var: {
+        return compileAccessorExpression(expression);
+      }
+      case Ops.Resolution: {
+        return (context) => context.resolution;
+      }
+      case Ops.Any:
+      case Ops.All:
+      case Ops.Not: {
+        return compileLogicalExpression(expression);
+      }
+      case Ops.Equal:
+      case Ops.NotEqual:
+      case Ops.LessThan:
+      case Ops.LessThanOrEqualTo:
+      case Ops.GreaterThan:
+      case Ops.GreaterThanOrEqualTo: {
+        return compileComparisonExpression(expression);
+      }
+      case Ops.Multiply:
+      case Ops.Divide:
+      case Ops.Add:
+      case Ops.Subtract:
+      case Ops.Clamp:
+      case Ops.Mod:
+      case Ops.Pow:
+      case Ops.Abs:
+      case Ops.Floor:
+      case Ops.Ceil:
+      case Ops.Round:
+      case Ops.Sin:
+      case Ops.Cos:
+      case Ops.Atan:
+      case Ops.Sqrt: {
+        return compileNumericExpression(expression);
+      }
+      case Ops.Match: {
+        return compileMatchExpression(expression);
+      }
+      default: {
+        throw new Error(`Unsupported operator ${operator}`);
+      }
+    }
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {ExpressionEvaluator} The evaluator function.
+   */
+  function compileAssertionExpression(expression, context) {
+    const type = expression.operator;
+    const length = expression.args.length;
+
+    const args = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      args[i] = compileExpression(expression.args[i]);
+    }
+    switch (type) {
+      case Ops.Number:
+      case Ops.String: {
+        return (context) => {
+          for (let i = 0; i < length; ++i) {
+            const value = args[i](context);
+            if (typeof value === type) {
+              return value;
+            }
+          }
+          throw new Error(`Expected one of the values to be a ${type}`);
+        };
+      }
+      default: {
+        throw new Error(`Unsupported assertion operator ${type}`);
+      }
+    }
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {ExpressionEvaluator} The evaluator function.
+   */
+  function compileAccessorExpression(expression, context) {
+    const nameExpression = expression.args[0];
+    if (!(nameExpression instanceof LiteralExpression)) {
+      throw new Error('Expected literal name');
+    }
+    const name = nameExpression.value;
+    if (typeof name !== 'string') {
+      throw new Error('Expected string name');
+    }
+    switch (expression.operator) {
+      case Ops.Get: {
+        return (context) => context.properties[name];
+      }
+      case Ops.Var: {
+        return (context) => context.variables[name];
+      }
+      default: {
+        throw new Error(`Unsupported accessor operator ${expression.operator}`);
+      }
+    }
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {BooleanEvaluator} The evaluator function.
+   */
+  function compileComparisonExpression(expression, context) {
+    const op = expression.operator;
+    const left = compileExpression(expression.args[0]);
+    const right = compileExpression(expression.args[1]);
+    switch (op) {
+      case Ops.Equal: {
+        return (context) => left(context) === right(context);
+      }
+      case Ops.NotEqual: {
+        return (context) => left(context) !== right(context);
+      }
+      case Ops.LessThan: {
+        return (context) => left(context) < right(context);
+      }
+      case Ops.LessThanOrEqualTo: {
+        return (context) => left(context) <= right(context);
+      }
+      case Ops.GreaterThan: {
+        return (context) => left(context) > right(context);
+      }
+      case Ops.GreaterThanOrEqualTo: {
+        return (context) => left(context) >= right(context);
+      }
+      default: {
+        throw new Error(`Unsupported comparison operator ${op}`);
+      }
+    }
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {BooleanEvaluator} The evaluator function.
+   */
+  function compileLogicalExpression(expression, context) {
+    const op = expression.operator;
+    const length = expression.args.length;
+
+    const args = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      args[i] = compileExpression(expression.args[i]);
+    }
+    switch (op) {
+      case Ops.Any: {
+        return (context) => {
+          for (let i = 0; i < length; ++i) {
+            if (args[i](context)) {
+              return true;
+            }
+          }
+          return false;
+        };
+      }
+      case Ops.All: {
+        return (context) => {
+          for (let i = 0; i < length; ++i) {
+            if (!args[i](context)) {
+              return false;
+            }
+          }
+          return true;
+        };
+      }
+      case Ops.Not: {
+        return (context) => !args[0](context);
+      }
+      default: {
+        throw new Error(`Unsupported logical operator ${op}`);
+      }
+    }
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {NumberEvaluator} The evaluator function.
+   */
+  function compileNumericExpression(expression, context) {
+    const op = expression.operator;
+    const length = expression.args.length;
+
+    const args = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      args[i] = compileExpression(expression.args[i]);
+    }
+    switch (op) {
+      case Ops.Multiply: {
+        return (context) => {
+          let value = 1;
+          for (let i = 0; i < length; ++i) {
+            value *= args[i](context);
+          }
+          return value;
+        };
+      }
+      case Ops.Divide: {
+        return (context) => args[0](context) / args[1](context);
+      }
+      case Ops.Add: {
+        return (context) => {
+          let value = 0;
+          for (let i = 0; i < length; ++i) {
+            value += args[i](context);
+          }
+          return value;
+        };
+      }
+      case Ops.Subtract: {
+        return (context) => args[0](context) - args[1](context);
+      }
+      case Ops.Clamp: {
+        return (context) => {
+          const value = args[0](context);
+          const min = args[1](context);
+          if (value < min) {
+            return min;
+          }
+          const max = args[2](context);
+          if (value > max) {
+            return max;
+          }
+          return value;
+        };
+      }
+      case Ops.Mod: {
+        return (context) => args[0](context) % args[1](context);
+      }
+      case Ops.Pow: {
+        return (context) => Math.pow(args[0](context), args[1](context));
+      }
+      case Ops.Abs: {
+        return (context) => Math.abs(args[0](context));
+      }
+      case Ops.Floor: {
+        return (context) => Math.floor(args[0](context));
+      }
+      case Ops.Ceil: {
+        return (context) => Math.ceil(args[0](context));
+      }
+      case Ops.Round: {
+        return (context) => Math.round(args[0](context));
+      }
+      case Ops.Sin: {
+        return (context) => Math.sin(args[0](context));
+      }
+      case Ops.Cos: {
+        return (context) => Math.cos(args[0](context));
+      }
+      case Ops.Atan: {
+        if (length === 2) {
+          return (context) => Math.atan2(args[0](context), args[1](context));
+        }
+        return (context) => Math.atan(args[0](context));
+      }
+      case Ops.Sqrt: {
+        return (context) => Math.sqrt(args[0](context));
+      }
+      default: {
+        throw new Error(`Unsupported numeric operator ${op}`);
+      }
+    }
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {ExpressionEvaluator} The evaluator function.
+   */
+  function compileMatchExpression(expression, context) {
+    const length = expression.args.length;
+    const args = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      args[i] = compileExpression(expression.args[i]);
+    }
+    return (context) => {
+      const value = args[0](context);
+      for (let i = 1; i < length; i += 2) {
+        if (value === args[i](context)) {
+          return args[i + 1](context);
+        }
+      }
+      return args[length - 1](context);
+    };
+  }
+
+  /**
+   * @module ol/render/canvas/style
+   */
+
+
+  /**
+   * @fileoverview This module includes functions to build styles for the canvas renderer.  Building
+   * is composed of two steps: parsing and compiling.  The parsing step takes an encoded expression
+   * and returns an instance of one of the expression classes.  The compiling step takes the
+   * expression instance and returns a function that can be evaluated to return a literal value.  The
+   * evaluator function should do as little allocation and work as possible.
+   */
+
+  /**
+   * @typedef {import("../../style/flat.js").FlatStyle} FlatStyle
+   */
+
+  /**
+   * @typedef {import("../../expr/expression.js").EncodedExpression} EncodedExpression
+   */
+
+  /**
+   * @typedef {import("../../expr/expression.js").ParsingContext} ParsingContext
+   */
+
+  /**
+   * @typedef {import("../../expr/expression.js").CallExpression} CallExpression
+   */
+
+  /**
+   * @typedef {import("../../expr/cpu.js").EvaluationContext} EvaluationContext
+   */
+
+  /**
+   * @typedef {import("../../expr/cpu.js").ExpressionEvaluator} ExpressionEvaluator
+   */
+
+  /**
+   * @param {EvaluationContext} context The evaluation context.
+   * @return {boolean} Always true.
+   */
+  function always(context) {
+    return true;
+  }
+
+  /**
+   * This function adapts a rule evaluator to the existing style function interface.
+   * After we have deprecated the style function, we can use the compiled rules directly
+   * and pass a more complete evaluation context (variables, zoom, time, etc.).
    *
-   * @typedef {Object} FlatCircle
-   * @property {number} [circle-radius] Circle radius.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [circle-fill-color] The fill color.
-   * @property {import("../color.js").Color|import("../colorlike.js").ColorLike} [circle-stroke-color] The stroke color.
-   * @property {number} [circle-stroke-width] Stroke pixel width.
-   * @property {CanvasLineCap} [circle-stroke-line-cap='round'] Line cap style: `butt`, `round`, or `square`.
-   * @property {CanvasLineJoin} [circle-stroke-line-join='round'] Line join style: `bevel`, `round`, or `miter`.
-   * @property {Array<number>} [circle-stroke-line-dash] Line dash pattern.
-   * @property {number} [circle-stroke-line-dash-offset=0] Line dash offset.
-   * @property {number} [circle-stroke-miter-limit=10] Miter limit.
-   * @property {Array<number>} [circle-displacement=[0,0]] displacement
-   * @property {number|import("../size.js").Size} [circle-scale=1] Scale. A two dimensional scale will produce an ellipse.
-   * Unless two dimensional scaling is required a better result may be obtained with an appropriate setting for `circle-radius`.
-   * @property {number} [circle-rotation=0] Rotation in radians
-   * (positive rotation clockwise, meaningful only when used in conjunction with a two dimensional scale).
-   * @property {boolean} [circle-rotate-with-view=false] Whether to rotate the shape with the view
-   * (meaningful only when used in conjunction with a two dimensional scale).
-   * @property {"declutter"|"obstacle"|"none"|undefined} [circle-declutter-mode] Declutter mode
+   * @param {Array<import('../../style/flat.js').Rule>} rules The rules.
+   * @return {import('../../style/Style.js').StyleFunction} A style function.
+   */
+  function rulesToStyleFunction(rules) {
+    const parsingContext = newParsingContext();
+    const evaluator = buildRuleSet(rules, parsingContext);
+    const evaluationContext = newEvaluationContext();
+    return function (feature, resolution) {
+      evaluationContext.properties = feature.getPropertiesInternal();
+      evaluationContext.resolution = resolution;
+      return evaluator(evaluationContext);
+    };
+  }
+
+  /**
+   * This function adapts a style evaluator to the existing style function interface.
+   * After we have deprecated the style function, we can use the compiled rules directly
+   * and pass a more complete evaluation context (variables, zoom, time, etc.).
+   *
+   * @param {Array<import('../../style/flat.js').FlatStyle>} flatStyles The flat styles.
+   * @return {import('../../style/Style.js').StyleFunction} A style function.
+   */
+  function flatStylesToStyleFunction(flatStyles) {
+    const parsingContext = newParsingContext();
+    const length = flatStyles.length;
+
+    /**
+     * @type {Array<StyleEvaluator>}
+     */
+    const evaluators = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      evaluators[i] = buildStyle(flatStyles[i], parsingContext);
+    }
+    const evaluationContext = newEvaluationContext();
+
+    /**
+     * @type {Array<Style>}
+     */
+    const styles = new Array(length);
+
+    return function (feature, resolution) {
+      evaluationContext.properties = feature.getPropertiesInternal();
+      evaluationContext.resolution = resolution;
+      for (let i = 0; i < length; ++i) {
+        styles[i] = evaluators[i](evaluationContext);
+      }
+      return styles;
+    };
+  }
+
+  /**
+   * @typedef {function(EvaluationContext):Array<Style>} RuleSetEvaluator
+   */
+
+  /**
+   * @typedef {Object} CompiledRule
+   * @property {ExpressionEvaluator} filter The compiled filter evaluator.
+   * @property {Array<StyleEvaluator>} styles The list of compiled style evaluators.
+   */
+
+  /**
+   * @param {Array<import('../../style/flat.js').Rule>} rules The rules.
+   * @param {ParsingContext} context The parsing context.
+   * @return {RuleSetEvaluator} The evaluator function.
+   */
+  function buildRuleSet(rules, context) {
+    const length = rules.length;
+
+    /**
+     * @type {Array<CompiledRule>}
+     */
+    const compiledRules = new Array(length);
+
+    for (let i = 0; i < length; ++i) {
+      const rule = rules[i];
+      const filter =
+        'filter' in rule
+          ? buildExpression(rule.filter, BooleanType, context)
+          : always;
+
+      /**
+       * @type {Array<StyleEvaluator>}
+       */
+      let styles;
+      if (Array.isArray(rule.style)) {
+        const styleLength = rule.style.length;
+        styles = new Array(styleLength);
+        for (let j = 0; j < styleLength; ++j) {
+          styles[j] = buildStyle(rule.style[j], context);
+        }
+      } else {
+        styles = [buildStyle(rule.style, context)];
+      }
+
+      compiledRules[i] = {filter, styles};
+    }
+
+    return function (context) {
+      /**
+       * @type {Array<Style>}
+       */
+      const styles = [];
+
+      let someMatched = false;
+      for (let i = 0; i < length; ++i) {
+        const filterEvaluator = compiledRules[i].filter;
+        if (!filterEvaluator(context)) {
+          continue;
+        }
+        if (rules[i].else && someMatched) {
+          continue;
+        }
+        someMatched = true;
+        for (const styleEvaluator of compiledRules[i].styles) {
+          const style = styleEvaluator(context);
+          if (!style) {
+            continue;
+          }
+          styles.push(style);
+        }
+      }
+
+      return styles;
+    };
+  }
+
+  /**
+   * @typedef {function(EvaluationContext):Style} StyleEvaluator
    */
 
   /**
    * @param {FlatStyle} flatStyle A flat style literal.
-   * @return {import("./Style.js").default} A style instance.
+   * @param {ParsingContext} context The parsing context.
+   * @return {StyleEvaluator} A function that evaluates to a style.  The style returned by
+   * this function will be reused between invocations.
    */
-  function toStyle(flatStyle) {
-    const style = new Style$1({
-      fill: getFill(flatStyle, ''),
-      stroke: getStroke(flatStyle, ''),
-      text: getText(flatStyle),
-      image: getImage(flatStyle),
-    });
+  function buildStyle(flatStyle, context) {
+    const evaluateFill = buildFill(flatStyle, '', context);
+    const evaluateStroke = buildStroke(flatStyle, '', context);
+    const evaluateText = buildText(flatStyle, context);
+    const evaluateImage = buildImage(flatStyle, context);
+    const evaluateZIndex = numberEvaluator(flatStyle, 'z-index', context);
 
-    return style;
+    const style = new Style$1();
+    return function (context) {
+      let empty = true;
+      if (evaluateFill) {
+        const fill = evaluateFill(context);
+        if (fill) {
+          empty = false;
+        }
+        style.setFill(fill);
+      }
+      if (evaluateStroke) {
+        const stroke = evaluateStroke(context);
+        if (stroke) {
+          empty = false;
+        }
+        style.setStroke(stroke);
+      }
+      if (evaluateText) {
+        const text = evaluateText(context);
+        if (text) {
+          empty = false;
+        }
+        style.setText(text);
+      }
+      if (evaluateImage) {
+        const image = evaluateImage(context);
+        if (image) {
+          empty = false;
+        }
+        style.setImage(image);
+      }
+      if (evaluateZIndex) {
+        style.setZIndex(evaluateZIndex(context));
+      }
+      if (empty) {
+        return null;
+      }
+      return style;
+    };
   }
+
+  /**
+   * @typedef {function(EvaluationContext):Fill} FillEvaluator
+   */
 
   /**
    * @param {FlatStyle} flatStyle The flat style.
    * @param {string} prefix The property prefix.
-   * @return {Fill|null|undefined} The fill (if any).
+   * @param {ParsingContext} context The parsing context.
+   * @return {FillEvaluator?} A function that evaluates to a fill.
    */
-  function getFill(flatStyle, prefix) {
-    const color = flatStyle[prefix + 'fill-color'];
-    if (!color) {
-      return;
-    }
-    if (color === 'none') {
+  function buildFill(flatStyle, prefix, context) {
+    const evaluateColor = colorLikeEvaluator(
+      flatStyle,
+      prefix + 'fill-color',
+      context
+    );
+    if (!evaluateColor) {
       return null;
     }
 
-    return new Fill$1({color: color});
+    const fill = new Fill$1();
+    return function (context) {
+      const color = evaluateColor(context);
+      if (color === 'none') {
+        return null;
+      }
+      fill.setColor(color);
+      return fill;
+    };
   }
+
+  /**
+   * @typedef {function(EvaluationContext):Stroke} StrokeEvaluator
+   */
 
   /**
    * @param {FlatStyle} flatStyle The flat style.
    * @param {string} prefix The property prefix.
-   * @return {Stroke|undefined} The stroke (if any).
+   * @param {ParsingContext} context The parsing context.
+   * @return {StrokeEvaluator?} A function the evaluates to a stroke.
    */
-  function getStroke(flatStyle, prefix) {
-    const width = flatStyle[prefix + 'stroke-width'];
-    const color = flatStyle[prefix + 'stroke-color'];
-    if (!width && !color) {
-      return;
+  function buildStroke(flatStyle, prefix, context) {
+    const evaluateWidth = numberEvaluator(
+      flatStyle,
+      prefix + 'stroke-width',
+      context
+    );
+
+    const evaluateColor = colorLikeEvaluator(
+      flatStyle,
+      prefix + 'stroke-color',
+      context
+    );
+
+    if (!evaluateWidth && !evaluateColor) {
+      return null;
     }
 
-    return new Stroke$1({
-      width: width,
-      color: color,
-      lineCap: flatStyle[prefix + 'stroke-line-cap'],
-      lineJoin: flatStyle[prefix + 'stroke-line-join'],
-      lineDash: flatStyle[prefix + 'stroke-line-dash'],
-      lineDashOffset: flatStyle[prefix + 'stroke-line-dash-offset'],
-      miterLimit: flatStyle[prefix + 'stroke-miter-limit'],
-    });
+    const evaluateLineCap = stringEvaluator(
+      flatStyle,
+      prefix + 'stroke-line-cap',
+      context
+    );
+
+    const evaluateLineJoin = stringEvaluator(
+      flatStyle,
+      prefix + 'stroke-line-join',
+      context
+    );
+
+    const evaluateLineDash = numberArrayEvaluator(
+      flatStyle,
+      prefix + 'stroke-line-dash',
+      context
+    );
+
+    const evaluateLineDashOffset = numberEvaluator(
+      flatStyle,
+      prefix + 'stroke-line-dash-offset',
+      context
+    );
+
+    const evaluateMiterLimit = numberEvaluator(
+      flatStyle,
+      prefix + 'stroke-miter-limit',
+      context
+    );
+
+    const stroke = new Stroke$1();
+    return function (context) {
+      if (evaluateColor) {
+        const color = evaluateColor(context);
+        if (color === 'none') {
+          return null;
+        }
+        stroke.setColor(color);
+      }
+
+      if (evaluateWidth) {
+        stroke.setWidth(evaluateWidth(context));
+      }
+
+      if (evaluateLineCap) {
+        const lineCap = evaluateLineCap(context);
+        if (lineCap !== 'butt' && lineCap !== 'round' && lineCap !== 'square') {
+          throw new Error('Expected butt, round, or square line cap');
+        }
+        stroke.setLineCap(lineCap);
+      }
+
+      if (evaluateLineJoin) {
+        const lineJoin = evaluateLineJoin(context);
+        if (
+          lineJoin !== 'bevel' &&
+          lineJoin !== 'round' &&
+          lineJoin !== 'miter'
+        ) {
+          throw new Error('Expected bevel, round, or miter line join');
+        }
+        stroke.setLineJoin(lineJoin);
+      }
+
+      if (evaluateLineDash) {
+        stroke.setLineDash(evaluateLineDash(context));
+      }
+
+      if (evaluateLineDashOffset) {
+        stroke.setLineDashOffset(evaluateLineDashOffset(context));
+      }
+
+      if (evaluateMiterLimit) {
+        stroke.setMiterLimit(evaluateMiterLimit(context));
+      }
+
+      return stroke;
+    };
+  }
+
+  /**
+   * @typedef {function(EvaluationContext):Text} TextEvaluator
+   */
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {ParsingContext} context The parsing context.
+   * @return {TextEvaluator?} A function that evaluates to a text symbolizer.
+   */
+  function buildText(flatStyle, context) {
+    const prefix = 'text-';
+
+    // Currently, an Array<string> may be used for rich text support.  This doesn't
+    // work with our expression syntax where arrays of strings are interpreted as
+    // call expressions.  To support rich text, we could add a 'strings' operator
+    // where all the following arguments would be string values.
+    const evaluateValue = stringEvaluator(flatStyle, prefix + 'value', context);
+    if (!evaluateValue) {
+      return null;
+    }
+
+    const evaluateFill = buildFill(flatStyle, prefix, context);
+
+    const evaluateBackgroundFill = buildFill(
+      flatStyle,
+      prefix + 'background-',
+      context
+    );
+
+    const evaluateStroke = buildStroke(flatStyle, prefix, context);
+
+    const evaluateBackgroundStroke = buildStroke(
+      flatStyle,
+      prefix + 'background-',
+      context
+    );
+
+    const evaluateFont = stringEvaluator(flatStyle, prefix + 'font', context);
+
+    const evaluateMaxAngle = numberEvaluator(
+      flatStyle,
+      prefix + 'max-angle',
+      context
+    );
+
+    const evaluateOffsetX = numberEvaluator(
+      flatStyle,
+      prefix + 'offset-x',
+      context
+    );
+
+    const evaluateOffsetY = numberEvaluator(
+      flatStyle,
+      prefix + 'offset-y',
+      context
+    );
+
+    const evaluateOverflow = booleanEvaluator(
+      flatStyle,
+      prefix + 'overflow',
+      context
+    );
+
+    const evaluatePlacement = stringEvaluator(
+      flatStyle,
+      prefix + 'placement',
+      context
+    );
+
+    const evaluateRepeat = numberEvaluator(flatStyle, prefix + 'repeat', context);
+
+    const evaluateScale = sizeLikeEvaluator(flatStyle, prefix + 'scale', context);
+
+    const evaluateRotateWithView = booleanEvaluator(
+      flatStyle,
+      prefix + 'rotate-with-view',
+      context
+    );
+
+    const evaluateRotation = numberEvaluator(
+      flatStyle,
+      prefix + 'rotation',
+      context
+    );
+
+    const evaluateAlign = stringEvaluator(flatStyle, prefix + 'align', context);
+
+    const evaluateJustify = stringEvaluator(
+      flatStyle,
+      prefix + 'justify',
+      context
+    );
+
+    const evaluateBaseline = stringEvaluator(
+      flatStyle,
+      prefix + 'baseline',
+      context
+    );
+
+    const evaluatePadding = numberArrayEvaluator(
+      flatStyle,
+      prefix + 'padding',
+      context
+    );
+
+    const text = new Text$1({});
+    return function (context) {
+      text.setText(evaluateValue(context));
+
+      if (evaluateFill) {
+        text.setFill(evaluateFill(context));
+      }
+
+      if (evaluateBackgroundFill) {
+        text.setBackgroundFill(evaluateBackgroundFill(context));
+      }
+
+      if (evaluateStroke) {
+        text.setStroke(evaluateStroke(context));
+      }
+
+      if (evaluateBackgroundStroke) {
+        text.setBackgroundStroke(evaluateBackgroundStroke(context));
+      }
+
+      if (evaluateFont) {
+        text.setFont(evaluateFont(context));
+      }
+
+      if (evaluateMaxAngle) {
+        text.setMaxAngle(evaluateMaxAngle(context));
+      }
+
+      if (evaluateOffsetX) {
+        text.setOffsetX(evaluateOffsetX(context));
+      }
+
+      if (evaluateOffsetY) {
+        text.setOffsetY(evaluateOffsetY(context));
+      }
+
+      if (evaluateOverflow) {
+        text.setOverflow(evaluateOverflow(context));
+      }
+
+      if (evaluatePlacement) {
+        const placement = evaluatePlacement(context);
+        if (placement !== 'point' && placement !== 'line') {
+          throw new Error('Expected point or line for text-placement');
+        }
+        text.setPlacement(placement);
+      }
+
+      if (evaluateRepeat) {
+        text.setRepeat(evaluateRepeat(context));
+      }
+
+      if (evaluateScale) {
+        text.setScale(evaluateScale(context));
+      }
+
+      if (evaluateRotateWithView) {
+        text.setRotateWithView(evaluateRotateWithView(context));
+      }
+
+      if (evaluateRotation) {
+        text.setRotation(evaluateRotation(context));
+      }
+
+      if (evaluateAlign) {
+        const textAlign = evaluateAlign(context);
+        if (
+          textAlign !== 'left' &&
+          textAlign !== 'center' &&
+          textAlign !== 'right' &&
+          textAlign !== 'end' &&
+          textAlign !== 'start'
+        ) {
+          throw new Error(
+            'Expected left, right, center, start, or end for text-align'
+          );
+        }
+        text.setTextAlign(textAlign);
+      }
+
+      if (evaluateJustify) {
+        const justify = evaluateJustify(context);
+        if (justify !== 'left' && justify !== 'right' && justify !== 'center') {
+          throw new Error('Expected left, right, or center for text-justify');
+        }
+        text.setJustify(justify);
+      }
+
+      if (evaluateBaseline) {
+        const textBaseline = evaluateBaseline(context);
+        if (
+          textBaseline !== 'bottom' &&
+          textBaseline !== 'top' &&
+          textBaseline !== 'middle' &&
+          textBaseline !== 'alphabetic' &&
+          textBaseline !== 'hanging'
+        ) {
+          throw new Error(
+            'Expected bottom, top, middle, alphabetic, or hanging for text-baseline'
+          );
+        }
+        text.setTextBaseline(textBaseline);
+      }
+
+      if (evaluatePadding) {
+        text.setPadding(evaluatePadding(context));
+      }
+
+      return text;
+    };
+  }
+
+  /**
+   * @typedef {function(EvaluationContext):import("../../style/Image.js").default} ImageEvaluator
+   */
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {ParsingContext} context The parsing context.
+   * @return {ImageEvaluator?} A function that evaluates to an image symbolizer.
+   */
+  function buildImage(flatStyle, context) {
+    if ('icon-src' in flatStyle) {
+      return buildIcon(flatStyle, context);
+    }
+
+    if ('shape-points' in flatStyle) {
+      return buildShape(flatStyle, context);
+    }
+
+    if ('circle-radius' in flatStyle) {
+      return buildCircle(flatStyle, context);
+    }
+
+    return null;
   }
 
   /**
    * @param {FlatStyle} flatStyle The flat style.
-   * @return {Text|undefined} The text (if any).
+   * @param {ParsingContext} context The parsing context.
+   * @return {ImageEvaluator} A function that evaluates to an image symbolizer.
    */
-  function getText(flatStyle) {
-    const value = flatStyle['text-value'];
-    if (!value) {
-      return;
-    }
+  function buildIcon(flatStyle, context) {
+    const prefix = 'icon-';
 
-    const text = new Text$1({
-      text: value,
-      font: flatStyle['text-font'],
-      maxAngle: flatStyle['text-max-angle'],
-      offsetX: flatStyle['text-offset-x'],
-      offsetY: flatStyle['text-offset-y'],
-      overflow: flatStyle['text-overflow'],
-      placement: flatStyle['text-placement'],
-      repeat: flatStyle['text-repeat'],
-      scale: flatStyle['text-scale'],
-      rotateWithView: flatStyle['text-rotate-with-view'],
-      rotation: flatStyle['text-rotation'],
-      textAlign: flatStyle['text-align'],
-      justify: flatStyle['text-justify'],
-      textBaseline: flatStyle['text-baseline'],
-      padding: flatStyle['text-padding'],
-      fill: getFill(flatStyle, 'text-'),
-      backgroundFill: getFill(flatStyle, 'text-background-'),
-      stroke: getStroke(flatStyle, 'text-'),
-      backgroundStroke: getStroke(flatStyle, 'text-background-'),
+    // required property
+    const srcName = prefix + 'src';
+    const src = requireString(flatStyle[srcName], srcName);
+
+    // settable properties
+    const evaluateAnchor = coordinateEvaluator(
+      flatStyle,
+      prefix + 'anchor',
+      context
+    );
+
+    const evaluateScale = sizeLikeEvaluator(flatStyle, prefix + 'scale', context);
+
+    const evaluateOpacity = numberEvaluator(
+      flatStyle,
+      prefix + 'opacity',
+      context
+    );
+
+    const evaluateDisplacement = coordinateEvaluator(
+      flatStyle,
+      prefix + 'displacement',
+      context
+    );
+
+    const evaluateRotation = numberEvaluator(
+      flatStyle,
+      prefix + 'rotation',
+      context
+    );
+
+    const evaluateRotateWithView = booleanEvaluator(
+      flatStyle,
+      prefix + 'rotate-with-view',
+      context
+    );
+
+    // the remaining symbolizer properties are not currently settable
+    const anchorOrigin = optionalIconOrigin(flatStyle, prefix + 'anchor-origin');
+    const anchorXUnits = optionalIconAnchorUnits(
+      flatStyle,
+      prefix + 'anchor-x-units'
+    );
+    const anchorYUnits = optionalIconAnchorUnits(
+      flatStyle,
+      prefix + 'anchor-y-units'
+    );
+    const color = optionalColorLike(flatStyle, prefix + 'color');
+    const crossOrigin = optionalString(flatStyle, prefix + 'cross-origin');
+    const offset = optionalNumberArray(flatStyle, prefix + 'offset');
+    const offsetOrigin = optionalIconOrigin(flatStyle, prefix + 'offset-origin');
+    const width = optionalNumber(flatStyle, prefix + 'width');
+    const height = optionalNumber(flatStyle, prefix + 'height');
+    const size = optionalSize(flatStyle, prefix + 'size');
+    const declutterMode = optionalDeclutterMode(flatStyle, prefix + 'declutter');
+
+    const icon = new Icon$1({
+      src,
+      anchorOrigin,
+      anchorXUnits,
+      anchorYUnits,
+      color,
+      crossOrigin,
+      offset,
+      offsetOrigin,
+      height,
+      width,
+      size,
+      declutterMode,
     });
 
-    return text;
-  }
+    return function (context) {
+      if (evaluateOpacity) {
+        icon.setOpacity(evaluateOpacity(context));
+      }
 
-  /**
-   * @param {FlatStyle} flatStyle The flat style.
-   * @return {import("./Image.js").default|undefined} The image (if any).
-   */
-  function getImage(flatStyle) {
-    const iconSrc = flatStyle['icon-src'];
-    const iconImg = flatStyle['icon-img'];
-    if (iconSrc || iconImg) {
-      const icon = new Icon$1({
-        src: iconSrc,
-        img: iconImg,
-        imgSize: flatStyle['icon-img-size'],
-        anchor: flatStyle['icon-anchor'],
-        anchorOrigin: flatStyle['icon-anchor-origin'],
-        anchorXUnits: flatStyle['icon-anchor-x-units'],
-        anchorYUnits: flatStyle['icon-anchor-y-units'],
-        color: flatStyle['icon-color'],
-        crossOrigin: flatStyle['icon-cross-origin'],
-        offset: flatStyle['icon-offset'],
-        displacement: flatStyle['icon-displacement'],
-        opacity: flatStyle['icon-opacity'],
-        scale: flatStyle['icon-scale'],
-        width: flatStyle['icon-width'],
-        height: flatStyle['icon-height'],
-        rotation: flatStyle['icon-rotation'],
-        rotateWithView: flatStyle['icon-rotate-with-view'],
-        size: flatStyle['icon-size'],
-        declutterMode: flatStyle['icon-declutter-mode'],
-      });
+      if (evaluateDisplacement) {
+        icon.setDisplacement(evaluateDisplacement(context));
+      }
+
+      if (evaluateRotation) {
+        icon.setRotation(evaluateRotation(context));
+      }
+
+      if (evaluateRotateWithView) {
+        icon.setRotateWithView(evaluateRotateWithView(context));
+      }
+
+      if (evaluateScale) {
+        icon.setScale(evaluateScale(context));
+      }
+
+      if (evaluateAnchor) {
+        icon.setAnchor(evaluateAnchor(context));
+      }
       return icon;
-    }
+    };
+  }
 
-    const shapePoints = flatStyle['shape-points'];
-    if (shapePoints) {
-      const prefix = 'shape-';
-      const shape = new RegularShape$1({
-        points: shapePoints,
-        fill: getFill(flatStyle, prefix),
-        stroke: getStroke(flatStyle, prefix),
-        radius: flatStyle['shape-radius'],
-        radius1: flatStyle['shape-radius1'],
-        radius2: flatStyle['shape-radius2'],
-        angle: flatStyle['shape-angle'],
-        displacement: flatStyle['shape-displacement'],
-        rotation: flatStyle['shape-rotation'],
-        rotateWithView: flatStyle['shape-rotate-with-view'],
-        scale: flatStyle['shape-scale'],
-        declutterMode: flatStyle['shape-declutter-mode'],
-      });
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {ParsingContext} context The parsing context.
+   * @return {ImageEvaluator} A function that evaluates to an icon symbolizer.
+   */
+  function buildShape(flatStyle, context) {
+    const prefix = 'shape-';
+
+    // required property
+    const pointsName = prefix + 'points';
+    const points = requireNumber(flatStyle[pointsName], pointsName);
+
+    // settable properties
+    const evaluateFill = buildFill(flatStyle, prefix, context);
+    const evaluateStroke = buildStroke(flatStyle, prefix, context);
+    const evaluateScale = sizeLikeEvaluator(flatStyle, prefix + 'scale', context);
+    const evaluateDisplacement = coordinateEvaluator(
+      flatStyle,
+      prefix + 'displacement',
+      context
+    );
+    const evaluateRotation = numberEvaluator(
+      flatStyle,
+      prefix + 'rotation',
+      context
+    );
+    const evaluateRotateWithView = booleanEvaluator(
+      flatStyle,
+      prefix + 'rotate-with-view',
+      context
+    );
+
+    // the remaining properties are not currently settable
+    const radius = optionalNumber(flatStyle, prefix + 'radius');
+    const radius1 = optionalNumber(flatStyle, prefix + 'radius1');
+    const radius2 = optionalNumber(flatStyle, prefix + 'radius2');
+    const angle = optionalNumber(flatStyle, prefix + 'angle');
+    const declutterMode = optionalDeclutterMode(
+      flatStyle,
+      prefix + 'declutter-mode'
+    );
+
+    const shape = new RegularShape$1({
+      points,
+      radius,
+      radius1,
+      radius2,
+      angle,
+      declutterMode,
+    });
+
+    return function (context) {
+      if (evaluateFill) {
+        shape.setFill(evaluateFill(context));
+      }
+      if (evaluateStroke) {
+        shape.setStroke(evaluateStroke(context));
+      }
+      if (evaluateDisplacement) {
+        shape.setDisplacement(evaluateDisplacement(context));
+      }
+      if (evaluateRotation) {
+        shape.setRotation(evaluateRotation(context));
+      }
+      if (evaluateRotateWithView) {
+        shape.setRotateWithView(evaluateRotateWithView(context));
+      }
+      if (evaluateScale) {
+        shape.setScale(evaluateScale(context));
+      }
 
       return shape;
-    }
+    };
+  }
 
-    const circleRadius = flatStyle['circle-radius'];
-    if (circleRadius) {
-      const prefix = 'circle-';
-      const circle = new Circle$2({
-        radius: circleRadius,
-        fill: getFill(flatStyle, prefix),
-        stroke: getStroke(flatStyle, prefix),
-        displacement: flatStyle['circle-displacement'],
-        scale: flatStyle['circle-scale'],
-        rotation: flatStyle['circle-rotation'],
-        rotateWithView: flatStyle['circle-rotate-with-view'],
-        declutterMode: flatStyle['circle-declutter-mode'],
-      });
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {ParsingContext} context The parsing context.
+   * @return {ImageEvaluator} A function that evaluates to a circle symbolizer.
+   */
+  function buildCircle(flatStyle, context) {
+    const prefix = 'circle-';
+
+    // settable properties
+    const evaluateFill = buildFill(flatStyle, prefix, context);
+    const evaluateStroke = buildStroke(flatStyle, prefix, context);
+    const evaluateRadius = numberEvaluator(flatStyle, prefix + 'radius', context);
+    const evaluateScale = sizeLikeEvaluator(flatStyle, prefix + 'scale', context);
+    const evaluateDisplacement = coordinateEvaluator(
+      flatStyle,
+      prefix + 'displacement',
+      context
+    );
+    const evaluateRotation = numberEvaluator(
+      flatStyle,
+      prefix + 'rotation',
+      context
+    );
+    const evaluateRotateWithView = booleanEvaluator(
+      flatStyle,
+      prefix + 'rotate-with-view',
+      context
+    );
+
+    // the remaining properties are not currently settable
+    const declutterMode = optionalDeclutterMode(
+      flatStyle,
+      prefix + 'declutter-mode'
+    );
+
+    const circle = new Circle$2({
+      radius: 5, // this is arbitrary, but required - the evaluated radius is used below
+      declutterMode,
+    });
+
+    return function (context) {
+      if (evaluateRadius) {
+        circle.setRadius(evaluateRadius(context));
+      }
+      if (evaluateFill) {
+        circle.setFill(evaluateFill(context));
+      }
+      if (evaluateStroke) {
+        circle.setStroke(evaluateStroke(context));
+      }
+      if (evaluateDisplacement) {
+        circle.setDisplacement(evaluateDisplacement(context));
+      }
+      if (evaluateRotation) {
+        circle.setRotation(evaluateRotation(context));
+      }
+      if (evaluateRotateWithView) {
+        circle.setRotateWithView(evaluateRotateWithView(context));
+      }
+      if (evaluateScale) {
+        circle.setScale(evaluateScale(context));
+      }
 
       return circle;
-    }
+    };
+  }
 
-    return;
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').NumberEvaluator|undefined} The expression evaluator or undefined.
+   */
+  function numberEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return undefined;
+    }
+    const evaluator = buildExpression(flatStyle[name], NumberType, context);
+    return function (context) {
+      return requireNumber(evaluator(context), name);
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').StringEvaluator?} The expression evaluator.
+   */
+  function stringEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return null;
+    }
+    const evaluator = buildExpression(flatStyle[name], StringType, context);
+    return function (context) {
+      return requireString(evaluator(context), name);
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').BooleanEvaluator?} The expression evaluator.
+   */
+  function booleanEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return null;
+    }
+    const evaluator = buildExpression(flatStyle[name], BooleanType, context);
+    return function (context) {
+      const value = evaluator(context);
+      if (typeof value !== 'boolean') {
+        throw new Error(`Expected a boolean for ${name}`);
+      }
+      return value;
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').ColorLikeEvaluator?} The expression evaluator.
+   */
+  function colorLikeEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return null;
+    }
+    const evaluator = buildExpression(
+      flatStyle[name],
+      ColorType | StringType,
+      context
+    );
+    return function (context) {
+      return requireColorLike(evaluator(context), name);
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').NumberArrayEvaluator?} The expression evaluator.
+   */
+  function numberArrayEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return null;
+    }
+    const evaluator = buildExpression(flatStyle[name], NumberArrayType, context);
+    return function (context) {
+      return requireNumberArray(evaluator(context), name);
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').CoordinateEvaluator?} The expression evaluator.
+   */
+  function coordinateEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return null;
+    }
+    const evaluator = buildExpression(flatStyle[name], NumberArrayType, context);
+    return function (context) {
+      const array = requireNumberArray(evaluator(context), name);
+      if (array.length !== 2) {
+        throw new Error(`Expected two numbers for ${name}`);
+      }
+      return array;
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} name The property name.
+   * @param {ParsingContext} context The parsing context.
+   * @return {import('../../expr/cpu.js').SizeLikeEvaluator?} The expression evaluator.
+   */
+  function sizeLikeEvaluator(flatStyle, name, context) {
+    if (!(name in flatStyle)) {
+      return null;
+    }
+    const evaluator = buildExpression(
+      flatStyle[name],
+      NumberArrayType | NumberType,
+      context
+    );
+    return function (context) {
+      return requireSizeLike(evaluator(context), name);
+    };
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {number|undefined} A number or undefined.
+   */
+  function optionalNumber(flatStyle, property) {
+    const value = flatStyle[property];
+    if (value === undefined) {
+      return undefined;
+    }
+    if (typeof value !== 'number') {
+      throw new Error(`Expected a number for ${property}`);
+    }
+    return value;
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {import("../../size.js").Size|undefined} A size or undefined.
+   */
+  function optionalSize(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    if (typeof encoded === 'number') {
+      return toSize(encoded);
+    }
+    if (!Array.isArray(encoded)) {
+      throw new Error(`Expected a number or size array for ${property}`);
+    }
+    if (
+      encoded.length !== 2 ||
+      typeof encoded[0] !== 'number' ||
+      typeof encoded[1] !== 'number'
+    ) {
+      throw new Error(`Expected a number or size array for ${property}`);
+    }
+    return encoded;
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {string|undefined} A string or undefined.
+   */
+  function optionalString(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    if (typeof encoded !== 'string') {
+      throw new Error(`Expected a string for ${property}`);
+    }
+    return encoded;
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {import("../../style/Icon.js").IconOrigin|undefined} An icon origin or undefined.
+   */
+  function optionalIconOrigin(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    if (
+      encoded !== 'bottom-left' &&
+      encoded !== 'bottom-right' &&
+      encoded !== 'top-left' &&
+      encoded !== 'top-right'
+    ) {
+      throw new Error(
+        `Expected bottom-left, bottom-right, top-left, or top-right for ${property}`
+      );
+    }
+    return encoded;
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {import("../../style/Icon.js").IconAnchorUnits|undefined} Icon anchor units or undefined.
+   */
+  function optionalIconAnchorUnits(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    if (encoded !== 'pixels' && encoded !== 'fraction') {
+      throw new Error(`Expected pixels or fraction for ${property}`);
+    }
+    return encoded;
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {Array<number>|undefined} An array of numbers or undefined.
+   */
+  function optionalNumberArray(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    return requireNumberArray(encoded, property);
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {"declutter"|"obstacle"|"none"|undefined} Icon declutter mode.
+   */
+  function optionalDeclutterMode(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    if (typeof encoded !== 'string') {
+      throw new Error(`Expected a string for ${property}`);
+    }
+    if (encoded !== 'declutter' && encoded !== 'obstacle' && encoded !== 'none') {
+      throw new Error(`Expected declutter, obstacle, or none for ${property}`);
+    }
+    return encoded;
+  }
+
+  /**
+   * @param {FlatStyle} flatStyle The flat style.
+   * @param {string} property The symbolizer property.
+   * @return {string|Array<number>|undefined} A string or an array of color values or undefined.
+   */
+  function optionalColorLike(flatStyle, property) {
+    const encoded = flatStyle[property];
+    if (encoded === undefined) {
+      return undefined;
+    }
+    return requireColorLike(encoded, property);
+  }
+
+  /**
+   * @param {any} value The value.
+   * @param {string} property The property.
+   * @return {Array<number>} An array of numbers.
+   */
+  function requireNumberArray(value, property) {
+    if (!Array.isArray(value)) {
+      throw new Error(`Expected an array for ${property}`);
+    }
+    const length = value.length;
+    for (let i = 0; i < length; ++i) {
+      if (typeof value[i] !== 'number') {
+        throw new Error(`Expected an array of numbers for ${property}`);
+      }
+    }
+    return value;
+  }
+
+  /**
+   * @param {any} value The value.
+   * @param {string} property The property.
+   * @return {string} A string.
+   */
+  function requireString(value, property) {
+    if (typeof value !== 'string') {
+      throw new Error(`Expected a string for ${property}`);
+    }
+    return value;
+  }
+
+  /**
+   * @param {any} value The value.
+   * @param {string} property The property.
+   * @return {number} A number.
+   */
+  function requireNumber(value, property) {
+    if (typeof value !== 'number') {
+      throw new Error(`Expected a number for ${property}`);
+    }
+    return value;
+  }
+
+  /**
+   * @param {any} value The value.
+   * @param {string} property The property.
+   * @return {Array<number>|string} A color.
+   */
+  function requireColorLike(value, property) {
+    if (typeof value === 'string') {
+      return value;
+    }
+    const array = requireNumberArray(value, property);
+    const length = array.length;
+    if (length < 3 || length > 4) {
+      throw new Error(`Expected a color with 3 or 4 values for ${property}`);
+    }
+    return array;
+  }
+
+  /**
+   * @param {any} value The value.
+   * @param {string} property The property.
+   * @return {number|Array<number>} A number or an array of two numbers.
+   */
+  function requireSizeLike(value, property) {
+    if (typeof value === 'number') {
+      return value;
+    }
+    const size = requireNumberArray(value, property);
+    if (size.length !== 2) {
+      throw new Error(`Expected an array of two numbers for ${property}`);
+    }
+    return size;
   }
 
   /**
@@ -38203,45 +39789,76 @@ var myol = (function () {
      * @api
      */
     setStyle(style) {
-      /**
-       * @type {import("../style/Style.js").StyleLike|null}
-       */
-      let styleLike;
-
-      if (style === undefined) {
-        styleLike = createDefaultStyle;
-      } else if (style === null) {
-        styleLike = null;
-      } else if (typeof style === 'function') {
-        styleLike = style;
-      } else if (style instanceof Style$1) {
-        styleLike = style;
-      } else if (Array.isArray(style)) {
-        const len = style.length;
-
-        /**
-         * @type {Array<Style>}
-         */
-        const styles = new Array(len);
-
-        for (let i = 0; i < len; ++i) {
-          const s = style[i];
-          if (s instanceof Style$1) {
-            styles[i] = s;
-          } else {
-            styles[i] = toStyle(s);
-          }
-        }
-        styleLike = styles;
-      } else {
-        styleLike = toStyle(style);
-      }
-
-      this.style_ = styleLike;
+      this.style_ = toStyleLike(style);
       this.styleFunction_ =
         style === null ? undefined : toFunction(this.style_);
       this.changed();
     }
+  }
+
+  /**
+   * Coerce the allowed style types into a shorter list of types.  Flat styles, arrays of flat
+   * styles, and arrays of rules are converted into style functions.
+   *
+   * @param {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike|null} [style] Layer style.
+   * @return {import("../style/Style.js").StyleLike|null} The style.
+   */
+  function toStyleLike(style) {
+    if (style === undefined) {
+      return createDefaultStyle;
+    }
+    if (!style) {
+      return null;
+    }
+    if (typeof style === 'function') {
+      return style;
+    }
+    if (style instanceof Style$1) {
+      return style;
+    }
+    if (!Array.isArray(style)) {
+      return flatStylesToStyleFunction([style]);
+    }
+    if (style.length === 0) {
+      return [];
+    }
+
+    const length = style.length;
+    const first = style[0];
+
+    if (first instanceof Style$1) {
+      /**
+       * @type {Array<Style>}
+       */
+      const styles = new Array(length);
+      for (let i = 0; i < length; ++i) {
+        const candidate = style[i];
+        if (!(candidate instanceof Style$1)) {
+          throw new Error('Expected a list of style instances');
+        }
+        styles[i] = candidate;
+      }
+      return styles;
+    }
+
+    if ('style' in first) {
+      /**
+       * @type Array<import("../style/flat.js").Rule>
+       */
+      const rules = new Array(length);
+      for (let i = 0; i < length; ++i) {
+        const candidate = style[i];
+        if (!('style' in candidate)) {
+          throw new Error('Expected a list of rules with a style property');
+        }
+        rules[i] = candidate;
+      }
+      return rulesToStyleFunction(rules);
+    }
+
+    const flatStyles =
+      /** @type {Array<import("../style/flat.js").FlatStyle>} */ (style);
+    return flatStylesToStyleFunction(flatStyles);
   }
 
   var BaseVectorLayer$1 = BaseVectorLayer;
@@ -39023,7 +40640,7 @@ var myol = (function () {
         this.bufferedMaxExtent_ = clone(this.maxExtent);
         if (this.maxLineWidth > 0) {
           const width = (this.resolution * (this.maxLineWidth + 1)) / 2;
-          buffer$1(this.bufferedMaxExtent_, width, this.bufferedMaxExtent_);
+          buffer(this.bufferedMaxExtent_, width, this.bufferedMaxExtent_);
         }
       }
       return this.bufferedMaxExtent_;
@@ -39048,13 +40665,13 @@ var myol = (function () {
 
       /**
        * @private
-       * @type {HTMLCanvasElement|HTMLVideoElement|HTMLImageElement}
+       * @type {import('../../DataTile.js').ImageLike}
        */
       this.hitDetectionImage_ = null;
 
       /**
        * @private
-       * @type {HTMLCanvasElement|HTMLVideoElement|HTMLImageElement}
+       * @type {import('../../DataTile.js').ImageLike}
        */
       this.image_ = null;
 
@@ -40332,10 +41949,10 @@ var myol = (function () {
         textState.overflow,
         fillKey ? defaultFillStyle : fillKey,
         textState.maxAngle,
-        1,
+        pixelRatio,
         offsetY,
         strokeKey,
-        strokeWidth,
+        strokeWidth * pixelRatio,
         text,
         textKey,
         1 / pixelRatio,
@@ -40716,7 +42333,7 @@ var myol = (function () {
     /**
      * Load the image if not already loaded, and register the image change
      * listener if needed.
-     * @param {import("../ImageBase.js").default} image Image.
+     * @param {import("../Image.js").default} image Image.
      * @return {boolean} `true` if the image is already loaded, `false` otherwise.
      * @protected
      */
@@ -40845,7 +42462,7 @@ var myol = (function () {
     }
 
     /**
-     * @param {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} image Image.
+     * @param {import('../../DataTile.js').ImageLike} image Image.
      * @param {number} col The column index.
      * @param {number} row The row index.
      * @return {Uint8ClampedArray|null} The image data.
@@ -42653,7 +44270,7 @@ var myol = (function () {
       if (this.renderBuffer_ !== undefined) {
         hitExtent = createEmpty();
         extendCoordinate(hitExtent, coordinate);
-        buffer$1(
+        buffer(
           hitExtent,
           resolution * (this.renderBuffer_ + hitTolerance),
           hitExtent
@@ -42991,7 +44608,7 @@ var myol = (function () {
 
       /**
        * @private
-       * @type {HTMLCanvasElement|HTMLVideoElement|HTMLImageElement}
+       * @type {import('../../DataTile.js').ImageLike}
        */
       this.image_ = null;
 
@@ -43174,7 +44791,8 @@ var myol = (function () {
             -centerX,
             -centerY
           );
-          context.setTransform.apply(context, localTransform);
+          context.save();
+          context.transform.apply(context, localTransform);
           context.translate(centerX, centerY);
           context.scale(this.imageScale_[0], this.imageScale_[1]);
           context.drawImage(
@@ -43188,7 +44806,7 @@ var myol = (function () {
             this.imageWidth_,
             this.imageHeight_
           );
-          context.setTransform(1, 0, 0, 1, 0, 0);
+          context.restore();
         } else {
           context.drawImage(
             this.image_,
@@ -43250,6 +44868,7 @@ var myol = (function () {
           this.textScale_[0] != 1 ||
           this.textScale_[1] != 1
         ) {
+          context.save();
           context.translate(x - this.textOffsetX_, y - this.textOffsetY_);
           context.rotate(rotation);
           context.translate(this.textOffsetX_, this.textOffsetY_);
@@ -43260,7 +44879,7 @@ var myol = (function () {
           if (this.textFillState_) {
             context.fillText(this.text_, 0, 0);
           }
-          context.setTransform(1, 0, 0, 1, 0, 0);
+          context.restore();
         } else {
           if (this.textStrokeState_) {
             context.strokeText(this.text_, x, y);
@@ -44139,7 +45758,6 @@ var myol = (function () {
           style.setImage(
             new Icon$1({
               img: img,
-              imgSize: imgSize,
               anchor: image.getAnchor(),
               anchorXUnits: 'pixels',
               anchorYUnits: 'pixels',
@@ -45249,7 +46867,7 @@ var myol = (function () {
       }
 
       const center = viewState.center.slice();
-      const extent = buffer$1(
+      const extent = buffer(
         frameStateExtent,
         vectorLayerRenderBuffer * resolution
       );
@@ -46301,7 +47919,7 @@ var myol = (function () {
    * type.
    * @template {import("../geom/Geometry.js").default} [Geometry=import("../geom/Geometry.js").default]
    */
-  class VectorSourceEvent extends BaseEvent$1 {
+  class VectorSourceEvent extends Event {
     /**
      * @param {string} type Type.
      * @param {import("../Feature.js").default<Geometry>} [feature] Feature.
@@ -46495,7 +48113,7 @@ var myol = (function () {
       if (options.loader !== undefined) {
         this.loader_ = options.loader;
       } else if (this.url_ !== undefined) {
-        assert$1(this.format_, 7); // `format` must be set when `url` is set
+        assert$1(this.format_, '`format` must be set when `url` is set');
         // create a XHR feature loader for "url" and "format"
         this.loader_ = xhr(
           this.url_,
@@ -46668,7 +48286,10 @@ var myol = (function () {
         }
       }
       if (valid) {
-        assert$1(!(featureKey in this.uidIndex_), 30); // The passed `feature` was already added to the source
+        assert$1(
+          !(featureKey in this.uidIndex_),
+          'The passed `feature` was already added to the source'
+        );
         this.uidIndex_[featureKey] = feature;
       }
       return valid;
@@ -47384,7 +49005,7 @@ var myol = (function () {
      * @api
      */
     setUrl(url) {
-      assert$1(this.format_, 7); // `format` must be set when `url` is set
+      assert$1(this.format_, '`format` must be set when `url` is set');
       this.url_ = url;
       this.setLoader(xhr(url, this.format_));
     }
@@ -47539,7 +49160,7 @@ var myol = (function () {
    * Events emitted by {@link module:ol/interaction/Draw~Draw} instances are
    * instances of this type.
    */
-  class DrawEvent extends BaseEvent$1 {
+  class DrawEvent extends Event {
     /**
      * @param {DrawEventType} type Type.
      * @param {Feature} feature The feature drawn.
@@ -48260,7 +49881,7 @@ var myol = (function () {
        */
       this.freehandCondition_;
       if (options.freehand) {
-        this.freehandCondition_ = always;
+        this.freehandCondition_ = always$1;
       } else {
         this.freehandCondition_ = options.freehandCondition
           ? options.freehandCondition
@@ -48300,7 +49921,7 @@ var myol = (function () {
       if (!trace) {
         condition = never;
       } else if (trace === true) {
-        condition = always;
+        condition = always$1;
       } else {
         condition = trace;
       }
@@ -49327,7 +50948,7 @@ var myol = (function () {
    * Events emitted by {@link module:ol/interaction/Modify~Modify} instances are
    * instances of this type.
    */
-  class ModifyEvent extends BaseEvent$1 {
+  class ModifyEvent extends Event {
     /**
      * @param {ModifyEventType} type Type.
      * @param {Collection<Feature>} features
@@ -49439,7 +51060,7 @@ var myol = (function () {
        */
       this.insertVertexCondition_ = options.insertVertexCondition
         ? options.insertVertexCondition
-        : always;
+        : always$1;
 
       /**
        * Editing vertex.
@@ -50406,9 +52027,9 @@ var myol = (function () {
           createOrUpdateFromCoordinate(pixelCoordinate, tempExtent),
           projection
         );
-        const buffer = map.getView().getResolution() * this.pixelTolerance_;
+        const buffer$1 = map.getView().getResolution() * this.pixelTolerance_;
         const box = toUserExtent(
-          buffer$1(viewExtent, buffer, tempExtent),
+          buffer(viewExtent, buffer$1, tempExtent),
           projection
         );
         nodes = this.rBush_.getInExtent(box);
@@ -50869,7 +52490,7 @@ var myol = (function () {
    * @classdesc
    * Events emitted by {@link module:ol/interaction/Snap~Snap} instances are instances of this
    */
-  class SnapEvent extends BaseEvent$1 {
+  class SnapEvent extends Event {
     /**
      * @param {SnapEventType} type Type.
      * @param {Object} options Options.
@@ -51340,7 +52961,7 @@ var myol = (function () {
       const projectedCoordinate = fromUserCoordinate(pixelCoordinate, projection);
 
       const box = toUserExtent(
-        buffer$1(
+        buffer(
           boundingExtent([projectedCoordinate]),
           map.getView().getResolution() * this.pixelTolerance_
         ),
@@ -51570,6 +53191,17 @@ var myol = (function () {
   }
 
   var Snap$1 = Snap;
+
+  /**
+   * @module ol/reproj/common
+   */
+
+  /**
+   * Default maximum allowed threshold  (in pixels) for reprojection
+   * triangulation.
+   * @type {number}
+   */
+  const ERROR_THRESHOLD = 0.5;
 
   /**
    * @module ol/Tile
@@ -51888,202 +53520,6 @@ var myol = (function () {
   }
 
   var Tile$1 = Tile;
-
-  /**
-   * @module ol/ImageTile
-   */
-
-  class ImageTile extends Tile$1 {
-    /**
-     * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
-     * @param {import("./TileState.js").default} state State.
-     * @param {string} src Image source URI.
-     * @param {?string} crossOrigin Cross origin.
-     * @param {import("./Tile.js").LoadFunction} tileLoadFunction Tile load function.
-     * @param {import("./Tile.js").Options} [options] Tile options.
-     */
-    constructor(tileCoord, state, src, crossOrigin, tileLoadFunction, options) {
-      super(tileCoord, state, options);
-
-      /**
-       * @private
-       * @type {?string}
-       */
-      this.crossOrigin_ = crossOrigin;
-
-      /**
-       * Image URI
-       *
-       * @private
-       * @type {string}
-       */
-      this.src_ = src;
-
-      this.key = src;
-
-      /**
-       * @private
-       * @type {HTMLImageElement|HTMLCanvasElement}
-       */
-      this.image_ = new Image();
-      if (crossOrigin !== null) {
-        this.image_.crossOrigin = crossOrigin;
-      }
-
-      /**
-       * @private
-       * @type {?function():void}
-       */
-      this.unlisten_ = null;
-
-      /**
-       * @private
-       * @type {import("./Tile.js").LoadFunction}
-       */
-      this.tileLoadFunction_ = tileLoadFunction;
-    }
-
-    /**
-     * Get the HTML image element for this tile (may be a Canvas, Image, or Video).
-     * @return {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} Image.
-     * @api
-     */
-    getImage() {
-      return this.image_;
-    }
-
-    /**
-     * Sets an HTML image element for this tile (may be a Canvas or preloaded Image).
-     * @param {HTMLCanvasElement|HTMLImageElement} element Element.
-     */
-    setImage(element) {
-      this.image_ = element;
-      this.state = TileState.LOADED;
-      this.unlistenImage_();
-      this.changed();
-    }
-
-    /**
-     * Tracks loading or read errors.
-     *
-     * @private
-     */
-    handleImageError_() {
-      this.state = TileState.ERROR;
-      this.unlistenImage_();
-      this.image_ = getBlankImage();
-      this.changed();
-    }
-
-    /**
-     * Tracks successful image load.
-     *
-     * @private
-     */
-    handleImageLoad_() {
-      const image = /** @type {HTMLImageElement} */ (this.image_);
-      if (image.naturalWidth && image.naturalHeight) {
-        this.state = TileState.LOADED;
-      } else {
-        this.state = TileState.EMPTY;
-      }
-      this.unlistenImage_();
-      this.changed();
-    }
-
-    /**
-     * Load the image or retry if loading previously failed.
-     * Loading is taken care of by the tile queue, and calling this method is
-     * only needed for preloading or for reloading in case of an error.
-     *
-     * To retry loading tiles on failed requests, use a custom `tileLoadFunction`
-     * that checks for error status codes and reloads only when the status code is
-     * 408, 429, 500, 502, 503 and 504, and only when not too many retries have been
-     * made already:
-     *
-     * ```js
-     * const retryCodes = [408, 429, 500, 502, 503, 504];
-     * const retries = {};
-     * source.setTileLoadFunction((tile, src) => {
-     *   const image = tile.getImage();
-     *   fetch(src)
-     *     .then((response) => {
-     *       if (retryCodes.includes(response.status)) {
-     *         retries[src] = (retries[src] || 0) + 1;
-     *         if (retries[src] <= 3) {
-     *           setTimeout(() => tile.load(), retries[src] * 1000);
-     *         }
-     *         return Promise.reject();
-     *       }
-     *       return response.blob();
-     *     })
-     *     .then((blob) => {
-     *       const imageUrl = URL.createObjectURL(blob);
-     *       image.src = imageUrl;
-     *       setTimeout(() => URL.revokeObjectURL(imageUrl), 5000);
-     *     })
-     *     .catch(() => tile.setState(3)); // error
-     * });
-     * ```
-     *
-     * @api
-     */
-    load() {
-      if (this.state == TileState.ERROR) {
-        this.state = TileState.IDLE;
-        this.image_ = new Image();
-        if (this.crossOrigin_ !== null) {
-          this.image_.crossOrigin = this.crossOrigin_;
-        }
-      }
-      if (this.state == TileState.IDLE) {
-        this.state = TileState.LOADING;
-        this.changed();
-        this.tileLoadFunction_(this, this.src_);
-        this.unlisten_ = listenImage(
-          this.image_,
-          this.handleImageLoad_.bind(this),
-          this.handleImageError_.bind(this)
-        );
-      }
-    }
-
-    /**
-     * Discards event handlers which listen for load completion or errors.
-     *
-     * @private
-     */
-    unlistenImage_() {
-      if (this.unlisten_) {
-        this.unlisten_();
-        this.unlisten_ = null;
-      }
-    }
-  }
-
-  /**
-   * Get a 1-pixel blank image.
-   * @return {HTMLCanvasElement} Blank image.
-   */
-  function getBlankImage() {
-    const ctx = createCanvasContext2D(1, 1);
-    ctx.fillStyle = 'rgba(0,0,0,0)';
-    ctx.fillRect(0, 0, 1, 1);
-    return ctx.canvas;
-  }
-
-  var ImageTile$1 = ImageTile;
-
-  /**
-   * @module ol/reproj/common
-   */
-
-  /**
-   * Default maximum allowed threshold  (in pixels) for reprojection
-   * triangulation.
-   * @type {number}
-   */
-  const ERROR_THRESHOLD = 0.5;
 
   /**
    * @module ol/reproj/Triangulation
@@ -52749,7 +54185,7 @@ var myol = (function () {
   /**
    * @typedef {Object} ImageExtent
    * @property {import("./extent.js").Extent} extent Extent.
-   * @property {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} image Image.
+   * @property {import('./DataTile.js').ImageLike} image Image.
    */
 
   /**
@@ -53352,6 +54788,658 @@ var myol = (function () {
   }
 
   var ReprojTile$1 = ReprojTile;
+
+  /**
+   * @module ol/ImageTile
+   */
+
+  class ImageTile extends Tile$1 {
+    /**
+     * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
+     * @param {import("./TileState.js").default} state State.
+     * @param {string} src Image source URI.
+     * @param {?string} crossOrigin Cross origin.
+     * @param {import("./Tile.js").LoadFunction} tileLoadFunction Tile load function.
+     * @param {import("./Tile.js").Options} [options] Tile options.
+     */
+    constructor(tileCoord, state, src, crossOrigin, tileLoadFunction, options) {
+      super(tileCoord, state, options);
+
+      /**
+       * @private
+       * @type {?string}
+       */
+      this.crossOrigin_ = crossOrigin;
+
+      /**
+       * Image URI
+       *
+       * @private
+       * @type {string}
+       */
+      this.src_ = src;
+
+      this.key = src;
+
+      /**
+       * @private
+       * @type {HTMLImageElement|HTMLCanvasElement}
+       */
+      this.image_ = new Image();
+      if (crossOrigin !== null) {
+        this.image_.crossOrigin = crossOrigin;
+      }
+
+      /**
+       * @private
+       * @type {?function():void}
+       */
+      this.unlisten_ = null;
+
+      /**
+       * @private
+       * @type {import("./Tile.js").LoadFunction}
+       */
+      this.tileLoadFunction_ = tileLoadFunction;
+    }
+
+    /**
+     * Get the HTML image element for this tile (may be a Canvas, Image, or Video).
+     * @return {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} Image.
+     * @api
+     */
+    getImage() {
+      return this.image_;
+    }
+
+    /**
+     * Sets an HTML image element for this tile (may be a Canvas or preloaded Image).
+     * @param {HTMLCanvasElement|HTMLImageElement} element Element.
+     */
+    setImage(element) {
+      this.image_ = element;
+      this.state = TileState.LOADED;
+      this.unlistenImage_();
+      this.changed();
+    }
+
+    /**
+     * Tracks loading or read errors.
+     *
+     * @private
+     */
+    handleImageError_() {
+      this.state = TileState.ERROR;
+      this.unlistenImage_();
+      this.image_ = getBlankImage();
+      this.changed();
+    }
+
+    /**
+     * Tracks successful image load.
+     *
+     * @private
+     */
+    handleImageLoad_() {
+      const image = /** @type {HTMLImageElement} */ (this.image_);
+      if (image.naturalWidth && image.naturalHeight) {
+        this.state = TileState.LOADED;
+      } else {
+        this.state = TileState.EMPTY;
+      }
+      this.unlistenImage_();
+      this.changed();
+    }
+
+    /**
+     * Load the image or retry if loading previously failed.
+     * Loading is taken care of by the tile queue, and calling this method is
+     * only needed for preloading or for reloading in case of an error.
+     *
+     * To retry loading tiles on failed requests, use a custom `tileLoadFunction`
+     * that checks for error status codes and reloads only when the status code is
+     * 408, 429, 500, 502, 503 and 504, and only when not too many retries have been
+     * made already:
+     *
+     * ```js
+     * const retryCodes = [408, 429, 500, 502, 503, 504];
+     * const retries = {};
+     * source.setTileLoadFunction((tile, src) => {
+     *   const image = tile.getImage();
+     *   fetch(src)
+     *     .then((response) => {
+     *       if (retryCodes.includes(response.status)) {
+     *         retries[src] = (retries[src] || 0) + 1;
+     *         if (retries[src] <= 3) {
+     *           setTimeout(() => tile.load(), retries[src] * 1000);
+     *         }
+     *         return Promise.reject();
+     *       }
+     *       return response.blob();
+     *     })
+     *     .then((blob) => {
+     *       const imageUrl = URL.createObjectURL(blob);
+     *       image.src = imageUrl;
+     *       setTimeout(() => URL.revokeObjectURL(imageUrl), 5000);
+     *     })
+     *     .catch(() => tile.setState(3)); // error
+     * });
+     * ```
+     *
+     * @api
+     */
+    load() {
+      if (this.state == TileState.ERROR) {
+        this.state = TileState.IDLE;
+        this.image_ = new Image();
+        if (this.crossOrigin_ !== null) {
+          this.image_.crossOrigin = this.crossOrigin_;
+        }
+      }
+      if (this.state == TileState.IDLE) {
+        this.state = TileState.LOADING;
+        this.changed();
+        this.tileLoadFunction_(this, this.src_);
+        this.unlisten_ = listenImage(
+          this.image_,
+          this.handleImageLoad_.bind(this),
+          this.handleImageError_.bind(this)
+        );
+      }
+    }
+
+    /**
+     * Discards event handlers which listen for load completion or errors.
+     *
+     * @private
+     */
+    unlistenImage_() {
+      if (this.unlisten_) {
+        this.unlisten_();
+        this.unlisten_ = null;
+      }
+    }
+  }
+
+  /**
+   * Get a 1-pixel blank image.
+   * @return {HTMLCanvasElement} Blank image.
+   */
+  function getBlankImage() {
+    const ctx = createCanvasContext2D(1, 1);
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0, 0, 1, 1);
+    return ctx.canvas;
+  }
+
+  var ImageTile$1 = ImageTile;
+
+  /**
+   * @module ol/structs/LRUCache
+   */
+
+
+  /**
+   * @typedef {Object} Entry
+   * @property {string} key_ Key.
+   * @property {Object} newer Newer.
+   * @property {Object} older Older.
+   * @property {*} value_ Value.
+   */
+
+  /**
+   * @classdesc
+   * Implements a Least-Recently-Used cache where the keys do not conflict with
+   * Object's properties (e.g. 'hasOwnProperty' is not allowed as a key). Expiring
+   * items from the cache is the responsibility of the user.
+   *
+   * @fires import("../events/Event.js").default
+   * @template T
+   */
+  class LRUCache {
+    /**
+     * @param {number} [highWaterMark] High water mark.
+     */
+    constructor(highWaterMark) {
+      /**
+       * Desired max cache size after expireCache(). If set to 0, no cache entries
+       * will be pruned at all.
+       * @type {number}
+       */
+      this.highWaterMark = highWaterMark !== undefined ? highWaterMark : 2048;
+
+      /**
+       * @private
+       * @type {number}
+       */
+      this.count_ = 0;
+
+      /**
+       * @private
+       * @type {!Object<string, Entry>}
+       */
+      this.entries_ = {};
+
+      /**
+       * @private
+       * @type {?Entry}
+       */
+      this.oldest_ = null;
+
+      /**
+       * @private
+       * @type {?Entry}
+       */
+      this.newest_ = null;
+    }
+
+    /**
+     * @return {boolean} Can expire cache.
+     */
+    canExpireCache() {
+      return this.highWaterMark > 0 && this.getCount() > this.highWaterMark;
+    }
+
+    /**
+     * Expire the cache.
+     * @param {!Object<string, boolean>} [keep] Keys to keep. To be implemented by subclasses.
+     */
+    expireCache(keep) {
+      while (this.canExpireCache()) {
+        this.pop();
+      }
+    }
+
+    /**
+     * FIXME empty description for jsdoc
+     */
+    clear() {
+      this.count_ = 0;
+      this.entries_ = {};
+      this.oldest_ = null;
+      this.newest_ = null;
+    }
+
+    /**
+     * @param {string} key Key.
+     * @return {boolean} Contains key.
+     */
+    containsKey(key) {
+      return this.entries_.hasOwnProperty(key);
+    }
+
+    /**
+     * @param {function(T, string, LRUCache<T>): ?} f The function
+     *     to call for every entry from the oldest to the newer. This function takes
+     *     3 arguments (the entry value, the entry key and the LRUCache object).
+     *     The return value is ignored.
+     */
+    forEach(f) {
+      let entry = this.oldest_;
+      while (entry) {
+        f(entry.value_, entry.key_, this);
+        entry = entry.newer;
+      }
+    }
+
+    /**
+     * @param {string} key Key.
+     * @param {*} [options] Options (reserved for subclasses).
+     * @return {T} Value.
+     */
+    get(key, options) {
+      const entry = this.entries_[key];
+      assert$1(
+        entry !== undefined,
+        'Tried to get a value for a key that does not exist in the cache'
+      );
+      if (entry === this.newest_) {
+        return entry.value_;
+      }
+      if (entry === this.oldest_) {
+        this.oldest_ = /** @type {Entry} */ (this.oldest_.newer);
+        this.oldest_.older = null;
+      } else {
+        entry.newer.older = entry.older;
+        entry.older.newer = entry.newer;
+      }
+      entry.newer = null;
+      entry.older = this.newest_;
+      this.newest_.newer = entry;
+      this.newest_ = entry;
+      return entry.value_;
+    }
+
+    /**
+     * Remove an entry from the cache.
+     * @param {string} key The entry key.
+     * @return {T} The removed entry.
+     */
+    remove(key) {
+      const entry = this.entries_[key];
+      assert$1(
+        entry !== undefined,
+        'Tried to get a value for a key that does not exist in the cache'
+      );
+      if (entry === this.newest_) {
+        this.newest_ = /** @type {Entry} */ (entry.older);
+        if (this.newest_) {
+          this.newest_.newer = null;
+        }
+      } else if (entry === this.oldest_) {
+        this.oldest_ = /** @type {Entry} */ (entry.newer);
+        if (this.oldest_) {
+          this.oldest_.older = null;
+        }
+      } else {
+        entry.newer.older = entry.older;
+        entry.older.newer = entry.newer;
+      }
+      delete this.entries_[key];
+      --this.count_;
+      return entry.value_;
+    }
+
+    /**
+     * @return {number} Count.
+     */
+    getCount() {
+      return this.count_;
+    }
+
+    /**
+     * @return {Array<string>} Keys.
+     */
+    getKeys() {
+      const keys = new Array(this.count_);
+      let i = 0;
+      let entry;
+      for (entry = this.newest_; entry; entry = entry.older) {
+        keys[i++] = entry.key_;
+      }
+      return keys;
+    }
+
+    /**
+     * @return {Array<T>} Values.
+     */
+    getValues() {
+      const values = new Array(this.count_);
+      let i = 0;
+      let entry;
+      for (entry = this.newest_; entry; entry = entry.older) {
+        values[i++] = entry.value_;
+      }
+      return values;
+    }
+
+    /**
+     * @return {T} Last value.
+     */
+    peekLast() {
+      return this.oldest_.value_;
+    }
+
+    /**
+     * @return {string} Last key.
+     */
+    peekLastKey() {
+      return this.oldest_.key_;
+    }
+
+    /**
+     * Get the key of the newest item in the cache.  Throws if the cache is empty.
+     * @return {string} The newest key.
+     */
+    peekFirstKey() {
+      return this.newest_.key_;
+    }
+
+    /**
+     * Return an entry without updating least recently used time.
+     * @param {string} key Key.
+     * @return {T} Value.
+     */
+    peek(key) {
+      if (!this.containsKey(key)) {
+        return undefined;
+      }
+      return this.entries_[key].value_;
+    }
+
+    /**
+     * @return {T} value Value.
+     */
+    pop() {
+      const entry = this.oldest_;
+      delete this.entries_[entry.key_];
+      if (entry.newer) {
+        entry.newer.older = null;
+      }
+      this.oldest_ = /** @type {Entry} */ (entry.newer);
+      if (!this.oldest_) {
+        this.newest_ = null;
+      }
+      --this.count_;
+      return entry.value_;
+    }
+
+    /**
+     * @param {string} key Key.
+     * @param {T} value Value.
+     */
+    replace(key, value) {
+      this.get(key); // update `newest_`
+      this.entries_[key].value_ = value;
+    }
+
+    /**
+     * @param {string} key Key.
+     * @param {T} value Value.
+     */
+    set(key, value) {
+      assert$1(
+        !(key in this.entries_),
+        'Tried to set a value for a key that is used already'
+      );
+      const entry = {
+        key_: key,
+        newer: null,
+        older: this.newest_,
+        value_: value,
+      };
+      if (!this.newest_) {
+        this.oldest_ = entry;
+      } else {
+        this.newest_.newer = entry;
+      }
+      this.newest_ = entry;
+      this.entries_[key] = entry;
+      ++this.count_;
+    }
+
+    /**
+     * Set a maximum number of entries for the cache.
+     * @param {number} size Cache size.
+     * @api
+     */
+    setSize(size) {
+      this.highWaterMark = size;
+    }
+  }
+
+  var LRUCache$1 = LRUCache;
+
+  /**
+   * @module ol/layer/TileProperty
+   */
+
+  /**
+   * @enum {string}
+   */
+  var TileProperty = {
+    PRELOAD: 'preload',
+    USE_INTERIM_TILES_ON_ERROR: 'useInterimTilesOnError',
+  };
+
+  /**
+   * @module ol/layer/BaseTile
+   */
+
+  /***
+   * @template Return
+   * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes, import("../events/Event.js").default, Return> &
+   *   import("../Observable").OnSignature<import("./Base").BaseLayerObjectEventTypes|
+   *     import("./Layer.js").LayerEventType|'change:preload'|'change:useInterimTilesOnError', import("../Object").ObjectEvent, Return> &
+   *   import("../Observable").OnSignature<import("../render/EventType").LayerRenderEventTypes, import("../render/Event").default, Return> &
+   *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|import("./Base").BaseLayerObjectEventTypes|
+   *   import("./Layer.js").LayerEventType|'change:preload'|'change:useInterimTilesOnError'|import("../render/EventType").LayerRenderEventTypes, Return>} BaseTileLayerOnSignature
+   */
+
+  /**
+   * @template {import("../source/Tile.js").default} TileSourceType
+   * @typedef {Object} Options
+   * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
+   * @property {number} [opacity=1] Opacity (0, 1).
+   * @property {boolean} [visible=true] Visibility.
+   * @property {import("../extent.js").Extent} [extent] The bounding extent for layer rendering.  The layer will not be
+   * rendered outside of this extent.
+   * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
+   * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
+   * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
+   * method was used.
+   * @property {number} [minResolution] The minimum resolution (inclusive) at which this layer will be
+   * visible.
+   * @property {number} [maxResolution] The maximum resolution (exclusive) below which this layer will
+   * be visible.
+   * @property {number} [minZoom] The minimum view zoom level (exclusive) above which this layer will be
+   * visible.
+   * @property {number} [maxZoom] The maximum view zoom level (inclusive) at which this layer will
+   * be visible.
+   * @property {number} [preload=0] Preload. Load low-resolution tiles up to `preload` levels. `0`
+   * means no preloading.
+   * @property {TileSourceType} [source] Source for this layer.
+   * @property {import("../Map.js").default} [map] Sets the layer as overlay on a map. The map will not manage
+   * this layer in its layers collection, and the layer will be rendered on top. This is useful for
+   * temporary layers. The standard way to add a layer to a map and have it managed by the map is to
+   * use {@link import("../Map.js").default#addLayer map.addLayer()}.
+   * @property {boolean} [useInterimTilesOnError=true] Use interim tiles on error.
+   * @property {Object<string, *>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
+   */
+
+  /**
+   * @classdesc
+   * For layer sources that provide pre-rendered, tiled images in grids that are
+   * organized by zoom levels for specific resolutions.
+   * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
+   * property on the layer object; for example, setting `title: 'My Title'` in the
+   * options means that `title` is observable, and has get/set accessors.
+   *
+   * @template {import("../source/Tile.js").default} TileSourceType
+   * @template {import("../renderer/Layer.js").default} RendererType
+   * @extends {Layer<TileSourceType, RendererType>}
+   * @api
+   */
+  class BaseTileLayer extends Layer$1 {
+    /**
+     * @param {Options<TileSourceType>} [options] Tile layer options.
+     */
+    constructor(options) {
+      options = options ? options : {};
+
+      const baseOptions = Object.assign({}, options);
+
+      delete baseOptions.preload;
+      delete baseOptions.useInterimTilesOnError;
+      super(baseOptions);
+
+      /***
+       * @type {BaseTileLayerOnSignature<import("../events").EventsKey>}
+       */
+      this.on;
+
+      /***
+       * @type {BaseTileLayerOnSignature<import("../events").EventsKey>}
+       */
+      this.once;
+
+      /***
+       * @type {BaseTileLayerOnSignature<void>}
+       */
+      this.un;
+
+      this.setPreload(options.preload !== undefined ? options.preload : 0);
+      this.setUseInterimTilesOnError(
+        options.useInterimTilesOnError !== undefined
+          ? options.useInterimTilesOnError
+          : true
+      );
+    }
+
+    /**
+     * Return the level as number to which we will preload tiles up to.
+     * @return {number} The level to preload tiles up to.
+     * @observable
+     * @api
+     */
+    getPreload() {
+      return /** @type {number} */ (this.get(TileProperty.PRELOAD));
+    }
+
+    /**
+     * Set the level as number to which we will preload tiles up to.
+     * @param {number} preload The level to preload tiles up to.
+     * @observable
+     * @api
+     */
+    setPreload(preload) {
+      this.set(TileProperty.PRELOAD, preload);
+    }
+
+    /**
+     * Whether we use interim tiles on error.
+     * @return {boolean} Use interim tiles on error.
+     * @observable
+     * @api
+     */
+    getUseInterimTilesOnError() {
+      return /** @type {boolean} */ (
+        this.get(TileProperty.USE_INTERIM_TILES_ON_ERROR)
+      );
+    }
+
+    /**
+     * Set whether we use interim tiles on error.
+     * @param {boolean} useInterimTilesOnError Use interim tiles on error.
+     * @observable
+     * @api
+     */
+    setUseInterimTilesOnError(useInterimTilesOnError) {
+      this.set(TileProperty.USE_INTERIM_TILES_ON_ERROR, useInterimTilesOnError);
+    }
+
+    /**
+     * Get data for a pixel location.  The return type depends on the source data.  For image tiles,
+     * a four element RGBA array will be returned.  For data tiles, the array length will match the
+     * number of bands in the dataset.  For requests outside the layer extent, `null` will be returned.
+     * Data for a image tiles can only be retrieved if the source's `crossOrigin` property is set.
+     *
+     * ```js
+     * // display layer data on every pointer move
+     * map.on('pointermove', (event) => {
+     *   console.log(layer.getData(event.pixel));
+     * });
+     * ```
+     * @param {import("../pixel").Pixel} pixel Pixel.
+     * @return {Uint8ClampedArray|Uint8Array|Float32Array|DataView|null} Pixel data.
+     * @api
+     */
+    getData(pixel) {
+      return super.getData(pixel);
+    }
+  }
+
+  var BaseTileLayer$1 = BaseTileLayer;
 
   /**
    * @module ol/renderer/canvas/TileLayer
@@ -54099,303 +56187,262 @@ var myol = (function () {
   var CanvasTileLayerRenderer$1 = CanvasTileLayerRenderer;
 
   /**
-   * @module ol/layer/TileProperty
-   */
-
-  /**
-   * @enum {string}
-   */
-  var TileProperty = {
-    PRELOAD: 'preload',
-    USE_INTERIM_TILES_ON_ERROR: 'useInterimTilesOnError',
-  };
-
-  /**
-   * @module ol/structs/LRUCache
-   */
-
-
-  /**
-   * @typedef {Object} Entry
-   * @property {string} key_ Key.
-   * @property {Object} newer Newer.
-   * @property {Object} older Older.
-   * @property {*} value_ Value.
+   * @module ol/layer/Tile
    */
 
   /**
    * @classdesc
-   * Implements a Least-Recently-Used cache where the keys do not conflict with
-   * Object's properties (e.g. 'hasOwnProperty' is not allowed as a key). Expiring
-   * items from the cache is the responsibility of the user.
+   * For layer sources that provide pre-rendered, tiled images in grids that are
+   * organized by zoom levels for specific resolutions.
+   * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
+   * property on the layer object; for example, setting `title: 'My Title'` in the
+   * options means that `title` is observable, and has get/set accessors.
    *
-   * @fires import("../events/Event.js").default
-   * @template T
+   * @template {import("../source/Tile.js").default} TileSourceType
+   * @extends BaseTileLayer<TileSourceType, CanvasTileLayerRenderer>
+   * @api
    */
-  class LRUCache {
+  class TileLayer extends BaseTileLayer$1 {
     /**
-     * @param {number} [highWaterMark] High water mark.
+     * @param {import("./BaseTile.js").Options<TileSourceType>} [options] Tile layer options.
      */
-    constructor(highWaterMark) {
-      /**
-       * Desired max cache size after expireCache(). If set to 0, no cache entries
-       * will be pruned at all.
-       * @type {number}
-       */
-      this.highWaterMark = highWaterMark !== undefined ? highWaterMark : 2048;
-
-      /**
-       * @private
-       * @type {number}
-       */
-      this.count_ = 0;
-
-      /**
-       * @private
-       * @type {!Object<string, Entry>}
-       */
-      this.entries_ = {};
-
-      /**
-       * @private
-       * @type {?Entry}
-       */
-      this.oldest_ = null;
-
-      /**
-       * @private
-       * @type {?Entry}
-       */
-      this.newest_ = null;
+    constructor(options) {
+      super(options);
     }
 
-    /**
-     * @return {boolean} Can expire cache.
-     */
-    canExpireCache() {
-      return this.highWaterMark > 0 && this.getCount() > this.highWaterMark;
-    }
-
-    /**
-     * Expire the cache.
-     * @param {!Object<string, boolean>} [keep] Keys to keep. To be implemented by subclasses.
-     */
-    expireCache(keep) {
-      while (this.canExpireCache()) {
-        this.pop();
-      }
-    }
-
-    /**
-     * FIXME empty description for jsdoc
-     */
-    clear() {
-      this.count_ = 0;
-      this.entries_ = {};
-      this.oldest_ = null;
-      this.newest_ = null;
-    }
-
-    /**
-     * @param {string} key Key.
-     * @return {boolean} Contains key.
-     */
-    containsKey(key) {
-      return this.entries_.hasOwnProperty(key);
-    }
-
-    /**
-     * @param {function(T, string, LRUCache<T>): ?} f The function
-     *     to call for every entry from the oldest to the newer. This function takes
-     *     3 arguments (the entry value, the entry key and the LRUCache object).
-     *     The return value is ignored.
-     */
-    forEach(f) {
-      let entry = this.oldest_;
-      while (entry) {
-        f(entry.value_, entry.key_, this);
-        entry = entry.newer;
-      }
-    }
-
-    /**
-     * @param {string} key Key.
-     * @param {*} [options] Options (reserved for subclasses).
-     * @return {T} Value.
-     */
-    get(key, options) {
-      const entry = this.entries_[key];
-      assert$1(entry !== undefined, 15); // Tried to get a value for a key that does not exist in the cache
-      if (entry === this.newest_) {
-        return entry.value_;
-      }
-      if (entry === this.oldest_) {
-        this.oldest_ = /** @type {Entry} */ (this.oldest_.newer);
-        this.oldest_.older = null;
-      } else {
-        entry.newer.older = entry.older;
-        entry.older.newer = entry.newer;
-      }
-      entry.newer = null;
-      entry.older = this.newest_;
-      this.newest_.newer = entry;
-      this.newest_ = entry;
-      return entry.value_;
-    }
-
-    /**
-     * Remove an entry from the cache.
-     * @param {string} key The entry key.
-     * @return {T} The removed entry.
-     */
-    remove(key) {
-      const entry = this.entries_[key];
-      assert$1(entry !== undefined, 15); // Tried to get a value for a key that does not exist in the cache
-      if (entry === this.newest_) {
-        this.newest_ = /** @type {Entry} */ (entry.older);
-        if (this.newest_) {
-          this.newest_.newer = null;
-        }
-      } else if (entry === this.oldest_) {
-        this.oldest_ = /** @type {Entry} */ (entry.newer);
-        if (this.oldest_) {
-          this.oldest_.older = null;
-        }
-      } else {
-        entry.newer.older = entry.older;
-        entry.older.newer = entry.newer;
-      }
-      delete this.entries_[key];
-      --this.count_;
-      return entry.value_;
-    }
-
-    /**
-     * @return {number} Count.
-     */
-    getCount() {
-      return this.count_;
-    }
-
-    /**
-     * @return {Array<string>} Keys.
-     */
-    getKeys() {
-      const keys = new Array(this.count_);
-      let i = 0;
-      let entry;
-      for (entry = this.newest_; entry; entry = entry.older) {
-        keys[i++] = entry.key_;
-      }
-      return keys;
-    }
-
-    /**
-     * @return {Array<T>} Values.
-     */
-    getValues() {
-      const values = new Array(this.count_);
-      let i = 0;
-      let entry;
-      for (entry = this.newest_; entry; entry = entry.older) {
-        values[i++] = entry.value_;
-      }
-      return values;
-    }
-
-    /**
-     * @return {T} Last value.
-     */
-    peekLast() {
-      return this.oldest_.value_;
-    }
-
-    /**
-     * @return {string} Last key.
-     */
-    peekLastKey() {
-      return this.oldest_.key_;
-    }
-
-    /**
-     * Get the key of the newest item in the cache.  Throws if the cache is empty.
-     * @return {string} The newest key.
-     */
-    peekFirstKey() {
-      return this.newest_.key_;
-    }
-
-    /**
-     * Return an entry without updating least recently used time.
-     * @param {string} key Key.
-     * @return {T} Value.
-     */
-    peek(key) {
-      if (!this.containsKey(key)) {
-        return undefined;
-      }
-      return this.entries_[key].value_;
-    }
-
-    /**
-     * @return {T} value Value.
-     */
-    pop() {
-      const entry = this.oldest_;
-      delete this.entries_[entry.key_];
-      if (entry.newer) {
-        entry.newer.older = null;
-      }
-      this.oldest_ = /** @type {Entry} */ (entry.newer);
-      if (!this.oldest_) {
-        this.newest_ = null;
-      }
-      --this.count_;
-      return entry.value_;
-    }
-
-    /**
-     * @param {string} key Key.
-     * @param {T} value Value.
-     */
-    replace(key, value) {
-      this.get(key); // update `newest_`
-      this.entries_[key].value_ = value;
-    }
-
-    /**
-     * @param {string} key Key.
-     * @param {T} value Value.
-     */
-    set(key, value) {
-      assert$1(!(key in this.entries_), 16); // Tried to set a value for a key that is used already
-      const entry = {
-        key_: key,
-        newer: null,
-        older: this.newest_,
-        value_: value,
-      };
-      if (!this.newest_) {
-        this.oldest_ = entry;
-      } else {
-        this.newest_.newer = entry;
-      }
-      this.newest_ = entry;
-      this.entries_[key] = entry;
-      ++this.count_;
-    }
-
-    /**
-     * Set a maximum number of entries for the cache.
-     * @param {number} size Cache size.
-     * @api
-     */
-    setSize(size) {
-      this.highWaterMark = size;
+    createRenderer() {
+      return new CanvasTileLayerRenderer$1(this);
     }
   }
 
-  var LRUCache$1 = LRUCache;
+  var TileLayer$1 = TileLayer;
+
+  /**
+   * @module ol/proj/proj4
+   */
+
+  /**
+   * @type {import("proj4")|null}
+   */
+  let registered = null;
+
+  /**
+   * @return {boolean} Proj4 has been registered.
+   */
+  function isRegistered() {
+    return !!registered;
+  }
+
+  /**
+   * Unsets the shared proj4 previously set with register.
+   */
+  function unregister() {
+    registered = null;
+  }
+
+  /**
+   * Make projections defined in proj4 (with `proj4.defs()`) available in
+   * OpenLayers. Requires proj4 >= 2.8.0.
+   *
+   * This function should be called whenever changes are made to the proj4
+   * registry, e.g. after calling `proj4.defs()`. Existing transforms will not be
+   * modified by this function.
+   *
+   * @param {import("proj4")} proj4 Proj4.
+   * @api
+   */
+  function register(proj4) {
+    registered = proj4;
+
+    const projCodes = Object.keys(proj4.defs);
+    const len = projCodes.length;
+    let i, j;
+    for (i = 0; i < len; ++i) {
+      const code = projCodes[i];
+      if (!get$2(code)) {
+        const def = proj4.defs(code);
+        let units = /** @type {import("./Units.js").Units} */ (def.units);
+        if (!units && def.projName === 'longlat') {
+          units = 'degrees';
+        }
+        addProjection(
+          new Projection$2({
+            code: code,
+            axisOrientation: def.axis,
+            metersPerUnit: def.to_meter,
+            units,
+          })
+        );
+      }
+    }
+    for (i = 0; i < len; ++i) {
+      const code1 = projCodes[i];
+      const proj1 = get$2(code1);
+      for (j = 0; j < len; ++j) {
+        const code2 = projCodes[j];
+        const proj2 = get$2(code2);
+        if (!get$3(code1, code2)) {
+          if (proj4.defs[code1] === proj4.defs[code2]) {
+            addEquivalentProjections([proj1, proj2]);
+          } else {
+            const transform = proj4(code1, code2);
+            addCoordinateTransforms(
+              proj1,
+              proj2,
+              createSafeCoordinateTransform(proj1, proj2, transform.forward),
+              createSafeCoordinateTransform(proj2, proj1, transform.inverse)
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * @param {number} code The EPSG code.
+   * @return {Promise<string>} The proj4 definition.
+   */
+  let epsgLookup = async function (code) {
+    const response = await fetch(`https://epsg.io/${code}.proj4`);
+    if (!response.ok) {
+      throw new Error(`Unexpected response from epsg.io: ${response.status}`);
+    }
+    return response.text();
+  };
+
+  /**
+   * Set the lookup function for getting proj4 definitions given an EPSG code.
+   * By default, the {@link module:ol/proj/proj4.fromEPSGCode} function uses the
+   * epsg.io website for proj4 definitions.  This can be changed by providing a
+   * different lookup function.
+   *
+   * @param {function(number):Promise<string>} func The lookup function.
+   * @api
+   */
+  function setEPSGLookup(func) {
+    epsgLookup = func;
+  }
+
+  /**
+   * Get the current EPSG lookup function.
+   *
+   * @return {function(number):Promise<string>} The EPSG lookup function.
+   */
+  function getEPSGLookup() {
+    return epsgLookup;
+  }
+
+  /**
+   * Get a projection from an EPSG code.  This function fetches the projection
+   * definition from the epsg.io website, registers this definition for use with
+   * proj4, and returns a configured projection.  You must call import proj4 and
+   * call {@link module:ol/proj/proj4.register} before using this function.
+   *
+   * If the projection definition is already registered with proj4, it will not
+   * be fetched again (so it is ok to call this function multiple times with the
+   * same code).
+   *
+   * @param {number|string} code The EPSG code (e.g. 4326 or 'EPSG:4326').
+   * @return {Promise<Projection>} The projection.
+   * @api
+   */
+  async function fromEPSGCode(code) {
+    if (typeof code === 'string') {
+      code = parseInt(code.split(':').pop(), 10);
+    }
+
+    const proj4 = registered;
+    if (!proj4) {
+      throw new Error('Proj4 must be registered first with register(proj4)');
+    }
+
+    const epsgCode = 'EPSG:' + code;
+    if (proj4.defs(epsgCode)) {
+      return get$2(epsgCode);
+    }
+
+    proj4.defs(epsgCode, await epsgLookup(code));
+    register(proj4);
+
+    return get$2(epsgCode);
+  }
+
+  /**
+   * Generate an EPSG lookup function which uses the MapTiler Coordinates API to find projection
+   * definitions which do not require proj4 to be configured to handle `+nadgrids` parameters.
+   * Call {@link module:ol/proj/proj4.setEPSGLookup} use the function for lookups
+   * `setEPSGLookup(epsgLookupMapTiler('{YOUR_MAPTILER_API_KEY_HERE}'))`.
+   *
+   * @param {string} key MapTiler API key.  Get your own API key at https://www.maptiler.com/cloud/.
+   * @return {function(number):Promise<string>} The EPSG lookup function.
+   * @api
+   */
+  function epsgLookupMapTiler(key) {
+    return async function (code) {
+      const response = await fetch(
+        `https://api.maptiler.com/coordinates/search/code:${code}.json?transformations=true&exports=true&key=${key}`
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Unexpected response from maptiler.com: ${response.status}`
+        );
+      }
+      return response.json().then((json) => {
+        const results = json['results'];
+        if (results?.length > 0) {
+          const result = results.filter(
+            (r) => r['id']?.['authority'] === 'EPSG' && r['id']?.['code'] === code
+          )[0];
+          if (result) {
+            const transforms = result['transformations'];
+            if (transforms?.length > 0) {
+              // use default transform if it does not require grids
+              const defaultTransform = result['default_transformation'];
+              if (
+                transforms.filter(
+                  (t) =>
+                    t['id']?.['authority'] === defaultTransform?.['authority'] &&
+                    t['id']?.['code'] === defaultTransform?.['code'] &&
+                    t['grids']?.length === 0
+                ).length > 0
+              ) {
+                return result['exports']?.['proj4'];
+              }
+              // otherwise use most accurate alternative without grids
+              const transform = transforms
+                .filter(
+                  (t) =>
+                    t['grids']?.length === 0 &&
+                    t['target_crs']?.['authority'] === 'EPSG' &&
+                    t['target_crs']?.['code'] === 4326 &&
+                    t['deprecated'] === false &&
+                    t['usable'] === true
+                )
+                .sort((t1, t2) => t1['accuracy'] - t2['accuracy'])[0]?.[
+                'exports'
+              ]?.['proj4'];
+              if (transform) {
+                return transform;
+              }
+            }
+            // fallback to default
+            return result['exports']?.['proj4'];
+          }
+        }
+      });
+    };
+  }
+
+  var projProj4 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    epsgLookupMapTiler: epsgLookupMapTiler,
+    fromEPSGCode: fromEPSGCode,
+    getEPSGLookup: getEPSGLookup,
+    isRegistered: isRegistered,
+    register: register,
+    setEPSGLookup: setEPSGLookup,
+    unregister: unregister
+  });
 
   /**
    * @module ol/TileCache
@@ -54916,7 +56963,7 @@ var myol = (function () {
       const sourceProjection = this.getProjection();
       assert$1(
         sourceProjection === null || equivalent(sourceProjection, projection),
-        68 // A VectorTile source can only be rendered if it has a projection compatible with the view projection.
+        'A VectorTile source can only be rendered if it has a projection compatible with the view projection.'
       );
       return this.tileCache;
     }
@@ -55007,7 +57054,7 @@ var myol = (function () {
    * Events emitted by {@link module:ol/source/Tile~TileSource} instances are instances of this
    * type.
    */
-  class TileSourceEvent extends BaseEvent$1 {
+  class TileSourceEvent extends Event {
     /**
      * @param {string} type Type.
      * @param {import("../Tile.js").default} tile The tile.
@@ -55058,7 +57105,10 @@ var myol = (function () {
           .replace(dashYRegEx, function () {
             const z = tileCoord[0];
             const range = tileGrid.getFullTileRange(z);
-            assert$1(range, 55); // The {-y} placeholder requires a tile grid with extent
+            assert$1(
+              range,
+              'The {-y} placeholder requires a tile grid with extent'
+            );
             const y = range.getHeight() - tileCoord[2] - 1;
             return y.toString();
           });
@@ -55361,196 +57411,6 @@ var myol = (function () {
   }
 
   var UrlTile$1 = UrlTile;
-
-  /**
-   * @module ol/layer/BaseTile
-   */
-
-  /***
-   * @template Return
-   * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes, import("../events/Event.js").default, Return> &
-   *   import("../Observable").OnSignature<import("./Base").BaseLayerObjectEventTypes|
-   *     import("./Layer.js").LayerEventType|'change:preload'|'change:useInterimTilesOnError', import("../Object").ObjectEvent, Return> &
-   *   import("../Observable").OnSignature<import("../render/EventType").LayerRenderEventTypes, import("../render/Event").default, Return> &
-   *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|import("./Base").BaseLayerObjectEventTypes|
-   *   import("./Layer.js").LayerEventType|'change:preload'|'change:useInterimTilesOnError'|import("../render/EventType").LayerRenderEventTypes, Return>} BaseTileLayerOnSignature
-   */
-
-  /**
-   * @template {import("../source/Tile.js").default} TileSourceType
-   * @typedef {Object} Options
-   * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
-   * @property {number} [opacity=1] Opacity (0, 1).
-   * @property {boolean} [visible=true] Visibility.
-   * @property {import("../extent.js").Extent} [extent] The bounding extent for layer rendering.  The layer will not be
-   * rendered outside of this extent.
-   * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
-   * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
-   * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
-   * method was used.
-   * @property {number} [minResolution] The minimum resolution (inclusive) at which this layer will be
-   * visible.
-   * @property {number} [maxResolution] The maximum resolution (exclusive) below which this layer will
-   * be visible.
-   * @property {number} [minZoom] The minimum view zoom level (exclusive) above which this layer will be
-   * visible.
-   * @property {number} [maxZoom] The maximum view zoom level (inclusive) at which this layer will
-   * be visible.
-   * @property {number} [preload=0] Preload. Load low-resolution tiles up to `preload` levels. `0`
-   * means no preloading.
-   * @property {TileSourceType} [source] Source for this layer.
-   * @property {import("../Map.js").default} [map] Sets the layer as overlay on a map. The map will not manage
-   * this layer in its layers collection, and the layer will be rendered on top. This is useful for
-   * temporary layers. The standard way to add a layer to a map and have it managed by the map is to
-   * use {@link import("../Map.js").default#addLayer map.addLayer()}.
-   * @property {boolean} [useInterimTilesOnError=true] Use interim tiles on error.
-   * @property {Object<string, *>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
-   */
-
-  /**
-   * @classdesc
-   * For layer sources that provide pre-rendered, tiled images in grids that are
-   * organized by zoom levels for specific resolutions.
-   * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
-   * property on the layer object; for example, setting `title: 'My Title'` in the
-   * options means that `title` is observable, and has get/set accessors.
-   *
-   * @template {import("../source/Tile.js").default} TileSourceType
-   * @template {import("../renderer/Layer.js").default} RendererType
-   * @extends {Layer<TileSourceType, RendererType>}
-   * @api
-   */
-  class BaseTileLayer extends Layer$1 {
-    /**
-     * @param {Options<TileSourceType>} [options] Tile layer options.
-     */
-    constructor(options) {
-      options = options ? options : {};
-
-      const baseOptions = Object.assign({}, options);
-
-      delete baseOptions.preload;
-      delete baseOptions.useInterimTilesOnError;
-      super(baseOptions);
-
-      /***
-       * @type {BaseTileLayerOnSignature<import("../events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {BaseTileLayerOnSignature<import("../events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {BaseTileLayerOnSignature<void>}
-       */
-      this.un;
-
-      this.setPreload(options.preload !== undefined ? options.preload : 0);
-      this.setUseInterimTilesOnError(
-        options.useInterimTilesOnError !== undefined
-          ? options.useInterimTilesOnError
-          : true
-      );
-    }
-
-    /**
-     * Return the level as number to which we will preload tiles up to.
-     * @return {number} The level to preload tiles up to.
-     * @observable
-     * @api
-     */
-    getPreload() {
-      return /** @type {number} */ (this.get(TileProperty.PRELOAD));
-    }
-
-    /**
-     * Set the level as number to which we will preload tiles up to.
-     * @param {number} preload The level to preload tiles up to.
-     * @observable
-     * @api
-     */
-    setPreload(preload) {
-      this.set(TileProperty.PRELOAD, preload);
-    }
-
-    /**
-     * Whether we use interim tiles on error.
-     * @return {boolean} Use interim tiles on error.
-     * @observable
-     * @api
-     */
-    getUseInterimTilesOnError() {
-      return /** @type {boolean} */ (
-        this.get(TileProperty.USE_INTERIM_TILES_ON_ERROR)
-      );
-    }
-
-    /**
-     * Set whether we use interim tiles on error.
-     * @param {boolean} useInterimTilesOnError Use interim tiles on error.
-     * @observable
-     * @api
-     */
-    setUseInterimTilesOnError(useInterimTilesOnError) {
-      this.set(TileProperty.USE_INTERIM_TILES_ON_ERROR, useInterimTilesOnError);
-    }
-
-    /**
-     * Get data for a pixel location.  The return type depends on the source data.  For image tiles,
-     * a four element RGBA array will be returned.  For data tiles, the array length will match the
-     * number of bands in the dataset.  For requests outside the layer extent, `null` will be returned.
-     * Data for a image tiles can only be retrieved if the source's `crossOrigin` property is set.
-     *
-     * ```js
-     * // display layer data on every pointer move
-     * map.on('pointermove', (event) => {
-     *   console.log(layer.getData(event.pixel));
-     * });
-     * ```
-     * @param {import("../pixel").Pixel} pixel Pixel.
-     * @return {Uint8ClampedArray|Uint8Array|Float32Array|DataView|null} Pixel data.
-     * @api
-     */
-    getData(pixel) {
-      return super.getData(pixel);
-    }
-  }
-
-  var BaseTileLayer$1 = BaseTileLayer;
-
-  /**
-   * @module ol/layer/Tile
-   */
-
-  /**
-   * @classdesc
-   * For layer sources that provide pre-rendered, tiled images in grids that are
-   * organized by zoom levels for specific resolutions.
-   * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
-   * property on the layer object; for example, setting `title: 'My Title'` in the
-   * options means that `title` is observable, and has get/set accessors.
-   *
-   * @template {import("../source/Tile.js").default} TileSourceType
-   * @extends BaseTileLayer<TileSourceType, CanvasTileLayerRenderer>
-   * @api
-   */
-  class TileLayer extends BaseTileLayer$1 {
-    /**
-     * @param {import("./BaseTile.js").Options<TileSourceType>} [options] Tile layer options.
-     */
-    constructor(options) {
-      super(options);
-    }
-
-    createRenderer() {
-      return new CanvasTileLayerRenderer$1(this);
-    }
-  }
-
-  var TileLayer$1 = TileLayer;
 
   /**
    * @module ol/source/TileImage
@@ -55987,233 +57847,6 @@ var myol = (function () {
   var TileImage$1 = TileImage;
 
   /**
-   * @module ol/proj/proj4
-   */
-
-  /**
-   * @type {import("proj4")|null}
-   */
-  let registered = null;
-
-  /**
-   * @return {boolean} Proj4 has been registered.
-   */
-  function isRegistered() {
-    return !!registered;
-  }
-
-  /**
-   * Unsets the shared proj4 previously set with register.
-   */
-  function unregister() {
-    registered = null;
-  }
-
-  /**
-   * Make projections defined in proj4 (with `proj4.defs()`) available in
-   * OpenLayers. Requires proj4 >= 2.8.0.
-   *
-   * This function should be called whenever changes are made to the proj4
-   * registry, e.g. after calling `proj4.defs()`. Existing transforms will not be
-   * modified by this function.
-   *
-   * @param {import("proj4")} proj4 Proj4.
-   * @api
-   */
-  function register(proj4) {
-    registered = proj4;
-
-    const projCodes = Object.keys(proj4.defs);
-    const len = projCodes.length;
-    let i, j;
-    for (i = 0; i < len; ++i) {
-      const code = projCodes[i];
-      if (!get$2(code)) {
-        const def = proj4.defs(code);
-        let units = /** @type {import("./Units.js").Units} */ (def.units);
-        if (!units && def.projName === 'longlat') {
-          units = 'degrees';
-        }
-        addProjection(
-          new Projection$2({
-            code: code,
-            axisOrientation: def.axis,
-            metersPerUnit: def.to_meter,
-            units,
-          })
-        );
-      }
-    }
-    for (i = 0; i < len; ++i) {
-      const code1 = projCodes[i];
-      const proj1 = get$2(code1);
-      for (j = 0; j < len; ++j) {
-        const code2 = projCodes[j];
-        const proj2 = get$2(code2);
-        if (!get$3(code1, code2)) {
-          if (proj4.defs[code1] === proj4.defs[code2]) {
-            addEquivalentProjections([proj1, proj2]);
-          } else {
-            const transform = proj4(code1, code2);
-            addCoordinateTransforms(
-              proj1,
-              proj2,
-              createSafeCoordinateTransform(proj1, proj2, transform.forward),
-              createSafeCoordinateTransform(proj2, proj1, transform.inverse)
-            );
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * @param {number} code The EPSG code.
-   * @return {Promise<string>} The proj4 definition.
-   */
-  let epsgLookup = async function (code) {
-    const response = await fetch(`https://epsg.io/${code}.proj4`);
-    if (!response.ok) {
-      throw new Error(`Unexpected response from epsg.io: ${response.status}`);
-    }
-    return response.text();
-  };
-
-  /**
-   * Set the lookup function for getting proj4 definitions given an EPSG code.
-   * By default, the {@link module:ol/proj/proj4.fromEPSGCode} function uses the
-   * epsg.io website for proj4 definitions.  This can be changed by providing a
-   * different lookup function.
-   *
-   * @param {function(number):Promise<string>} func The lookup function.
-   * @api
-   */
-  function setEPSGLookup(func) {
-    epsgLookup = func;
-  }
-
-  /**
-   * Get the current EPSG lookup function.
-   *
-   * @return {function(number):Promise<string>} The EPSG lookup function.
-   */
-  function getEPSGLookup() {
-    return epsgLookup;
-  }
-
-  /**
-   * Get a projection from an EPSG code.  This function fetches the projection
-   * definition from the epsg.io website, registers this definition for use with
-   * proj4, and returns a configured projection.  You must call import proj4 and
-   * call {@link module:ol/proj/proj4.register} before using this function.
-   *
-   * If the projection definition is already registered with proj4, it will not
-   * be fetched again (so it is ok to call this function multiple times with the
-   * same code).
-   *
-   * @param {number|string} code The EPSG code (e.g. 4326 or 'EPSG:4326').
-   * @return {Promise<Projection>} The projection.
-   * @api
-   */
-  async function fromEPSGCode(code) {
-    if (typeof code === 'string') {
-      code = parseInt(code.split(':').pop(), 10);
-    }
-
-    const proj4 = registered;
-    if (!proj4) {
-      throw new Error('Proj4 must be registered first with register(proj4)');
-    }
-
-    const epsgCode = 'EPSG:' + code;
-    if (proj4.defs(epsgCode)) {
-      return get$2(epsgCode);
-    }
-
-    proj4.defs(epsgCode, await epsgLookup(code));
-    register(proj4);
-
-    return get$2(epsgCode);
-  }
-
-  /**
-   * Generate an EPSG lookup function which uses the MapTiler Coordinates API to find projection
-   * definitions which do not require proj4 to be configured to handle `+nadgrids` parameters.
-   * Call {@link module:ol/proj/proj4.setEPSGLookup} use the function for lookups
-   * `setEPSGLookup(epsgLookupMapTiler('{YOUR_MAPTILER_API_KEY_HERE}'))`.
-   *
-   * @param {string} key MapTiler API key.  Get your own API key at https://www.maptiler.com/cloud/.
-   * @return {function(number):Promise<string>} The EPSG lookup function.
-   * @api
-   */
-  function epsgLookupMapTiler(key) {
-    return async function (code) {
-      const response = await fetch(
-        `https://api.maptiler.com/coordinates/search/code:${code}.json?transformations=true&exports=true&key=${key}`
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Unexpected response from maptiler.com: ${response.status}`
-        );
-      }
-      return response.json().then((json) => {
-        const results = json['results'];
-        if (results?.length > 0) {
-          const result = results.filter(
-            (r) => r['id']?.['authority'] === 'EPSG' && r['id']?.['code'] === code
-          )[0];
-          if (result) {
-            const transforms = result['transformations'];
-            if (transforms?.length > 0) {
-              // use default transform if it does not require grids
-              const defaultTransform = result['default_transformation'];
-              if (
-                transforms.filter(
-                  (t) =>
-                    t['id']?.['authority'] === defaultTransform?.['authority'] &&
-                    t['id']?.['code'] === defaultTransform?.['code'] &&
-                    t['grids']?.length === 0
-                ).length > 0
-              ) {
-                return result['exports']?.['proj4'];
-              }
-              // otherwise use most accurate alternative without grids
-              const transform = transforms
-                .filter(
-                  (t) =>
-                    t['grids']?.length === 0 &&
-                    t['target_crs']?.['authority'] === 'EPSG' &&
-                    t['target_crs']?.['code'] === 4326 &&
-                    t['deprecated'] === false &&
-                    t['usable'] === true
-                )
-                .sort((t1, t2) => t1['accuracy'] - t2['accuracy'])[0]?.[
-                'exports'
-              ]?.['proj4'];
-              if (transform) {
-                return transform;
-              }
-            }
-            // fallback to default
-            return result['exports']?.['proj4'];
-          }
-        }
-      });
-    };
-  }
-
-  var projProj4 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    epsgLookupMapTiler: epsgLookupMapTiler,
-    fromEPSGCode: fromEPSGCode,
-    getEPSGLookup: getEPSGLookup,
-    isRegistered: isRegistered,
-    register: register,
-    setEPSGLookup: setEPSGLookup,
-    unregister: unregister
-  });
-
-  /**
    * @module ol/source/BingMaps
    */
 
@@ -56277,8 +57910,9 @@ var myol = (function () {
    * @property {number|import("../array.js").NearestDirectionFunction} [zDirection=0]
    * Choose whether to use tiles with a higher or lower zoom level when between integer
    * zoom levels. See {@link module:ol/tilegrid/TileGrid~TileGrid#getZForResolution}.
-   * @property {boolean} placeholderTiles Whether to show BingMaps placeholder tiles when zoomed past the maximum level provided in an area. When `false`, requests beyond
-   * the maximum zoom level will return no tile. When `true`, the placeholder tile will be returned.
+   * @property {boolean} [placeholderTiles] Whether to show BingMaps placeholder tiles when zoomed past the maximum level provided in an area. When `false`, requests beyond
+   * the maximum zoom level will return no tile. When `true`, the placeholder tile will be returned. When not set, the default behaviour of the imagery set takes place,
+   * which is unique for each imagery set in BingMaps.
    */
 
   /**
@@ -56377,7 +58011,7 @@ var myol = (function () {
 
       /**
        * @private
-       * @type {boolean}
+       * @type {boolean|undefined}
        */
       this.placeholderTiles_ = options.placeholderTiles;
 
@@ -56776,7 +58410,10 @@ var myol = (function () {
         options.geometryFunction ||
         function (feature) {
           const geometry = /** @type {Point} */ (feature.getGeometry());
-          assert$1(!geometry || geometry.getType() === 'Point', 10); // The default `geometryFunction` can only handle `Point` or null geometries
+          assert$1(
+            !geometry || geometry.getType() === 'Point',
+            'The default `geometryFunction` can only handle `Point` or null geometries'
+          );
           return geometry;
         };
 
@@ -56934,7 +58571,7 @@ var myol = (function () {
           if (geometry) {
             const coordinates = geometry.getCoordinates();
             createOrUpdateFromCoordinate(coordinates, extent);
-            buffer$1(extent, mapDistance, extent);
+            buffer(extent, mapDistance, extent);
 
             const neighbors = this.source
               .getFeaturesInExtent(extent)
@@ -56988,6 +58625,17 @@ var myol = (function () {
   var Cluster$1 = Cluster;
 
   /**
+   * @module ol/source/common
+   */
+
+
+  /**
+   * Number of decimal digits to consider in integer values when rounding.
+   * @type {number}
+   */
+  const DECIMALS = 4;
+
+  /**
    * @module ol/uri
    */
 
@@ -57019,6 +58667,7 @@ var myol = (function () {
    * @module ol/source/wms
    */
 
+
   /**
    * Default WMS version.
    * @type {string}
@@ -57034,6 +58683,105 @@ var myol = (function () {
    *  - `'mapserver'`: HiDPI support for [MapServer](https://mapserver.org/)
    *  - `'qgis'`: HiDPI support for [QGIS](https://qgis.org/)
    */
+
+  /**
+   * @param {string} baseUrl Base URL.
+   * @param {import("../extent.js").Extent} extent Extent.
+   * @param {import("../size.js").Size} size Size.
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @param {Object} params WMS params. Will be modified in place.
+   * @return {string} Request URL.
+   */
+  function getRequestUrl(baseUrl, extent, size, projection, params) {
+    params['WIDTH'] = size[0];
+    params['HEIGHT'] = size[1];
+
+    const axisOrientation = projection.getAxisOrientation();
+    let bbox;
+    const v13 = compareVersions(params['VERSION'], '1.3') >= 0;
+    params[v13 ? 'CRS' : 'SRS'] = projection.getCode();
+    if (v13 && axisOrientation.substr(0, 2) == 'ne') {
+      bbox = [extent[1], extent[0], extent[3], extent[2]];
+    } else {
+      bbox = extent;
+    }
+    params['BBOX'] = bbox.join(',');
+
+    return appendParams(/** @type {string} */ (baseUrl), params);
+  }
+
+  /**
+   * @param {import("../extent").Extent} extent Extent.
+   * @param {number} resolution Resolution.
+   * @param {number} pixelRatio pixel ratio.
+   * @param {import("../proj.js").Projection} projection Projection.
+   * @param {string} url WMS service url.
+   * @param {Object} params WMS params.
+   * @param {import("./wms.js").ServerType} serverType The type of the remote WMS server.
+   * @return {string} Image src.
+   */
+  function getImageSrc(
+    extent,
+    resolution,
+    pixelRatio,
+    projection,
+    url,
+    params,
+    serverType
+  ) {
+    params = Object.assign({REQUEST: 'GetMap'}, params);
+
+    const imageResolution = resolution / pixelRatio;
+
+    const imageSize = [
+      round(getWidth(extent) / imageResolution, DECIMALS),
+      round(getHeight(extent) / imageResolution, DECIMALS),
+    ];
+
+    if (pixelRatio != 1) {
+      switch (serverType) {
+        case 'geoserver':
+          const dpi = (90 * pixelRatio + 0.5) | 0;
+          if ('FORMAT_OPTIONS' in params) {
+            params['FORMAT_OPTIONS'] += ';dpi:' + dpi;
+          } else {
+            params['FORMAT_OPTIONS'] = 'dpi:' + dpi;
+          }
+          break;
+        case 'mapserver':
+          params['MAP_RESOLUTION'] = 90 * pixelRatio;
+          break;
+        case 'carmentaserver':
+        case 'qgis':
+          params['DPI'] = 90 * pixelRatio;
+          break;
+        default:
+          throw new Error('Unknown `serverType` configured');
+      }
+    }
+
+    const src = getRequestUrl(url, extent, imageSize, projection, params);
+    return src;
+  }
+
+  /**
+   * @param {Object} params WMS params.
+   * @param {string} request WMS `REQUEST`.
+   * @return {Object} WMS params with required properties set.
+   */
+  function getRequestParams(params, request) {
+    return Object.assign(
+      {
+        'REQUEST': request,
+        'SERVICE': 'WMS',
+        'VERSION': DEFAULT_VERSION,
+        'FORMAT': 'image/png',
+        'STYLES': '',
+        'TRANSPARENT': true,
+      },
+      params
+    );
+  }
 
   /**
    * @module ol/source/OSM
@@ -57129,86 +58877,111 @@ var myol = (function () {
   var OSM$1 = OSM;
 
   /**
-   * @module ol/source/Stamen
+   * @module ol/source/StadiaMaps
    */
 
 
   /**
    * @const
-   * @type {Array<string>}
+   * @type string
    */
-  const ATTRIBUTIONS = [
-    'Map tiles by <a href="https://stamen.com/" target="_blank">Stamen Design</a>, ' +
-      'under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank">CC BY' +
-      ' 3.0</a>.',
-    ATTRIBUTION,
-  ];
+  const STADIA_ATTRIBUTION =
+    '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>';
+
+  /**
+   * @const
+   * @type string
+   */
+  const OMT_ATTRIBUTION =
+    '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a>';
+
+  /**
+   * @const
+   * @type string
+   */
+  const STAMEN_ATTRIBUTION =
+    '&copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a>';
 
   /**
    * @type {Object<string, {extension: string, opaque: boolean}>}
    */
   const LayerConfig = {
-    'terrain': {
+    'stamen_terrain': {
       extension: 'png',
       opaque: true,
     },
-    'terrain-background': {
+    'stamen_terrain_background': {
       extension: 'png',
       opaque: true,
     },
-    'terrain-labels': {
+    'stamen_terrain_labels': {
       extension: 'png',
       opaque: false,
     },
-    'terrain-lines': {
+    'stamen_terrain_lines': {
       extension: 'png',
       opaque: false,
     },
-    'toner-background': {
+    'stamen_toner_background': {
       extension: 'png',
       opaque: true,
     },
-    'toner': {
+    'stamen_toner': {
       extension: 'png',
       opaque: true,
     },
-    'toner-hybrid': {
+    'stamen_toner_labels': {
       extension: 'png',
       opaque: false,
     },
-    'toner-labels': {
+    'stamen_toner_lines': {
       extension: 'png',
       opaque: false,
     },
-    'toner-lines': {
-      extension: 'png',
-      opaque: false,
-    },
-    'toner-lite': {
+    'stamen_toner_lite': {
       extension: 'png',
       opaque: true,
     },
-    'watercolor': {
+    'stamen_watercolor': {
       extension: 'jpg',
+      opaque: true,
+    },
+    'alidade_smooth': {
+      extension: 'png',
+      opaque: true,
+    },
+    'alidade_smooth_dark': {
+      extension: 'png',
+      opaque: true,
+    },
+    'outdoors': {
+      extension: 'png',
+      opaque: true,
+    },
+    'osm_bright': {
+      extension: 'png',
       opaque: true,
     },
   };
 
   /**
-   * @type {Object<string, {minZoom: number, maxZoom: number}>}
+   * @type {Object<string, {minZoom: number, maxZoom: number, retina: boolean}>}
    */
   const ProviderConfig = {
-    'terrain': {
+    'stamen_terrain': {
       minZoom: 0,
       maxZoom: 18,
+      retina: true,
     },
-    'toner': {
+    'stamen_toner': {
       minZoom: 0,
       maxZoom: 20,
+      retina: true,
     },
-    'watercolor': {
-      minZoom: 0,
+    'stamen_watercolor': {
+      minZoom: 1,
       maxZoom: 18,
+      retina: false,
     },
   };
 
@@ -57217,7 +58990,7 @@ var myol = (function () {
    * @property {number} [cacheSize] Initial tile cache size. Will auto-grow to hold at least the number of tiles in the viewport.
    * @property {boolean} [interpolate=true] Use interpolated values when resampling.  By default,
    * linear interpolation is used when resampling.  Set to false to use the nearest neighbor instead.
-   * @property {string} layer Layer name.
+   * @property {string} layer Layer name. Valid values: `alidade_smooth`, `alidade_smooth_dark`, `outdoors`, `stamen_terrain`, `stamen_terrain_background`, `stamen_terrain_labels`, `stamen_terrain_lines`, `stamen_toner_background`, `stamen_toner`, `stamen_toner_labels`, `stamen_toner_lines`, `stamen_toner_lite`, `stamen_watercolor`, and `osm_bright`.
    * @property {number} [minZoom] Minimum zoom.
    * @property {number} [maxZoom] Maximum zoom.
    * @property {number} [reprojectionErrorThreshold=0.5] Maximum allowed reprojection error (in pixels).
@@ -57236,53 +59009,75 @@ var myol = (function () {
    * @property {number|import("../array.js").NearestDirectionFunction} [zDirection=0]
    * Choose whether to use tiles with a higher or lower zoom level when between integer
    * zoom levels. See {@link module:ol/tilegrid/TileGrid~TileGrid#getZForResolution}.
+   * @property {string} apiKey Stadia Maps API key. Not required for localhost or most public web deployments. See https://docs.stadiamaps.com/authentication/ for details.
+   * @property {boolean} retina Use retina tiles (if available; not available for Stamen Watercolor).
    */
 
   /**
    * @classdesc
-   * Layer source for the Stamen tile server.
+   * Layer source for the Stadia Maps tile server.
    * @api
    */
-  let Stamen$1 = class Stamen extends XYZ$1 {
+  let StadiaMaps$1 = class StadiaMaps extends XYZ$1 {
     /**
-     * @param {Options} options Stamen options.
+     * @param {Options} options StadiaMaps options.
      */
     constructor(options) {
       const i = options.layer.indexOf('-');
       const provider = i == -1 ? options.layer : options.layer.slice(0, i);
-      const providerConfig = ProviderConfig[provider];
+      const providerConfig = ProviderConfig[provider] || {
+        'minZoom': 0,
+        'maxZoom': 20,
+        'retina': true,
+      };
 
       const layerConfig = LayerConfig[options.layer];
+      const query = options.apiKey ? '?api_key=' + options.apiKey : '';
+      const retina = providerConfig.retina && options.retina ? '@2x' : '';
 
       const url =
         options.url !== undefined
           ? options.url
-          : 'https://stamen-tiles-{a-d}.a.ssl.fastly.net/' +
+          : 'https://tiles.stadiamaps.com/tiles/' +
             options.layer +
-            '/{z}/{x}/{y}.' +
-            layerConfig.extension;
+            '/{z}/{x}/{y}' +
+            retina +
+            '.' +
+            layerConfig.extension +
+            query;
+
+      const attributions = [STADIA_ATTRIBUTION, OMT_ATTRIBUTION, ATTRIBUTION];
+
+      if (options.layer.startsWith('stamen_')) {
+        attributions.splice(1, 0, STAMEN_ATTRIBUTION);
+      }
 
       super({
-        attributions: ATTRIBUTIONS,
+        attributions: attributions,
         cacheSize: options.cacheSize,
         crossOrigin: 'anonymous',
         interpolate: options.interpolate,
         maxZoom:
-          options.maxZoom != undefined ? options.maxZoom : providerConfig.maxZoom,
+          options.maxZoom !== undefined
+            ? options.maxZoom
+            : providerConfig.maxZoom,
         minZoom:
-          options.minZoom != undefined ? options.minZoom : providerConfig.minZoom,
+          options.minZoom !== undefined
+            ? options.minZoom
+            : providerConfig.minZoom,
         opaque: layerConfig.opaque,
         reprojectionErrorThreshold: options.reprojectionErrorThreshold,
         tileLoadFunction: options.tileLoadFunction,
         transition: options.transition,
         url: url,
+        tilePixelRatio: retina ? 2 : 1,
         wrapX: options.wrapX,
         zDirection: options.zDirection,
       });
     }
   };
 
-  var Stamen$2 = Stamen$1;
+  var StadiaMaps$2 = StadiaMaps$1;
 
   /**
    * @module ol/source/TileWMS
@@ -57438,64 +59233,57 @@ var myol = (function () {
      */
     getFeatureInfoUrl(coordinate, resolution, projection, params) {
       const projectionObj = get$2(projection);
-      const sourceProjectionObj = this.getProjection();
+      const sourceProjectionObj = this.getProjection() || projectionObj;
 
       let tileGrid = this.getTileGrid();
       if (!tileGrid) {
-        tileGrid = this.getTileGridForProjection(projectionObj);
+        tileGrid = this.getTileGridForProjection(sourceProjectionObj);
       }
 
-      const z = tileGrid.getZForResolution(resolution, this.zDirection);
-      const tileCoord = tileGrid.getTileCoordForCoordAndZ(coordinate, z);
+      const sourceProjCoord = transform$1(
+        coordinate,
+        projectionObj,
+        sourceProjectionObj
+      );
+      const sourceResolution = calculateSourceResolution(
+        sourceProjectionObj,
+        projectionObj,
+        coordinate,
+        resolution
+      );
+
+      const z = tileGrid.getZForResolution(sourceResolution, this.zDirection);
+      const tileResolution = tileGrid.getResolution(z);
+      const tileCoord = tileGrid.getTileCoordForCoordAndZ(sourceProjCoord, z);
 
       if (tileGrid.getResolutions().length <= tileCoord[0]) {
         return undefined;
       }
 
-      let tileResolution = tileGrid.getResolution(tileCoord[0]);
       let tileExtent = tileGrid.getTileCoordExtent(tileCoord, this.tmpExtent_);
-      let tileSize = toSize(tileGrid.getTileSize(tileCoord[0]), this.tmpSize);
 
       const gutter = this.gutter_;
       if (gutter !== 0) {
-        tileSize = buffer(tileSize, gutter, this.tmpSize);
-        tileExtent = buffer$1(tileExtent, tileResolution * gutter, tileExtent);
-      }
-
-      if (sourceProjectionObj && sourceProjectionObj !== projectionObj) {
-        tileResolution = calculateSourceResolution(
-          sourceProjectionObj,
-          projectionObj,
-          coordinate,
-          tileResolution
-        );
-        tileExtent = transformExtent(
-          tileExtent,
-          projectionObj,
-          sourceProjectionObj
-        );
-        coordinate = transform$1(coordinate, projectionObj, sourceProjectionObj);
+        tileExtent = buffer(tileExtent, tileResolution * gutter, tileExtent);
       }
 
       const baseParams = {
-        'SERVICE': 'WMS',
-        'VERSION': DEFAULT_VERSION,
-        'REQUEST': 'GetFeatureInfo',
-        'FORMAT': 'image/png',
-        'TRANSPARENT': true,
         'QUERY_LAYERS': this.params_['LAYERS'],
       };
-      Object.assign(baseParams, this.params_, params);
+      Object.assign(
+        baseParams,
+        getRequestParams(this.params_, 'GetFeatureInfo'),
+        params
+      );
 
-      const x = Math.floor((coordinate[0] - tileExtent[0]) / tileResolution);
-      const y = Math.floor((tileExtent[3] - coordinate[1]) / tileResolution);
+      const x = Math.floor((sourceProjCoord[0] - tileExtent[0]) / tileResolution);
+      const y = Math.floor((tileExtent[3] - sourceProjCoord[1]) / tileResolution);
 
       baseParams[this.v13_ ? 'I' : 'X'] = x;
       baseParams[this.v13_ ? 'J' : 'Y'] = y;
 
       return this.getRequestUrl_(
         tileCoord,
-        tileSize,
         tileExtent,
         1,
         sourceProjectionObj || projectionObj,
@@ -57570,7 +59358,6 @@ var myol = (function () {
 
     /**
      * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
-     * @param {import("../size.js").Size} tileSize Tile size.
      * @param {import("../extent.js").Extent} tileExtent Tile extent.
      * @param {number} pixelRatio Pixel ratio.
      * @param {import("../proj/Projection.js").default} projection Projection.
@@ -57578,64 +59365,11 @@ var myol = (function () {
      * @return {string|undefined} Request URL.
      * @private
      */
-    getRequestUrl_(
-      tileCoord,
-      tileSize,
-      tileExtent,
-      pixelRatio,
-      projection,
-      params
-    ) {
+    getRequestUrl_(tileCoord, tileExtent, pixelRatio, projection, params) {
       const urls = this.urls;
       if (!urls) {
         return undefined;
       }
-
-      params['WIDTH'] = tileSize[0];
-      params['HEIGHT'] = tileSize[1];
-
-      params[this.v13_ ? 'CRS' : 'SRS'] = projection.getCode();
-
-      if (!('STYLES' in this.params_)) {
-        params['STYLES'] = '';
-      }
-
-      if (pixelRatio != 1) {
-        switch (this.serverType_) {
-          case 'geoserver':
-            const dpi = (90 * pixelRatio + 0.5) | 0;
-            if ('FORMAT_OPTIONS' in params) {
-              params['FORMAT_OPTIONS'] += ';dpi:' + dpi;
-            } else {
-              params['FORMAT_OPTIONS'] = 'dpi:' + dpi;
-            }
-            break;
-          case 'mapserver':
-            params['MAP_RESOLUTION'] = 90 * pixelRatio;
-            break;
-          case 'carmentaserver':
-          case 'qgis':
-            params['DPI'] = 90 * pixelRatio;
-            break;
-          default: // Unknown `serverType` configured
-            assert$1(false, 52);
-            break;
-        }
-      }
-
-      const axisOrientation = projection.getAxisOrientation();
-      const bbox = tileExtent;
-      if (this.v13_ && axisOrientation.substr(0, 2) == 'ne') {
-        let tmp;
-        tmp = tileExtent[0];
-        bbox[0] = tileExtent[1];
-        bbox[1] = tmp;
-        tmp = tileExtent[2];
-        bbox[2] = tileExtent[3];
-        bbox[3] = tmp;
-      }
-      params['BBOX'] = bbox.join(',');
-
       let url;
       if (urls.length == 1) {
         url = urls[0];
@@ -57643,7 +59377,18 @@ var myol = (function () {
         const index = modulo(hash(tileCoord), urls.length);
         url = urls[index];
       }
-      return appendParams(url, params);
+
+      return getImageSrc(
+        tileExtent,
+        (
+          this.tileGrid || this.getTileGridForProjection(projection)
+        ).getResolution(tileCoord[0]),
+        pixelRatio,
+        projection,
+        url,
+        params,
+        this.serverType_
+      );
     }
 
     /**
@@ -57710,30 +59455,19 @@ var myol = (function () {
 
       const tileResolution = tileGrid.getResolution(tileCoord[0]);
       let tileExtent = tileGrid.getTileCoordExtent(tileCoord, this.tmpExtent_);
-      let tileSize = toSize(tileGrid.getTileSize(tileCoord[0]), this.tmpSize);
 
       const gutter = this.gutter_;
       if (gutter !== 0) {
-        tileSize = buffer(tileSize, gutter, this.tmpSize);
-        tileExtent = buffer$1(tileExtent, tileResolution * gutter, tileExtent);
+        tileExtent = buffer(tileExtent, tileResolution * gutter, tileExtent);
       }
 
-      if (pixelRatio != 1) {
-        tileSize = scale(tileSize, pixelRatio, this.tmpSize);
-      }
-
-      const baseParams = {
-        'SERVICE': 'WMS',
-        'VERSION': DEFAULT_VERSION,
-        'REQUEST': 'GetMap',
-        'FORMAT': 'image/png',
-        'TRANSPARENT': true,
-      };
-      Object.assign(baseParams, this.params_);
+      const baseParams = Object.assign(
+        {},
+        getRequestParams(this.params_, 'GetMap')
+      );
 
       return this.getRequestUrl_(
         tileCoord,
-        tileSize,
         tileExtent,
         pixelRatio,
         projection,
@@ -58113,7 +59847,7 @@ var myol = (function () {
       BingMaps: BingMaps$1,
       Cluster: Cluster$1,
       OSM: OSM$1,
-      Stamen: Stamen$2,
+      StadiaMaps: StadiaMaps$2,
       TileWMS: TileWMS$1,
       Vector: SourceVector,
       WMTS: WMTS$1,
@@ -58407,7 +60141,7 @@ var myol = (function () {
     constructor(options = {}) {
       super({
         // MyButton options
-        label: '&#128194;',
+        label: '&#128194;', //TODO trouver un autre symbole
         subMenuHTML: '<p>Importer un fichier de points ou de traces</p>' +
           '<input type="file" accept=".gpx,.kml,.geojson">',
 
@@ -59665,7 +61399,8 @@ var myol = (function () {
   var containerId = "gcd-container";
   var buttonControlId = "gcd-button-control";
   var inputQueryId = "gcd-input-query";
-  var inputResetId = "gcd-input-reset";
+  var inputLabelId = "gcd-input-label";
+  var inputSearchId = "gcd-input-search";
   var cssClasses = {
   	namespace: "ol-geocoder",
   	spin: "gcd-pseudo-rotate",
@@ -59681,14 +61416,15 @@ var myol = (function () {
   		button: "gcd-gl-btn",
   		input: "gcd-gl-input",
   		expanded: "gcd-gl-expanded",
-  		reset: "gcd-gl-reset",
+  		search: "gcd-gl-search",
   		result: "gcd-gl-result"
   	},
   	inputText: {
   		container: "gcd-txt-container",
   		control: "gcd-txt-control",
+  		label: "gcd-txt-label",
   		input: "gcd-txt-input",
-  		reset: "gcd-txt-reset",
+  		search: "gcd-txt-search",
   		icon: "gcd-txt-glass",
   		result: "gcd-txt-result"
   	}
@@ -59697,7 +61433,8 @@ var myol = (function () {
   	containerId: containerId,
   	buttonControlId: buttonControlId,
   	inputQueryId: inputQueryId,
-  	inputResetId: inputResetId,
+  	inputLabelId: inputLabelId,
+  	inputSearchId: inputSearchId,
   	cssClasses: cssClasses
   };
 
@@ -59707,8 +61444,9 @@ var myol = (function () {
     containerId: containerId,
     cssClasses: cssClasses,
     default: vars,
+    inputLabelId: inputLabelId,
     inputQueryId: inputQueryId,
-    inputResetId: inputResetId
+    inputSearchId: inputSearchId
   });
 
   const VARS = _VARS_;
@@ -59739,6 +61477,7 @@ var myol = (function () {
 
   const DEFAULT_OPTIONS = {
     provider: PROVIDERS.OSM,
+    label: '',
     placeholder: 'Search for an address',
     featureStyle: null,
     targetType: TARGET_TYPE.GLASS,
@@ -59746,9 +61485,9 @@ var myol = (function () {
     limit: 5,
     keepOpen: false,
     preventDefault: false,
-    autoComplete: false,
-    autoCompleteMinLength: 2,
-    autoCompleteTimeout: 200,
+    preventPanning: false,
+    preventMarker: false,
+    defaultFlyResolution: 10, // Meters per pixel
     debug: false,
   };
 
@@ -59757,24 +61496,6 @@ var myol = (function () {
    * obj2's if non existent in obj1
    * @returns obj3 a new object based on obj1 and obj2
    */
-  function mergeOptions(obj1, obj2) {
-    const obj3 = {};
-
-    Object.keys(obj1).forEach((key) => {
-      if (Object.prototype.hasOwnProperty.call(obj1, key)) {
-        obj3[key] = obj1[key];
-      }
-    });
-
-    Object.keys(obj2).forEach((key) => {
-      if (Object.prototype.hasOwnProperty.call(obj2, key)) {
-        obj3[key] = obj2[key];
-      }
-    });
-
-    return obj3;
-  }
-
   function assert(condition, message = 'Assertion failed') {
     if (!condition) {
       if (typeof Error !== 'undefined') throw new Error(message);
@@ -59981,9 +61702,9 @@ var myol = (function () {
     }
 
     createControl() {
-      let container;
-      let containerClass;
-      let elements;
+      let container,
+        containerClass,
+        elements;
 
       if (this.options.targetType === TARGET_TYPE.INPUT) {
         containerClass = `${klasses$1.namespace} ${klasses$1.inputText.container}`;
@@ -59997,10 +61718,12 @@ var myol = (function () {
         elements = {
           container,
           control: container.querySelector(`.${klasses$1.inputText.control}`),
+          label: container.querySelector(`.${klasses$1.inputText.label}`),
           input: container.querySelector(`.${klasses$1.inputText.input}`),
-          reset: container.querySelector(`.${klasses$1.inputText.reset}`),
+          search: container.querySelector(`.${klasses$1.inputText.search}`),
           result: container.querySelector(`.${klasses$1.inputText.result}`),
         };
+        elements.label.innerHTML = this.options.label;
       } else {
         containerClass = `${klasses$1.namespace} ${klasses$1.glass.container}`;
         container = createElement(
@@ -60015,7 +61738,7 @@ var myol = (function () {
           control: container.querySelector(`.${klasses$1.glass.control}`),
           button: container.querySelector(`.${klasses$1.glass.button}`),
           input: container.querySelector(`.${klasses$1.glass.input}`),
-          reset: container.querySelector(`.${klasses$1.glass.reset}`),
+          search: container.querySelector(`.${klasses$1.glass.search}`),
           result: container.querySelector(`.${klasses$1.glass.result}`),
         };
       }
@@ -60031,19 +61754,97 @@ var myol = (function () {
   <div class="${klasses$1.glass.control} ${klasses$1.olControl}">
     <button type="button" id="${VARS.buttonControlId}" class="${klasses$1.glass.button}"></button>
     <input type="text" id="${VARS.inputQueryId}" class="${klasses$1.glass.input}" autocomplete="off" placeholder="Search ...">
-    <a id="${VARS.inputResetId}" class="${klasses$1.glass.reset} ${klasses$1.hidden}"></a>
+    <a id="${VARS.inputSearchId}" class="${klasses$1.glass.search} ${klasses$1.hidden}"></a>
   </div>
   <ul class="${klasses$1.glass.result}"></ul>
 `;
 
   Html.input = `
   <div class="${klasses$1.inputText.control}">
-    <input type="text" id="${VARS.inputQueryId}" class="${klasses$1.inputText.input}" autocomplete="off" placeholder="Search ...">
+    <label type="button" id="${VARS.inputSearchId}" class="${klasses$1.inputText.label}"></label>
+    <input type="text" id="${VARS.inputQueryId}" class="${klasses$1.inputText.input}" autocomplete="off" placeholder="SeaAAAAArch ...">
     <span class="${klasses$1.inputText.icon}"></span>
-    <button type="button" id="${VARS.inputResetId}" class="${klasses$1.inputText.reset} ${klasses$1.hidden}"></button>
+    <button type="button" id="${VARS.inputSearchId}" class="${klasses$1.inputText.search} ${klasses$1.hidden}"></button>
   </div>
   <ul class="${klasses$1.inputText.result}"></ul>
 `;
+
+  function json(obj) {
+    return new Promise((resolve, reject) => {
+      const url = encodeUrlXhr(obj.url, obj.data);
+      const config = {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'same-origin',
+      };
+
+      if (obj.jsonp) {
+        jsonp(url, obj.callbackName, resolve);
+      } else {
+        fetch(url, config)
+          .then((r) => r.json())
+          .then(resolve)
+          .catch(reject);
+      }
+    });
+  }
+
+  function toQueryString(obj) {
+    return Object.keys(obj)
+      .reduce((acc, k) => {
+        acc.push(
+          typeof obj[k] === 'object' ?
+          toQueryString(obj[k]) :
+          `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
+        );
+
+        return acc;
+      }, [])
+      .join('&');
+  }
+
+  function encodeUrlXhr(url, data) {
+    if (data && typeof data === 'object') {
+      url += (/\?/u.test(url) ? '&' : '?') + toQueryString(data);
+    }
+
+    return url;
+  }
+
+  function jsonp(url, key, callback) {
+    // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
+    const {
+      head
+    } = document;
+    const script = document.createElement('script');
+    // generate minimally unique name for callback function
+    const callbackName = `f${Math.round(Math.random() * Date.now())}`;
+
+    // set request url
+    script.setAttribute(
+      'src',
+      // add callback parameter to the url
+      //    where key is the parameter key supplied
+      //    and callbackName is the parameter value
+      `${url + (url.indexOf('?') > 0 ? '&' : '?') + key}=${callbackName}`
+    );
+
+    // place jsonp callback on window,
+    //  the script sent by the server should call this
+    //  function as it was passed as a url parameter
+    window[callbackName] = (data) => {
+      window[callbackName] = undefined;
+
+      // clean up script tag created for request
+      setTimeout(() => head.removeChild(script), 0);
+
+      // hand data back to the user
+      callback(data);
+    };
+
+    // actually make the request
+    head.append(script);
+  }
 
   /**
    * @class Photon
@@ -60353,83 +62154,6 @@ var myol = (function () {
     }
   }
 
-  function json(obj) {
-    return new Promise((resolve, reject) => {
-      const url = encodeUrlXhr(obj.url, obj.data);
-      const config = {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'same-origin',
-      };
-
-      if (obj.jsonp) {
-        jsonp(url, obj.callbackName, resolve);
-      } else {
-        fetch(url, config)
-          .then((r) => r.json())
-          .then(resolve)
-          .catch(reject);
-      }
-    });
-  }
-
-  function toQueryString(obj) {
-    return Object.keys(obj)
-      .reduce((acc, k) => {
-        acc.push(
-          typeof obj[k] === 'object' ?
-          toQueryString(obj[k]) :
-          `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
-        );
-
-        return acc;
-      }, [])
-      .join('&');
-  }
-
-  function encodeUrlXhr(url, data) {
-    if (data && typeof data === 'object') {
-      url += (/\?/u.test(url) ? '&' : '?') + toQueryString(data);
-    }
-
-    return url;
-  }
-
-  function jsonp(url, key, callback) {
-    // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
-    const {
-      head
-    } = document;
-    const script = document.createElement('script');
-    // generate minimally unique name for callback function
-    const callbackName = `f${Math.round(Math.random() * Date.now())}`;
-
-    // set request url
-    script.setAttribute(
-      'src',
-      // add callback parameter to the url
-      //    where key is the parameter key supplied
-      //    and callbackName is the parameter value
-      `${url + (url.indexOf('?') > 0 ? '&' : '?') + key}=${callbackName}`
-    );
-
-    // place jsonp callback on window,
-    //  the script sent by the server should call this
-    //  function as it was passed as a url parameter
-    window[callbackName] = (data) => {
-      window[callbackName] = undefined;
-
-      // clean up script tag created for request
-      setTimeout(() => head.removeChild(script), 0);
-
-      // hand data back to the user
-      callback(data);
-    };
-
-    // actually make the request
-    head.append(script);
-  }
-
   const klasses = VARS.cssClasses;
 
   /**
@@ -60463,18 +62187,14 @@ var myol = (function () {
       this.lastQuery = '';
       this.container = this.els.container;
       this.registeredListeners = {
-        mapClick: false
+        mapClick: false,
       };
       this.setListeners();
     }
 
     setListeners() {
-      let timeout;
-      let lastQuery;
-
       const openSearch = (evt) => {
         evt.stopPropagation();
-
         hasClass(this.els.control, klasses.glass.expanded) ? this.collapse() : this.expand();
       };
       const query = (evt) => {
@@ -60493,35 +62213,22 @@ var myol = (function () {
         }
       };
       const stopBubbling = (evt) => evt.stopPropagation();
-      const reset = () => {
+      const search = () => {
         this.els.input.focus();
-        this.els.input.value = '';
-        this.lastQuery = '';
-        addClass(this.els.reset, klasses.hidden);
-        this.clearResults();
+        this.query(this.els.input.value);
       };
       const handleValue = (evt) => {
         const value = evt.target.value.trim();
 
         value.length !== 0 ?
-          removeClass(this.els.reset, klasses.hidden) :
-          addClass(this.els.reset, klasses.hidden);
-
-        if (this.options.autoComplete && value !== lastQuery) {
-          lastQuery = value;
-          timeout && clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            if (value.length >= this.options.autoCompleteMinLength) {
-              this.query(value);
-            }
-          }, this.options.autoCompleteTimeout);
-        }
+          removeClass(this.els.search, klasses.hidden) :
+          addClass(this.els.search, klasses.hidden);
       };
 
       this.els.input.addEventListener('keypress', query, false);
       this.els.input.addEventListener('click', stopBubbling, false);
       this.els.input.addEventListener('input', handleValue, false);
-      this.els.reset.addEventListener('click', reset, false);
+      this.els.search.addEventListener('click', search, false);
 
       if (this.options.targetType === TARGET_TYPE.GLASS) {
         this.els.button.addEventListener('click', openSearch, false);
@@ -60547,7 +62254,7 @@ var myol = (function () {
 
       this.lastQuery = q;
       this.clearResults();
-      addClass(this.els.reset, klasses.spin);
+      addClass(this.els.search, klasses.spin);
 
       const ajax = {
         url: parameters.url,
@@ -60564,7 +62271,7 @@ var myol = (function () {
           // eslint-disable-next-line no-console
           this.options.debug && console.info(res);
 
-          removeClass(this.els.reset, klasses.spin);
+          removeClass(this.els.search, klasses.spin);
 
           // will be fullfiled according to provider
           const res_ = this.provider.handleResponse(res);
@@ -60575,7 +62282,7 @@ var myol = (function () {
           }
         })
         .catch(() => {
-          removeClass(this.els.reset, klasses.spin);
+          removeClass(this.els.search, klasses.spin);
 
           const li = createElement('li', '<h5>Error! No internet connection?</h5>');
 
@@ -60592,26 +62299,28 @@ var myol = (function () {
         switch (this.options.provider) {
           case PROVIDERS.OSM:
             addressHtml = `<span class="${klasses.road}">${row.address.name}</span>`;
-
             break;
 
           default:
             addressHtml = this.addressTemplate(row.address);
         }
 
-        const html = `<a href="#">${addressHtml}</a>`;
-        const li = createElement('li', html);
+        if (response.length == 1) {
+          this.chosen(row, addressHtml, row.address, row.original);
+        } else {
+          const li = createElement('li', `<a href="#">${addressHtml}</a>`);
 
-        li.addEventListener(
-          'click',
-          (evt) => {
-            evt.preventDefault();
-            this.chosen(row, addressHtml, row.address, row.original);
-          },
-          false
-        );
+          li.addEventListener(
+            'click',
+            (evt) => {
+              evt.preventDefault();
+              this.chosen(row, addressHtml, row.address, row.original);
+            },
+            false
+          );
 
-        ul.append(li);
+          ul.append(li);
+        }
       });
     }
 
@@ -60676,7 +62385,7 @@ var myol = (function () {
           map.getView().animate({
             center: coord,
             // ol-geocoder results are too much zoomed -in Dominique92/ol-geocoder#235
-            resolution: this.options.defaultFlyResolution || 10, // Meters per pixel
+            resolution: this.options.defaultFlyResolution,
             duration: 500,
           });
         }
@@ -60748,7 +62457,7 @@ var myol = (function () {
     collapse() {
       this.els.input.value = '';
       this.els.input.blur();
-      addClass(this.els.reset, klasses.hidden);
+      addClass(this.els.search, klasses.hidden);
       removeClass(this.els.control, klasses.glass.expanded);
       this.clearResults();
     }
@@ -60798,8 +62507,6 @@ var myol = (function () {
     }
   }
 
-  /*DCMM*/{var _r=' == ',_v=123456;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n";}else _r+=_v;console.log(_r);}
-
   /**
    * @class Base
    * @extends {ol.control.Control}
@@ -60810,26 +62517,29 @@ var myol = (function () {
      * @param {string} type nominatim|reverse.
      * @param {object} options Options.
      */
-    constructor(type = CONTROL_TYPE.NOMINATIM, options = {}) {
+    constructor(type = CONTROL_TYPE.NOMINATIM, options) {
       assert(typeof type === 'string', '@param `type` should be string!');
       assert(
         type === CONTROL_TYPE.NOMINATIM || type === CONTROL_TYPE.REVERSE,
         `@param 'type' should be '${CONTROL_TYPE.NOMINATIM}'
       or '${CONTROL_TYPE.REVERSE}'!`
       );
-      assert(typeof options === 'object', '@param `options` should be object!');
 
-      DEFAULT_OPTIONS.featureStyle = [
-        new Style$1({
-          image: new Icon$1({
-            scale: 0.7,
-            src: FEATURE_SRC
-          })
-        }),
-      ];
+      options = {
+        ...DEFAULT_OPTIONS,
+        featureStyle: [
+          new Style$1({
+            image: new Icon$1({
+              scale: 0.7,
+              src: FEATURE_SRC
+            })
+          }),
+        ],
+        ...options,
+      };
 
       let container,
-  	$nominatim;
+        $nominatim;
 
       const $html = new Html(options);
 
@@ -60844,7 +62554,7 @@ var myol = (function () {
 
       if (!(this instanceof Base)) return new Base();
 
-      this.options = mergeOptions(DEFAULT_OPTIONS, options);
+      this.options = options;
       this.container = container;
 
       if (type === CONTROL_TYPE.NOMINATIM) {
@@ -60893,6 +62603,7 @@ var myol = (function () {
 
 
   //TODO BUG n'ouvre pas au survol
+  //TODO BUG n'affiche pas le picto envoi
   class MyGeocoder extends Base {
     constructor(options) {
       super('nominatim', {
@@ -69166,7 +70877,7 @@ var myol = (function () {
     setMapInternal(map) { //HACK execute actions on Map init
       super.setMapInternal(map);
 
-      const altlayer = new Stamen({
+      const altlayer = new StadiaMaps({
         minResolution: this.getMaxResolution(),
       });
 
@@ -69463,13 +71174,17 @@ var myol = (function () {
   }
 
   /**
-   * Stamen http://maps.stamen.com
+   * StadiaMaps https://stadiamaps.com/
+   * layer: alidade_smooth, alidade_smooth_dark, outdoors,
+   *   stamen_terrain, stamen_terrain_background, stamen_terrain_labels, stamen_terrain_lines,
+   *   stamen_toner_background, stamen_toner, stamen_toner_labels, stamen_toner_lines, stamen_toner_lite,
+   *   stamen_watercolor, and osm_bright
    */
-  class Stamen extends ol.layer.Tile {
+  class StadiaMaps extends ol.layer.Tile {
     constructor(options) {
       super({
-        source: new ol.source.Stamen({
-          layer: 'terrain',
+        source: new ol.source.StadiaMaps({
+          layer: 'stamen_toner_lite',
 
           ...options,
         }),
@@ -69669,12 +71384,11 @@ var myol = (function () {
       'Google hybrid': new Google({
         subLayers: 's,h',
       }),
-      'Stamen': new Stamen(),
-      'Toner': new Stamen({
-        layer: 'toner',
+      'Toner': new StadiaMaps({
+        layer: 'stamen_toner_lite',
       }),
-      'Watercolor': new Stamen({
-        layer: 'watercolor',
+      'Watercolor': new StadiaMaps({
+        layer: 'stamen_watercolor',
       }),
       'Blank': new ol.layer.Tile(),
     };
@@ -69693,7 +71407,7 @@ var myol = (function () {
     OS: OS,
     OpenStreetMap: OpenStreetMap,
     OpenTopo: OpenTopo,
-    Stamen: Stamen,
+    StadiaMaps: StadiaMaps,
     SwissTopo: SwissTopo,
     Thunderforest: Thunderforest,
     collection: collection,

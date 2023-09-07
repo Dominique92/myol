@@ -116,6 +116,7 @@
 
 .ol-viewport canvas {
   all: unset;
+  overflow: hidden;
 }
 
 .ol-viewport {
@@ -627,11 +628,13 @@
   background: #fcffd1 !important;
 }
 /*!
- * @myol/ol-geocoder - v4.2.10
- * A geocoder extension compatible with OpenLayers v7+ & v8+
+ * @myol/geocoder - v4.2.14
+ * DEVELOPMENT : DON'T USE
  * https://github.com/Dominique92/ol-geocoder
- * Built: Sun Sep 03 2023 21:12:41 GMT+0200 (heure d’été d’Europe centrale)
- */.ol-touch .ol-control.gcd-gl-control button {
+ * Built: Thu Sep 07 2023 13:44:49 GMT+0200 (heure d’été d’Europe centrale)
+ */
+ 
+ .ol-touch .ol-control.gcd-gl-control button {
   font-size: 1.14em; }
 
 .ol-touch .ol-geocoder.gcd-gl-container {
@@ -675,7 +678,7 @@
     outline: none;
     box-shadow: inset 0 0 0 1px #4d90fe, inset 0 0 5px #4d90fe; }
 
-.ol-geocoder .gcd-gl-reset {
+.ol-geocoder .gcd-gl-search {
   position: absolute;
   z-index: 100;
   top: 0;
@@ -688,8 +691,8 @@
   display: inline-block;
   outline: 0;
   cursor: pointer; }
-  .ol-geocoder .gcd-gl-reset::after {
-    content: "\d7";
+  .ol-geocoder .gcd-gl-search::after {
+    content: "\2386";
     display: inline-block;
     color: #333;
     font-size: 1.5em;
@@ -763,6 +766,11 @@
   background-color: #fff;
   overflow: hidden; }
 
+.ol-geocoder .gcd-txt-label {
+  display: inline-block;
+  width: 100%;
+  text-align: center; }
+
 .ol-geocoder .gcd-txt-input {
   position: absolute;
   z-index: 99;
@@ -780,7 +788,7 @@
     outline: none;
     box-shadow: inset 0 0 0 1px #4d90fe, inset 0 0 6px #4d90fe; }
 
-.ol-geocoder .gcd-txt-reset {
+.ol-geocoder .gcd-txt-search {
   position: absolute;
   z-index: 100;
   top: 0;
@@ -794,8 +802,8 @@
   vertical-align: middle;
   outline: 0;
   cursor: pointer; }
-  .ol-geocoder .gcd-txt-reset::after {
-    content: "\d7";
+  .ol-geocoder .gcd-txt-search::after {
+    content: "\2386";
     display: inline-block;
     color: #333;
     font-size: 2em;

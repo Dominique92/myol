@@ -7,8 +7,7 @@ import * as fs from 'fs';
 
 const banner = fs.readFileSync('./build/banner.js', 'utf-8');
 //TODO dist without no included ol...
-//TODO banner on .css
-//TODO rollup date in dist
+//TODO rollup date, version & module name in dist from package
 
 export default [{
   // Full myol / compressed library

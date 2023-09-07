@@ -10,7 +10,7 @@ class LimitedTileLayer extends ol.layer.Tile {
   setMapInternal(map) { //HACK execute actions on Map init
     super.setMapInternal(map);
 
-    const altlayer = new Stamen({
+    const altlayer = new StadiaMaps({
       minResolution: this.getMaxResolution(),
     });
 
@@ -307,13 +307,17 @@ export class ArcGIS extends ol.layer.Tile {
 }
 
 /**
- * Stamen http://maps.stamen.com
+ * StadiaMaps https://stadiamaps.com/
+ * layer: alidade_smooth, alidade_smooth_dark, outdoors,
+ *   stamen_terrain, stamen_terrain_background, stamen_terrain_labels, stamen_terrain_lines,
+ *   stamen_toner_background, stamen_toner, stamen_toner_labels, stamen_toner_lines, stamen_toner_lite,
+ *   stamen_watercolor, and osm_bright
  */
-export class Stamen extends ol.layer.Tile {
+export class StadiaMaps extends ol.layer.Tile {
   constructor(options) {
     super({
-      source: new ol.source.Stamen({
-        layer: 'terrain',
+      source: new ol.source.StadiaMaps({
+        layer: 'stamen_toner_lite',
 
         ...options,
       }),
@@ -513,12 +517,11 @@ export function demo(options = {}) {
     'Google hybrid': new Google({
       subLayers: 's,h',
     }),
-    'Stamen': new Stamen(),
-    'Toner': new Stamen({
-      layer: 'toner',
+    'Toner': new StadiaMaps({
+      layer: 'stamen_toner_lite',
     }),
-    'Watercolor': new Stamen({
-      layer: 'watercolor',
+    'Watercolor': new StadiaMaps({
+      layer: 'stamen_watercolor',
     }),
     'Blank': new ol.layer.Tile(),
   };

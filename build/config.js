@@ -6,7 +6,7 @@ import terser from '@rollup/plugin-terser'; // Rollup plugin to minify generated
 import * as fs from 'fs';
 
 const banner = fs.readFileSync('./build/banner.js', 'utf-8');
-//TODO dist without no included ol...
+//TODO dist without ol... included
 //TODO rollup date, version & module name in dist from package
 
 export default [{

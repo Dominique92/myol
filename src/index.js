@@ -1,4 +1,6 @@
-// This file defines the myol exports
+/**
+ * This file defines the myol exports
+ */
 
 import control from './control';
 import layer from './layer';

@@ -14,16 +14,16 @@ import * as stylesOptions from './stylesOptions';
 class MyVectorSource extends ol.source.Vector {
   constructor(opt) {
     const options = {
-        // url calculation
-        url: url_, // (extent, resolution, projection)
+        url: url_, // (extent, resolution, projection) // Calculate the url
         // host: '',
         // query: (extent, resolution, projection ,options) => ({_path: '...'}),
         bbox: bbox_, // (extent, resolution, projection)
         strategy: ol.loadingstrategy.bbox,
         projection: 'EPSG:4326',
 
-        // add properties to each received features
-        addProperties: () => {}, // (default) properties => {}
+        addProperties: () => {}, // (default) properties => {} // add properties to each received features
+
+        // Any ol.source.Vector options
 
         ...opt,
       },
@@ -93,6 +93,11 @@ class MyVectorSource extends ol.source.Vector {
  */
 class MyClusterSource extends ol.source.Cluster {
   constructor(options) {
+    // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
+    // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+
+    // Any MyVectorSource options
+
     super({
       distance: options.browserClusterMinDistance,
       source: new MyVectorSource(options), // Origin of mfeatures to cluster
@@ -161,10 +166,12 @@ class MyClusterSource extends ol.source.Cluster {
  */
 class MyBrowserClusterVectorLayer extends ol.layer.Vector {
   constructor(options) {
-    super({
-      //browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-      //browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+    // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
+    // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
 
+    // Any ol.source.layer.Vector
+
+    super({
       source: options.browserClusterMinDistance ?
         new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
         new MyVectorSource(options), // or a vector source to get the data
@@ -185,7 +192,7 @@ class MyBrowserClusterVectorLayer extends ol.layer.Vector {
 
 class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
   constructor(options) {
-    //serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
+    // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
 
     // Low resolutions layer to display the normal data
     super(options);
@@ -221,17 +228,33 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
  * Style features
  * Layer & features selector
  */
-//TODO document options
-//TODO ??? separate source options
 export class MyVectorLayer extends MyServerClusterVectorLayer {
   constructor(opt) {
     const options = {
+      // url: (extent, resolution, projection) => Calculate the url
+      // host: '',
+      // query: (extent, resolution, projection ,options) => ({_path: '...'}),
+      // bbox: (extent, resolution, projection)
+      // strategy: ol.loadingstrategy.bbox,
+      // projection: 'EPSG:4326',
+      // addProperties: (properties) => {properties => {}}, // add properties to each received features
+      // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
+      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
+
       basicStylesOptions: stylesOptions.basic, // (feature, layer)
       hoverStylesOptions: stylesOptions.hover,
       zIndex: 100, // Above the tiles layers
       selector: new Selector(opt.selectName),
 
+      // Any ol.source.Vector options
+      // Any ol.source.layer.Vector
+
       ...opt,
+    };
+
+    super({
+      ...options,
 
       style: (feature, resolution) => {
         // Function returning an array of styles options
@@ -242,9 +265,12 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
         return sof(feature, this) // Call the styleOptions function
           .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
       },
-    };
 
-    super(options);
+      source: options.browserClusterMinDistance ?
+        new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
+        new MyVectorSource(options), // or a vector source to get the data
+      maxResolution: options.serverClusterMinResolution,
+    });
 
     options.selector.callbacks.push(() => this.reload());
     this.reload();

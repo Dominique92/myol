@@ -3,7 +3,7 @@
  * Display status, altitude & speed
  */
 
-import ol from '../../src/ol'; //BEST come back to direct import (optim ???)
+import ol from '../ol'; //BEST come back to direct import (optim ???)
 import MyButton from './myButton';
 
 export default class MyGeolocation extends MyButton {

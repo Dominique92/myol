@@ -4,7 +4,7 @@
  * Don't set view when you declare the map
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import MyControl from './MyControl.js';
 
 export default class Permalink extends MyControl {

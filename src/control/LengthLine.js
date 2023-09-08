@@ -3,7 +3,7 @@
  * Control to display the length & height difference of an hovered line
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import MyControl from './MyControl.js';
 
 export default class LengthLine extends MyControl {

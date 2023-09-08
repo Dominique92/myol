@@ -3,7 +3,7 @@
  * geoJson lines & polygons edit
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import MyButton from './MyButton';
 
 // Editor

@@ -15,7 +15,7 @@ import MyMousePosition from './MyMousePosition';
 import Permalink from './Permalink';
 import Print from './Print';
 import TilesBuffer from './TilesBuffer';
-import ol from '../../src/ol';
+import ol from '../ol';
 
 /**
  * Controls examples

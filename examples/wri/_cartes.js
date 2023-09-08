@@ -179,7 +179,7 @@ function fondsCarte(page, layersKeys) {
   return {
     'Refuges.info': new myol.layer.tile.MRI(),
     'OSM fr': new myol.layer.tile.OpenStreetMap({
-      url: '//{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+      url: 'https://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
     }),
     'OpenTopo': new myol.layer.tile.OpenTopo(),
     'Outdoors': new myol.layer.tile.Thunderforest({

@@ -3,7 +3,7 @@
  * Various acces to geoJson services
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import MyVectorLayer from './MyVectorLayer';
 
 // Get icon from chemineur.fr
@@ -11,7 +11,7 @@ function chemIconUrl(type, host) {
   if (type) {
     const icons = type.split(' ');
 
-    return (host || '//chemineur.fr/') +
+    return (host || 'https://chemineur.fr/') +
       'ext/Dominique92/GeoBB/icones/' +
       icons[0] +
       (icons.length > 1 ? '_' + icons[1] : '') + // Limit to 2 type names & ' ' -> '_'
@@ -24,7 +24,7 @@ function chemIconUrl(type, host) {
 export class Chemineur extends MyVectorLayer {
   constructor(opt) {
     super({
-      host: '//chemineur.fr/',
+      host: 'https://chemineur.fr/',
       browserClusterMinDistance: 50,
       browserClusterFeaturelMaxPerimeter: 300,
       serverClusterMinResolution: 100,
@@ -46,7 +46,7 @@ export class Chemineur extends MyVectorLayer {
 export class Alpages extends MyVectorLayer {
   constructor(opt) {
     super({
-      host: '//alpages.info/',
+      host: 'https://alpages.info/',
       browserClusterMinDistance: 50,
       browserClusterFeaturelMaxPerimeter: 300,
       attribution: '&copy;alpages.info',
@@ -71,7 +71,7 @@ export class Alpages extends MyVectorLayer {
 export class WRI extends MyVectorLayer {
   constructor(opt) {
     super({
-      host: '//www.refuges.info/',
+      host: 'https://www.refuges.info/',
       browserClusterMinDistance: 50,
       serverClusterMinResolution: 100,
       attribution: '&copy;refuges.info',
@@ -161,7 +161,7 @@ export class C2C extends MyVectorLayer {
             type: properties.waypoint_type,
             icon: chemIconUrl(properties.waypoint_type),
             ele: properties.elevation,
-            link: '//www.camptocamp.org/waypoints/' + properties.document_id,
+            link: 'https://www.camptocamp.org/waypoints/' + properties.document_id,
           },
         });
       }

@@ -3,7 +3,7 @@
  * Add some usefull controls with buttons
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import './myControl.css';
 
 /**

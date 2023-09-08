@@ -2,7 +2,7 @@
  * Marker position display & edit
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import proj4Lib from 'proj4/lib/index';
 
 export default class Marker extends ol.layer.Vector {

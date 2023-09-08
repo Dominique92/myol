@@ -2,7 +2,7 @@
  * Print control
  */
 
-import ol from '../../src/ol'; //BEST ??? come back to direct import (optim ???)
+import ol from '../ol'; //BEST ??? come back to direct import (optim ???)
 import MyButton from './MyButton.js';
 
 export default class Print extends MyButton {

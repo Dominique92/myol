@@ -49,11 +49,11 @@ Based on https://openlayers.org
 
       // Les couches vectorielles
       contourMassif = coucheContourMassif({
-        host: '//www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
+        host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
         selectName: 'select-massif',
       }),
       pointsWRI = couchePointsWRI({
-        host: '//dom.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
+        host: 'https://dom.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
         selectName: 'select-wri',
         selectMassif: contourMassif.options.selector,
       }),
@@ -75,7 +75,7 @@ Based on https://openlayers.org
         ],
         layers: [
           coucheMassifsColores({
-            host: '//www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
+            host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
             selectName: 'select-massifs',
           }),
           ...couchesVectoriellesExternes(),

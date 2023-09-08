@@ -2,7 +2,7 @@
  * GPX file loader control
  */
 
-import ol from '../../src/ol'; //BEST ??? come back to direct import (optim ???)
+import ol from '../ol'; //BEST ??? come back to direct import (optim ???)
 import MyButton from './MyButton.js';
 
 export default class Load extends MyButton {
@@ -85,7 +85,7 @@ export default class Load extends MyButton {
                 width: 2,
               }),
               image: properties.sym ? new ol.style.Icon({
-                src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
+                src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
               }) : null,
             });
           },

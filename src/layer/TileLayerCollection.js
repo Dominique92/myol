@@ -3,7 +3,20 @@
  * Acces to various tiles layers services
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
+
+// Virtual class to factorise XYZ layers code
+class XYZsource extends ol.layer.Tile {
+  constructor(options = {}) {
+    super({
+      source: new ol.source.XYZ({
+        ...options,
+        url: typeof options.url == 'function' ? options.url(options) : options.url,
+      }),
+      ...options,
+    });
+  }
+}
 
 // Virtual class to replace invalid layer scope by a stub display
 class LimitedTileLayer extends ol.layer.Tile {
@@ -27,16 +40,12 @@ class LimitedTileLayer extends ol.layer.Tile {
 }
 
 // OpenStreetMap & co
-export class OpenStreetMap extends ol.layer.Tile {
+export class OpenStreetMap extends XYZsource {
   constructor(options) {
     super({
-      source: new ol.source.XYZ({
-        url: '//{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        maxZoom: 21,
-        attributions: ol.source.OSM.ATTRIBUTION,
-
-        ...options,
-      }),
+      url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      maxZoom: 21,
+      attributions: ol.source.OSM.ATTRIBUTION,
 
       ...options,
     });
@@ -46,7 +55,7 @@ export class OpenStreetMap extends ol.layer.Tile {
 export class OpenTopo extends OpenStreetMap {
   constructor(options) {
     super({
-      url: '//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
       maxZoom: 17,
       attributions: '<a href="https://opentopomap.org">OpenTopoMap</a> ' +
         '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
@@ -59,7 +68,7 @@ export class OpenTopo extends OpenStreetMap {
 export class MRI extends OpenStreetMap {
   constructor(options) {
     super({
-      url: '//maps.refuges.info/hiking/{z}/{x}/{y}.png',
+      url: 'https://maps.refuges.info/hiking/{z}/{x}/{y}.png',
       attributions: '<a href="//wiki.openstreetmap.org/wiki/Hiking/mri">Refuges.info</a>',
 
       ...options,
@@ -84,7 +93,7 @@ export class Kompass extends OpenStreetMap { // Austria
 export class Thunderforest extends OpenStreetMap {
   constructor(options) {
     super({
-      url: '//{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
+      url: 'https://{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
       // subLayer: 'outdoors', ...
       // key: Get a key at https://manage.thunderforest.com/dashboard
       hidden: !options.key, // For LayerSwitcher
@@ -182,26 +191,18 @@ export class SwissTopo extends LimitedTileLayer {
 /**
  * Spain
  */
-export class IgnES extends ol.layer.Tile {
-  constructor(opt) {
-    const options = {
-      host: '//www.ign.es/wmts/',
+export class IgnES extends XYZsource {
+  constructor(options) {
+    super({
+      host: 'https://www.ign.es/wmts/',
       server: 'mapa-raster',
       subLayer: 'MTN',
+      url: (o) => o.host + o.server + '?layer=' + o.subLayer +
+        '&Service=WMTS&Request=GetTile&Version=1.0.0' +
+        '&Format=image/jpeg' +
+        '&style=default&tilematrixset=GoogleMapsCompatible' +
+        '&TileMatrix={z}&TileCol={x}&TileRow={y}',
       attributions: '&copy; <a href="http://www.ign.es/">IGN España</a>',
-
-      ...opt,
-    };
-
-    super({
-      source: new ol.source.XYZ({
-        url: options.host + options.server + '?layer=' + options.subLayer +
-          '&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg' +
-          '&style=default&tilematrixset=GoogleMapsCompatible' +
-          '&TileMatrix={z}&TileCol={x}&TileRow={y}',
-
-        ...options,
-      }),
 
       ...options,
     });
@@ -250,13 +251,24 @@ export class IGM extends LimitedTileLayer {
 
 /**
  * Ordnance Survey : Great Britain
+ * key: Get your own (free) key at https://osdatahub.os.uk/
  */
 //BEST Replacement layer out of bounds
+export class CCCCCCCCC extends XYZsource { //TODO
+  constructor(options) {
+    super({
+      ...options,
+    });
+  }
+}
+/*
+OK https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/8/127/84.png?key=P8MjahLAlyDAHXEH2engwXJG6KDYsVzF
+KO https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/1/92/59.png?key=P8MjahLAlyDAHXEH2engwXJG6KDYsVzF
+*/
 export class OS extends LimitedTileLayer {
   constructor(opt) {
     const options = {
       subLayer: 'Outdoor_3857',
-      // key: Get your own (free) key at https://osdatahub.os.uk/
       extent: [-1198263, 6365000, 213000, 8702260],
       minResolution: 2,
       maxResolution: 1700,
@@ -282,24 +294,14 @@ export class OS extends LimitedTileLayer {
 /**
  * ArcGIS (Esri)
  */
-export class ArcGIS extends ol.layer.Tile {
-  constructor(opt) {
-    const options = {
+export class ArcGIS extends XYZsource {
+  constructor(options) {
+    super({
       host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
       subLayer: 'World_Imagery',
-      maxZoom: 19,
+      url: (o) => o.host + o.subLayer + '/MapServer/tile/{z}/{y}/{x}',
+      maxZoom: 19, //TODO revoir tous les maxZoom
       attributions: '&copy; <a href="https://www.arcgis.com/home/webmap/viewer.html">ArcGIS (Esri)</a>',
-
-      ...opt,
-    };
-
-    super({
-      source: new ol.source.XYZ({
-        url: options.host + options.subLayer +
-          '/MapServer/tile/{z}/{y}/{x}',
-
-        ...options,
-      }),
 
       ...options,
     });
@@ -328,23 +330,27 @@ export class StadiaMaps extends ol.layer.Tile {
 }
 
 /**
+ * Maxbox (Maxar)
+ * Get your own key at https://www.mapbox.com/
+ */
+export class Maxbox extends XYZsource {
+  constructor(options) {
+    super({
+      url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
+      attributions: '&copy; <a href="https://mapbox.com/">Mapbox</a>',
+    });
+  }
+}
+
+/**
  * Google
  */
-export class Google extends ol.layer.Tile {
-  constructor(opt) {
-    const options = {
-      subLayers: 'm', // Roads
-      attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
-
-      ...opt,
-    };
-
+export class Google extends XYZsource {
+  constructor(options) {
     super({
-      source: new ol.source.XYZ({
-        url: '//mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
-
-        ...options,
-      }),
+      subLayers: 'm', // Roads
+      url: (o) => 'https://mt{0-3}.google.com/vt/lyrs=' + o.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
+      attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
 
       ...options,
     });
@@ -389,7 +395,7 @@ export function collection(options = {}) {
       subLayer: 'transport',
     }),
     'OSM cyclo': new OpenStreetMap({
-      url: '//{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+      url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
     }),
     'Refuges.info': new MRI(),
 
@@ -417,6 +423,10 @@ export function collection(options = {}) {
 
     'Espagne': new IgnES(),
 
+    'Maxar': new Maxbox({
+      tileset: 'mapbox.satellite',
+      ...options.mapbox,
+    }),
     'Photo Google': new Google({
       subLayers: 's',
     }),

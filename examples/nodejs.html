@@ -19,6 +19,7 @@ Based on https://openlayers.org
   </script>
 
   <!-- The main script must be defer or module to be run after the myol import -->
+  <script src="ressources/keys.js"></script>
   <script type="module" src="ressources/trace.js"></script>
   <script type="module">
     new ol.Map({
@@ -29,7 +30,7 @@ Based on https://openlayers.org
       controls: [
         ...myol.control.collection(),
         new myol.control.LayerSwitcher({
-          layers: myol.layer.tile.collection(),
+          layers: myol.layer.tile.collection(layersKeys),
         }),
         new myol.control.Permalink({
           display: true,

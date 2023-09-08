@@ -55,6 +55,7 @@ export default {
     proj4: projProj4,
   },
   source: {
+    GeoTIFF: source.GeoTIFF,
     BingMaps: source.BingMaps,
     Cluster: source.Cluster,
     OSM: source.OSM,

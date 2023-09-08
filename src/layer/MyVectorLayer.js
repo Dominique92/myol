@@ -3,7 +3,7 @@
  * Facilities to vector layers
  */
 
-import ol from '../../src/ol';
+import ol from '../ol';
 import * as stylesOptions from './stylesOptions';
 
 /**

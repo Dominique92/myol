@@ -27,7 +27,7 @@ class LimitedTileLayer extends ol.layer.Tile {
       minResolution: this.getMaxResolution(),
     });
 
-    //BEST fall back out of valid area
+    //TODO fall back out of valid area
     map.addLayer(altlayer);
     altlayer.setOpacity(this.getOpacity());
     altlayer.setVisible(this.getVisible());
@@ -46,7 +46,6 @@ export class OpenStreetMap extends XYZsource {
       url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       maxZoom: 21,
       attributions: ol.source.OSM.ATTRIBUTION,
-
       ...options,
     });
   }
@@ -59,7 +58,6 @@ export class OpenTopo extends OpenStreetMap {
       maxZoom: 17,
       attributions: '<a href="https://opentopomap.org">OpenTopoMap</a> ' +
         '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-
       ...options,
     });
   }
@@ -70,7 +68,6 @@ export class MRI extends OpenStreetMap {
     super({
       url: 'https://maps.refuges.info/hiking/{z}/{x}/{y}.png',
       attributions: '<a href="//wiki.openstreetmap.org/wiki/Hiking/mri">Refuges.info</a>',
-
       ...options,
     });
   }
@@ -84,7 +81,6 @@ export class Kompass extends OpenStreetMap { // Austria
         'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
       hidden: !options.key && options.subLayer != 'osm', // For LayerSwitcher
       attributions: '<a href="http://www.kompass.de/livemap/">KOMPASS</a>',
-
       ...options,
     });
   }
@@ -98,7 +94,6 @@ export class Thunderforest extends OpenStreetMap {
       // key: Get a key at https://manage.thunderforest.com/dashboard
       hidden: !options.key, // For LayerSwitcher
       attributions: '<a href="http://www.thunderforest.com">Thunderforest</a>',
-
       ...options, // Include key
     });
   }
@@ -139,7 +134,6 @@ export class IGN extends ol.layer.Tile {
 
         ...options, // Include key & layer
       }),
-
       ...options,
     });
   }
@@ -179,10 +173,8 @@ export class SwissTopo extends LimitedTileLayer {
         }),
         requestEncoding: 'REST',
         crossOrigin: 'anonymous',
-
         ...options,
       })),
-
       ...options,
     });
   }
@@ -203,7 +195,6 @@ export class IgnES extends XYZsource {
         '&style=default&tilematrixset=GoogleMapsCompatible' +
         '&TileMatrix={z}&TileCol={x}&TileRow={y}',
       attributions: '&copy; <a href="http://www.ign.es/">IGN España</a>',
-
       ...options,
     });
   }
@@ -218,11 +209,9 @@ export class IGM extends LimitedTileLayer {
       source: new ol.source.TileWMS({
         url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it', // Not available via https
         attributions: '&copy <a href="http://www.pcn.minambiente.it/viewer/">IGM</a>',
-
         ...options,
       }),
       maxResolution: 120,
-
       ...options,
     });
   }
@@ -254,38 +243,21 @@ export class IGM extends LimitedTileLayer {
  * key: Get your own (free) key at https://osdatahub.os.uk/
  */
 //BEST Replacement layer out of bounds
-export class CCCCCCCCC extends XYZsource { //TODO
+//BEST XYZsource
+export class OS extends LimitedTileLayer {
   constructor(options) {
     super({
-      ...options,
-    });
-  }
-}
-/*
-OK https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/8/127/84.png?key=P8MjahLAlyDAHXEH2engwXJG6KDYsVzF
-KO https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/1/92/59.png?key=P8MjahLAlyDAHXEH2engwXJG6KDYsVzF
-*/
-export class OS extends LimitedTileLayer {
-  constructor(opt) {
-    const options = {
-      subLayer: 'Outdoor_3857',
+      hidden: !options.key, // For LayerSwitcher
       extent: [-1198263, 6365000, 213000, 8702260],
       minResolution: 2,
       maxResolution: 1700,
-      attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
-
-      ...opt,
-    };
-
-    super({
-      hidden: !options.key, // For LayerSwitcher
       source: new ol.source.XYZ({
-        url: 'https://api.os.uk/maps/raster/v1/zxy/' + options.subLayer +
+        url: 'https://api.os.uk/maps/raster/v1/zxy/' +
+          (options.subLayer || 'Outdoor_3857') +
           '/{z}/{x}/{y}.png?key=' + options.key,
-
+        attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
         ...options, // Include key
       }),
-
       ...options,
     });
   }
@@ -302,7 +274,6 @@ export class ArcGIS extends XYZsource {
       url: (o) => o.host + o.subLayer + '/MapServer/tile/{z}/{y}/{x}',
       maxZoom: 19, //TODO revoir tous les maxZoom
       attributions: '&copy; <a href="https://www.arcgis.com/home/webmap/viewer.html">ArcGIS (Esri)</a>',
-
       ...options,
     });
   }
@@ -320,10 +291,8 @@ export class StadiaMaps extends ol.layer.Tile {
     super({
       source: new ol.source.StadiaMaps({
         layer: 'stamen_toner_lite',
-
         ...options,
       }),
-
       ...options,
     });
   }
@@ -351,7 +320,6 @@ export class Google extends XYZsource {
       subLayers: 'm', // Roads
       url: (o) => 'https://mt{0-3}.google.com/vt/lyrs=' + o.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
       attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
-
       ...options,
     });
   }
@@ -368,7 +336,6 @@ export class Bing extends ol.layer.Tile {
       // key, Get your own (free) key at https://www.bingmapsportal.com
       hidden: !options.key, // For LayerSwitcher
       // attributions, defined by ol.source.BingMaps
-
       ...options,
     });
 

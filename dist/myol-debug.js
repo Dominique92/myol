@@ -60849,7 +60849,7 @@ var myol = (function () {
                   width: 2,
                 }),
                 image: properties.sym ? new ol.style.Icon({
-                  src: '//chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
+                  src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
                 }) : null,
               });
             },
@@ -70418,16 +70418,16 @@ var myol = (function () {
   class MyVectorSource extends ol.source.Vector {
     constructor(opt) {
       const options = {
-          // url calculation
-          url: url_, // (extent, resolution, projection)
+          url: url_, // (extent, resolution, projection) // Calculate the url
           // host: '',
           // query: (extent, resolution, projection ,options) => ({_path: '...'}),
           bbox: bbox_, // (extent, resolution, projection)
           strategy: ol.loadingstrategy.bbox,
           projection: 'EPSG:4326',
 
-          // add properties to each received features
-          addProperties: () => {}, // (default) properties => {}
+          addProperties: () => {}, // (default) properties => {} // add properties to each received features
+
+          // Any ol.source.Vector options
 
           ...opt,
         },
@@ -70497,6 +70497,11 @@ var myol = (function () {
    */
   class MyClusterSource extends ol.source.Cluster {
     constructor(options) {
+      // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
+      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+
+      // Any MyVectorSource options
+
       super({
         distance: options.browserClusterMinDistance,
         source: new MyVectorSource(options), // Origin of mfeatures to cluster
@@ -70565,10 +70570,12 @@ var myol = (function () {
    */
   class MyBrowserClusterVectorLayer extends ol.layer.Vector {
     constructor(options) {
-      super({
-        //browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-        //browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+      // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
+      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
 
+      // Any ol.source.layer.Vector
+
+      super({
         source: options.browserClusterMinDistance ?
           new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
           new MyVectorSource(options), // or a vector source to get the data
@@ -70589,7 +70596,7 @@ var myol = (function () {
 
   class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
     constructor(options) {
-      //serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
+      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
 
       // Low resolutions layer to display the normal data
       super(options);
@@ -70625,17 +70632,33 @@ var myol = (function () {
    * Style features
    * Layer & features selector
    */
-  //TODO document options
-  //TODO ??? separate source options
   class MyVectorLayer extends MyServerClusterVectorLayer {
     constructor(opt) {
       const options = {
+        // url: (extent, resolution, projection) => Calculate the url
+        // host: '',
+        // query: (extent, resolution, projection ,options) => ({_path: '...'}),
+        // bbox: (extent, resolution, projection)
+        // strategy: ol.loadingstrategy.bbox,
+        // projection: 'EPSG:4326',
+        // addProperties: (properties) => {properties => {}}, // add properties to each received features
+        // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
+        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+        // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
+
         basicStylesOptions: basic, // (feature, layer)
         hoverStylesOptions: hover,
         zIndex: 100, // Above the tiles layers
         selector: new Selector(opt.selectName),
 
+        // Any ol.source.Vector options
+        // Any ol.source.layer.Vector
+
         ...opt,
+      };
+
+      super({
+        ...options,
 
         style: (feature, resolution) => {
           // Function returning an array of styles options
@@ -70646,9 +70669,12 @@ var myol = (function () {
           return sof(feature, this) // Call the styleOptions function
             .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
         },
-      };
 
-      super(options);
+        source: options.browserClusterMinDistance ?
+          new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
+          new MyVectorSource(options), // or a vector source to get the data
+        maxResolution: options.serverClusterMinResolution,
+      });
 
       options.selector.callbacks.push(() => this.reload());
       this.reload();
@@ -70870,6 +70896,19 @@ var myol = (function () {
    */
 
 
+  // Virtual class to factorise XYZ layers code
+  class XYZsource extends ol.layer.Tile {
+    constructor(options = {}) {
+      super({
+        source: new ol.source.XYZ({
+          ...options,
+          url: typeof options.url == 'function' ? options.url(options) : options.url,
+        }),
+        ...options,
+      });
+    }
+  }
+
   // Virtual class to replace invalid layer scope by a stub display
   class LimitedTileLayer extends ol.layer.Tile {
     setMapInternal(map) { //HACK execute actions on Map init
@@ -70879,7 +70918,7 @@ var myol = (function () {
         minResolution: this.getMaxResolution(),
       });
 
-      //BEST fall back out of valid area
+      //TODO fall back out of valid area
       map.addLayer(altlayer);
       altlayer.setOpacity(this.getOpacity());
       altlayer.setVisible(this.getVisible());
@@ -70892,17 +70931,12 @@ var myol = (function () {
   }
 
   // OpenStreetMap & co
-  class OpenStreetMap extends ol.layer.Tile {
+  class OpenStreetMap extends XYZsource {
     constructor(options) {
       super({
-        source: new ol.source.XYZ({
-          url: '//{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          maxZoom: 21,
-          attributions: ol.source.OSM.ATTRIBUTION,
-
-          ...options,
-        }),
-
+        url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        maxZoom: 21,
+        attributions: ol.source.OSM.ATTRIBUTION,
         ...options,
       });
     }
@@ -70911,11 +70945,10 @@ var myol = (function () {
   class OpenTopo extends OpenStreetMap {
     constructor(options) {
       super({
-        url: '//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
         maxZoom: 17,
         attributions: '<a href="https://opentopomap.org">OpenTopoMap</a> ' +
           '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-
         ...options,
       });
     }
@@ -70924,9 +70957,8 @@ var myol = (function () {
   class MRI extends OpenStreetMap {
     constructor(options) {
       super({
-        url: '//maps.refuges.info/hiking/{z}/{x}/{y}.png',
+        url: 'https://maps.refuges.info/hiking/{z}/{x}/{y}.png',
         attributions: '<a href="//wiki.openstreetmap.org/wiki/Hiking/mri">Refuges.info</a>',
-
         ...options,
       });
     }
@@ -70940,7 +70972,6 @@ var myol = (function () {
           'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
         hidden: !options.key && options.subLayer != 'osm', // For LayerSwitcher
         attributions: '<a href="http://www.kompass.de/livemap/">KOMPASS</a>',
-
         ...options,
       });
     }
@@ -70949,12 +70980,11 @@ var myol = (function () {
   class Thunderforest extends OpenStreetMap {
     constructor(options) {
       super({
-        url: '//{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
+        url: 'https://{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
         // subLayer: 'outdoors', ...
         // key: Get a key at https://manage.thunderforest.com/dashboard
         hidden: !options.key, // For LayerSwitcher
         attributions: '<a href="http://www.thunderforest.com">Thunderforest</a>',
-
         ...options, // Include key
       });
     }
@@ -70995,7 +71025,6 @@ var myol = (function () {
 
           ...options, // Include key & layer
         }),
-
         ...options,
       });
     }
@@ -71035,10 +71064,8 @@ var myol = (function () {
           }),
           requestEncoding: 'REST',
           crossOrigin: 'anonymous',
-
           ...options,
         })),
-
         ...options,
       });
     }
@@ -71047,27 +71074,18 @@ var myol = (function () {
   /**
    * Spain
    */
-  class IgnES extends ol.layer.Tile {
-    constructor(opt) {
-      const options = {
-        host: '//www.ign.es/wmts/',
+  class IgnES extends XYZsource {
+    constructor(options) {
+      super({
+        host: 'https://www.ign.es/wmts/',
         server: 'mapa-raster',
         subLayer: 'MTN',
+        url: (o) => o.host + o.server + '?layer=' + o.subLayer +
+          '&Service=WMTS&Request=GetTile&Version=1.0.0' +
+          '&Format=image/jpeg' +
+          '&style=default&tilematrixset=GoogleMapsCompatible' +
+          '&TileMatrix={z}&TileCol={x}&TileRow={y}',
         attributions: '&copy; <a href="http://www.ign.es/">IGN España</a>',
-
-        ...opt,
-      };
-
-      super({
-        source: new ol.source.XYZ({
-          url: options.host + options.server + '?layer=' + options.subLayer +
-            '&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg' +
-            '&style=default&tilematrixset=GoogleMapsCompatible' +
-            '&TileMatrix={z}&TileCol={x}&TileRow={y}',
-
-          ...options,
-        }),
-
         ...options,
       });
     }
@@ -71082,11 +71100,9 @@ var myol = (function () {
         source: new ol.source.TileWMS({
           url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it', // Not available via https
           attributions: '&copy <a href="http://www.pcn.minambiente.it/viewer/">IGM</a>',
-
           ...options,
         }),
         maxResolution: 120,
-
         ...options,
       });
     }
@@ -71115,30 +71131,24 @@ var myol = (function () {
 
   /**
    * Ordnance Survey : Great Britain
+   * key: Get your own (free) key at https://osdatahub.os.uk/
    */
   //BEST Replacement layer out of bounds
+  //BEST XYZsource
   class OS extends LimitedTileLayer {
-    constructor(opt) {
-      const options = {
-        subLayer: 'Outdoor_3857',
-        // key: Get your own (free) key at https://osdatahub.os.uk/
+    constructor(options) {
+      super({
+        hidden: !options.key, // For LayerSwitcher
         extent: [-1198263, 6365000, 213000, 8702260],
         minResolution: 2,
         maxResolution: 1700,
-        attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
-
-        ...opt,
-      };
-
-      super({
-        hidden: !options.key, // For LayerSwitcher
         source: new ol.source.XYZ({
-          url: 'https://api.os.uk/maps/raster/v1/zxy/' + options.subLayer +
+          url: 'https://api.os.uk/maps/raster/v1/zxy/' +
+            (options.subLayer || 'Outdoor_3857') +
             '/{z}/{x}/{y}.png?key=' + options.key,
-
+          attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
           ...options, // Include key
         }),
-
         ...options,
       });
     }
@@ -71147,25 +71157,14 @@ var myol = (function () {
   /**
    * ArcGIS (Esri)
    */
-  class ArcGIS extends ol.layer.Tile {
-    constructor(opt) {
-      const options = {
+  class ArcGIS extends XYZsource {
+    constructor(options) {
+      super({
         host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
         subLayer: 'World_Imagery',
-        maxZoom: 19,
+        url: (o) => o.host + o.subLayer + '/MapServer/tile/{z}/{y}/{x}',
+        maxZoom: 19, //TODO revoir tous les maxZoom
         attributions: '&copy; <a href="https://www.arcgis.com/home/webmap/viewer.html">ArcGIS (Esri)</a>',
-
-        ...opt,
-      };
-
-      super({
-        source: new ol.source.XYZ({
-          url: options.host + options.subLayer +
-            '/MapServer/tile/{z}/{y}/{x}',
-
-          ...options,
-        }),
-
         ...options,
       });
     }
@@ -71183,11 +71182,22 @@ var myol = (function () {
       super({
         source: new ol.source.StadiaMaps({
           layer: 'stamen_toner_lite',
-
           ...options,
         }),
-
         ...options,
+      });
+    }
+  }
+
+  /**
+   * Maxbox (Maxar)
+   * Get your own key at https://www.mapbox.com/
+   */
+  class Maxbox extends XYZsource {
+    constructor(options) {
+      super({
+        url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
+        attributions: '&copy; <a href="https://mapbox.com/">Mapbox</a>',
       });
     }
   }
@@ -71195,22 +71205,12 @@ var myol = (function () {
   /**
    * Google
    */
-  class Google extends ol.layer.Tile {
-    constructor(opt) {
-      const options = {
-        subLayers: 'm', // Roads
-        attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
-
-        ...opt,
-      };
-
+  class Google extends XYZsource {
+    constructor(options) {
       super({
-        source: new ol.source.XYZ({
-          url: '//mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
-
-          ...options,
-        }),
-
+        subLayers: 'm', // Roads
+        url: (o) => 'https://mt{0-3}.google.com/vt/lyrs=' + o.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
+        attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
         ...options,
       });
     }
@@ -71227,7 +71227,6 @@ var myol = (function () {
         // key, Get your own (free) key at https://www.bingmapsportal.com
         hidden: !options.key, // For LayerSwitcher
         // attributions, defined by ol.source.BingMaps
-
         ...options,
       });
 
@@ -71254,7 +71253,7 @@ var myol = (function () {
         subLayer: 'transport',
       }),
       'OSM cyclo': new OpenStreetMap({
-        url: '//{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+        url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
       }),
       'Refuges.info': new MRI(),
 
@@ -71282,6 +71281,10 @@ var myol = (function () {
 
       'Espagne': new IgnES(),
 
+      'Maxar': new Maxbox({
+        tileset: 'mapbox.satellite',
+        ...options.mapbox,
+      }),
       'Photo Google': new Google({
         subLayers: 's',
       }),
@@ -71402,6 +71405,7 @@ var myol = (function () {
     IgnES: IgnES,
     Kompass: Kompass,
     MRI: MRI,
+    Maxbox: Maxbox,
     OS: OS,
     OpenStreetMap: OpenStreetMap,
     OpenTopo: OpenTopo,
@@ -71423,7 +71427,7 @@ var myol = (function () {
     if (type) {
       const icons = type.split(' ');
 
-      return (host || '//chemineur.fr/') +
+      return (host || 'https://chemineur.fr/') +
         'ext/Dominique92/GeoBB/icones/' +
         icons[0] +
         (icons.length > 1 ? '_' + icons[1] : '') + // Limit to 2 type names & ' ' -> '_'
@@ -71436,7 +71440,7 @@ var myol = (function () {
   class Chemineur extends MyVectorLayer {
     constructor(opt) {
       super({
-        host: '//chemineur.fr/',
+        host: 'https://chemineur.fr/',
         browserClusterMinDistance: 50,
         browserClusterFeaturelMaxPerimeter: 300,
         serverClusterMinResolution: 100,
@@ -71458,7 +71462,7 @@ var myol = (function () {
   class Alpages extends MyVectorLayer {
     constructor(opt) {
       super({
-        host: '//alpages.info/',
+        host: 'https://alpages.info/',
         browserClusterMinDistance: 50,
         browserClusterFeaturelMaxPerimeter: 300,
         attribution: '&copy;alpages.info',
@@ -71483,7 +71487,7 @@ var myol = (function () {
   class WRI extends MyVectorLayer {
     constructor(opt) {
       super({
-        host: '//www.refuges.info/',
+        host: 'https://www.refuges.info/',
         browserClusterMinDistance: 50,
         serverClusterMinResolution: 100,
         attribution: '&copy;refuges.info',
@@ -71573,7 +71577,7 @@ var myol = (function () {
               type: properties.waypoint_type,
               icon: chemIconUrl(properties.waypoint_type),
               ele: properties.elevation,
-              link: '//www.camptocamp.org/waypoints/' + properties.document_id,
+              link: 'https://www.camptocamp.org/waypoints/' + properties.document_id,
             },
           });
         }
@@ -71728,7 +71732,9 @@ var myol = (function () {
     vector: vectorLayerCollection,
   };
 
-  // This file defines the myol exports
+  /**
+   * This file defines the myol exports
+   */
 
 
   var myol = {

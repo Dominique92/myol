@@ -2,50 +2,33 @@
  * GPX file loader control
  */
 
-import ol from '../ol'; //BEST ??? come back to direct import (optim ???)
-import MyButton from './MyButton.js';
+import ol from '../ol';
+import Button from './Button.js';
 
-export default class Load extends MyButton {
-  constructor(options = {}) {
+export class Load extends Button {
+  constructor(options) {
     super({
-      // MyButton options
-      label: '&#128194;', //TODO trouver un autre symbole
-      subMenuHTML: '<p>Importer un fichier de points ou de traces</p>' +
-        '<input type="file" accept=".gpx,.kml,.geojson">',
-
-      // Load options
-      // initFileUrl, url of a gpx file to be uploaded at the init
-
-      ...options, //HACK default when options is undefined
+      // Button options
+      className: 'myol-button-load',
+      subMenuId: 'myol-button-load',
+      subMenuHTML: subMenuHTML,
+      subMenuHTML_fr: subMenuHTML_fr,
+      ...options,
     });
-
-    // Register action listeners
-    this.element.querySelectorAll('input')
-      .forEach(el =>
-        el.addEventListener('change', evt => this.change(evt))
-      );
-
-    // Load file at init
-    if (options.initFileUrl) {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', options.initFileUrl);
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState == 4 && xhr.status == 200)
-          this.loadText(xhr.responseText, options.initFileUrl);
-      };
-      xhr.send();
-    }
 
     this.reader = new FileReader();
   }
 
-  change(evt) {
+  subMenuAction(evt) {
     const blob = evt.target.files[0];
 
-    this.reader.readAsText(blob);
+    if (evt.type == 'change' && evt.target.files)
+      this.reader.readAsText(blob);
+
     this.reader.onload = () => this.loadText(this.reader.result, blob.name);
   }
 
+  // Method to load a geoJson layer from an url
   loadUrl(url) {
     if (url)
       fetch(url)
@@ -53,6 +36,7 @@ export default class Load extends MyButton {
       .then(text => this.loadText(text, url));
   }
 
+  // Method to load features from a geoJson text
   loadText(text, url) {
     const map = this.getMap(),
       formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
@@ -63,50 +47,55 @@ export default class Load extends MyButton {
         dataProjection: receivedProjection,
         featureProjection: map.getView().getProjection(), // Map projection
       }),
-      added = map.dispatchEvent({
-        type: 'myol:onfeatureload', // Warn Editor that we uploaded some features
+      gpxSource = new ol.source.Vector({
+        format: loadFormat,
+        features: features,
+      }),
+      gpxLayer = new ol.layer.Vector({
+        source: gpxSource,
+        style: feature => {
+          const properties = feature.getProperties();
+
+          return new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'blue',
+              width: 2,
+            }),
+            image: properties.sym ? new ol.style.Icon({
+              src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
+            }) : null,
+          });
+        },
+      }),
+      fileExtent = gpxSource.getExtent();
+
+    if (ol.extent.isEmpty(fileExtent))
+      alert(url + ' ne comporte pas de point ni de trace.');
+    else {
+      // Warn everyone that features have been loaded
+      const used = map.dispatchEvent({
+        type: 'myol:onfeatureload',
         features: features,
       });
 
-    if (added !== false) { // If none used the feature
-      // Display the track on the map
-      const gpxSource = new ol.source.Vector({
-          format: loadFormat,
-          features: features,
-        }),
-        gpxLayer = new ol.layer.Vector({
-          source: gpxSource,
-          style: feature => {
-            const properties = feature.getProperties();
-
-            return new ol.style.Style({
-              stroke: new ol.style.Stroke({
-                color: 'blue',
-                width: 2,
-              }),
-              image: properties.sym ? new ol.style.Icon({
-                src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
-              }) : null,
-            });
-          },
-        });
-
-      map.addLayer(gpxLayer);
+      // If no one used the feature, display them as a new layer
+      if (used !== false)
+        map.addLayer(gpxLayer);
 
       // Zoom the map on the added features
-      const fileExtent = gpxSource.getExtent();
-
-      if (ol.extent.isEmpty(fileExtent))
-        alert(url + ' ne comporte pas de point ni de trace.');
-      else
-        map.getView().fit(
-          fileExtent, {
-            maxZoom: 17,
-            padding: [5, 5, 5, 5],
-          });
+      map.getView().fit(
+        fileExtent, {
+          minResolution: 1,
+          padding: [5, 5, 5, 5],
+        });
     }
 
     // Close the submenu
     this.element.classList.remove('myol-display-submenu');
   }
 }
+
+var subMenuHTML = '<input type="file" accept=".gpx,.kml,.geojson">',
+  subMenuHTML_fr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
+
+export default Load;

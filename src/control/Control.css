@@ -1,17 +1,36 @@
+/* Control */
+
 /* PhpBB compatibility */
 .ol-overlaycontainer-stopevent>div:not(.ol-control) {
   margin: 0;
 }
 
+/* Button labels */
+.myol-button-download button::after {
+  content: "\21e9";
+}
+
+.myol-button-geolocation button::after {
+  content: "\2295";
+}
+
+.myol-button-load button::after {
+  content: "\1F4C2";
+}
+
+.myol-button-print button::after {
+  content: "\1F5A8";
+}
+
 /* Buttonless controls */
 .myol-permalink,
 .ol-attribution,
-.myol-coordinate,
+.myol-mouse-position,
 .myol-length-line {
   font-size: 12px;
 }
 
-.myol-coordinate {
+.myol-mouse-position {
   position: absolute;
   bottom: 30px;
   left: 8px;
@@ -31,7 +50,7 @@
   color: white;
 }
 
-.myol-coordinate:empty,
+.myol-mouse-position:empty,
 .myol-length-line:empty {
   display: none;
 }

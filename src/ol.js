@@ -42,6 +42,7 @@ export default {
     Modify: interaction.Modify,
     MouseWheelZoom: interaction.MouseWheelZoom,
     Pointer: interaction.Pointer,
+    Select: interaction.Select,
     Snap: interaction.Snap,
   },
   layer: {
@@ -58,7 +59,6 @@ export default {
     BingMaps: source.BingMaps,
     Cluster: source.Cluster,
     OSM: source.OSM,
-    StadiaMaps: source.StadiaMaps,
     TileWMS: source.TileWMS,
     Vector: source.Vector,
     WMTS: source.WMTS,

@@ -2,21 +2,24 @@
  * LayerSwitcher.js
  */
 
-import MyButton from './MyButton';
+import Button from './Button';
+import BackgroundLayer from '../layer/BackgroundLayer';
 import './layerSwitcher.css';
 
 //BEST how do we do on touch terminal ? alt key to switch layers / transparency
-//BEST keep selector open when click on the button (as other buttons)
-export default class LayerSwitcher extends MyButton {
+//BEST slider transparency doesn't work out of range (no BackgroundLayer)
+//BEST BUG Attribution doit être défini avant LayerSwitcher
+export class LayerSwitcher extends Button {
   constructor(options) {
     super({
-      // MyButton options
+      // Button options
       className: 'myol-button-switcher',
-      label: '&#10063;',
       subMenuHTML: '<div>',
 
       ...options,
     });
+
+    this.selectExtId = options.selectExtId;
 
     // Filter null or hidden layers
     this.layers = {};
@@ -38,6 +41,8 @@ export default class LayerSwitcher extends MyButton {
   setMap(map) {
     super.setMap(map);
 
+    map.addLayer(new BackgroundLayer());
+
     for (let name in this.layers) {
       // Build html layers selectors
       this.subMenuEl.insertAdjacentHTML('beforeend', '<label><input type="checkbox" name="baselayer" value="' + name + '">' + name + '</label>');
@@ -51,7 +56,7 @@ export default class LayerSwitcher extends MyButton {
     this.subMenuEl.insertAdjacentHTML('beforeend', '<p>Ctrl+click: multicouches</p>');
 
     // Attach html additional selector (must be there to be after base layers)
-    const selectExtEl = document.getElementById(this.options.selectExtId);
+    const selectExtEl = document.getElementById(this.selectExtId);
     if (selectExtEl) {
       selectExtEl.classList.add('select-ext');
       this.subMenuEl.appendChild(selectExtEl);
@@ -113,3 +118,5 @@ export default class LayerSwitcher extends MyButton {
       this.transparentlayer.setOpacity(this.sliderEl.value / 100);
   }
 }
+
+export default LayerSwitcher;

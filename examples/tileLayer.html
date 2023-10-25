@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 © Dominique Cavailhez 2019
-https://github.com/Dominique92/MyOl
+https://github.com/Dominique92/myol
 Based on https://openlayers.org
 -->
 <html>
@@ -31,7 +31,7 @@ Based on https://openlayers.org
   <!-- The main script must be defer or module to be run after the myol import -->
   <script src="ressources/keys.js"></script>
   <script type="module">
-    new ol.Map({
+    var map = new ol.Map({
       target: 'map',
       view: new ol.View({
         center: ol.proj.transform([2, 47], 'EPSG:4326', 'EPSG:3857'), // France
@@ -44,19 +44,23 @@ Based on https://openlayers.org
           collapsed: false,
         }),
         new myol.control.LayerSwitcher({
-          layers: myol.layer.tile.demo(layersKeys),
+          layers: myol.layer.tile.demo(mapKeys),
         }),
       ],
     });
+
+    map.getView().on('change:resolution', () =>
+      console.log('Resolution : ' + map.getView().getResolution() + ', zoom : ' + map.getView().getZoom())
+    );
   </script>
 </head>
 
 <body>
   <a style="float:right" href="vectorLayer.html">Next &#9654;</a>
-  <a style="float:right;margin-right:15px" href="..">Home</a>
+  <a style="float:right;margin-right:15px" href="./">Home</a>
   <h1 style="margin:0">Tile layer</h1>
-  <a style="float:right" href="https://github.com/Dominique92/MyOl/">Github &#9654;</a>
-  <p><a href="../src/TileLayerCollection.js">src/TileLayerCollection.js</a> defines a collection of tile baselayers</p>
+  <a style="float:right" href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+  <p><a href="../src/layer/TileLayerCollection.js">src/TileLayerCollection.js</a> defines a collection of tile baselayers</p>
 
   <div id="map" class="map"></div>
 

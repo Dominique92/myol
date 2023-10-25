@@ -5,12 +5,10 @@
  */
 
 import ol from '../ol';
-import MyControl from './MyControl.js';
 
-export default class Permalink extends MyControl {
+export class Permalink extends ol.control.Control {
   constructor(options) {
-    super({
-      // Permalink options
+    options = {
       init: true, // {true | false} use url hash or localStorage to position the map.
       setUrl: false, // {true | false} Change url hash when moving the map.
       display: false, // {true | false} Display permalink link the map.
@@ -18,14 +16,23 @@ export default class Permalink extends MyControl {
       //BEST init with bbox option
 
       ...options,
+    };
+
+    super({
+      element: document.createElement('div'),
+      ...options,
     });
 
-    if (this.options.display) {
+    this.init = options.init;
+    this.setUrl = options.setUrl;
+    this.hash = options.hash;
+
+    if (options.display) {
       this.element.className = 'myol-permalink';
-      this.aEl = document.createElement('a');
-      this.aEl.innerHTML = 'Permalink';
-      this.aEl.title = 'Generate a link with map zoom & position';
-      this.element.appendChild(this.aEl);
+      this.linkEl = document.createElement('a');
+      this.linkEl.innerHTML = 'Permalink';
+      this.linkEl.title = 'Generate a link with map zoom & position';
+      this.element.appendChild(this.linkEl);
     }
   }
 
@@ -44,8 +51,8 @@ export default class Permalink extends MyControl {
 
 
     // Set center & zoom at the init
-    if (this.options.init) {
-      this.options.init = false; // Only once
+    if (this.init) {
+      this.init = false; // Only once
 
       view.setZoom(urlMod.match(/zoom=([0-9.]+)/)[1]);
 
@@ -63,11 +70,14 @@ export default class Permalink extends MyControl {
         (localStorage.myol_lon = Math.round(ll4326[0] * 10000) / 10000) + '/' +
         (localStorage.myol_lat = Math.round(ll4326[1] * 10000) / 10000);
 
-      if (this.options.display)
-        this.aEl.href = this.options.hash + newParams;
+      if (this.linkEl) {
+        this.linkEl.href = this.hash + newParams;
 
-      if (this.options.setUrl)
-        location.href = '#' + newParams;
+        if (this.setUrl)
+          location.href = '#' + newParams;
+      }
     }
   }
 }
+
+export default Permalink;

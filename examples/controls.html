@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
 © Dominique Cavailhez 2019
-https://github.com/Dominique92/MyOl
+https://github.com/Dominique92/myol
 Based on https://openlayers.org
 -->
-<html>
+<html lang="fr">
 
 <head>
   <title>My Openlayers controls</title>
@@ -32,16 +32,20 @@ Based on https://openlayers.org
   <script type="module">
     new ol.Map({
       target: 'map',
+      view: new ol.View({
+        enableRotation: false,
+        center: [600000, 5800000],
+        zoom: 6,
+      }),
       controls: [
         ...myol.control.collection(),
-        new myol.control.MyButton({ // Help
+        new myol.control.Button({ // Help
           label: '?',
-          subMenuId: 'myol-help',
+          subMenuId: 'myol-button-help',
         }),
         new myol.control.Permalink({
           display: true,
         }),
-        new myol.control.TilesBuffer(),
       ],
       layers: [
         new ol.layer.Tile({
@@ -60,25 +64,18 @@ Based on https://openlayers.org
 
 <body>
   <a style="float:right" href="marker.html">Next &#9654;</a>
-  <a style="float:right;margin-right:15px" href="..">Home</a>
+  <a style="float:right;margin-right:15px" href="./">Home</a>
   <h1 style="margin:0">Controls</h1>
-  <a style="float:right" href="https://github.com/Dominique92/MyOl/">Github &#9654;</a>
-  <p><a href="../src/Controls.js">src/Controls.js</a> usefull controls:
+  <a style="float:right" href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+  <p>Usefull controls:
   <ul>
-    <li>Full screen</li>
-    <li>Geocoder</li>
-    <li>Print</li>
-    <li>Length of a line</li>
-    <li>Load GPX file</li>
-    <li>Download GPX file</li>
-  </ul>
-  <p><a href="../src/Geolocation.js">src/Geolocation.js</a> adds GPS position control:
-  <ul>
-    <li>GPS</li>
-  </ul>
-  <p><a href="../src/MyGeocoder.js">src/controlCollection.js</a> adds GPS name location finding:
-  <ul>
-    <li>Geocoder</li>
+    <li><a href="../src/control/MyGeocoder.js">Geocoder name location finding</a></li>
+    <li><a href="../src/control/MyGeolocation.js">Geolocation GPS positionning</a></li>
+    <li><a href="../src/control/Load.js">Load GPX file</a></li>
+    <li><a href="../src/control/Download.js">Download GPX file</a></li>
+    <li><a href="../src/control/Print.js">Print</a></li>
+    <li><a href="../src/control/LengthLine.js">Length of a line</a></li>
+    <li><a href="../src/control/Permalink.js">Permalink</a></li>
   </ul>
   </p>
 
@@ -86,7 +83,7 @@ Based on https://openlayers.org
     <div id="map" class="map"></div>
   </div>
 
-  <div id="myol-help">
+  <div id="myol-button-help">
     <p>Ceci est un exemple d'aide.</p>
   </div>
 </body>

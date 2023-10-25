@@ -1,4 +1,5 @@
 /* LayerSwitcher */
+
 .myol-button-switcher {
   float: right !important;
 }
@@ -9,6 +10,10 @@
 
 .myol-button-switcher>div {
   right: 0;
+}
+
+.myol-button-switcher button::after {
+  content: "\274f";
 }
 
 .select-ext {

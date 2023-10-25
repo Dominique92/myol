@@ -6,69 +6,42 @@
 import ol from '../ol';
 
 // Virtual class to factorise XYZ layers code
-class XYZsource extends ol.layer.Tile {
-  constructor(options = {}) {
+class XYZ extends ol.layer.Tile {
+  constructor(options) {
     super({
-      source: new ol.source.XYZ({
-        ...options,
-        url: typeof options.url == 'function' ? options.url(options) : options.url,
-      }),
+      source: new ol.source.XYZ(options),
       ...options,
     });
   }
 }
 
-// Virtual class to replace invalid layer scope by a stub display
-class LimitedTileLayer extends ol.layer.Tile {
-  setMapInternal(map) { //HACK execute actions on Map init
-    super.setMapInternal(map);
-
-    const altlayer = new StadiaMaps({
-      minResolution: this.getMaxResolution(),
-    });
-
-    //TODO fall back out of valid area
-    map.addLayer(altlayer);
-    altlayer.setOpacity(this.getOpacity());
-    altlayer.setVisible(this.getVisible());
-
-    this.on(['change:opacity', 'change:visible'], function() {
-      altlayer.setOpacity(this.getOpacity());
-      altlayer.setVisible(this.getVisible());
-    });
-  }
-}
-
 // OpenStreetMap & co
-export class OpenStreetMap extends XYZsource {
+export class OpenStreetMap extends ol.layer.Tile {
   constructor(options) {
     super({
-      url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      maxZoom: 21,
-      attributions: ol.source.OSM.ATTRIBUTION,
+      source: new ol.source.OSM(options),
       ...options,
     });
   }
 }
 
 export class OpenTopo extends OpenStreetMap {
-  constructor(options) {
+  constructor() {
     super({
       url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
       maxZoom: 17,
       attributions: '<a href="https://opentopomap.org">OpenTopoMap</a> ' +
         '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-      ...options,
     });
   }
 }
 
 export class MRI extends OpenStreetMap {
-  constructor(options) {
+  constructor() {
     super({
       url: 'https://maps.refuges.info/hiking/{z}/{x}/{y}.png',
+      maxZoom: 18,
       attributions: '<a href="//wiki.openstreetmap.org/wiki/Hiking/mri">Refuges.info</a>',
-      ...options,
     });
   }
 }
@@ -79,6 +52,7 @@ export class Kompass extends OpenStreetMap { // Austria
       url: options.key ?
         'https://map{1-4}.kompass.de/{z}/{x}/{y}/kompass_' + options.subLayer + '?key=' + options.key : // Specific
         'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
+      maxZoom: 17,
       hidden: !options.key && options.subLayer != 'osm', // For LayerSwitcher
       attributions: '<a href="http://www.kompass.de/livemap/">KOMPASS</a>',
       ...options,
@@ -87,14 +61,25 @@ export class Kompass extends OpenStreetMap { // Austria
 }
 
 export class Thunderforest extends OpenStreetMap {
-  constructor(options) {
+  constructor(options = {}) {
     super({
       url: 'https://{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
+      maxZoom: 22,
       // subLayer: 'outdoors', ...
       // key: Get a key at https://manage.thunderforest.com/dashboard
       hidden: !options.key, // For LayerSwitcher
       attributions: '<a href="http://www.thunderforest.com">Thunderforest</a>',
       ...options, // Include key
+    });
+  }
+}
+
+export class Positron extends XYZ {
+  constructor(options) {
+    super({
+      url: 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+      attributions: '<a href="https://carto.com/attribution/#basemaps">CartoDB</a>',
+      ...options,
     });
   }
 }
@@ -134,7 +119,7 @@ export class IGN extends ol.layer.Tile {
 
         ...options, // Include key & layer
       }),
-      ...options,
+      ...options, // For layer limits
     });
   }
 }
@@ -142,18 +127,21 @@ export class IGN extends ol.layer.Tile {
 /**
  * Swisstopo https://api.geo.admin.ch/
  * Don't need key nor referer
+ * API : https://api3.geo.admin.ch/services/sdiservices.html#wmts
  */
-export class SwissTopo extends LimitedTileLayer {
-  constructor(opt) {
-    const options = {
-        host: 'https://wmts2{0-4}.geo.admin.ch/1.0.0/',
-        subLayer: 'ch.swisstopo.pixelkarte-farbe',
-        maxResolution: 300, // Resolution limit above which we switch to a more global service
-        attributions: '&copy <a href="https://map.geo.admin.ch/">SwissTopo</a>',
+export class SwissTopo extends ol.layer.Tile {
+  constructor(options) {
+    options = {
+      host: 'https://wmts2{0-4}.geo.admin.ch/1.0.0/',
+      subLayer: 'ch.swisstopo.pixelkarte-farbe',
+      maxResolution: 2000, // Resolution limit above which we switch to a more global service
+      extent: [640000, 5730000, 1200000, 6100000],
+      attributions: '&copy <a href="https://map.geo.admin.ch/">SwissTopo</a>',
 
-        ...opt,
-      },
-      projectionExtent = ol.proj.get('EPSG:3857').getExtent(),
+      ...options,
+    };
+
+    const projectionExtent = ol.proj.get('EPSG:3857').getExtent(),
       resolutions = [],
       matrixIds = [];
 
@@ -173,9 +161,9 @@ export class SwissTopo extends LimitedTileLayer {
         }),
         requestEncoding: 'REST',
         crossOrigin: 'anonymous',
-        ...options,
       })),
-      ...options,
+
+      ...options, // For layer limits
     });
   }
 }
@@ -183,18 +171,24 @@ export class SwissTopo extends LimitedTileLayer {
 /**
  * Spain
  */
-export class IgnES extends XYZsource {
+export class IgnES extends XYZ {
   constructor(options) {
-    super({
+    options = {
       host: 'https://www.ign.es/wmts/',
       server: 'mapa-raster',
       subLayer: 'MTN',
-      url: (o) => o.host + o.server + '?layer=' + o.subLayer +
+      maxZoom: 20,
+      attributions: '&copy; <a href="http://www.ign.es/">IGN España</a>',
+      ...options,
+    };
+
+    super({
+      url: options.host + options.server +
+        '?layer=' + options.subLayer +
         '&Service=WMTS&Request=GetTile&Version=1.0.0' +
         '&Format=image/jpeg' +
         '&style=default&tilematrixset=GoogleMapsCompatible' +
         '&TileMatrix={z}&TileCol={x}&TileRow={y}',
-      attributions: '&copy; <a href="http://www.ign.es/">IGN España</a>',
       ...options,
     });
   }
@@ -203,20 +197,19 @@ export class IgnES extends XYZsource {
 /**
  * Italy IGM
  */
-export class IGM extends LimitedTileLayer {
-  constructor(options) {
+export class IGM extends ol.layer.Tile {
+  constructor() {
     super({
       source: new ol.source.TileWMS({
         url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it', // Not available via https
         attributions: '&copy <a href="http://www.pcn.minambiente.it/viewer/">IGM</a>',
-        ...options,
       }),
       maxResolution: 120,
-      ...options,
+      extent: [720000, 4380000, 2070000, 5970000],
     });
   }
 
-  setMapInternal(map) { //HACK execute actions on Map init
+  setMapInternal(map) {
     super.setMapInternal(map);
 
     const view = map.getView(),
@@ -242,22 +235,24 @@ export class IGM extends LimitedTileLayer {
  * Ordnance Survey : Great Britain
  * key: Get your own (free) key at https://osdatahub.os.uk/
  */
-//BEST Replacement layer out of bounds
-//BEST XYZsource
-export class OS extends LimitedTileLayer {
-  constructor(options) {
-    super({
+export class OS extends XYZ {
+  constructor(options = {}) {
+    options = {
       hidden: !options.key, // For LayerSwitcher
+      subLayer: 'Outdoor_3857',
+      minZoom: 7,
+      maxZoom: 16,
       extent: [-1198263, 6365000, 213000, 8702260],
-      minResolution: 2,
-      maxResolution: 1700,
-      source: new ol.source.XYZ({
-        url: 'https://api.os.uk/maps/raster/v1/zxy/' +
-          (options.subLayer || 'Outdoor_3857') +
-          '/{z}/{x}/{y}.png?key=' + options.key,
-        attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
-        ...options, // Include key
-      }),
+      attributions: '&copy <a href="https://explore.osmaps.com">UK Ordnancesurvey maps</a>',
+
+      ...options,
+    };
+
+    super({
+      url: 'https://api.os.uk/maps/raster/v1/zxy/' +
+        options.subLayer +
+        '/{z}/{x}/{y}.png' +
+        '?key=' + options.key,
       ...options,
     });
   }
@@ -266,33 +261,18 @@ export class OS extends LimitedTileLayer {
 /**
  * ArcGIS (Esri)
  */
-export class ArcGIS extends XYZsource {
+export class ArcGIS extends XYZ {
   constructor(options) {
-    super({
+    options = {
       host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
       subLayer: 'World_Imagery',
-      url: (o) => o.host + o.subLayer + '/MapServer/tile/{z}/{y}/{x}',
-      maxZoom: 19, //TODO revoir tous les maxZoom
+      maxZoom: 19,
       attributions: '&copy; <a href="https://www.arcgis.com/home/webmap/viewer.html">ArcGIS (Esri)</a>',
       ...options,
-    });
-  }
-}
+    };
 
-/**
- * StadiaMaps https://stadiamaps.com/
- * layer: alidade_smooth, alidade_smooth_dark, outdoors,
- *   stamen_terrain, stamen_terrain_background, stamen_terrain_labels, stamen_terrain_lines,
- *   stamen_toner_background, stamen_toner, stamen_toner_labels, stamen_toner_lines, stamen_toner_lite,
- *   stamen_watercolor, and osm_bright
- */
-export class StadiaMaps extends ol.layer.Tile {
-  constructor(options) {
     super({
-      source: new ol.source.StadiaMaps({
-        layer: 'stamen_toner_lite',
-        ...options,
-      }),
+      url: options.host + options.subLayer + '/MapServer/tile/{z}/{y}/{x}',
       ...options,
     });
   }
@@ -302,10 +282,11 @@ export class StadiaMaps extends ol.layer.Tile {
  * Maxbox (Maxar)
  * Get your own key at https://www.mapbox.com/
  */
-export class Maxbox extends XYZsource {
-  constructor(options) {
+export class Maxbox extends XYZ {
+  constructor(options = {}) {
     super({
       url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
+      // No maxZoom
       attributions: '&copy; <a href="https://mapbox.com/">Mapbox</a>',
     });
   }
@@ -314,12 +295,17 @@ export class Maxbox extends XYZsource {
 /**
  * Google
  */
-export class Google extends XYZsource {
+export class Google extends XYZ {
   constructor(options) {
-    super({
-      subLayers: 'm', // Roads
-      url: (o) => 'https://mt{0-3}.google.com/vt/lyrs=' + o.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
+    options = {
+      subLayers: 'p', // Terrain
+      maxZoom: 22,
       attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
+      ...options,
+    };
+
+    super({
+      url: 'https://mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
       ...options,
     });
   }
@@ -328,14 +314,19 @@ export class Google extends XYZsource {
 /**
  * Bing (Microsoft)
  * Doc: https://docs.microsoft.com/en-us/bingmaps/getting-started/
+ * Get your own (free) key at https://www.bingmapsportal.com
  */
 export class Bing extends ol.layer.Tile {
-  constructor(options) {
+  constructor(options = {}) {
     super({
-      // imagerySet: 'Road',
-      // key, Get your own (free) key at https://www.bingmapsportal.com
+      // Mandatory
+      // 'key',
+      imagerySet: 'Road',
+
       hidden: !options.key, // For LayerSwitcher
+      // No explicit zoom
       // attributions, defined by ol.source.BingMaps
+
       ...options,
     });
 
@@ -348,10 +339,22 @@ export class Bing extends ol.layer.Tile {
   }
 }
 
+export class NoTile extends XYZ {
+  constructor(options) {
+    super({
+      url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=13897&mkt=en-us&shading=hill',
+      attributions: 'Out of zoom',
+      ...options,
+    });
+  }
+}
+
 // Tile layers examples
 export function collection(options = {}) {
   return {
-    'OSM fr': new OpenStreetMap(),
+    'OSM fr': new OpenStreetMap({
+      url: 'https://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+    }),
     'OpenTopo': new OpenTopo(),
     'OSM outdoors': new Thunderforest({
       ...options.thunderforest, // Include key
@@ -375,6 +378,8 @@ export function collection(options = {}) {
     'IGN cartes 1950': new IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN50.1950',
       key: 'cartes/geoportail',
+      extent: [-580000, 506000, 1070000, 6637000],
+      minZoom: 6,
     }),
 
     'SwissTopo': new SwissTopo(),
@@ -384,11 +389,13 @@ export function collection(options = {}) {
     'Kompas winter': new Kompass({
       ...options.kompass, // Include key
       subLayer: 'winter',
+      maxZoom: 22,
     }),
     'Angleterre': new OS(options.os), // options include key
     'Italie': new IGM(),
 
     'Espagne': new IgnES(),
+    'Google': new Google(),
 
     'Maxar': new Maxbox({
       tileset: 'mapbox.satellite',
@@ -412,16 +419,22 @@ export function collection(options = {}) {
       key: 'orthohisto/geoportail',
       style: 'BDORTHOHISTORIQUE',
       format: 'image/png',
+      extent: [-580000, 506000, 1070000, 6637000],
+      minZoom: 12,
     }),
 
     'IGN E.M. 1820-66': new IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40',
       key: 'cartes/geoportail',
+      extent: [-580000, 506000, 1070000, 6637000],
+      minZoom: 6,
     }),
     'Cadastre': new IGN({
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
       key: 'essentiels',
       format: 'image/png',
+      extent: [-580000, 506000, 1070000, 6637000],
+      minZoom: 6,
     }),
     /*'IGN Cassini': new IGN({ //BEST BUG what key for Cassini ?
     	...options.ign,
@@ -435,10 +448,15 @@ export function demo(options = {}) {
     ...collection(options),
 
     'OSM': new OpenStreetMap(),
+    'OSM orthos FR': new OpenStreetMap({
+      url: 'http://wms.openstreetmap.fr/tms/1.0.0/tous_fr/{z}/{x}/{y}',
+    }),
+    'Positron': new Positron(),
 
     'ThF cycle': new Thunderforest({
       ...options.thunderforest, // Include key
       subLayer: 'cycle',
+      maxZoom: 14,
     }),
     'ThF trains': new Thunderforest({
       ...options.thunderforest, // Include key
@@ -487,19 +505,13 @@ export function demo(options = {}) {
       subLayer: 'OI.OrthoimageCoverage',
     }),
 
-    'Google road': new Google(),
-    'Google terrain': new Google({
-      subLayers: 'p',
+    'Google road': new Google({
+      subLayers: 'm', // Roads
     }),
     'Google hybrid': new Google({
       subLayers: 's,h',
     }),
-    'Toner': new StadiaMaps({
-      layer: 'stamen_toner_lite',
-    }),
-    'Watercolor': new StadiaMaps({
-      layer: 'stamen_watercolor',
-    }),
+    'No tile': new NoTile(),
     'Blank': new ol.layer.Tile(),
   };
 }

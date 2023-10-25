@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
 © Dominique Cavailhez 2019
-https://github.com/Dominique92/MyOl
+https://github.com/Dominique92/myol
 Based on https://openlayers.org
 -->
-<html>
+<html lang="fr">
 
 <head>
   <title>My Openlayers vector layers</title>
@@ -35,7 +35,8 @@ Based on https://openlayers.org
     new ol.Map({
       target: 'map',
       view: new ol.View({
-        center: ol.proj.transform([5.64711, 45.2035], 'EPSG:4326', 'EPSG:3857'), // Cabane double
+        center: ol.proj.transform([5.885, 44.791], 'EPSG:4326', 'EPSG:3857'), // Cabane double
+        // Autre cabane double 6.51, 45.13
         zoom: 14,
       }),
       layers: [
@@ -46,13 +47,12 @@ Based on https://openlayers.org
 
         // Vector layers
         new myol.layer.vector.Chemineur({
-          selectName: 'select-chemineur',
+          selectName: 'select-chem',
         }),
         new myol.layer.vector.Alpages({
           selectName: 'select-alpages',
         }),
         new myol.layer.vector.WRI({
-          host: 'https://dom.refuges.info/', //BEST www
           spreadClusterMaxResolution: 10,
           selectName: 'select-wri',
         }),
@@ -66,6 +66,7 @@ Based on https://openlayers.org
           selectName: 'select-osm',
         }),
 
+        // Hover & click management (mouse & touch)
         new myol.layer.Hover(),
       ],
     });
@@ -74,10 +75,10 @@ Based on https://openlayers.org
 
 <body>
   <a style="float:right" href="controls.html">Next &#9654;</a>
-  <a style="float:right;margin-right:15px" href="..">Home</a>
+  <a style="float:right;margin-right:15px" href="./">Home</a>
   <h1 style="margin:0">Vector layer</h1>
-  <a style="float:right" href="https://github.com/Dominique92/MyOl/">Github &#9654;</a>
-  <p><a href="../src/MyVectorLayer.js">src/MyVectorLayer.js</a> facilities to ol.layer.Vector</p>
+  <a style="float:right" href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+  <p><a href="../src/layer/MyVectorLayer.js">src/MyVectorLayer.js</a> facilities to ol.layer.Vector</p>
 
   <div id="map" class="map"></div>
 
@@ -88,8 +89,8 @@ Based on https://openlayers.org
       <span id="select-prc-status"></span>
     </label><br><label>
       Chemineur
-      <input type="checkbox" name="select-chemineur" value="3,8,64">
-      <span id="select-chemineur-status"></span>
+      <input type="checkbox" name="select-chem" value="3,8,64">
+      <span id="select-chem-status"></span>
     </label><br><label>
       Camptocamp.org
       <label><input type="checkbox" name="select-c2c" value="hut,shelter,gite,cave,bivouac,camp_site">logement</label>

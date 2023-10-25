@@ -6,13 +6,11 @@
  */
 
 // Geocoder
+import Geocoder from '@myol/geocoder/src/base';
 import '@myol/geocoder/dist/ol-geocoder.css';
 import './myGeocoder.css'; // After ol-geocoder.css
-import Geocoder from '@myol/geocoder/src/base';
 
-//TODO BUG n'ouvre pas au survol
-//TODO BUG n'affiche pas le picto envoi
-export default class MyGeocoder extends Geocoder {
+export class MyGeocoder extends Geocoder {
   constructor(options) {
     super('nominatim', {
       // See https://github.com/kirtan-desai/ol-geocoder#user-content-api
@@ -25,10 +23,6 @@ export default class MyGeocoder extends Geocoder {
       .addEventListener('keypress', evt =>
         evt.stopImmediatePropagation()
       );
-
-    this.on('addresschosen', evt =>
-      evt.target.getMap().getView().fit(evt.bbox)
-    );
 
     // Close other opened buttons when hover with a mouse
     this.element.addEventListener('pointerover', () => {
@@ -46,3 +40,5 @@ export default class MyGeocoder extends Geocoder {
     });
   }
 }
+
+export default MyGeocoder;

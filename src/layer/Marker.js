@@ -5,22 +5,22 @@
 import ol from '../ol';
 import proj4Lib from 'proj4/lib/index';
 
-export default class Marker extends ol.layer.Vector {
-  constructor(opt) {
-    const options = {
-      // src, url of marker image
-      // position: [0, 0], Initial position of the marker (default : center of the map)
-      // dragable : can draw the marker to edit position
-      // focus : number : center & value of zoom on the marker
+export class Marker extends ol.layer.Vector {
+  constructor(options) {
+    options = {
+      // src: 'imageUrl', // url of marker image
+      // position: [0, 0], // Initial position of the marker (default : center of the map)
+      // dragable: false, // Can draw the marker to edit position
+      // focus: number // Center & value of zoom on the marker
       zIndex: 400, // Above points
 
       prefix: 'marker', // Will take the values on
-      // marker-json, <input> json form
+      // marker-json, // <input> json form
       // marker-lon, marker-lat, // <input> longitude / latitude
       // marker-x, marker-y', // <input> Swiss EPSG:21781
-      // marker-select, marker-string, select / display coords format
+      // marker-select, marker-string, select // display coords format
 
-      ...opt,
+      ...options,
     };
 
     super({
@@ -30,6 +30,9 @@ export default class Marker extends ol.layer.Vector {
           src: options.src,
         }),
       }),
+      properties: {
+        marker: true,
+      },
 
       ...options
     });
@@ -79,9 +82,21 @@ export default class Marker extends ol.layer.Vector {
       if (this.options.focus)
         this.view.setZoom(this.options.focus);
 
+      // Change the cursor over a dragable feature
+      map.on('pointermove', evt => {
+        const hoverDragable = map.getFeaturesAtPixel(evt.pixel, {
+          layerFilter: l => {
+            if (this.options.dragable)
+              return l.ol_uid == this.ol_uid;
+          }
+        });
+
+        map.getTargetElement().style.cursor = hoverDragable.length ? 'move' : 'auto';
+        //BEST change cursor to grab / grabbing
+      });
+
       // Edit the marker position
       if (this.options.dragable) {
-        //TODO change the cursor
         map.addInteraction(new ol.interaction.Pointer({
           handleDownEvent: evt => {
             return map.getFeaturesAtPixel(evt.pixel, {
@@ -129,6 +144,8 @@ export default class Marker extends ol.layer.Vector {
 
   // Display values
   changeLL(pos, projection, focus) {
+    sessionStorage.myol_lastchange = Date.now(); // Mem the last change date
+
     // If no position is given, use the marker's (dragged)
     if (!pos || pos.length < 2) {
       pos = this.point.getCoordinates();
@@ -198,3 +215,5 @@ export default class Marker extends ol.layer.Vector {
     this.els.string.textContent = strings[this.els.select.value || 'dec'];
   }
 }
+
+export default Marker;

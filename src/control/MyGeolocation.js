@@ -3,45 +3,23 @@
  * Display status, altitude & speed
  */
 
-import ol from '../ol'; //BEST come back to direct import (optim ???)
-import MyButton from './myButton';
+import ol from '../ol';
+import Button from './Button';
 
-export default class MyGeolocation extends MyButton {
+export class MyGeolocation extends Button {
   constructor(options) {
-    const subMenu = location.href.match(/(https|localhost)/) ?
-      //BEST use .html content / option
-      '<p>Localisation GPS:</p>' +
-      '<label>' +
-      '<input type="radio" name="myol-gps-source" value="0" checked="checked">' +
-      'Inactif</label><label>' +
-      '<input type="radio" name="myol-gps-source" value="1">' +
-      'Position GPS <span>(1) extérieur</span></label><label>' +
-      '<input type="radio" name="myol-gps-source" value="2">' +
-      'Position GPS ou IP <span>(2) intérieur</span></label><hr><label>' +
-      '<input type="radio" name="myol-gps-display" value="0" checked="checked">' +
-      'Graticule, carte libre</label><label>' +
-      '<input type="radio" name="myol-gps-display" value="1">' +
-      'Centre la carte, nord en haut</label><label>' +
-      '<input type="radio" name="myol-gps-display" value="2">' +
-      'Centre et oriente la carte <span>(3)</span></label>' +
-
-      '<hr><p>(1) plus précis en extérieur mais plus lent à initialiser, ' +
-      'nécessite un capteur et une réception GPS.</p>' +
-      '<p>(2) plus précis et rapide en intérieur ou en zone urbaine ' +
-      'mais peut être très erroné en extérieur à l&apos;initialisation. ' +
-      'Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>' +
-      '<p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>' :
-
-      // Si on est en http
-      '<p>L&apos;utilisation du GPS nécessite https</p>' +
-      '<a href="' + document.location.href.replace('http:', 'https:') + '">Passer en https<a>';
+    // Redirect if http
+    if (!location.href.match(/(https|localhost)/)) {
+      super();
+      return;
+    }
 
     super({
-      // MyButton options
-      className: 'myol-button-gps',
-      label: '&#8853;',
-      subMenuHTML: subMenu,
-      //BEST subMenuId: 'myol-gps',
+      // Button options
+      className: 'myol-button-geolocation',
+      subMenuId: 'myol-button-geolocation',
+      subMenuHTML: subMenuHTML,
+      subMenuHTML_fr: subMenuHTML_fr,
 
       // ol.Geolocation options
       // https://www.w3.org/TR/geolocation/#position_options_interface
@@ -56,36 +34,22 @@ export default class MyGeolocation extends MyButton {
     this.statusEl = document.createElement('p');
     this.element.appendChild(this.statusEl);
 
-    // Register action listeners
-    this.element.querySelectorAll('input')
-      .forEach(el => {
-        el.addEventListener('change', evt => this.action(evt));
-      });
+    this.addGraticule();
 
-    // Graticule
-    this.graticuleFeature = new ol.Feature(); //BEST Use layer Graticule
-    this.northGraticuleFeature = new ol.Feature();
-
-    this.graticuleLayer = new ol.layer.Vector({
-      source: new ol.source.Vector({
-        features: [this.graticuleFeature, this.northGraticuleFeature],
-      }),
-      zIndex: 300, // Above the features
-      style: new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(128,128,255,0.2)',
-        }),
-        stroke: new ol.style.Stroke({
-          color: '#20b',
-          lineDash: [16, 14],
-          width: 1,
-        }),
-      }),
+    // Browser heading from the inertial & magnetic sensors
+    window.addEventListener('deviceorientationabsolute', evt => {
+      this.heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
+      this.subMenuAction(evt);
     });
+  } // End constructor
+
+  addGraticule() {
+    this.graticuleFeature = new ol.Feature();
+    this.northGraticuleFeature = new ol.Feature();
 
     this.graticuleFeature.setStyle(new ol.style.Style({
       stroke: new ol.style.Stroke({
-        color: '#000',
+        color: '#00f',
         lineDash: [16, 14],
         width: 1,
       }),
@@ -99,12 +63,11 @@ export default class MyGeolocation extends MyButton {
       }),
     }));
 
-    window.gpsValues = {}; // Store the measures for internal use & other controls
-
-    // Browser heading from the inertial & magnetic sensors
-    window.addEventListener('deviceorientationabsolute', evt => {
-      window.gpsValues.heading = evt.alpha || evt.webkitCompassHeading; // Android || iOS
-      this.action(evt);
+    this.graticuleLayer = new ol.layer.Vector({
+      source: new ol.source.Vector({
+        features: [this.graticuleFeature, this.northGraticuleFeature],
+      }),
+      zIndex: 300, // Above the features
     });
   }
 
@@ -112,23 +75,31 @@ export default class MyGeolocation extends MyButton {
     super.setMap(map);
 
     map.addLayer(this.graticuleLayer);
-    map.on('moveend', evt => this.action(evt)); // Refresh graticule after map zoom
+    map.on('moveend', evt => this.subMenuAction(evt)); // Refresh graticule after map zoom
 
     this.geolocation = new ol.Geolocation({
       projection: map.getView().getProjection(),
       trackingOptions: this.options,
       ...this.options,
     });
-    this.geolocation.on('change', evt => this.action(evt));
+    this.geolocation.on('change', evt => this.subMenuAction(evt));
     this.geolocation.on('error', error => {
       console.log('Geolocation error: ' + error.message);
     });
   }
 
-  action(evt) {
+  buttonAction(evt) {
+    const sourceEls = document.getElementsByName('myol-gps-source'),
+      buttonSelected = document.querySelector('.myol-button-geolocation.myol-button-selected');
+
+    if (evt.type == 'click' && !buttonSelected && sourceEls[0].checked)
+      sourceEls[1].click();
+  }
+
+  subMenuAction(evt) {
     const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
-      displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),
       displayEls = document.getElementsByName('myol-gps-display'),
+      displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),
       sourceLevel = sourceLevelEl ? parseInt(sourceLevelEl.value) : 0, // On/off, GPS, GPS&WiFi
       displayLevel = displayLevelEl ? parseInt(displayLevelEl.value) : 0, // Graticule & sourceLevel
       map = this.getMap(),
@@ -138,7 +109,6 @@ export default class MyGeolocation extends MyButton {
     if (evt.target.name == 'myol-gps-source') {
       this.geolocation.setTracking(sourceLevel > 0);
       this.graticuleLayer.setVisible(false);
-      window.gpsValues = {}; // Reset the values
       if (!sourceLevel)
         displayEls[0].checked = true;
       if (sourceLevel && displayLevel == 0)
@@ -149,17 +119,24 @@ export default class MyGeolocation extends MyButton {
     ['Position', 'AccuracyGeometry', 'Speed', 'Altitude'].forEach(valueName => {
       const value = this.geolocation['get' + valueName]();
       if (value)
-        window.gpsValues[valueName.toLowerCase()] = value;
+        this[valueName.toLowerCase()] = value;
     });
 
-    // State 1 only takes positions from the GPS (which have an altitude)
-    if (sourceLevel == 1 && !window.gpsValues.altitude)
-      window.gpsValues.position = null;
+    // State 1 only takes positions from the GPS which have an altitude
+    if (sourceLevel == 0 ||
+      (sourceLevel == 1 && !this.altitude))
+      this.position = null;
+
+    // Aware all who needs
+    map.dispatchEvent({
+      type: 'myol:gpspositionchanged',
+      position: this.position,
+    });
 
     // Render position & graticule
-    if (map && view && sourceLevel && window.gpsValues.position) {
+    if (map && view && sourceLevel && this.position) {
       // Estimate the viewport size to draw a visible graticule
-      const p = window.gpsValues.position,
+      const p = this.position,
         hg = map.getCoordinateFromPixel([0, 0]),
         bd = map.getCoordinateFromPixel(map.getSize()),
         far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10,
@@ -185,8 +162,8 @@ export default class MyGeolocation extends MyButton {
         ];
 
       // The accuracy circle
-      if (window.gpsValues.accuracygeometry)
-        geometry.push(window.gpsValues.accuracygeometry);
+      if (this.accuracygeometry)
+        geometry.push(this.accuracygeometry);
 
       this.graticuleFeature.setGeometry(new ol.geom.GeometryCollection(geometry));
       this.northGraticuleFeature.setGeometry(new ol.geom.GeometryCollection(northGeometry));
@@ -198,14 +175,14 @@ export default class MyGeolocation extends MyButton {
       // Orientation
       if (!sourceLevel || displayLevel == 1)
         view.setRotation(0);
-      else if (window.gpsValues.heading && displayLevel == 2)
+      else if (this.heading && displayLevel == 2)
         view.setRotation(
-          Math.PI / 180 * (window.gpsValues.heading - screen.orientation.angle) // Delivered ° reverse clockwize
+          Math.PI / 180 * (this.heading - screen.orientation.angle) // Delivered ° reverse clockwize
         );
 
       // Zoom on the area
-      if (!window.gpsValues.isZoomed) { // Only the first time after activation
-        window.gpsValues.isZoomed = true;
+      if (!this.isZoomed) { // Only the first time after activation
+        this.isZoomed = true;
         view.setZoom(17);
 
         // Close submenu when GPS locates
@@ -217,11 +194,11 @@ export default class MyGeolocation extends MyButton {
       view.setRotation(0); // Return to inactive state
 
     // Display data under the button
-    let status = window.gpsValues.position ? '' : 'Sync...'; //TODO BUG never see Sync...
-    if (window.gpsValues.altitude) {
-      status = Math.round(window.gpsValues.altitude) + ' m';
-      if (window.gpsValues.speed)
-        status += ' ' + (Math.round(window.gpsValues.speed * 36) / 10) + ' km/h';
+    let status = this.position ? '' : 'Sync...';
+    if (this.altitude) {
+      status = Math.round(this.altitude) + ' m';
+      if (this.speed)
+        status += ' ' + (Math.round(this.speed * 36) / 10) + ' km/h';
     }
     if (this.statusEl)
       this.statusEl.innerHTML = sourceLevel ? status : '';
@@ -229,5 +206,41 @@ export default class MyGeolocation extends MyButton {
     // Close the submenu
     if (evt.target.name) // Only when an input is hit
       this.element.classList.remove('myol-display-submenu');
-  }
+  } // End subMenuAction
 }
+
+var subMenuHTML = '<p>\
+  <input type="radio" name="myol-gps-source" value="0" checked="checked">None &nbsp;\
+  <input type="radio" name="myol-gps-source" value="1">Outdoor &nbsp;\
+  <input type="radio" name="myol-gps-source" value="2">Indoor &nbsp;\
+  </p><hr><p>\
+  <input type="radio" name="myol-gps-display" value="0" checked="checked">Free map&nbsp;\
+  <input type="radio" name="myol-gps-display" value="1">Center &nbsp;\
+  <input type="radio" name="myol-gps-display" value="2">Center & orient &nbsp;\
+  </p>';
+
+var subMenuHTML_fr = '\
+  <p>Localisation GPS:</p>\
+  <label>\
+    <input type="radio" name="myol-gps-source" value="0" checked="checked">\
+    Inactif</label><label>\
+    <input type="radio" name="myol-gps-source" value="1">\
+    Position GPS <span>(1) extérieur</span></label><label>\
+    <input type="radio" name="myol-gps-source" value="2">\
+    Position GPS ou IP <span>(2) intérieur</span></label>\
+  <hr><label>\
+    <input type="radio" name="myol-gps-display" value="0" checked="checked">\
+    Graticule, carte libre</label><label>\
+    <input type="radio" name="myol-gps-display" value="1">\
+    Centre la carte, nord en haut</label><label>\
+    <input type="radio" name="myol-gps-display" value="2">\
+    Centre et oriente la carte <span>(3)</span></label>\
+  <hr>\
+  <p>(1) plus précis en extérieur mais plus lent à initialiser,\
+    nécessite un capteur et une réception GPS.</p>\
+  <p>(2) plus précis et rapide en intérieur ou en zone urbaine\
+    mais peut être très erroné en extérieur à l\'initialisation.\
+    Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>\
+  <p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>';
+
+export default MyGeolocation;

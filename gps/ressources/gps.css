@@ -7,10 +7,17 @@ body,
   height: 100%;
   overflow: hidden;
 }
-#myol-help-gps {
+
+#myol-gps-help,
+#myol-gps-help-fr {
   left: 0;
   width: 100%;
 }
+
 @viewport {
   viewport-fit: cover;
+}
+
+.myol-button-upgrade button::after {
+  content: "\1F195";
 }

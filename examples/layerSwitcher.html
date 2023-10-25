@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 © Dominique Cavailhez 2019
-https://github.com/Dominique92/MyOl
+https://github.com/Dominique92/myol
 Based on https://openlayers.org
 -->
 <html>
@@ -30,24 +30,19 @@ Based on https://openlayers.org
 
   <!-- The main script must be defer or module to be run after the myol import -->
   <script type="module">
-    const baseLayers = {
-        StadiaMaps: new ol.layer.Tile({
-          source: new ol.source.StadiaMaps({
-            layer: 'stamen_terrain',
-          }),
-        }),
+    var baseLayers = {
         'OSM org': new ol.layer.Tile({
           source: new ol.source.OSM(),
         }),
-        'Null': null,
+        'Positron': new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+          }),
+        }),
         'Hidden': new ol.layer.Tile({
           hidden: true,
         }),
-        Watercolor: new ol.layer.Tile({
-          source: new ol.source.StadiaMaps({
-            layer: 'stamen_watercolor',
-          }),
-        }),
+        'Null': null,
       },
       countries = new ol.layer.Vector({
         source: new ol.source.Vector({
@@ -84,10 +79,10 @@ Based on https://openlayers.org
 
 <body>
   <a style="float:right" href="tileLayer.html">Next &#9654;</a>
-  <a style="float:right;margin-right:15px" href="..">Home</a>
+  <a style="float:right;margin-right:15px" href="./">Home</a>
   <h1 style="margin:0">Layer switcher</h1>
-  <a style="float:right" href="https://github.com/Dominique92/MyOl/">Github &#9654;</a>
-  <p><a href="../src/LayerSwitcher.js">src/LayerSwitcher.js</a> add a tinny efficient layer switcher for both base & vector layers.</p>
+  <a style="float:right" href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+  <p><a href="../src/control/LayerSwitcher.js">src/LayerSwitcher.js</a> add a tinny efficient layer switcher for both base & vector layers.</p>
 
   <div id="map" class="map"></div>
   <div id="select-ext">

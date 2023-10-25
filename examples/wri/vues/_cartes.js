@@ -1,3 +1,5 @@
+// Contient les fonctions communes à plusieurs cartes
+
 function couchePointsWRI(options) {
   const layer = new myol.layer.MyVectorLayer({
     selectMassif: new myol.Selector('no-selector'), // Defaut = pas de sélecteur de massif
@@ -24,6 +26,7 @@ function couchePointsWRI(options) {
       label: properties.nom, // Permanence de l'étiquette dès l'affichage de la carte
       name: properties.nom, // Nom utilisé dans les listes affichées au survol des ronds des clusters
       icon: options.host + 'images/icones/' + properties.type.icone + '.svg',
+      type: properties.type.valeur, // Pour export
       link: properties.lien, // Lien sur lequel cliquer
     }),
 
@@ -64,7 +67,7 @@ function etiquetteComplette(properties) {
   lignes.push(properties.name);
   if (caracteristiques.length)
     lignes.push(caracteristiques.join(','));
-  lignes.push(properties.type.valeur);
+  lignes.push(properties.type);
 
   return lignes.join('\n');
 }
@@ -151,31 +154,8 @@ function coucheContourMassif(options) {
   });
 }
 
-// Les controles des cartes de refuges.info
-function controlesCartes(page) {
-  return [
-    // Haut gauche
-    new ol.control.Zoom(),
-    new ol.control.FullScreen(),
-    new myol.control.MyGeocoder(),
-    new myol.control.MyGeolocation(),
-    'nav,edit,modif'.includes(page) ? new myol.control.Load() : new myol.control.MyButton(),
-    'nav,edit,point'.includes(page) ? new myol.control.Download() : new myol.control.MyButton(),
-    'nav,point'.includes(page) ? new myol.control.Print() : new myol.control.MyButton(),
-
-    // Bas gauche
-    new myol.control.MyMousePosition(),
-    new ol.control.ScaleLine(),
-
-    // Bas droit
-    new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
-      collapsed: false,
-    }),
-  ];
-}
-
 // Les couches de fond des cartes de refuges.info
-function fondsCarte(page, layersKeys) {
+function fondsCarte(page, mapKeys) {
   return {
     'Refuges.info': new myol.layer.tile.MRI(),
     'OSM fr': new myol.layer.tile.OpenStreetMap({
@@ -184,51 +164,36 @@ function fondsCarte(page, layersKeys) {
     'OpenTopo': new myol.layer.tile.OpenTopo(),
     'Outdoors': new myol.layer.tile.Thunderforest({
       subLayer: 'outdoors',
-      key: layersKeys.thunderforest,
+      key: mapKeys.thunderforest,
     }),
-    'IGN TOP25': 'nav,point'.includes(page) ?
+    'IGN TOP25': 'nav,point'.includes(page) ? // Not available on edit pages
       new myol.layer.tile.IGN({
         layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
-        key: layersKeys.ign,
+        key: mapKeys.ign,
       }) : null,
     'IGN V2': new myol.layer.tile.IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
       key: 'essentiels', // La clé pour les couches publiques
       format: 'image/png',
     }),
-    'SwissTopo': 'nav,point'.includes(page) ?
-      new myol.layer.tile.SwissTopo(
-        'ch.swisstopo.pixelkarte-farbe'
-      ) : null,
-    'Autriche': new myol.layer.tile.Kompass(), // No key
-    'Espagne': new myol.layer.tile.IgnES('mapa-raster', 'MTN'),
+    'SwissTopo': 'nav,point'.includes(page) ? // Not available on edit pages
+      new myol.layer.tile.SwissTopo({
+        subLayer: 'ch.swisstopo.pixelkarte-farbe',
+      }) : null,
+    'Autriche': new myol.layer.tile.Kompass({
+      subLayer: 'osm', // No key
+    }),
+    'Espagne': new myol.layer.tile.IgnES(),
     'Photo IGN': new myol.layer.tile.IGN({
       layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
       key: 'essentiels',
     }),
-    'Photo ArcGIS': new myol.layer.tile.ArcGIS('World_Imagery'),
-    'Photo Google': 'nav,point'.includes(page) ?
+    'Photo ArcGIS': new myol.layer.tile.ArcGIS(),
+    'Photo Google': 'nav,point'.includes(page) ? // Not available on edit pages
       new myol.layer.tile.Google('s') : null,
+    'Photo Maxar': new myol.layer.tile.Maxbox({
+      tileset: 'mapbox.satellite',
+      key: mapKeys.mapbox,
+    }),
   };
-}
-
-// Les couches vectorielles importées des autres sites
-function couchesVectoriellesExternes() {
-  return [
-    new myol.layer.vector.Chemineur({
-      selectName: 'select-chemineur',
-    }),
-    new myol.layer.vector.Alpages({
-      selectName: 'select-alpages',
-    }),
-    new myol.layer.vector.PRC({
-      selectName: 'select-prc',
-    }),
-    new myol.layer.vector.C2C({
-      selectName: 'select-c2c',
-    }),
-    new myol.layer.vector.Overpass({
-      selectName: 'select-osm',
-    }),
-  ];
 }

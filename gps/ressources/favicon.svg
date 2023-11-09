@@ -8,7 +8,7 @@ width = "384" >
     filter: drop - shadow(0 0 1 px black);
   } <
   /style> <
-g >
+  g >
   <
   ellipse cx = "13.7"
 cy = "3.5"
@@ -72,5 +72,5 @@ ry = "2"
 stroke = "green"
 fill = "green" / >
   <
-  /g> < /
-  svg >
+  /g> <
+  /svg>

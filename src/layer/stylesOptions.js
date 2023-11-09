@@ -9,7 +9,7 @@
 import ol from '../ol';
 
 // Basic style to display a geo vector layer based on standard properties
-export function basic(feature, layer) {
+export function basic(feature) {
   const properties = feature.getProperties();
 
   return [{
@@ -28,9 +28,8 @@ export function basic(feature, layer) {
     fill: new ol.style.Fill({
       color: 'rgba(0,0,256,0.3)',
     }),
-
     // properties.label if any
-    ...label(feature, layer),
+    ...label(...arguments),
   }];
 }
 
@@ -86,46 +85,8 @@ export function cluster(feature) {
   }];
 }
 
-// Display a line of features contained into a cluster
-export function spreadCluster(feature, layer) {
-  let properties = feature.getProperties(),
-    x = 0.95 + 0.45 * properties.cluster,
-    labelList = [],
-    stylesOptions = [];
-
-  properties.features.forEach(f => {
-    const p = f.getProperties();
-
-    layer.options.basicStylesOptions(f, layer)
-      .forEach(so => {
-        if (so.image) {
-          so.image.setAnchor([x -= 0.9, 0.5]);
-          f.setProperties({ // Mem the shift for hover detection
-            xLeft: (1 - x) * so.image.getImage().width,
-          }, true);
-          stylesOptions.push({
-            image: so.image,
-          });
-        }
-      });
-
-    if (p.label)
-      labelList.push(p.label);
-  });
-
-  if (labelList.length) {
-    feature.setProperties({ // Mem the shift for hover detection
-      label: labelList.join('\n'),
-    }, true);
-
-    stylesOptions.push(label(feature, layer));
-  }
-
-  return stylesOptions;
-}
-
 // Display the detailed information of a cluster based on standard properties
-export function details(feature, layer) {
+export function details(feature, resolution, layer) {
   const properties = feature.getProperties();
 
   feature.setProperties({
@@ -145,9 +106,9 @@ export function details(feature, layer) {
 }
 
 // Display the basic hovered features
-export function hover(feature, layer) {
+export function hover() {
   return {
-    ...details(feature, layer),
+    ...details(...arguments),
 
     stroke: new ol.style.Stroke({
       color: 'red',

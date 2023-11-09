@@ -22,17 +22,12 @@ function chemIconUrl(type, host) {
 export class GeoBB extends MyVectorLayer {
   constructor(options) {
     super({
-      browserClusterMinDistance: 50,
+      serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
+      distance: 50, // (pixels) distance above which the browser clusters
       browserClusterFeaturelMaxPerimeter: 300,
-      serverClusterMinResolution: 100,
-      // addProperties: properties => {}, // Add properties to each received feature
-      // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      // hoverStylesOptions: stylesOptions.hover,
-      // selector: new Selector(options.selectName),
+      browserGigue: 10, // (meters) Randomly shift a point around his position
 
-      // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
-
+      // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
       ...options,
     });
   }
@@ -52,7 +47,7 @@ export class Chemineur extends GeoBB {
     super({
       host: 'https://chemineur.fr/',
       attribution: '&copy;chemineur.fr',
-
+      // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
       ...options,
     });
   }
@@ -64,17 +59,9 @@ export class Alpages extends MyVectorLayer {
     super({
       host: 'https://alpages.info/',
       attribution: '&copy;alpages.info',
-
-      browserClusterMinDistance: 50,
+      distance: 50, // (pixels) distance above which the browser clusters
       browserClusterFeaturelMaxPerimeter: 300,
-      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-      // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      // hoverStylesOptions: stylesOptions.hover,
-      // selector: new Selector(options.selectName),
-
-      // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
-
+      // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
       ...options,
     });
   }
@@ -101,16 +88,11 @@ export class WRI extends MyVectorLayer {
       host: 'https://www.refuges.info/',
       attribution: '&copy;refuges.info',
 
-      browserClusterMinDistance: 50,
-      serverClusterMinResolution: 100,
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // addProperties: properties => {}, // Add properties to each received feature
-      // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      // hoverStylesOptions: stylesOptions.hover,
-      // selector: new Selector(options.selectName),
-
-      // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
+      serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
+      distance: 30, // (pixels) distance above which the browser clusters
+      // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+      browserGigue: 10, // (meters) Randomly shift a point around his position
+      // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
 
       ...options,
     });
@@ -145,17 +127,8 @@ export class PRC extends MyVectorLayer {
       url: 'https://www.pyrenees-refuges.com/api.php?type_fichier=GEOJSON',
       strategy: ol.loadingstrategy.all,
       attribution: '&copy;Pyrenees-Refuges',
-
-      browserClusterMinDistance: 50,
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-      // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      // hoverStylesOptions: stylesOptions.hover,
-      // selector: new Selector(options.selectName),
-
-      // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
-
+      distance: 50, // (pixels) distance above which the browser clusters
+      // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
       ...options,
     });
   }
@@ -178,17 +151,8 @@ export class C2C extends MyVectorLayer {
       host: 'https://api.camptocamp.org/',
       dataProjection: 'EPSG:3857',
       attribution: '&copy;Camp2camp',
-
-      browserClusterMinDistance: 50,
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-      // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      // hoverStylesOptions: stylesOptions.hover,
-      // selector: new Selector(options.selectName),
-
-      // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
-
+      distance: 50, // (pixels) distance above which the browser clusters
+      // Any myol.layer.MyVectorLayer options
       ...options,
     });
 
@@ -246,19 +210,9 @@ export class Overpass extends MyVectorLayer {
       format: new ol.format.OSMXML(),
       attribution: '&copy;OpenStreetMap',
 
-      browserClusterMinDistance: 50,
       maxResolution: 50,
-      // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-      // addProperties: properties => {}, // Add properties to each received feature
-      // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      // hoverStylesOptions: stylesOptions.hover,
-      // selector: new Selector(options.selectName),
-
-      // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
-
+      distance: 50, // (pixels) distance above which the browser clusters
+      // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
       ...options,
     });
 

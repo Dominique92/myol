@@ -14,22 +14,36 @@ import * as stylesOptions from './stylesOptions';
  */
 class MyVectorSource extends ol.source.Vector {
   constructor(options) {
+    // selectName: '', // Name of checkbox inputs to tune the url parameters
+    // browserGigue: 0, // (meters) Randomly shift a point around his position
+    // addProperties: properties => {}, // Add properties to each received feature
+
     super(options);
 
+    this.options = options;
     this.statusEl = document.getElementById(options.selectName + '-status');
 
-    // Display loading satus
     this.on(['featuresloadstart', 'featuresloadend', 'error', 'featuresloaderror'], evt => {
+      // Display loading satus
       if (this.statusEl) this.statusEl.innerHTML =
         evt.type == 'featuresloadstart' ? '&#8987;' :
         evt.type == 'featuresloadend' ? '' :
         '&#9888;'; // Error symbol
+
+      // Randomly shift a point around his position
+      if (options.browserGigue &&
+        evt.type == 'featuresloadend')
+        evt.features.forEach(f => {
+          f.getGeometry().translate(
+            Math.cos(f.getId()) * options.browserGigue,
+            Math.sin(f.getId()) * options.browserGigue,
+          );
+        });
     });
 
     // Compute properties when the layer is loaded & before the cluster layer is computed
     this.on('change', () =>
-      this.getFeatures()
-      .forEach(f => {
+      this.getFeatures().forEach(f => {
         if (!f._yetAdded) {
           f._yetAdded = true;
           f.setProperties(
@@ -52,70 +66,76 @@ class MyVectorSource extends ol.source.Vector {
  */
 class MyClusterSource extends ol.source.Cluster {
   constructor(options) {
-    // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-    // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+    options = {
+      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+      // distance: 50, // (pixels) distance above which the browser clusters
+      // minDistance: 16, // (pixels) minimum distance in pixels between clusters
 
-    // Any MyVectorSource options
+      // Any MyVectorSource options
+      ...options,
+    };
 
     // Source to handle the features
     const initialSource = new MyVectorSource(options);
 
     // Source to handle the clusters & the isolated features
     super({
-      distance: options.browserClusterMinDistance,
       source: initialSource,
-      geometryFunction: geometryFunction_,
-      createCluster: createCluster_,
+      geometryFunction: f => this.geometryFunction_(f, options),
+      createCluster: (p, f) => this.createCluster_(p, f),
+      ...options, // distance, minDistance
     });
 
-    // Generate a center point where to display the cluster
-    function geometryFunction_(feature) {
-      const geometry = feature.getGeometry();
+    this.options = options;
+  }
 
-      if (geometry) {
-        const ex = feature.getGeometry().getExtent(),
-          featurePixelPerimeter = (ex[2] - ex[0] + ex[3] - ex[1]) *
-          2 / this.resolution;
+  // Generate a center point where to display the cluster
+  geometryFunction_(feature, options) {
+    const geometry = feature.getGeometry();
 
-        // Don't cluster lines or polygons whose the extent perimeter is more than x pixels
-        if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
-          this.addFeature(feature);
-        else
-          return new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent()));
-      }
+    if (geometry) {
+      const ex = feature.getGeometry().getExtent(),
+        featurePixelPerimeter = (ex[2] - ex[0] + ex[3] - ex[1]) * 2 / this.resolution;
+
+      // Don't cluster lines or polygons whose the extent perimeter is more than x pixels
+      if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
+        this.addFeature(feature); // And return null to not cluster this feature
+      else
+        return new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent()));
     }
+  }
 
-    // Generate the features to render the cluster
-    function createCluster_(point, features) {
-      let nbClusters = 0,
-        includeCluster = false,
-        lines = [];
+  // Generate the features to render the cluster
+  createCluster_(point, features) {
 
-      features.forEach(f => {
-        const properties = f.getProperties();
+    let nbClusters = 0,
+      includeCluster = false,
+      lines = [];
 
-        lines.push(properties.name);
-        nbClusters += parseInt(properties.cluster) || 1;
-        if (properties.cluster)
-          includeCluster = true;
-      });
+    features.forEach(f => {
+      const properties = f.getProperties();
 
-      // Single feature : display it
-      if (nbClusters == 1)
-        return features[0];
+      lines.push(properties.name);
+      nbClusters += parseInt(properties.cluster) || 1;
+      if (properties.cluster)
+        includeCluster = true;
+    });
 
-      if (includeCluster || lines.length > 5)
-        lines = ['Cliquer pour zoomer'];
+    // Single feature : display it
+    if (nbClusters == 1)
+      return features[0];
 
-      // Display a cluster point
-      return new ol.Feature({
-        id: features[0].getId(), // Pseudo id = the id of the first feature in the cluster
-        name: stylesOptions.agregateText(lines),
-        geometry: point, // The gravity center of all the features in the cluster
-        features: features,
-        cluster: nbClusters, //BEST voir pourquoi on ne met pas ça dans properties
-      });
-    }
+    if (includeCluster || lines.length > 5)
+      lines = ['Cliquer pour zoomer'];
+
+    // Display a cluster point
+    return new ol.Feature({
+      id: features[0].getId(), // Pseudo id = the id of the first feature in the cluster
+      name: stylesOptions.agregateText(lines),
+      geometry: point, // The gravity center of all the features in the cluster
+      features: features,
+      cluster: nbClusters, //BEST voir pourquoi on ne met pas ça dans properties
+    });
   }
 
   reload() {
@@ -129,31 +149,68 @@ class MyClusterSource extends ol.source.Cluster {
  */
 class MyBrowserClusterVectorLayer extends ol.layer.Vector {
   constructor(options) {
-    // browserClusterMinDistance: 50, // (pixels) distance above which the browser clusterises
+    // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+    // distance: 50, // (pixels) distance above which the browser clusters
+    // minDistance: 16, // (pixels) minimum distance in pixels between clusters
     // Any ol.source.layer.Vector
 
+    // High resolutions layer, can call for server clustering
     super({
-      source: options.browserClusterMinDistance ?
+      source: options.distance ?
         new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
         new MyVectorSource(options), // or a vector source to get the data
 
       ...options,
+      minResolution: Math.max(
+        options.minResolution || 0,
+        options.browserClusterMinResolution || 0,
+      ),
     });
 
     this.options = options; // Mem for further use
+
+    // Low resolutions layer without clustering
+    if (options.browserClusterMinResolution) {
+      this.lowResolutionLayer = new ol.layer.Vector({
+        source: new MyVectorSource(options),
+
+        ...options,
+        maxResolution: Math.min(
+          options.maxResolution || Infinity,
+          options.browserClusterMinResolution || Infinity,
+        ),
+      });
+
+      this.lowResolutionLayer.options = options;
+    }
+  }
+
+  setMapInternal(map) {
+    super.setMapInternal(map);
+
+    if (this.lowResolutionLayer)
+      map.addLayer(this.lowResolutionLayer);
   }
 
   // Propagate reload
   reload(visible) {
     this.setVisible(visible);
+
     if (visible && this.state_) //BEST find better than this.state_
       this.getSource().reload();
+
+    if (this.lowResolutionLayer) {
+      this.lowResolutionLayer.setVisible(visible);
+
+      if (visible && this.lowResolutionLayer.state_)
+        this.lowResolutionLayer.getSource().reload();
+    }
   }
 }
 
 class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
   constructor(options) {
-    // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
+    // serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
 
     // Low resolutions layer to display the normal data
     super({
@@ -163,25 +220,25 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
 
     // High resolutions layer to get and display the clusters delivered by the server at hight resolutions
     if (options.serverClusterMinResolution)
-      this.altLayer = new MyBrowserClusterVectorLayer({
-        minResolution: options.serverClusterMinResolution,
+      this.serverClusterLayer = new MyBrowserClusterVectorLayer({
         ...options,
+        minResolution: options.serverClusterMinResolution,
       });
   }
 
   setMapInternal(map) {
     super.setMapInternal(map);
 
-    if (this.altLayer)
-      map.addLayer(this.altLayer);
+    if (this.serverClusterLayer)
+      map.addLayer(this.serverClusterLayer);
   }
 
-  // Propagate the reload to the altLayer
+  // Propagate the reload to the serverClusterLayer
   reload(visible) {
     super.reload(visible);
 
-    if (this.altLayer)
-      this.altLayer.reload(visible);
+    if (this.serverClusterLayer)
+      this.serverClusterLayer.reload(visible);
   }
 }
 
@@ -196,13 +253,20 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
       // host: '',
       strategy: ol.loadingstrategy.bbox,
       dataProjection: 'EPSG:4326',
-      // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
 
+      // Clusters:
+      // serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
+      // distance: 50, // (pixels) distance above which the browser clusters
+      // minDistance: 16, // (pixels) minimum distance in pixels between clusters
+      // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+      // browserGigue: 0, // (meters) Randomly shift a point around his position
+
+      // addProperties: properties => {}, // Add properties to each received feature
       basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      hoverStylesOptions: stylesOptions.hover,
-      selector: new Selector(options.selectName),
+      hoverStylesOptions: stylesOptions.hover, // (feature, layer)
+      // selectName: '', // Name of checkbox inputs to tune the url parameters
+      selector: new Selector(options.selectName), // Tune the url parameters
       zIndex: 100, // Above tiles layers
 
       // Any ol.source.Vector options
@@ -221,7 +285,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
     super({
       url: (e, r, p) => this.url(e, r, p),
       addProperties: p => this.addProperties(p),
-      style: (f, r) => this.style(f, r),
+      style: (f, r) => this.style(f, r, this),
       ...options,
     });
 
@@ -271,13 +335,12 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
 
   addProperties() {}
 
-  style(feature, resolution) {
-    // Function returning an array of styles options
+  // Function returning an array of styles options
+  style(feature) {
     const sof = !feature.getProperties().cluster ? this.options.basicStylesOptions :
-      resolution < this.options.spreadClusterMaxResolution ? stylesOptions.spreadCluster :
       stylesOptions.cluster;
 
-    return sof(feature, this) // Call the styleOptions function
+    return sof(...arguments) // Call the styleOptions function
       .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
   }
 

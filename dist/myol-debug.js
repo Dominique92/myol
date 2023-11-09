@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 25/10/2023 09:25:41 using npm run build from the src/... sources
+ * Built 09/11/2023 15:30:42 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -60348,18 +60348,6 @@ var myol = (function () {
   }
 
   /**
-   * No button
-   * To be used to replace an unused button
-   */
-  class NoButton extends ol.control.Control {
-    constructor() {
-      super({
-        element: document.createElement('div'),
-      });
-    }
-  }
-
-  /**
    * File downloader control
    */
 
@@ -60678,22 +60666,21 @@ var myol = (function () {
     setMapInternal(map) {
       super.setMapInternal(map);
 
-      const view = map.getView(),
-        source = this.getSource();
+      const view = map.getView();
 
-      view.on('change:resolution', updateResolution);
-      updateResolution();
+      view.on('change:resolution', () => this.updateResolution(view));
+      this.updateResolution(view);
+    }
 
-      function updateResolution() {
-        const mapResolution = view.getResolutionForZoom(view.getZoom()),
-          layerResolution = mapResolution < 10 ? 25000 : mapResolution < 30 ? 100000 : 250000;
+    updateResolution(view) {
+      const mapResolution = view.getResolutionForZoom(view.getZoom()),
+        layerResolution = mapResolution < 10 ? 25000 : mapResolution < 30 ? 100000 : 250000;
 
-        source.updateParams({
-          type: 'png',
-          map: '/ms_ogc/WMS_v1.3/raster/IGM_' + layerResolution + '.map',
-          layers: (layerResolution == 100000 ? 'MB.IGM' : 'CB.IGM') + layerResolution,
-        });
-      }
+      this.getSource().updateParams({
+        type: 'png',
+        map: '/ms_ogc/WMS_v1.3/raster/IGM_' + layerResolution + '.map',
+        layers: (layerResolution == 100000 ? 'MB.IGM' : 'CB.IGM') + layerResolution,
+      });
     }
   }
 
@@ -60849,7 +60836,7 @@ var myol = (function () {
       }),
 
       'SwissTopo': new SwissTopo(),
-      'Autriche Kompass': new Kompass({
+      'Österreich Kompass': new Kompass({
         subLayer: 'osm', // No key
       }),
       'Kompas winter': new Kompass({
@@ -60857,10 +60844,10 @@ var myol = (function () {
         subLayer: 'winter',
         maxZoom: 22,
       }),
-      'Angleterre': new OS(options.os), // options include key
+      'England': new OS(options.os), // options include key
       'Italie': new IGM(),
 
-      'Espagne': new IgnES(),
+      'España': new IgnES(),
       'Google': new Google(),
 
       'Maxar': new Maxbox({
@@ -60966,7 +60953,7 @@ var myol = (function () {
       'Photo Swiss': new SwissTopo({
         subLayer: 'ch.swisstopo.swissimage',
       }),
-      'Photo Espagne': new IgnES({
+      'Photo España': new IgnES({
         server: 'pnoa-ma',
         subLayer: 'OI.OrthoimageCoverage',
       }),
@@ -89422,27 +89409,26 @@ var myol = (function () {
 
   class MyGeolocation extends Button {
     constructor(options) {
-      // Redirect if http
-      if (!location.href.match(/(https|localhost)/)) {
-        super();
-        return;
-      }
+      super(
+        location.href.match(/(https|localhost)/) ? {
+          // Button options
+          className: 'myol-button-geolocation',
+          subMenuId: 'myol-button-geolocation',
+          subMenuHTML: subMenuHTML$1,
+          subMenuHTML_fr: subMenuHTML_fr$1,
 
-      super({
-        // Button options
-        className: 'myol-button-geolocation',
-        subMenuId: 'myol-button-geolocation',
-        subMenuHTML: subMenuHTML$1,
-        subMenuHTML_fr: subMenuHTML_fr$1,
+          // ol.Geolocation options
+          // https://www.w3.org/TR/geolocation/#position_options_interface
+          enableHighAccuracy: true,
+          maximumAge: 1000,
+          timeout: 1000,
 
-        // ol.Geolocation options
-        // https://www.w3.org/TR/geolocation/#position_options_interface
-        enableHighAccuracy: true,
-        maximumAge: 1000,
-        timeout: 1000,
-
-        ...options,
-      });
+          ...options,
+        } :
+        // Hide if http
+        {
+          className: 'myol-button-hide',
+        });
 
       // Add status display element
       this.statusEl = document.createElement('p');
@@ -89705,9 +89691,9 @@ var myol = (function () {
   class Permalink extends ol.control.Control {
     constructor(options) {
       options = {
-        init: true, // {true | false} use url hash or localStorage to position the map.
-        setUrl: false, // {true | false} Change url hash when moving the map.
         display: false, // {true | false} Display permalink link the map.
+        init: true, // {true | false | [<zoom>, <lon>, <lat>]} use url hash or localStorage to position the map.
+        setUrl: false, // {true | false} Change url hash when moving the map.
         hash: '?', // {?, #} the permalink delimiter after the url
         //BEST init with bbox option
 
@@ -89747,6 +89733,8 @@ var myol = (function () {
 
 
       // Set center & zoom at the init
+      //TODO force to
+      // init: true, // {true | false | [<zoom>, <lon>, <lat>]} use url hash or localStorage to position the map.
       if (this.init) {
         this.init = false; // Only once
 
@@ -89894,7 +89882,6 @@ var myol = (function () {
     MyGeocoder: MyGeocoder,
     MyGeolocation: MyGeolocation,
     MyMousePosition: MyMousePosition,
-    NoButton: NoButton,
     Permalink: Permalink,
     Print: Print,
     collection: collection$1,
@@ -90354,10 +90341,11 @@ var myol = (function () {
 
 
   class Hover extends ol.layer.Vector {
-    constructor() {
+    constructor(options) {
       super({
         source: new ol.source.Vector(),
-        zIndex: 200, // Above the vector layers
+        zIndex: 500, // Above all layers
+        ...options,
       });
     }
 
@@ -90405,27 +90393,7 @@ var myol = (function () {
         hoveredSubFeature = hoveredFeature;
 
       if (hoveredFeature) {
-        const hoveredProperties = hoveredFeature.getProperties(),
-          featurePosition = map.getPixelFromCoordinate(
-            ol.extent.getCenter(hoveredFeature.getGeometry().getExtent())
-          );
-
-        // Find sub-feature from a spread cluster
-        if (hoveredProperties.cluster &&
-          hoveredLayer.options &&
-          resolution < hoveredLayer.options.spreadClusterMaxResolution) {
-          hoveredProperties.features.every(f => {
-            const p = f.getProperties();
-
-            // Only for spread clusters
-            if (p.xLeft)
-              hoveredSubFeature = f;
-
-            // Stop when found
-            return evt.originalEvent.layerX >
-              featurePosition[0] + p.xLeft;
-          });
-        }
+        const hoveredProperties = hoveredFeature.getProperties();
 
         const hoveredSubProperties = hoveredSubFeature.getProperties();
 
@@ -90461,7 +90429,7 @@ var myol = (function () {
 
           if (hoveredLayer.options && hoveredLayer.options.hoverStylesOptions)
             f.setStyle(
-              new ol.style.Style(hoveredLayer.options.hoverStylesOptions(f, hoveredLayer))
+              new ol.style.Style(hoveredLayer.options.hoverStylesOptions(f, resolution, hoveredLayer))
             );
 
           source.clear();
@@ -98124,7 +98092,7 @@ var myol = (function () {
 
 
   // Basic style to display a geo vector layer based on standard properties
-  function basic(feature, layer) {
+  function basic(feature) {
     const properties = feature.getProperties();
 
     return [{
@@ -98143,9 +98111,8 @@ var myol = (function () {
       fill: new ol.style.Fill({
         color: 'rgba(0,0,256,0.3)',
       }),
-
       // properties.label if any
-      ...label(feature),
+      ...label(...arguments),
     }];
   }
 
@@ -98201,46 +98168,8 @@ var myol = (function () {
     }];
   }
 
-  // Display a line of features contained into a cluster
-  function spreadCluster(feature, layer) {
-    let properties = feature.getProperties(),
-      x = 0.95 + 0.45 * properties.cluster,
-      labelList = [],
-      stylesOptions = [];
-
-    properties.features.forEach(f => {
-      const p = f.getProperties();
-
-      layer.options.basicStylesOptions(f, layer)
-        .forEach(so => {
-          if (so.image) {
-            so.image.setAnchor([x -= 0.9, 0.5]);
-            f.setProperties({ // Mem the shift for hover detection
-              xLeft: (1 - x) * so.image.getImage().width,
-            }, true);
-            stylesOptions.push({
-              image: so.image,
-            });
-          }
-        });
-
-      if (p.label)
-        labelList.push(p.label);
-    });
-
-    if (labelList.length) {
-      feature.setProperties({ // Mem the shift for hover detection
-        label: labelList.join('\n'),
-      }, true);
-
-      stylesOptions.push(label(feature));
-    }
-
-    return stylesOptions;
-  }
-
   // Display the detailed information of a cluster based on standard properties
-  function details(feature, layer) {
+  function details(feature, resolution, layer) {
     const properties = feature.getProperties();
 
     feature.setProperties({
@@ -98260,9 +98189,9 @@ var myol = (function () {
   }
 
   // Display the basic hovered features
-  function hover(feature, layer) {
+  function hover() {
     return {
-      ...details(feature, layer),
+      ...details(...arguments),
 
       stroke: new ol.style.Stroke({
         color: 'red',
@@ -98287,8 +98216,7 @@ var myol = (function () {
     cluster: cluster,
     details: details,
     hover: hover,
-    label: label,
-    spreadCluster: spreadCluster
+    label: label
   });
 
   /**
@@ -98303,22 +98231,36 @@ var myol = (function () {
    */
   class MyVectorSource extends ol.source.Vector {
     constructor(options) {
+      // selectName: '', // Name of checkbox inputs to tune the url parameters
+      // browserGigue: 0, // (meters) Randomly shift a point around his position
+      // addProperties: properties => {}, // Add properties to each received feature
+
       super(options);
 
+      this.options = options;
       this.statusEl = document.getElementById(options.selectName + '-status');
 
-      // Display loading satus
       this.on(['featuresloadstart', 'featuresloadend', 'error', 'featuresloaderror'], evt => {
+        // Display loading satus
         if (this.statusEl) this.statusEl.innerHTML =
           evt.type == 'featuresloadstart' ? '&#8987;' :
           evt.type == 'featuresloadend' ? '' :
           '&#9888;'; // Error symbol
+
+        // Randomly shift a point around his position
+        if (options.browserGigue &&
+          evt.type == 'featuresloadend')
+          evt.features.forEach(f => {
+            f.getGeometry().translate(
+              Math.cos(f.getId()) * options.browserGigue,
+              Math.sin(f.getId()) * options.browserGigue,
+            );
+          });
       });
 
       // Compute properties when the layer is loaded & before the cluster layer is computed
       this.on('change', () =>
-        this.getFeatures()
-        .forEach(f => {
+        this.getFeatures().forEach(f => {
           if (!f._yetAdded) {
             f._yetAdded = true;
             f.setProperties(
@@ -98341,70 +98283,76 @@ var myol = (function () {
    */
   class MyClusterSource extends ol.source.Cluster {
     constructor(options) {
-      // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+      options = {
+        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+        // distance: 50, // (pixels) distance above which the browser clusters
+        // minDistance: 16, // (pixels) minimum distance in pixels between clusters
 
-      // Any MyVectorSource options
+        // Any MyVectorSource options
+        ...options,
+      };
 
       // Source to handle the features
       const initialSource = new MyVectorSource(options);
 
       // Source to handle the clusters & the isolated features
       super({
-        distance: options.browserClusterMinDistance,
         source: initialSource,
-        geometryFunction: geometryFunction_,
-        createCluster: createCluster_,
+        geometryFunction: f => this.geometryFunction_(f, options),
+        createCluster: (p, f) => this.createCluster_(p, f),
+        ...options, // distance, minDistance
       });
 
-      // Generate a center point where to display the cluster
-      function geometryFunction_(feature) {
-        const geometry = feature.getGeometry();
+      this.options = options;
+    }
 
-        if (geometry) {
-          const ex = feature.getGeometry().getExtent(),
-            featurePixelPerimeter = (ex[2] - ex[0] + ex[3] - ex[1]) *
-            2 / this.resolution;
+    // Generate a center point where to display the cluster
+    geometryFunction_(feature, options) {
+      const geometry = feature.getGeometry();
 
-          // Don't cluster lines or polygons whose the extent perimeter is more than x pixels
-          if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
-            this.addFeature(feature);
-          else
-            return new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent()));
-        }
+      if (geometry) {
+        const ex = feature.getGeometry().getExtent(),
+          featurePixelPerimeter = (ex[2] - ex[0] + ex[3] - ex[1]) * 2 / this.resolution;
+
+        // Don't cluster lines or polygons whose the extent perimeter is more than x pixels
+        if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
+          this.addFeature(feature); // And return null to not cluster this feature
+        else
+          return new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent()));
       }
+    }
 
-      // Generate the features to render the cluster
-      function createCluster_(point, features) {
-        let nbClusters = 0,
-          includeCluster = false,
-          lines = [];
+    // Generate the features to render the cluster
+    createCluster_(point, features) {
 
-        features.forEach(f => {
-          const properties = f.getProperties();
+      let nbClusters = 0,
+        includeCluster = false,
+        lines = [];
 
-          lines.push(properties.name);
-          nbClusters += parseInt(properties.cluster) || 1;
-          if (properties.cluster)
-            includeCluster = true;
-        });
+      features.forEach(f => {
+        const properties = f.getProperties();
 
-        // Single feature : display it
-        if (nbClusters == 1)
-          return features[0];
+        lines.push(properties.name);
+        nbClusters += parseInt(properties.cluster) || 1;
+        if (properties.cluster)
+          includeCluster = true;
+      });
 
-        if (includeCluster || lines.length > 5)
-          lines = ['Cliquer pour zoomer'];
+      // Single feature : display it
+      if (nbClusters == 1)
+        return features[0];
 
-        // Display a cluster point
-        return new ol.Feature({
-          id: features[0].getId(), // Pseudo id = the id of the first feature in the cluster
-          name: agregateText(lines),
-          geometry: point, // The gravity center of all the features in the cluster
-          features: features,
-          cluster: nbClusters, //BEST voir pourquoi on ne met pas ça dans properties
-        });
-      }
+      if (includeCluster || lines.length > 5)
+        lines = ['Cliquer pour zoomer'];
+
+      // Display a cluster point
+      return new ol.Feature({
+        id: features[0].getId(), // Pseudo id = the id of the first feature in the cluster
+        name: agregateText(lines),
+        geometry: point, // The gravity center of all the features in the cluster
+        features: features,
+        cluster: nbClusters, //BEST voir pourquoi on ne met pas ça dans properties
+      });
     }
 
     reload() {
@@ -98418,31 +98366,68 @@ var myol = (function () {
    */
   class MyBrowserClusterVectorLayer extends ol.layer.Vector {
     constructor(options) {
-      // browserClusterMinDistance: 50, // (pixels) distance above which the browser clusterises
+      // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+      // distance: 50, // (pixels) distance above which the browser clusters
+      // minDistance: 16, // (pixels) minimum distance in pixels between clusters
       // Any ol.source.layer.Vector
 
+      // High resolutions layer, can call for server clustering
       super({
-        source: options.browserClusterMinDistance ?
+        source: options.distance ?
           new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
           new MyVectorSource(options), // or a vector source to get the data
 
         ...options,
+        minResolution: Math.max(
+          options.minResolution || 0,
+          options.browserClusterMinResolution || 0,
+        ),
       });
 
       this.options = options; // Mem for further use
+
+      // Low resolutions layer without clustering
+      if (options.browserClusterMinResolution) {
+        this.lowResolutionLayer = new ol.layer.Vector({
+          source: new MyVectorSource(options),
+
+          ...options,
+          maxResolution: Math.min(
+            options.maxResolution || Infinity,
+            options.browserClusterMinResolution || Infinity,
+          ),
+        });
+
+        this.lowResolutionLayer.options = options;
+      }
+    }
+
+    setMapInternal(map) {
+      super.setMapInternal(map);
+
+      if (this.lowResolutionLayer)
+        map.addLayer(this.lowResolutionLayer);
     }
 
     // Propagate reload
     reload(visible) {
       this.setVisible(visible);
+
       if (visible && this.state_) //BEST find better than this.state_
         this.getSource().reload();
+
+      if (this.lowResolutionLayer) {
+        this.lowResolutionLayer.setVisible(visible);
+
+        if (visible && this.lowResolutionLayer.state_)
+          this.lowResolutionLayer.getSource().reload();
+      }
     }
   }
 
   class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
     constructor(options) {
-      // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
+      // serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
 
       // Low resolutions layer to display the normal data
       super({
@@ -98452,25 +98437,25 @@ var myol = (function () {
 
       // High resolutions layer to get and display the clusters delivered by the server at hight resolutions
       if (options.serverClusterMinResolution)
-        this.altLayer = new MyBrowserClusterVectorLayer({
-          minResolution: options.serverClusterMinResolution,
+        this.serverClusterLayer = new MyBrowserClusterVectorLayer({
           ...options,
+          minResolution: options.serverClusterMinResolution,
         });
     }
 
     setMapInternal(map) {
       super.setMapInternal(map);
 
-      if (this.altLayer)
-        map.addLayer(this.altLayer);
+      if (this.serverClusterLayer)
+        map.addLayer(this.serverClusterLayer);
     }
 
-    // Propagate the reload to the altLayer
+    // Propagate the reload to the serverClusterLayer
     reload(visible) {
       super.reload(visible);
 
-      if (this.altLayer)
-        this.altLayer.reload(visible);
+      if (this.serverClusterLayer)
+        this.serverClusterLayer.reload(visible);
     }
   }
 
@@ -98485,13 +98470,20 @@ var myol = (function () {
         // host: '',
         strategy: ol.loadingstrategy.bbox,
         dataProjection: 'EPSG:4326',
-        // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-        // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
 
+        // Clusters:
+        // serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
+        // distance: 50, // (pixels) distance above which the browser clusters
+        // minDistance: 16, // (pixels) minimum distance in pixels between clusters
+        // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+        // browserGigue: 0, // (meters) Randomly shift a point around his position
+
+        // addProperties: properties => {}, // Add properties to each received feature
         basicStylesOptions: basic, // (feature, layer)
-        hoverStylesOptions: hover,
-        selector: new Selector(options.selectName),
+        hoverStylesOptions: hover, // (feature, layer)
+        // selectName: '', // Name of checkbox inputs to tune the url parameters
+        selector: new Selector(options.selectName), // Tune the url parameters
         zIndex: 100, // Above tiles layers
 
         // Any ol.source.Vector options
@@ -98510,7 +98502,7 @@ var myol = (function () {
       super({
         url: (e, r, p) => this.url(e, r, p),
         addProperties: p => this.addProperties(p),
-        style: (f, r) => this.style(f, r),
+        style: (f, r) => this.style(f, r, this),
         ...options,
       });
 
@@ -98560,13 +98552,12 @@ var myol = (function () {
 
     addProperties() {}
 
-    style(feature, resolution) {
-      // Function returning an array of styles options
+    // Function returning an array of styles options
+    style(feature) {
       const sof = !feature.getProperties().cluster ? this.options.basicStylesOptions :
-        resolution < this.options.spreadClusterMaxResolution ? spreadCluster :
         cluster;
 
-      return sof(feature, this) // Call the styleOptions function
+      return sof(...arguments) // Call the styleOptions function
         .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
     }
 
@@ -98604,17 +98595,12 @@ var myol = (function () {
   class GeoBB extends MyVectorLayer {
     constructor(options) {
       super({
-        browserClusterMinDistance: 50,
+        serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
+        distance: 50, // (pixels) distance above which the browser clusters
         browserClusterFeaturelMaxPerimeter: 300,
-        serverClusterMinResolution: 100,
-        // addProperties: properties => {}, // Add properties to each received feature
-        // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-        // hoverStylesOptions: stylesOptions.hover,
-        // selector: new Selector(options.selectName),
+        browserGigue: 10, // (meters) Randomly shift a point around his position
 
-        // Any ol.source.Vector options
-        // Any ol.source.layer.Vector
-
+        // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
         ...options,
       });
     }
@@ -98634,7 +98620,7 @@ var myol = (function () {
       super({
         host: 'https://chemineur.fr/',
         attribution: '&copy;chemineur.fr',
-
+        // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
         ...options,
       });
     }
@@ -98646,17 +98632,9 @@ var myol = (function () {
       super({
         host: 'https://alpages.info/',
         attribution: '&copy;alpages.info',
-
-        browserClusterMinDistance: 50,
+        distance: 50, // (pixels) distance above which the browser clusters
         browserClusterFeaturelMaxPerimeter: 300,
-        // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-        // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-        // hoverStylesOptions: stylesOptions.hover,
-        // selector: new Selector(options.selectName),
-
-        // Any ol.source.Vector options
-        // Any ol.source.layer.Vector
-
+        // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
         ...options,
       });
     }
@@ -98683,16 +98661,11 @@ var myol = (function () {
         host: 'https://www.refuges.info/',
         attribution: '&copy;refuges.info',
 
-        browserClusterMinDistance: 50,
-        serverClusterMinResolution: 100,
-        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-        // addProperties: properties => {}, // Add properties to each received feature
-        // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-        // hoverStylesOptions: stylesOptions.hover,
-        // selector: new Selector(options.selectName),
-
-        // Any ol.source.Vector options
-        // Any ol.source.layer.Vector
+        serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
+        distance: 30, // (pixels) distance above which the browser clusters
+        // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+        browserGigue: 10, // (meters) Randomly shift a point around his position
+        // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
 
         ...options,
       });
@@ -98727,17 +98700,8 @@ var myol = (function () {
         url: 'https://www.pyrenees-refuges.com/api.php?type_fichier=GEOJSON',
         strategy: ol.loadingstrategy.all,
         attribution: '&copy;Pyrenees-Refuges',
-
-        browserClusterMinDistance: 50,
-        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-        // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-        // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-        // hoverStylesOptions: stylesOptions.hover,
-        // selector: new Selector(options.selectName),
-
-        // Any ol.source.Vector options
-        // Any ol.source.layer.Vector
-
+        distance: 50, // (pixels) distance above which the browser clusters
+        // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
         ...options,
       });
     }
@@ -98760,17 +98724,8 @@ var myol = (function () {
         host: 'https://api.camptocamp.org/',
         dataProjection: 'EPSG:3857',
         attribution: '&copy;Camp2camp',
-
-        browserClusterMinDistance: 50,
-        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-        // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-        // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-        // hoverStylesOptions: stylesOptions.hover,
-        // selector: new Selector(options.selectName),
-
-        // Any ol.source.Vector options
-        // Any ol.source.layer.Vector
-
+        distance: 50, // (pixels) distance above which the browser clusters
+        // Any myol.layer.MyVectorLayer options
         ...options,
       });
 
@@ -98828,19 +98783,9 @@ var myol = (function () {
         format: new ol.format.OSMXML(),
         attribution: '&copy;OpenStreetMap',
 
-        browserClusterMinDistance: 50,
         maxResolution: 50,
-        // browserClusterMinDistance:50, // (pixels) distance above which the browser clusterises
-        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-        // serverClusterMinResolution: 100, // (map units per pixel) resolution above which we ask clusters to the server
-        // addProperties: properties => {}, // Add properties to each received feature
-        // basicStylesOptions: stylesOptions.basic, // (feature, layer)
-        // hoverStylesOptions: stylesOptions.hover,
-        // selector: new Selector(options.selectName),
-
-        // Any ol.source.Vector options
-        // Any ol.source.layer.Vector
-
+        distance: 50, // (pixels) distance above which the browser clusters
+        // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
         ...options,
       });
 
@@ -98986,7 +98931,7 @@ var myol = (function () {
    */
 
 
-  async function trace() {
+  async function trace(map) {
     const data = [
       //BEST myol & geocoder version
       'Ol v' + ol.util.VERSION,
@@ -99026,6 +98971,14 @@ var myol = (function () {
       });
 
     console.info(data.join('\n'));
+
+    // Zoom & resolution
+    if (map)
+      map.getView().on('change:resolution', () =>
+        console.log('zoom ' + map.getView().getZoom().toFixed(1) +
+          ', res ' + map.getView().getResolution().toFixed(0) + ' m/pix'
+        )
+      );
   }
 
   /**

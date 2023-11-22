@@ -8,15 +8,18 @@
 // Geocoder
 import Geocoder from '@myol/geocoder/src/base';
 import '@myol/geocoder/dist/ol-geocoder.css';
-import './myGeocoder.css'; // After ol-geocoder.css
+import './myGeocoder.css'; // Import after ol-geocoder.css
 
 export class MyGeocoder extends Geocoder {
   constructor(options) {
     super('nominatim', {
       // See https://github.com/kirtan-desai/ol-geocoder#user-content-api
       placeholder: 'Recherche par nom sur la carte', // Initialization of the input field
+
       ...options,
     });
+
+    this.element.classList.add('ol-control');
 
     // Avoid submit of a form including the map
     this.element.getElementsByTagName('input')[0]

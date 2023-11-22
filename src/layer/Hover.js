@@ -11,14 +11,14 @@ export class Hover extends ol.layer.Vector {
     super({
       source: new ol.source.Vector(),
       zIndex: 500, // Above all layers
+      wrapX: false,
+
       ...options,
     });
   }
 
   // Attach an hover & click listener to the map
   setMapInternal(map) {
-    super.setMapInternal(map);
-
     const mapEl = map.getTargetElement();
 
     // Basic listeners
@@ -35,6 +35,8 @@ export class Hover extends ol.layer.Vector {
           this.getSource().clear()
       }
     });
+
+    return super.setMapInternal(map);
   }
 
   mouseListener(evt) {
@@ -59,9 +61,8 @@ export class Hover extends ol.layer.Vector {
       hoveredSubFeature = hoveredFeature;
 
     if (hoveredFeature) {
-      const hoveredProperties = hoveredFeature.getProperties();
-
-      const hoveredSubProperties = hoveredSubFeature.getProperties();
+      const hoveredProperties = hoveredFeature.getProperties(),
+        hoveredSubProperties = hoveredSubFeature.getProperties();
 
       // Click
       if (evt.type == 'click' &&

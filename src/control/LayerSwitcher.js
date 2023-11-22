@@ -8,7 +8,7 @@ import './layerSwitcher.css';
 
 //BEST how do we do on touch terminal ? alt key to switch layers / transparency
 //BEST slider transparency doesn't work out of range (no BackgroundLayer)
-//BEST BUG Attribution doit être défini avant LayerSwitcher
+//BEST BUG Attribution must be set before LayerSwitcher
 export class LayerSwitcher extends Button {
   constructor(options) {
     super({
@@ -39,8 +39,6 @@ export class LayerSwitcher extends Button {
   }
 
   setMap(map) {
-    super.setMap(map);
-
     map.addLayer(new BackgroundLayer());
 
     for (let name in this.layers) {
@@ -79,6 +77,8 @@ export class LayerSwitcher extends Button {
       if (evt.pixel[0] < max_x || evt.pixel[1] > max_y)
         this.element.classList.remove('myol-button-switcher-open');
     });
+
+    return super.setMap(map);
   }
 
   action(evt) {

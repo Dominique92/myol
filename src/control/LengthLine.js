@@ -11,12 +11,10 @@ export class LengthLine extends ol.control.Control {
       element: document.createElement('div'), //HACK button not visible
     });
 
-    this.element.className = 'myol-length-line';
+    this.element.className = 'ol-control myol-length-line';
   }
 
   setMap(map) {
-    super.setMap(map);
-
     map.on('pointermove', evt => {
       this.element.innerHTML = ''; // Clear the measure if hover no feature
 
@@ -27,6 +25,8 @@ export class LengthLine extends ol.control.Control {
           hitTolerance: 6, // Default is 0
         });
     });
+
+    return super.setMap(map);
   }
 
   //BEST calculate distance to the ends

@@ -15,7 +15,6 @@ import * as stylesOptions from './stylesOptions';
 class MyVectorSource extends ol.source.Vector {
   constructor(options) {
     // selectName: '', // Name of checkbox inputs to tune the url parameters
-    // browserGigue: 0, // (meters) Randomly shift a point around his position
     // addProperties: properties => {}, // Add properties to each received feature
 
     super(options);
@@ -29,16 +28,6 @@ class MyVectorSource extends ol.source.Vector {
         evt.type == 'featuresloadstart' ? '&#8987;' :
         evt.type == 'featuresloadend' ? '' :
         '&#9888;'; // Error symbol
-
-      // Randomly shift a point around his position
-      if (options.browserGigue &&
-        evt.type == 'featuresloadend')
-        evt.features.forEach(f => {
-          f.getGeometry().translate(
-            Math.cos(f.getId()) * options.browserGigue,
-            Math.sin(f.getId()) * options.browserGigue,
-          );
-        });
     });
 
     // Compute properties when the layer is loaded & before the cluster layer is computed
@@ -48,12 +37,14 @@ class MyVectorSource extends ol.source.Vector {
           f._yetAdded = true;
           f.setProperties(
             options.addProperties(f.getProperties()),
-            true // Silent : add the feature without refresh the layer
+            true, // Silent : add the feature without refresh the layer
           );
         }
       })
     );
   }
+
+  tuneDistance() {} // MyClusterSource compatibility
 
   // Redirection for cluster.source compatibility
   reload() {
@@ -68,8 +59,6 @@ class MyClusterSource extends ol.source.Cluster {
   constructor(options) {
     options = {
       // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // distance: 50, // (pixels) distance above which the browser clusters
-      // minDistance: 16, // (pixels) minimum distance in pixels between clusters
 
       // Any MyVectorSource options
       ...options,
@@ -83,7 +72,8 @@ class MyClusterSource extends ol.source.Cluster {
       source: initialSource,
       geometryFunction: f => this.geometryFunction_(f, options),
       createCluster: (p, f) => this.createCluster_(p, f),
-      ...options, // distance, minDistance
+
+      ...options,
     });
 
     this.options = options;
@@ -107,8 +97,7 @@ class MyClusterSource extends ol.source.Cluster {
 
   // Generate the features to render the cluster
   createCluster_(point, features) {
-
-    let nbClusters = 0,
+    let nbMaxClusters = 0,
       includeCluster = false,
       lines = [];
 
@@ -116,13 +105,13 @@ class MyClusterSource extends ol.source.Cluster {
       const properties = f.getProperties();
 
       lines.push(properties.name);
-      nbClusters += parseInt(properties.cluster) || 1;
+      nbMaxClusters += parseInt(properties.cluster) || 1;
       if (properties.cluster)
         includeCluster = true;
     });
 
     // Single feature : display it
-    if (nbClusters == 1)
+    if (nbMaxClusters == 1)
       return features[0];
 
     if (includeCluster || lines.length > 5)
@@ -134,8 +123,17 @@ class MyClusterSource extends ol.source.Cluster {
       name: stylesOptions.agregateText(lines),
       geometry: point, // The gravity center of all the features in the cluster
       features: features,
-      cluster: nbClusters, //BEST voir pourquoi on ne met pas ça dans properties
+      cluster: nbMaxClusters, //BEST voir pourquoi on ne met pas ça dans properties
     });
+  }
+
+  tuneDistance(map) {
+    const s = map.getSize(),
+      n = this.options.nbMaxClusters,
+      f = (s[0] + s[1] + 5000) / 5000; // More clusters on big maps
+
+    if (n)
+      this.setDistance(Math.sqrt(s[0] * s[1] / n / f));
   }
 
   reload() {
@@ -149,47 +147,49 @@ class MyClusterSource extends ol.source.Cluster {
  */
 class MyBrowserClusterVectorLayer extends ol.layer.Vector {
   constructor(options) {
-    // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
-    // distance: 50, // (pixels) distance above which the browser clusters
-    // minDistance: 16, // (pixels) minimum distance in pixels between clusters
-    // Any ol.source.layer.Vector
+    // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters but add a jitter
+
+    // Any ol.source.layer.Vector options
 
     // High resolutions layer, can call for server clustering
-    super({
-      source: options.distance ?
+    const hiResOptions = {
+      source: options.nbMaxClusters ?
         new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
         new MyVectorSource(options), // or a vector source to get the data
 
       ...options,
+
       minResolution: Math.max(
         options.minResolution || 0,
         options.browserClusterMinResolution || 0,
       ),
-    });
+    };
 
-    this.options = options; // Mem for further use
+    super(hiResOptions);
+    this.options = hiResOptions; // Mem for further use
 
     // Low resolutions layer without clustering
-    if (options.browserClusterMinResolution) {
-      this.lowResolutionLayer = new ol.layer.Vector({
+    if (options.browserClusterMinResolution &&
+      options.browserClusterMinResolution < options.maxResolution) {
+      const lowResOptions = {
         source: new MyVectorSource(options),
 
         ...options,
-        maxResolution: Math.min(
-          options.maxResolution || Infinity,
-          options.browserClusterMinResolution || Infinity,
-        ),
-      });
 
-      this.lowResolutionLayer.options = options;
+        maxResolution: options.browserClusterMinResolution,
+        type: 'lowResolution',
+      };
+
+      this.lowResolutionLayer = new ol.layer.Vector(lowResOptions);
+      this.lowResolutionLayer.options = lowResOptions;
     }
   }
 
   setMapInternal(map) {
-    super.setMapInternal(map);
-
     if (this.lowResolutionLayer)
       map.addLayer(this.lowResolutionLayer);
+
+    return super.setMapInternal(map);
   }
 
   // Propagate reload
@@ -215,30 +215,41 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
     // Low resolutions layer to display the normal data
     super({
       ...options,
+
       maxResolution: options.serverClusterMinResolution,
+      type: 'browserCluster',
     });
 
     // High resolutions layer to get and display the clusters delivered by the server at hight resolutions
     if (options.serverClusterMinResolution)
       this.serverClusterLayer = new MyBrowserClusterVectorLayer({
         ...options,
+
         minResolution: options.serverClusterMinResolution,
+        type: 'serverCluster',
       });
   }
 
   setMapInternal(map) {
-    super.setMapInternal(map);
-
     if (this.serverClusterLayer)
       map.addLayer(this.serverClusterLayer);
+
+    map.on('change:size', () => {
+      this.getSource().tuneDistance(map);
+
+      if (this.serverClusterLayer)
+        this.serverClusterLayer.getSource().tuneDistance(map);
+    });
+
+    return super.setMapInternal(map);
   }
 
   // Propagate the reload to the serverClusterLayer
   reload(visible) {
-    super.reload(visible);
-
     if (this.serverClusterLayer)
       this.serverClusterLayer.reload(visible);
+
+    return super.reload(visible);
   }
 }
 
@@ -256,21 +267,22 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
 
       // Clusters:
       // serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
-      // distance: 50, // (pixels) distance above which the browser clusters
-      // minDistance: 16, // (pixels) minimum distance in pixels between clusters
-      // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
+      // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters but add a jitter
+      // nbMaxClusters: 108, // Number of clusters on the map display. Replace distance
+      // distance: 50, // (pixels) distance above which we cluster
+      minDistance: 24, // (pixels) minimum distance in pixels between clusters (can slide cluster icons)
       // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-      // browserGigue: 0, // (meters) Randomly shift a point around his position
 
+      // Features
       // addProperties: properties => {}, // Add properties to each received feature
-      basicStylesOptions: stylesOptions.basic, // (feature, layer)
-      hoverStylesOptions: stylesOptions.hover, // (feature, layer)
+      basicStylesOptions: stylesOptions.basic, // (feature, resolution, layer)
+      hoverStylesOptions: stylesOptions.hover, // (feature, resolution, layer)
       // selectName: '', // Name of checkbox inputs to tune the url parameters
       selector: new Selector(options.selectName), // Tune the url parameters
       zIndex: 100, // Above tiles layers
 
       // Any ol.source.Vector options
-      // Any ol.source.layer.Vector
+      // Any ol.source.layer.Vector options
 
       // Methods to instantiate
       // url (extent, resolution, mapProjection) // Calculate the url
@@ -285,7 +297,8 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
     super({
       url: (e, r, p) => this.url(e, r, p),
       addProperties: p => this.addProperties(p),
-      style: (f, r) => this.style(f, r, this),
+      style: (f, r) => this.style(f, r, this), //BEST BUG should apply on each ol.vector.layer (now only the basic layer of 3)
+
       ...options,
     });
 
@@ -337,8 +350,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
 
   // Function returning an array of styles options
   style(feature) {
-    const sof = !feature.getProperties().cluster ? this.options.basicStylesOptions :
-      stylesOptions.cluster;
+    const sof = feature.getProperties().cluster ? stylesOptions.cluster : this.options.basicStylesOptions;
 
     return sof(...arguments) // Call the styleOptions function
       .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
@@ -346,7 +358,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
 
   // Define reload action
   reload() {
-    super.reload(this.selector.getSelection().length);
+    return super.reload(this.selector.getSelection().length > 0);
   }
 }
 

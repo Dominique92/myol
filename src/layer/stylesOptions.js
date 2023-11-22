@@ -9,13 +9,18 @@
 import ol from '../ol';
 
 // Basic style to display a geo vector layer based on standard properties
-export function basic(feature) {
+export function basic(feature, resolution, layer) {
   const properties = feature.getProperties();
 
   return [{
     // Point
     image: properties.icon ? new ol.style.Icon({
-      src: properties.icon,
+      anchor: resolution < layer.options.minResolution ? [
+        feature.getId() / 5 % 1 / 2 + 0.25, // 32 px width frame
+        feature.getId() / 9 % 1, // 44 px hight frame
+      ] : [0.5, 0.5],
+      src: properties.icon, // 24 * 24 icons
+      //BEST ??? crossOrigin: 'anonymous',
     }) : null,
 
     // Lines
@@ -29,6 +34,7 @@ export function basic(feature) {
       color: 'rgba(0,0,256,0.3)',
     }),
     // properties.label if any
+    //BEST appliquer gigue anchor au label
     ...label(...arguments),
   }];
 }
@@ -78,6 +84,7 @@ export function cluster(feature) {
         color: 'white',
       }),
     }),
+    //TODO laisser le texte sur les clusters < 3 icônes
     text: new ol.style.Text({
       text: feature.getProperties().cluster.toString(),
       font: '12px Verdana',

@@ -9,27 +9,25 @@ self.addEventListener('install', evt => {
 
   caches.delete(cacheName)
     .then(console.log('PWA ' + cacheName + ' deleted'))
-    .catch(err => console.error(err));
+    .catch(error => console.error(error));
 
   evt.waitUntil(
     caches.open(cacheName)
     .then(cache => {
       console.log('PWA open cache ' + cacheName);
       cache.addAll([
-          'ressources/favicon.png',
-          'ressources/gps.css',
+          'ressources/favicon.svg',
           'ressources/gps.js',
-          'ressources/icon-512.png', //TODO remove when favicon.svg
           'index.php',
           'manifest.json',
           'service-worker.php',
-          ...jsVars.distFiles,
+          ...jsVars.myolFiles,
           ...jsVars.gpxFiles,
         ])
         .then(console.log('PWA files added to cache'))
-        .catch(err => console.error(err));
+        .catch(error => console.error(error));
     })
-    .catch(err => console.error(err))
+    .catch(error => console.error(error))
   );
 });
 
@@ -40,6 +38,6 @@ self.addEventListener('fetch', evt => {
   evt.respondWith(
     caches.match(evt.request)
     .then(found => found || fetch(evt.request))
-    .catch(err => console.error(err + ' ' + evt.request.url))
+    .catch(error => console.error(error + ' ' + evt.request.url))
   )
 });

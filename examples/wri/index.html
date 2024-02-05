@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--
+© Dominique Cavailhez 2019
+https://github.com/Dominique92/myol
+Based on https://openlayers.org
+-->
+<html lang="fr">
+
+<head>
+  <title>My Openlayers WRI</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="../images/logo-dark.svg" rel="icon" type="image/svg">
+
+  <link href="../ressources/style.css" rel="stylesheet">
+  <style>
+    #carte-accueil {
+      width: 100%;
+      height: 100vw;
+    }
+  </style>
+
+  <!-- Simulation of importing myol -->
+  <script>
+    // apache (production)
+    if (window.origin.split(':').length == 2) {
+      document.write('<link href="../../dist/myol.css" type="text/css" rel="stylesheet">');
+      document.write('<script src="../../dist/myol-debug.js"><&#47;script>');
+    }
+  </script>
+  <script type="module">
+    // vite nmp (test)
+    import myol from '../../build/index'; // At this place, mysteriously do not import out of npm vite context
+    window.myol = myol; // Declare a myol global variable
+  </script>
+
+  <!-- WRI -->
+  <script src="vues/_cartes.js"></script>
+  <script src="vues/index.js" defer></script>
+</head>
+
+<body>
+  <a style="float:right" href="point.html">Next &#9654;</a>
+  <a style="float:right;margin-right:15px" href="../">Home</a>
+  <h1 style="margin:0">Index refuges.info</h1>
+  <a style="float:right" href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+
+  <h4>/vues/index.html</h4>
+  <div id="carte-accueil"></div>
+</body>
+
+</html>

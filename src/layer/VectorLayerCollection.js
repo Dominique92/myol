@@ -163,11 +163,10 @@ export class C2C extends MyVectorLayer {
     });
 
     this.format.readFeatures = json => {
-      const features = [],
-        objects = JSON.parse(json);
+      const features = [];
 
-      for (let o in objects.documents) {
-        const properties = objects.documents[o];
+      for (let p in json.documents) {
+        const properties = json.documents[p];
 
         features.push({
           id: properties.document_id,
@@ -194,6 +193,7 @@ export class C2C extends MyVectorLayer {
     return {
       _path: 'waypoints',
       wtyp: this.selector.getSelection(),
+      limit: 100, // C2C max limit
     };
   }
 }

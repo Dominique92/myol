@@ -14,7 +14,7 @@ Based on https://openlayers.org
   <meta name="description" content="Offline GPS based on openlayers & Progressive Web Application">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <!-- Good old favicon -->
-  <link href="ressources/favicon.png" type="image/png" rel="icon">
+  <link href="ressources/favicon.svg" type="image/svg+xml" rel="icon">
   <!-- Android / Chrome -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="white">
@@ -26,16 +26,13 @@ Based on https://openlayers.org
   <!-- Windows -->
   <meta name="msapplication-TileImage" content="ressources/icon-512.png">
   <meta name="msapplication-TileColor" content="#ffffff">
+
   <!-- PWA -->
   <link href="manifest.json" rel="manifest">
-  <link href="<?=$dist_rep?>myol.css" rel="stylesheet">
-  <script src="<?=$dist_rep?>myol.js"></script>
-  </script>
-  <link href="ressources/gps.css" rel="stylesheet">
-  <script>
-    var jsVars = <?=$js_vars?>
-  </script>
-  <script src="ressources/gps.js" defer></script>
+  <link href="<?=$myol_rep?>myol.css" rel="stylesheet">
+  <style>
+    <?=file_get_contents("ressources/gps.css").PHP_EOL.PHP_EOL?>
+  </style>
 </head>
 
 <body>
@@ -84,6 +81,19 @@ Based on https://openlayers.org
     <hr>
     <p>Version <?=$last_change_date?> </p>
   </div>
+  <?php foreach ($html_include as $html)
+    echo file_get_contents($html).PHP_EOL;
+  ?>
+
+  <script src="<?=$myol_rep?>myol.js"></script>
+  <script>
+    var jsVars = <?=$js_vars?>;
+
+    <?php foreach ($js_include as $js)
+      echo file_get_contents($js).PHP_EOL;
+    ?>
+  </script>
+  <script src="ressources/gps.js" defer></script>
 </body>
 
 </html>

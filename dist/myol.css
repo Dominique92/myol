@@ -947,6 +947,7 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 }
 
 /* Close submenu after enable draw */
+.myol-button-edit-modify.myol-button-selected div,
 .myol-button-edit-line.myol-button-selected div,
 .myol-button-edit-poly.myol-button-selected div {
   display: none;

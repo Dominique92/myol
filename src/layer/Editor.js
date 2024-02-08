@@ -104,31 +104,41 @@ export class Editor extends ol.layer.Vector {
     this.optimiseEdited(); // Optimise at init
 
     this.interactions = [
-      new ol.interaction.Modify({ // 0 Modify
+      new ol.interaction.Select({ // 0 Hover
+        condition: ol.events.condition.pointerMove,
+        style: () => new ol.style.Style({
+          // Lines or polygons border
+          stroke: new ol.style.Stroke({
+            color: 'red',
+            width: 3,
+          }),
+        }),
+      }),
+      new ol.interaction.Modify({ // 1 Modify
         source: this.source,
         pixelTolerance: 16, // Default is 10
-        style: this.style, //BEST change cursor to move
+        style: this.style,
       }),
-      new ol.interaction.Draw({ // 1 Draw line
+      new ol.interaction.Draw({ // 2 Draw line
         source: this.source,
         type: 'LineString',
         style: this.style,
         stopClick: true, // Avoid zoom when you finish drawing by doubleclick
       }),
-      new ol.interaction.Draw({ // 2 Draw poly
+      new ol.interaction.Draw({ // 3 Draw poly
         source: this.source,
         type: 'Polygon',
         style: this.style,
         stopClick: true, // Avoid zoom when you finish drawing by doubleclick
       }),
-      new ol.interaction.Snap({ // 3 snap
+      new ol.interaction.Snap({ // 4 snap
         source: this.source,
         pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
       }),
     ];
 
     // End of modify
-    this.interactions[0].on('modifyend', evt => {
+    this.interactions[1].on('modifyend', evt => {
       //BEST move only one summit when dragging
       //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -148,7 +158,7 @@ export class Editor extends ol.layer.Vector {
       }
 
       // Alt+click on segment : delete the segment & split the line
-      const tmpFeature = this.interactions[3].snapTo(
+      const tmpFeature = this.interactions[4].snapTo(
         evt.mapBrowserEvent.pixel,
         evt.mapBrowserEvent.coordinate,
         map
@@ -166,13 +176,13 @@ export class Editor extends ol.layer.Vector {
     });
 
     // End of line & poly drawing
-    [1, 2].forEach(i => this.interactions[i].on('drawend', () => {
+    [2, 3].forEach(i => this.interactions[i].on('drawend', () => {
       // Warn source 'on change' to save the feature
       // Don't do it now as it's not yet added to the source
       this.source.modified = true;
 
       // Reset interaction & button to modify
-      this.changeInteraction(0); // Init to modify
+      this.changeInteraction(0); // Init to hover
     }));
 
     // End of feature creation
@@ -188,12 +198,14 @@ export class Editor extends ol.layer.Vector {
       }
     });
 
+    this.changeInteraction(0); // Init to modify
+
     this.map.addControl(new Button({
       className: 'myol-button-edit-modify',
       subMenuId: 'myol-edit-help-modify',
       subMenuHTML: '<p>Modification</p>',
       subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
-      buttonAction: evt => this.changeInteraction(0, evt.type),
+      buttonAction: (type, active) => this.changeInteraction(1, type, active),
     }));
 
     if (this.options.editOnly != 'poly')
@@ -202,7 +214,7 @@ export class Editor extends ol.layer.Vector {
         subMenuId: 'myol-edit-help-line',
         subMenuHTML: '<p>New line</p>',
         subMenuHTML_fr: helpLine_fr,
-        buttonAction: evt => this.changeInteraction(1, evt.type),
+        buttonAction: (type, active) => this.changeInteraction(2, type, active),
       }));
 
     if (this.options.editOnly != 'line')
@@ -211,32 +223,33 @@ export class Editor extends ol.layer.Vector {
         subMenuId: 'myol-edit-help-poly',
         subMenuHTML: '<p>New polygon</p>',
         subMenuHTML_fr: helpPoly_fr,
-        buttonAction: evt => this.changeInteraction(2, evt.type),
+        buttonAction: (type, active) => this.changeInteraction(3, type, active),
       }));
-
-    this.changeInteraction(0); // Init to modify
 
     return super.setMapInternal(map);
   } // End setMapInternal
 
-  changeInteraction(interaction, type = 'click') {
+  changeInteraction(interaction, type, active) {
+    if (!active) // Click twice on the same button
+      interaction = 0;
+
     if (type == 'click') {
       this.interactions.forEach(i => this.map.removeInteraction(i));
       this.map.addInteraction(this.interactions[interaction]);
-      this.map.addInteraction(this.interactions[3]); // Snap must be added after the others
+      this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
 
       // Register again the full list of features as addFeature manages already registered
       this.map.getLayers().forEach(l => {
         if (l.getSource() && l.getSource().getFeatures) // Vector layers only
-          l.getSource().getFeatures()
-          .forEach(f =>
-            this.interactions[3].addFeature(f));
+          l.getSource().getFeatures().forEach(f =>
+            this.interactions[4].addFeature(f)
+          );
       });
-
-      const mapEl = this.map.getTargetElement();
-      if (mapEl)
-        mapEl.style.cursor = interaction ? 'copy' : 'auto';
     }
+
+    const mapEl = this.map.getTargetElement();
+    if (mapEl)
+      mapEl.style.cursor = ['help', 'default', 'copy', 'copy'][interaction];
   }
 
   // Processing the data

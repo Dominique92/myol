@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 05/02/2024 20:24:52 using npm run build from the src/... sources
+ * Built 08/02/2024 18:17:45 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -17953,6 +17953,18 @@ var myol = (function () {
    * @api
    */
   const never = FALSE;
+
+  /**
+   * Return `true` if the browser event is a `pointermove` event, `false`
+   * otherwise.
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if the browser event is a `pointermove` event.
+   * @api
+   */
+  const pointerMove = function (mapBrowserEvent) {
+    return mapBrowserEvent.type == 'pointermove';
+  };
 
   /**
    * Return `true` if the event is a map `singleclick` event, `false` otherwise.
@@ -62495,6 +62507,11 @@ var myol = (function () {
   var ol = {
     control: control$1,
     coordinate: coordinate,
+    events: {
+      condition: {
+        pointerMove: pointerMove,
+      },
+    },
     extent: extent,
     Feature: Feature$1,
     format: { // Not all formats are used & the total file is big
@@ -62604,18 +62621,7 @@ var myol = (function () {
     }
 
     setMap(map) {
-      // Register action listeners when html is fully loaded
       this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
-      this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
-      this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
-
-      // Close the submenu when click or touch on the map
-      document.addEventListener('click', evt => {
-        const el = document.elementFromPoint(evt.x, evt.y);
-
-        if (el && el.tagName == 'CANVAS')
-          this.element.classList.remove('myol-button-selected');
-      });
 
       this.subMenuEl.querySelectorAll('a, input')
         .forEach(el => ['click', 'change'].forEach(type =>
@@ -62627,8 +62633,6 @@ var myol = (function () {
     }
 
     buttonListener(evt) {
-      this.buttonAction(evt);
-
       if (evt.type == 'mouseover')
         this.element.classList.add('myol-button-hover');
       else // mouseout | click
@@ -62641,6 +62645,8 @@ var myol = (function () {
       for (let el of document.getElementsByClassName('myol-button'))
         if (el != this.element)
           el.classList.remove('myol-button-selected');
+
+      this.buttonAction(evt.type, this.element.classList.contains('myol-button-selected'));
     }
 
     buttonAction() {}
@@ -65539,31 +65545,41 @@ var myol = (function () {
       this.optimiseEdited(); // Optimise at init
 
       this.interactions = [
-        new ol.interaction.Modify({ // 0 Modify
+        new ol.interaction.Select({ // 0 Hover
+          condition: ol.events.condition.pointerMove,
+          style: () => new ol.style.Style({
+            // Lines or polygons border
+            stroke: new ol.style.Stroke({
+              color: 'red',
+              width: 3,
+            }),
+          }),
+        }),
+        new ol.interaction.Modify({ // 1 Modify
           source: this.source,
           pixelTolerance: 16, // Default is 10
-          style: this.style, //BEST change cursor to move
+          style: this.style,
         }),
-        new ol.interaction.Draw({ // 1 Draw line
+        new ol.interaction.Draw({ // 2 Draw line
           source: this.source,
           type: 'LineString',
           style: this.style,
           stopClick: true, // Avoid zoom when you finish drawing by doubleclick
         }),
-        new ol.interaction.Draw({ // 2 Draw poly
+        new ol.interaction.Draw({ // 3 Draw poly
           source: this.source,
           type: 'Polygon',
           style: this.style,
           stopClick: true, // Avoid zoom when you finish drawing by doubleclick
         }),
-        new ol.interaction.Snap({ // 3 snap
+        new ol.interaction.Snap({ // 4 snap
           source: this.source,
           pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
         }),
       ];
 
       // End of modify
-      this.interactions[0].on('modifyend', evt => {
+      this.interactions[1].on('modifyend', evt => {
         //BEST move only one summit when dragging
         //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -65583,7 +65599,7 @@ var myol = (function () {
         }
 
         // Alt+click on segment : delete the segment & split the line
-        const tmpFeature = this.interactions[3].snapTo(
+        const tmpFeature = this.interactions[4].snapTo(
           evt.mapBrowserEvent.pixel,
           evt.mapBrowserEvent.coordinate,
           map
@@ -65601,13 +65617,13 @@ var myol = (function () {
       });
 
       // End of line & poly drawing
-      [1, 2].forEach(i => this.interactions[i].on('drawend', () => {
+      [2, 3].forEach(i => this.interactions[i].on('drawend', () => {
         // Warn source 'on change' to save the feature
         // Don't do it now as it's not yet added to the source
         this.source.modified = true;
 
         // Reset interaction & button to modify
-        this.changeInteraction(0); // Init to modify
+        this.changeInteraction(0); // Init to hover
       }));
 
       // End of feature creation
@@ -65623,12 +65639,14 @@ var myol = (function () {
         }
       });
 
+      this.changeInteraction(0); // Init to modify
+
       this.map.addControl(new Button({
         className: 'myol-button-edit-modify',
         subMenuId: 'myol-edit-help-modify',
         subMenuHTML: '<p>Modification</p>',
         subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
-        buttonAction: evt => this.changeInteraction(0, evt.type),
+        buttonAction: (type, active) => this.changeInteraction(1, type, active),
       }));
 
       if (this.options.editOnly != 'poly')
@@ -65637,7 +65655,7 @@ var myol = (function () {
           subMenuId: 'myol-edit-help-line',
           subMenuHTML: '<p>New line</p>',
           subMenuHTML_fr: helpLine_fr,
-          buttonAction: evt => this.changeInteraction(1, evt.type),
+          buttonAction: (type, active) => this.changeInteraction(2, type, active),
         }));
 
       if (this.options.editOnly != 'line')
@@ -65646,32 +65664,33 @@ var myol = (function () {
           subMenuId: 'myol-edit-help-poly',
           subMenuHTML: '<p>New polygon</p>',
           subMenuHTML_fr: helpPoly_fr,
-          buttonAction: evt => this.changeInteraction(2, evt.type),
+          buttonAction: (type, active) => this.changeInteraction(3, type, active),
         }));
-
-      this.changeInteraction(0); // Init to modify
 
       return super.setMapInternal(map);
     } // End setMapInternal
 
-    changeInteraction(interaction, type = 'click') {
+    changeInteraction(interaction, type, active) {
+      if (!active) // Click twice on the same button
+        interaction = 0;
+
       if (type == 'click') {
         this.interactions.forEach(i => this.map.removeInteraction(i));
         this.map.addInteraction(this.interactions[interaction]);
-        this.map.addInteraction(this.interactions[3]); // Snap must be added after the others
+        this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
 
         // Register again the full list of features as addFeature manages already registered
         this.map.getLayers().forEach(l => {
           if (l.getSource() && l.getSource().getFeatures) // Vector layers only
-            l.getSource().getFeatures()
-            .forEach(f =>
-              this.interactions[3].addFeature(f));
+            l.getSource().getFeatures().forEach(f =>
+              this.interactions[4].addFeature(f)
+            );
         });
-
-        const mapEl = this.map.getTargetElement();
-        if (mapEl)
-          mapEl.style.cursor = interaction ? 'copy' : 'auto';
       }
+
+      const mapEl = this.map.getTargetElement();
+      if (mapEl)
+        mapEl.style.cursor = ['help', 'default', 'copy', 'copy'][interaction];
     }
 
     // Processing the data

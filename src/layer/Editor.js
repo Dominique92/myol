@@ -198,7 +198,7 @@ export class Editor extends ol.layer.Vector {
       }
     });
 
-    this.changeInteraction(0); // Init to modify
+    this.changeInteraction(0, 'click'); // Init to modify
 
     this.map.addControl(new Button({
       className: 'myol-button-edit-modify',
@@ -233,23 +233,21 @@ export class Editor extends ol.layer.Vector {
     if (!active) // Click twice on the same button
       interaction = 0;
 
-    if (type == 'click') {
-      this.interactions.forEach(i => this.map.removeInteraction(i));
-      this.map.addInteraction(this.interactions[interaction]);
-      this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
+    this.interactions.forEach(i => this.map.removeInteraction(i));
+    this.map.addInteraction(this.interactions[interaction]);
+    this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
 
-      // Register again the full list of features as addFeature manages already registered
-      this.map.getLayers().forEach(l => {
-        if (l.getSource() && l.getSource().getFeatures) // Vector layers only
-          l.getSource().getFeatures().forEach(f =>
-            this.interactions[4].addFeature(f)
-          );
-      });
-    }
+    // Register again the full list of features as addFeature manages already registered
+    this.map.getLayers().forEach(l => {
+      if (l.getSource() && l.getSource().getFeatures) // Vector layers only
+        l.getSource().getFeatures().forEach(f =>
+          this.interactions[4].addFeature(f)
+        );
+    });
 
     const mapEl = this.map.getTargetElement();
     if (mapEl)
-      mapEl.style.cursor = ['help', 'default', 'copy', 'copy'][interaction];
+      mapEl.style.cursor = ['help', 'grabbing', 'copy', 'copy'][interaction];
   }
 
   // Processing the data

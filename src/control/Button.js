@@ -61,6 +61,8 @@ export class Button extends ol.control.Control {
   }
 
   setMap(map) {
+    this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
+    this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
     this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
 
     this.subMenuEl.querySelectorAll('a, input')

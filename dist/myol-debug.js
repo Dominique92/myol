@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 08/02/2024 18:17:45 using npm run build from the src/... sources
+ * Built 08/02/2024 21:23:01 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -62621,6 +62621,8 @@ var myol = (function () {
     }
 
     setMap(map) {
+      this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
+      this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
       this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
 
       this.subMenuEl.querySelectorAll('a, input')
@@ -65639,7 +65641,7 @@ var myol = (function () {
         }
       });
 
-      this.changeInteraction(0); // Init to modify
+      this.changeInteraction(0, 'click'); // Init to modify
 
       this.map.addControl(new Button({
         className: 'myol-button-edit-modify',
@@ -65674,23 +65676,21 @@ var myol = (function () {
       if (!active) // Click twice on the same button
         interaction = 0;
 
-      if (type == 'click') {
-        this.interactions.forEach(i => this.map.removeInteraction(i));
-        this.map.addInteraction(this.interactions[interaction]);
-        this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
+      this.interactions.forEach(i => this.map.removeInteraction(i));
+      this.map.addInteraction(this.interactions[interaction]);
+      this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
 
-        // Register again the full list of features as addFeature manages already registered
-        this.map.getLayers().forEach(l => {
-          if (l.getSource() && l.getSource().getFeatures) // Vector layers only
-            l.getSource().getFeatures().forEach(f =>
-              this.interactions[4].addFeature(f)
-            );
-        });
-      }
+      // Register again the full list of features as addFeature manages already registered
+      this.map.getLayers().forEach(l => {
+        if (l.getSource() && l.getSource().getFeatures) // Vector layers only
+          l.getSource().getFeatures().forEach(f =>
+            this.interactions[4].addFeature(f)
+          );
+      });
 
       const mapEl = this.map.getTargetElement();
       if (mapEl)
-        mapEl.style.cursor = ['help', 'default', 'copy', 'copy'][interaction];
+        mapEl.style.cursor = ['help', 'grabbing', 'copy', 'copy'][interaction];
     }
 
     // Processing the data

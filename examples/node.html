@@ -2,16 +2,16 @@
 <html>
 
 <head>
-  <title>MyOl adaptation of openlayers</title>
+  <title>MyOl tests in nodejs</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
   <link href="images/favicon.png" rel="icon" type="image/svg">
 
-<!-- MyOl package -->
-  <link href="../dist/myol.css" type="text/css" rel="stylesheet">
-  <script src="../dist/myol-debug.js"></script>
+  <script type="module">
+    import myol from '../build/index';
+    window.myol = myol; // Declare a myol global variable
+  </script>
 
-<!-- Test environment -->
   <link href="index.css" type="text/css" rel="stylesheet">
   <script src="index.js" defer></script>
 </head>
@@ -19,7 +19,7 @@
 <body>
   <div id="project-html"></div>
   <div id="map"></div>
-  <h2>Javascript :</h2>
+  <h3>Javascript :</h3>
   <pre id="project-js"></pre>
 </body>
 

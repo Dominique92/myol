@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 08/02/2024 21:23:01 using npm run build from the src/... sources
+ * Built 11/02/2024 21:34:03 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -63175,7 +63175,7 @@ var myol = (function () {
    * elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1
    * Key : https://cloud.maptiler.com/account/keys/
    */
-  /*// Opportunity : backup of Maxbox elevation 
+  /*// Backup of Maxbox elevation 
   export class MapTilerElevation extends XYZ {
     constructor(options = {}) {
       super({
@@ -63195,11 +63195,13 @@ var myol = (function () {
     return {
       'OSM': new OpenStreetMap(),
       'OSM outdoors': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'outdoors',
       }),
       'OpenTopo': new OpenTopo(),
       'OSM transports': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'transport',
       }),
@@ -63209,6 +63211,7 @@ var myol = (function () {
       'Refuges.info': new MRI(),
 
       'IGN TOP25': new IGN({
+        key: options.ign, // For simplified options
         ...options.ign, // Include key
         layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
       }),
@@ -63229,25 +63232,31 @@ var myol = (function () {
         subLayer: 'osm', // No key
       }),
       'Kompas winter': new Kompass({
+        key: options.kompass, // For simplified options
         ...options.kompass, // Include key
         subLayer: 'winter',
         maxZoom: 22,
       }),
-      'England': new OS(options.os), // options include key
+      'England': new OS({
+        key: options.os, // For simplified options
+        ...options.os, // Include key
+      }),
       'Italie': new IGM(),
 
       'España': new IgnES(),
       'Google': new Google(),
 
       'Maxar': new Maxbox({
+        key: options.mapbox, // For simplified options
+        ...options.mapbox, // Include key
         tileset: 'mapbox.satellite',
-        ...options.mapbox,
       }),
       'Photo Google': new Google({
         subLayers: 's',
       }),
       'Photo ArcGIS': new ArcGIS(),
       'Photo Bing': new Bing$1({
+        key: options.bing, // For simplified options
         ...options.bing, // Include key
         imagerySet: 'Aerial',
       }),
@@ -63294,45 +63303,55 @@ var myol = (function () {
       }),
 
       'ThF cycle': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'cycle',
         maxZoom: 14,
       }),
       'ThF trains': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'pioneer',
       }),
       'ThF villes': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'neighbourhood',
       }),
       'ThF landscape': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'landscape',
       }),
       'ThF contraste': new Thunderforest({
+        key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'mobile-atlas',
       }),
 
       'OS light': new OS({
+        key: options.os, // For simplified options
         ...options.os, // Include key
         subLayer: 'Light_3857',
       }),
       'OS road': new OS({
+        key: options.os, // For simplified options
         ...options.os, // Include key
         subLayer: 'Road_3857',
       }),
       'Kompas topo': new Kompass({
+        key: options.kompass, // For simplified options
         ...options.kompass, // Include key
         subLayer: 'topo',
       }),
 
       'Bing': new Bing$1({
+        key: options.bing, // For simplified options
         ...options.bing, // Include key
         imagerySet: 'Road',
       }),
       'Bing hybrid': new Bing$1({
+        key: options.bing, // For simplified options
         ...options.bing, // Include key
         imagerySet: 'AerialWithLabels',
       }),
@@ -63358,7 +63377,10 @@ var myol = (function () {
         key: 'an7nvfzojv5wa96dsga5nk8w', //BEST use owner key
       }),
 
-      'MapBox elevation': new MapboxElevation(options.mapbox), // options include key
+      'MapBox elevation': new MapboxElevation({
+        key: options.mapbox, // For simplified options
+        ...options.mapbox, // Include key
+      }),
 
       'Positron': new Positron(),
       'No tile': new NoTile(),
@@ -67510,9 +67532,6 @@ var myol = (function () {
     var view = new DataView(data);
     var isLittleEndian = detectLittleEndian(view);
     var header = readHeader(view, isLittleEndian);
-    if (header.nSubgrids > 1) {
-      console.log('Only single NTv2 subgrids are currently supported, subsequent sub grids are ignored');
-    }
     var subgrids = readSubgrids(view, header, isLittleEndian);
     var nadgrid = {header: header, subgrids: subgrids};
     loadedNadgrids[key] = nadgrid;
@@ -67599,6 +67618,7 @@ var myol = (function () {
         count: subHeader.gridNodeCount,
         cvs: mapNodes(nodes)
       });
+      gridOffset += 176 + subHeader.gridNodeCount * 16;
     }
     return grids;
   }
@@ -68018,6 +68038,7 @@ var myol = (function () {
     var input = {x: -point.x, y: point.y};
     var output = {x: Number.NaN, y: Number.NaN};
     var attemptedGrids = [];
+    outer:
     for (var i = 0; i < source.grids.length; i++) {
       var grid = source.grids[i];
       attemptedGrids.push(grid.name);
@@ -68033,19 +68054,22 @@ var myol = (function () {
         }
         continue;
       }
-      var subgrid = grid.grid.subgrids[0];
-      // skip tables that don't match our point at all
-      var epsilon = (Math.abs(subgrid.del[1]) + Math.abs(subgrid.del[0])) / 10000.0;
-      var minX = subgrid.ll[0] - epsilon;
-      var minY = subgrid.ll[1] - epsilon;
-      var maxX = subgrid.ll[0] + (subgrid.lim[0] - 1) * subgrid.del[0] + epsilon;
-      var maxY = subgrid.ll[1] + (subgrid.lim[1] - 1) * subgrid.del[1] + epsilon;
-      if (minY > input.y || minX > input.x || maxY < input.y || maxX < input.x ) {
-        continue;
-      }
-      output = applySubgridShift(input, inverse, subgrid);
-      if (!isNaN(output.x)) {
-        break;
+      var subgrids = grid.grid.subgrids;
+      for (var j = 0, jj = subgrids.length; j < jj; j++) {
+        var subgrid = subgrids[j];
+        // skip tables that don't match our point at all
+        var epsilon = (Math.abs(subgrid.del[1]) + Math.abs(subgrid.del[0])) / 10000.0;
+        var minX = subgrid.ll[0] - epsilon;
+        var minY = subgrid.ll[1] - epsilon;
+        var maxX = subgrid.ll[0] + (subgrid.lim[0] - 1) * subgrid.del[0] + epsilon;
+        var maxY = subgrid.ll[1] + (subgrid.lim[1] - 1) * subgrid.del[1] + epsilon;
+        if (minY > input.y || minX > input.x || maxY < input.y || maxX < input.x ) {
+          continue;
+        }
+        output = applySubgridShift(input, inverse, subgrid);
+        if (!isNaN(output.x)) {
+          break outer;
+        }
       }
     }
     if (isNaN(output.x)) {
@@ -68312,7 +68336,7 @@ var myol = (function () {
       return adjust_axis(dest, true, point);
     }
 
-    if (!hasZ) {
+    if (point && !hasZ) {
       delete point.z;
     }
     return point;
@@ -69803,7 +69827,7 @@ var myol = (function () {
     return p;
   }
 
-  var names$p = ["Stereographic_North_Pole", "Oblique_Stereographic", "Polar_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
+  var names$p = ["Stereographic_North_Pole", "Oblique_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
   var sterea = {
     init: init$p,
     forward: forward$p,
@@ -69817,6 +69841,13 @@ var myol = (function () {
   }
 
   function init$o() {
+
+    // setting default parameters
+    this.x0 = this.x0 || 0;
+    this.y0 = this.y0 || 0;
+    this.lat0 = this.lat0 || 0;
+    this.long0 = this.long0 || 0;
+
     this.coslat0 = Math.cos(this.lat0);
     this.sinlat0 = Math.sin(this.lat0);
     if (this.sphere) {
@@ -69838,7 +69869,9 @@ var myol = (function () {
         }
       }
       this.cons = Math.sqrt(Math.pow(1 + this.e, 1 + this.e) * Math.pow(1 - this.e, 1 - this.e));
-      if (this.k0 === 1 && !isNaN(this.lat_ts) && Math.abs(this.coslat0) <= EPSLN) {
+      if (this.k0 === 1 && !isNaN(this.lat_ts) && Math.abs(this.coslat0) <= EPSLN && Math.abs(Math.cos(this.lat_ts)) > EPSLN) {
+        // When k0 is 1 (default value) and lat_ts is a vaild number and lat0 is at a pole and lat_ts is not at a pole
+        // Recalculate k0 using formula 21-35 from p161 of Snyder, 1987
         this.k0 = 0.5 * this.cons * msfnz(this.e, Math.sin(this.lat_ts), Math.cos(this.lat_ts)) / tsfnz(this.e, this.con * this.lat_ts, this.con * Math.sin(this.lat_ts));
       }
       this.ms1 = msfnz(this.e, this.sinlat0, this.coslat0);
@@ -69969,7 +70002,7 @@ var myol = (function () {
 
   }
 
-  var names$o = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)"];
+  var names$o = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)", "Polar_Stereographic"];
   var stere = {
     init: init$o,
     forward: forward$o,
@@ -74543,7 +74576,7 @@ var myol = (function () {
    */
 
 
-  async function trace(map) {
+  async function trace() {
     const data = [
       //BEST myol & geocoder version
       'Ol v' + ol.util.VERSION,
@@ -74582,15 +74615,23 @@ var myol = (function () {
         }
       });
 
+    // Log all the traces
     console.info(data.join('\n'));
+  }
 
-    // Zoom & resolution
-    if (map)
-      map.getView().on('change:resolution', () =>
-        console.log('zoom ' + map.getView().getZoom().toFixed(2) +
-          ', res ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
-        )
-      );
+  // Zoom & resolution
+  /* global map */
+  window.addEventListener('load', () => // Wait for doculment load
+    map.once('precompose', () => { // Wait for view load
+      traceZoom();
+      map.getView().on('change:resolution', traceZoom);
+    }));
+
+  function traceZoom() {
+    console.log(
+      'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
+      'res ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
+    );
   }
 
   /**

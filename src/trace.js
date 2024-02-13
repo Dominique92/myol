@@ -49,11 +49,13 @@ export async function trace() {
 
 // Zoom & resolution
 /* global map */
-window.addEventListener('load', () => // Wait for doculment load
-  map.once('precompose', () => { // Wait for view load
-    traceZoom();
-    map.getView().on('change:resolution', traceZoom);
-  }));
+window.addEventListener('load', () => { // Wait for doculment load
+  if (map.once)
+    map.once('precompose', () => { // Wait for view load
+      traceZoom();
+      map.getView().on('change:resolution', traceZoom);
+    });
+});
 
 function traceZoom() {
   console.log(

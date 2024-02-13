@@ -23,29 +23,47 @@ const projects = {
   },
   path = location.href.match(/(.*\/)[^/]*/)[1],
   projectKeys = Object.keys(projects),
-  projectName = projectKeys.find(k => k == location.hash.substring(1)) || Object.keys(projects)[0],
+  projectName = projectKeys.find(k => k == location.hash.substring(1)) || projectKeys[0],
   nextProjectKey = projectKeys[projectKeys.findIndex(v => v == projectName) + 1],
   shortcuts = [];
 
 // Title & links
-for (const [key, value] of Object.entries(projects))
+let lpk = projectKeys[0];
+for (const [key, value] of Object.entries(projects)) {
+  if (projectName == key && key != projectKeys[0]) {
+    shortcuts.push(
+      '<a href="#' + lpk + '" ' +
+      'onclick="location.hash=\'#' + lpk + '\';location.reload()" ' +
+      'title="previeous">&#9664;</a>'
+    );
+  }
+  if (projectName == lpk && key != projectKeys[0]) {
+    shortcuts.push(
+      '<a href="#' + key + '" ' +
+      'onclick="location.hash=\'#' + key + '\';location.reload()" ' +
+      'title="next">&#9654;</a>'
+    );
+  }
   shortcuts.push(
     '<a href="#' + key + '" ' +
     'onclick="location.hash=\'#' + key + '\';location.reload()" ' +
     'title="' + value.substring(1) + '">' +
     value[0] + '</a>'
   );
+  lpk = key;
+}
 
 document.body.insertAdjacentHTML('afterbegin', [
-  '<a style="float:right" href="#' + nextProjectKey + '" ' +
-  'onclick="location.hash=\'#' + nextProjectKey + '\';location.reload()">' +
-  'Next &#9654;</a>',
-  '<a style="float:right;margin-right:10px;" href="" ' +
-  'onclick="location.hash=\'\';location.reload()">' +
-  'Home</a>',
-  '<h1>' + projects[projectName].substring(1) + '</h1>',
-  ...shortcuts,
   '<a style="float:right" href="https://github.com/Dominique92/myol/">Github &#9654;</a>',
+  '<h1>' + projects[projectName].substring(1) + '</h1>',
+  '<a style="float:right" href="#' + nextProjectKey + '" ' +
+  'onclick="location.hash=\'#' + nextProjectKey + '\';location.reload()">Next &#9654;</a>',
+  '<div class="shortcuts">',
+  '<span>Demos:</span>',
+  '<a href="#intro" onclick="location.hash=\'#intro\';location.reload()" title="Home">&#127968;</a>',
+  ...shortcuts,
+  '</div>',
+  '<hr/>',
 ].join('\n'));
 
 // Get the project html

@@ -2,6 +2,8 @@
  * MyOpenlayers demo & test helper
  */
 
+/* global myol */
+
 const projects = {
     intro: ' Openlayers adaptation',
     layerSwitcher: 'SLayer switcher',
@@ -58,6 +60,7 @@ document.body.insertAdjacentHTML('afterbegin', [
 document.body.appendChild(document.createElement('script')).src = path + projectName + '.js';
 
 // Default keys for development only
+/* eslint-disable-next-line no-unused-vars */
 var mapKeys = {
   bing: 'AldBMbaKNyat-j6CBRKxxH05uaxP7dvQu1RnMWCQEGGC3z0gjBu-bLniE_8WZvcC',
   //https://www.microsoft.com/en-us/maps/create-a-bing-maps-key

@@ -1,5 +1,6 @@
 /* global ol, myol */
 
+/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
   layers: [

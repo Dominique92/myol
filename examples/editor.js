@@ -13,6 +13,7 @@ var snaplayer = new ol.layer.Vector({
     geoJsonId: 'geojson',
   }),
 
+  /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({
     target: 'map',
     controls: [

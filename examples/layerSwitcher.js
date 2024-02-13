@@ -22,6 +22,7 @@ var baseLayers = {
     zIndex: 2, // Above the base layer
   }),
 
+  /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({
     target: 'map',
     view: new ol.View({

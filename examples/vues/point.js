@@ -4,6 +4,7 @@ var host = 'https://www.refuges.info/',
   cadre = 'images/cadre.svg';
 
 // PARTIE A REPRENDRE
+/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'carte-point',
   view: new ol.View({

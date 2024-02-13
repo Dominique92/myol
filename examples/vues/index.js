@@ -3,6 +3,7 @@ var host = 'https://www.refuges.info/',
 
 
 // PARTIE A REPRENDRE
+/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'carte-accueil',
   view: new ol.View({

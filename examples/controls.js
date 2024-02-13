@@ -1,3 +1,5 @@
+/* global ol, myol */
+
 var map = new ol.Map({
   target: 'map',
   controls: [
@@ -17,7 +19,7 @@ var map = new ol.Map({
     }),
     new ol.layer.Vector({
       source: new ol.source.Vector({
-        url: 'ressources/features.geojson',
+        url: 'images/features.geojson',
         format: new ol.format.GeoJSON(),
       }),
     }),

@@ -1,3 +1,5 @@
+/* global ol, myol, jsVars */
+
 console.log('MyGPS version ' + jsVars.lastChangeDate);
 
 // Force https & script name to be compliant with PWA

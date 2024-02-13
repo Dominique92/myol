@@ -92,7 +92,7 @@ var contourMassif = coucheContourMassif({
     ],
   });
 
-myol.trace(map);
+myol.trace();
 // FIN PARTIE A REPRENDRE
 
 if (!initPermalink)

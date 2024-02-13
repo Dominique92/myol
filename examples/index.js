@@ -1,8 +1,9 @@
 /**
  * MyOpenlayers demo & test helper
  */
+
 const projects = {
-    intro: 'OOpenlayers adaptation',
+    intro: ' Openlayers adaptation',
     layerSwitcher: 'SLayer switcher',
     tileLayer: 'TTile layer',
     vectorLayer: 'VVector layer',
@@ -18,7 +19,7 @@ const projects = {
     wrimassifcree: 'CCrée massif WRI',
     gps: 'GOff line GPS',
   },
-  path = location.href.match(/(.*\/)[^\/]*/)[1],
+  path = location.href.match(/(.*\/)[^/]*/)[1],
   projectKeys = Object.keys(projects),
   projectName = projectKeys.find(k => k == location.hash.substring(1)) || Object.keys(projects)[0],
   nextProjectKey = projectKeys[projectKeys.findIndex(v => v == projectName) + 1],
@@ -47,7 +48,8 @@ document.body.insertAdjacentHTML('afterbegin', [
 
 // Get the project html
 // Display the javascript code
-['html', 'js'].forEach(type => fetch(path + projectName + '.' + type)
+['html', 'js'].forEach(type =>
+  fetch(path + projectName + '.' + type)
   .then(response => response.text())
   .then(fileContent => document.getElementById('project-' + type).innerHTML = fileContent)
   .catch(error => console.warn(error)));

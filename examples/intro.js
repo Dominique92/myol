@@ -1,4 +1,6 @@
-    var map = new ol.Map({
+/* global ol, myol, mapKeys */
+
+var map = new ol.Map({
       target: 'map',
       controls: [
         ...myol.control.collection(),

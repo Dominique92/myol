@@ -1,6 +1,67 @@
-    #map {
-      clear: both;
-      width: 100%;
-      max-width: 600px;
-      height: 400px;
-    }
+@media (prefers-color-scheme: dark) {
+
+  body,
+  a {
+    background: #222;
+    color: white;
+  }
+
+  .ol-viewport {
+    color: black;
+  }
+
+  .ol-viewport a {
+    background: initial;
+  }
+}
+
+.project-html {
+  width: 100%;
+}
+
+.map {
+  clear: both;
+  width: 90vw;
+  height: 60vw;
+  background: #444;
+}
+
+#map {
+  /*//TODO*/
+  clear: both;
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+}
+
+/* MyVectorLayer */
+.layer-select {
+  float: left;
+  border-right: solid;
+  padding: 5px;
+}
+
+.layer-select input {
+  cursor: pointer;
+}
+
+.layer-select label {
+  display: block;
+  cursor: pointer;
+}
+
+.layer-select label:hover {
+  background: lightgray;
+}
+
+/* javascript */
+h2 {
+  clear: both;
+  padding-top: 1em;
+}
+
+/* wri */
+h4 {
+  clear: both;
+  margin-bottom: 0;
+}

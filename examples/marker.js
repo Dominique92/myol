@@ -1,3 +1,5 @@
+/* global ol, myol */
+
 var map = new ol.Map({
   target: 'map',
   layers: [

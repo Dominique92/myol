@@ -1,3 +1,5 @@
+/* global ol, myol */
+
 var baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),
@@ -14,7 +16,7 @@ var baseLayers = {
   },
   countries = new ol.layer.Vector({
     source: new ol.source.Vector({
-      url: 'ressources/switzerland.geojson',
+      url: 'images/switzerland.geojson',
       format: new ol.format.GeoJSON(),
     }),
     zIndex: 2, // Above the base layer

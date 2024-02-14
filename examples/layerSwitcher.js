@@ -16,7 +16,7 @@ var baseLayers = {
   },
   countries = new ol.layer.Vector({
     source: new ol.source.Vector({
-      url: 'images/switzerland.geojson',
+      url: 'resources/switzerland.geojson',
       format: new ol.format.GeoJSON(),
     }),
     zIndex: 2, // Above the base layer

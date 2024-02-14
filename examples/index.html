@@ -8,12 +8,20 @@
   <link href="images/favicon.png" rel="icon" type="image/svg">
 
   <!-- MyOl package -->
-  <link href="../dist/myol.css" type="text/css" rel="stylesheet">
-  <script src="../dist/myol-debug.js"></script>
+  <script>
+    if (window.origin.split(':').length > 2)
+      // Test with nodejs + vite
+      document.write('<script type="module" src="resources/myol-module.js"><\/script>');
+    else {
+      // apache (production)
+      document.write('<link href="../dist/myol.css" type="text/css" rel="stylesheet">');
+      document.write('<script src="../dist/myol-debug.js"><\/script>');
+    }
+  </script>
 
   <!-- Test environment -->
-  <link href="index.css" type="text/css" rel="stylesheet">
-  <script src="index.js" defer></script>
+  <link href="resources/index.css" type="text/css" rel="stylesheet">
+  <script src="resources/index.js" defer></script>
 </head>
 
 <body>

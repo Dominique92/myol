@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 13/02/2024 21:38:35 using npm run build from the src/... sources
+ * Built 14/02/2024 10:05:58 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -74622,7 +74622,7 @@ var myol = (function () {
   // Zoom & resolution
   /* global map */
   window.addEventListener('load', () => { // Wait for doculment load
-    if (map.once)
+    if (map && map.once)
       map.once('precompose', () => { // Wait for view load
         traceZoom();
         map.getView().on('change:resolution', traceZoom);

@@ -20,7 +20,7 @@ var map = new ol.Map({
     }),
     new ol.layer.Vector({
       source: new ol.source.Vector({
-        url: 'images/features.geojson',
+        url: 'resources/features.geojson',
         format: new ol.format.GeoJSON(),
       }),
     }),

@@ -16,23 +16,28 @@
 }
 
 /* header */
-h1 {
+.header  {
+	padding-bottom:7px;
+  border-bottom: 2px solid ;
+}
+.header h1 {
   margin: 10px;
 }
-
-.shortcuts {
+.header >a{	float:right;
+}
+.header div {
   text-align: center;
 }
 
-.shortcuts a {
+.header div a {
   text-decoration: none;
 }
 
-/*
-.project-html {
+/*//TODO
+#example-html {
   width: 100%;
-}
-*/
+}*/
+
 
 #map {
   clear: both;

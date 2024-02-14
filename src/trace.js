@@ -52,7 +52,7 @@ export async function trace() {
 window.addEventListener('load', () => { // Wait for doculment load
   if (map && map.once)
     map.once('precompose', () => { // Wait for view load
-      traceZoom();
+      traceZoom(); //BEST put in data.join
       map.getView().on('change:resolution', traceZoom);
     });
 });

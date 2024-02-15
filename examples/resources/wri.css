@@ -1,27 +1,30 @@
-#carte-accueil ,
-  #carte-point {
-    width: 95vw;
-    margin: 0 auto;
-  }
-  #carte-modif ,
-  #carte-edit ,
-  #carte-nav {
-    float: right;
-	margin:5px;
-    width: 75vw;
-    height: 75vw;
-  }
+#carte-accueil,
+#carte-point {
+  width: 95vw;
+  margin: 0 auto;
+}
 
-  #map,
-  h2,
-  pre {
-    display: none;
-  }
-  #wri-shortcuts {
-	margin:5px;
-    text-align: center;
-  }
-   #edit-json {
-	margin:5px;
-    width: 100%;
-  }
+#carte-modif,
+#carte-edit,
+#carte-nav {
+  float: right;
+  margin: 5px;
+  width: 75vw;
+  height: 75vw;
+}
+
+#map,
+h2,
+pre {
+  display: none;
+}
+
+#wri-shortcuts {
+  margin: 5px;
+  text-align: center;
+}
+
+#edit-json {
+  margin: 5px;
+  width: 100%;
+}

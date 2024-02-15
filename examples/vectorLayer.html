@@ -1,3 +1,9 @@
+<style>
+  #sh-vector-layer {
+    border: 1px solid black;
+  }
+</style>
+
 <p>Collection of GeoJson ajax layers from different vendors with style, hover & click features.</p>
 <ul>
   <li>Mountain (refuges.info, pyrenees-refuges.com, camptocamp.org)</li>
@@ -22,8 +28,10 @@
     <label><input type="checkbox" name="select-c2c" value="access">parking</label>
     <span id="select-c2c-status"></span>
   </label>
+
   <div>Only 100 features at a time</div>
   <br>
+
   <label>
     Alpages.info
     <input type="checkbox" name="select-alpages">
@@ -37,6 +45,7 @@
     <input type="checkbox" name="select-wri" value="all">
     <span id="select-wri-status"></span>
   </label>
+
   <label><input type="checkbox" name="select-wri" value="7">cabane non gardée</label>
   <label><input type="checkbox" name="select-wri" value="10">refuge gardé</label>
   <label><input type="checkbox" name="select-wri" value="9">gîte d'étape</label>
@@ -52,6 +61,7 @@
     <input type="checkbox" name="select-osm" id="select-osm" value="all">
     <span id="select-osm-status"></span>
   </label>
+
   <label><input type="checkbox" name="select-osm" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]'>Hôtel</label>
   <label><input type="checkbox" name="select-osm" value='["tourism"="alpine_hut"]'>Refuge gardé</label>
   <label><input type="checkbox" name="select-osm" value='["building"="cabin"]'>Cabane non gardée</label>

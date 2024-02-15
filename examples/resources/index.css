@@ -1,9 +1,10 @@
 @media (prefers-color-scheme: dark) {
 
   body,
-  a {
+  a,
+  a:active {
     background: #222;
-    color: white;
+    color: white !important;
   }
 
   .ol-viewport {
@@ -16,15 +17,19 @@
 }
 
 /* header */
-#example-header  {
-	padding-bottom:7px;
-  border-bottom: 2px solid ;
+#example-header {
+  padding-bottom: 7px;
+  border-bottom: 2px solid;
 }
+
 #example-header h1 {
   margin: 10px;
 }
-#example-header >a{	float:right;
+
+#example-header>a {
+  float: right;
 }
+
 #example-header div {
   text-align: center;
 }
@@ -32,7 +37,7 @@
 #example-header div a {
   text-decoration: none;
 }
- 
+
 #map {
   clear: both;
   width: 100%;
@@ -42,7 +47,7 @@
 
 /* Intro */
 #example-list a {
-	display: block;
+  display: block;
 }
 
 /* MyVectorLayer */
@@ -66,7 +71,8 @@
 }
 
 /* javascript */
-br,h2 {
+br,
+h2 {
   clear: both;
 }
 

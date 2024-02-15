@@ -2,12 +2,12 @@
 <html>
 
 <head>
-  <title>MyOl adaptation of openlayers</title>
+  <title>MyOl adaptation of Openlayers</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
   <link href="images/favicon.png" rel="icon" type="image/svg">
 
-  <!-- MyOl package -->
+  <!-- Openlayers & MyOl package -->
   <script>
     if (window.origin.split(':').length > 2)
       // Test with nodejs + vite
@@ -18,10 +18,6 @@
       document.write('<script src="../dist/myol-debug.js"><\/script>');
     }
   </script>
-
-  <!-- Test environment -->
-  <link href="resources/index.css" type="text/css" rel="stylesheet">
-  <script src="resources/index.js" defer></script>
 </head>
 
 <body>
@@ -31,15 +27,15 @@
     <a id="example-next" title="Next">Next&#9654;</a>
     <div>
       Examples:
-      <a href="." title="Introduction">&#127968;</a>
-      <a href="?layerSwitcher" title="Layer switcher">S</a>
-      <a href="?tileLayer" title="Tile layer">T</a>
-      <a href="?vectorLayer" title="Vector layer">V</a>
-      <a href="?controls" title="Controls">C</a>
-      <a href="?marker" title="Marker">M</a>
-      <a href="?editor" title="Editor">E</a>
-      <a href="?wri" title="Refuges.info">W</a>
-      <a href="?gps" title="Off line GPS">G</a>
+      <a id="sh-intro" href="." title="Introduction">&#127968;</a>
+      <a id="sh-layer-switcher" href="?layerSwitcher" title="Layer switcher">S</a>
+      <a id="sh-tile-layer" href="?tileLayer" title="Tile layer">T</a>
+      <a id="sh-vector-layer" href="?vectorLayer" title="Vector layer">V</a>
+      <a id="sh-controls" href="?controls" title="Controls">C</a>
+      <a id="sh-marker" href="?marker" title="Marker">M</a>
+      <a id="sh-editor" href="?editor" title="Editor">E</a>
+      <a id="sh-wri" href="?wri" title="Refuges.info">R</a>
+      <a id="sh-gps" href="?gps" title="Off line GPS">G</a>
     </div>
   </div>
 
@@ -47,6 +43,10 @@
   <div id="map"></div>
   <h2>Javascript :</h2>
   <pre id="example-js"></pre>
+
+  <!-- Test environment -->
+  <link href="resources/index.css" type="text/css" rel="stylesheet">
+  <script src="resources/index.js" defer></script>
 </body>
 
 </html>

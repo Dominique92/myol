@@ -32,13 +32,7 @@
 #example-header div a {
   text-decoration: none;
 }
-
-/*//TODO
-#example-html {
-  width: 100%;
-}*/
-
-
+ 
 #map {
   clear: both;
   width: 100%;
@@ -72,19 +66,12 @@
 }
 
 /* javascript */
-h2 {
+br,h2 {
   clear: both;
-  padding-top: 1em;
 }
 
 pre {
   max-width: 90vw;
   margin-left: 4vw;
   overflow-x: auto;
-}
-
-/* wri */
-h4 {
-  clear: both;
-  margin-bottom: 0;
 }

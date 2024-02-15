@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 15/02/2024 09:44:53 using npm run build from the src/... sources
+ * Built 15/02/2024 18:06:20 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -63290,7 +63290,7 @@ var myol = (function () {
     };
   }
 
-  function demo(options = {}) {
+  function examples(options = {}) {
     return {
       ...collection$2(options),
 
@@ -63408,7 +63408,7 @@ var myol = (function () {
     SwissTopo: SwissTopo,
     Thunderforest: Thunderforest,
     collection: collection$2,
-    demo: demo
+    examples: examples
   });
 
   /**

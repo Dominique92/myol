@@ -9,7 +9,7 @@ var map = new ol.Map({
   controls: [
     ...myol.control.collection(),
     new myol.control.LayerSwitcher({
-      layers: myol.layer.tile.demo(mapKeys),
+      layers: myol.layer.tile.examples(mapKeys),
     }),
     new myol.control.Permalink({
       display: true,

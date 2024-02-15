@@ -19,18 +19,6 @@ var snaplayer = new ol.layer.Vector({
   /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({
     target: 'map',
-    controls: [
-      new ol.control.Zoom(),
-      new myol.control.MyGeocoder(),
-      new myol.control.MyGeolocation(),
-      new myol.control.Load({
-        receivingLayer: editorLayer,
-      }),
-      new myol.control.Download({
-        savedLayer: editorLayer,
-      }),
-      new myol.control.Print(),
-    ],
     layers: [
       new ol.layer.Tile({
         source: new ol.source.OSM(),

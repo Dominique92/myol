@@ -17,7 +17,7 @@ var map = new ol.Map({
       collapsed: false,
     }),
     new myol.control.LayerSwitcher({
-      layers: myol.layer.tile.demo(mapKeys),
+      layers: myol.layer.tile.examples(mapKeys),
     }),
   ],
 });

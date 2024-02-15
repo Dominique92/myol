@@ -525,7 +525,7 @@ export function collection(options = {}) {
   };
 }
 
-export function demo(options = {}) {
+export function examples(options = {}) {
   return {
     ...collection(options),
 

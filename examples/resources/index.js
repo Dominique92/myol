@@ -9,7 +9,7 @@ const exampleName = location.search.substring(1) || 'intro',
 ['html', 'js'].forEach(type =>
   fetch(path + exampleName + '.' + type)
   .then(response => response.text())
-  .then(fileContent => document.getElementById('example-' + type).innerHTML = fileContent.split('§').pop())
+  .then(fileContent => document.getElementById('example-' + type).innerHTML = fileContent.split('§').pop().trim())
   .catch(error => console.warn(error))
 );
 

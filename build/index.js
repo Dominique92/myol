@@ -6,5 +6,5 @@ import ol from '../src/ol';
 import myol from '../src';
 
 window.ol ||= ol; // Export Openlayers native functions as global if none already defined
-myol.ol = ol; // Packing Openlayers native functions in the bundle
+window.myol = myol; // Export specific functions as global
 export default myol;

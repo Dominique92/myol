@@ -11,7 +11,7 @@
   <script>
     if (window.origin.split(':').length > 2)
       // Test with nodejs + vite
-      document.write('<script type="module" src="resources/myol-module.js"><\/script>');
+      document.write('<script type="module" src="../build/index.js"><\/script>');
     else {
       // apache (production)
       document.write('<link href="../dist/myol.css" type="text/css" rel="stylesheet">');
@@ -25,6 +25,31 @@
 </head>
 
 <body>
+  <div id="example-header">
+    <a href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+    <h1 id="example-title"></h1>
+    <a id="example-next" title="Next">Next&#9654;</a>
+    <div>
+      Examples:
+      <a href="." title="Introduction">&#127968;</a>
+      <a href="?layerSwitcher" title="Layer switcher">S</a>
+      <a href="?tileLayer" title="Tile layer">T</a>
+      <a href="?vectorLayer" title="Vector layer">V</a>
+      <a href="?controls" title="Controls">C</a>
+      <a href="?marker" title="Marker">M</a>
+      <a href="?editor" title="Editor">E</a>
+      &nbsp;
+      <a href="?wri" title="Refuges.info">W</a>
+      <a href="?wripoint" title="Point WRI">P</a>
+      <a href="?wripointmodif" title="Modif point WRI">M</a>
+      <a href="?wripointcree" title="Create point WRI">C</a>
+      <a href="?wrinav" title="Nav WRI">N</a>
+      <a href="?wrimassifedit" title="Edit massif WRI">E</a>
+      <a href="?wrimassifcree" title="Crée massif WRI">C</a>
+      <a href="?gps" title="Off line GPS">G</a>
+    </div>
+  </div>
+
   <div id="example-html"></div>
   <div id="map"></div>
   <h2>Javascript :</h2>

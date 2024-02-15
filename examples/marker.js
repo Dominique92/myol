@@ -1,6 +1,9 @@
 /* global ol, myol */
 
-/* eslint-disable-next-line no-unused-vars */
+document.getElementById('example-title').innerHTML = 'Marker';
+document.getElementById('example-next').href = '?editor';
+
+/* eslint-disable-next-line no-unused-vars */ //§
 var map = new ol.Map({
   target: 'map',
   layers: [

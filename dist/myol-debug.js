@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 14/02/2024 11:24:47 using npm run build from the src/... sources
+ * Built 15/02/2024 09:44:53 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -74654,7 +74654,7 @@ var myol = (function () {
 
 
   window.ol ||= ol; // Export Openlayers native functions as global if none already defined
-  myol.ol = ol; // Packing Openlayers native functions in the bundle
+  window.myol = myol; // Export specific functions as global
 
   return myol;
 

@@ -16,20 +16,20 @@
 }
 
 /* header */
-.header  {
+#example-header  {
 	padding-bottom:7px;
   border-bottom: 2px solid ;
 }
-.header h1 {
+#example-header h1 {
   margin: 10px;
 }
-.header >a{	float:right;
+#example-header >a{	float:right;
 }
-.header div {
+#example-header div {
   text-align: center;
 }
 
-.header div a {
+#example-header div a {
   text-decoration: none;
 }
 
@@ -44,6 +44,11 @@
   width: 100%;
   max-width: 600px;
   height: 400px;
+}
+
+/* Intro */
+#example-list a {
+	display: block;
 }
 
 /* MyVectorLayer */

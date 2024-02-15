@@ -1,5 +1,8 @@
 /* global ol, myol */
 
+document.getElementById('example-title').innerHTML = 'Editor';
+document.getElementById('example-next').href = '?wri'; //§
+
 var snaplayer = new ol.layer.Vector({
     source: new ol.source.Vector({
       url: 'resources/switzerland.geojson',

@@ -2,86 +2,16 @@
  * MyOpenlayers example & test helper
  */
 
-/* global myol */
+const exampleName = location.search.substring(1) || 'intro',
+  path = location.href.match(/(.*\/)[^/]*/)[1];
 
-const examples = {
-    intro: ' Openlayers adaptation',
-    layerSwitcher: 'SLayer switcher',
-    tileLayer: 'TTile layer',
-    vectorLayer: 'VVector layer',
-    controls: 'CControls',
-    marker: 'MMarker',
-    editor: 'EEditor',
-    wri: 'WRefuges.info',
-    wripoint: 'PPoint WRI',
-    wripointmodif: 'MModif point WRI',
-    wripointcree: 'CCreate point WRI',
-    wrinav: 'NNav WRI',
-    wrimassifedit: 'EEdit massif WRI',
-    wrimassifcree: 'CCrée massif WRI',
-    gps: 'GOff line GPS',
-  },
-  path = location.href.match(/(.*\/)[^/]*/)[1],
-  exampleKeys = Object.keys(examples),
-  exampleName = exampleKeys.find(k => k == location.hash.substring(1)) || exampleKeys[0];
-
-// Title & links
-let shortcuts = [],
-  exampleList = [],
-  memKey = exampleKeys[0],
-  nextExampleKey = '';
-
-for (const [key, value] of Object.entries(examples)) {
-  if (exampleName == key && key != exampleKeys[0])
-    shortcuts.push(exampleLink(memKey, 'Previous', '&#9664'));
-
-  if (exampleName == memKey && key != exampleKeys[0])
-    shortcuts.push(exampleLink(key, 'Next', '&#9654'));
-
-  shortcuts.push(exampleLink(key, value.substring(1), value[0]));
-  exampleList.push(exampleLink(key, value.substring(1), value.substring(1)));
-
-  // Mem next example key
-  if (exampleName == memKey)
-    nextExampleKey = key;
-
-  // Mem key for next loop
-  memKey = key;
-}
-
-function exampleLink(key, title, text) {
-  return '<a ' +
-    'href="#' + key + '" ' +
-    'onclick="location.hash=\'#' + key + '\';location.reload()" ' +
-    'title="' + title + '">' +
-    text + '</a>';
-}
-
-document.body.insertAdjacentHTML('afterbegin', [
-  '<div class="header">',
-  '<a href="https://github.com/Dominique92/myol/">Github &#9654;</a>',
-  '<h1>' + examples[exampleName].substring(1) + '</h1>',
-  exampleLink(nextExampleKey, 'Next', 'Next&#9654'),
-  '<div>',
-  '<span>Examples:</span>',
-  exampleLink(exampleKeys[0], 'Home', '&#127968'),
-  ...shortcuts,
-  '</div>',
-  '</div>',
-].join('\n'));
-
-// Get the example html
-// Display the javascript code
+// Get the example html & display the javascript code
 ['html', 'js'].forEach(type =>
   fetch(path + exampleName + '.' + type)
   .then(response => response.text())
-  .then(fileContent => document.getElementById('example-' + type).innerHTML = fileContent)
-  .catch(error => console.warn(error)));
-
-//TODO ne marche pas
-const exampleListEl = document.getElementById('example-list');
-if (exampleListEl)
-  exampleListEl.innerHTML = exampleList.join('\n');
+  .then(fileContent => document.getElementById('example-' + type).innerHTML = fileContent.split('§').pop())
+  .catch(error => console.warn(error))
+);
 
 // Execute the example script
 document.body.appendChild(document.createElement('script')).src = path + exampleName + '.js';

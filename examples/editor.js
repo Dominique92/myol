@@ -1,11 +1,11 @@
 /* global ol, myol */
 
 document.getElementById('example-title').innerHTML = 'Editor';
-document.getElementById('example-next').href = '?wri'; //§
+document.getElementById('example-next').href = '../gps'; //§
 
 var snaplayer = new ol.layer.Vector({
     source: new ol.source.Vector({
-      url: 'resources/switzerland.geojson',
+      url: 'ressource/switzerland.geojson',
       format: new ol.format.GeoJSON(),
     }),
     style: new ol.style.Style({

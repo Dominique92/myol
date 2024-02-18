@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <title>MyOl adaptation of Openlayers</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+  <link href="https://www.refuges.info/images/icones/favicon.svg" rel="icon" type="image/svg">
+
+  <!-- Openlayers & MyOl package -->
+  <script>
+    if (window.origin.split(':').length > 2)
+      // Test with nodejs + vite
+      document.write('<script type="module" src="../../build/index.js"><\/script>');
+    else {
+      // apache (production)
+      document.write('<link href="../../dist/myol.css" type="text/css" rel="stylesheet">');
+      document.write('<script src="../../dist/myol-debug.js"><\/script>');
+    }
+  </script>
+
+  <!-- Test environment -->
+  <script src="../ressource/index.js" defer></script>
+  <link href="../ressource/index.css" type="text/css" rel="stylesheet">
+
+  <!-- WRI environment -->
+  <link href="vues/style.css.php" type="text/css" rel="stylesheet">
+  <script src="vues/_cartes.js"></script>
+</head>
+
+<body>
+  <div id="example-header">
+    <a href="https://github.com/Dominique92/myol/">Github &#9654;</a>
+    <h1 id="example-title">&nbsp;</h1>
+    <a id="example-next" title="Next">Next&#9654;</a>
+    <div>
+      <a href=".." title="Tests myol">&#127968;</a>
+      <a href="?" title="Index">I</a>
+      <a href="?point" title="Point">P</a>
+      <a href="?pointmodif" title="Modif point">Mp</a>
+      <a href="?pointcree" title="Create point">Cp</a>
+      <a href="?nav" title="Nav">N</a>
+      <a href="?massifedit" title="Edit massif">Em</a>
+      <a href="?massifcree" title="Crée massif">Cm</a>
+    </div>
+  </div>
+
+  <div id="example-html">
+    <!-- Content to be replaced by exemples/*.html -->
+    <div id="carte-accueil"></div>
+  </div>
+</body>
+
+</html>

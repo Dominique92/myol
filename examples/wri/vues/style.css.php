@@ -159,13 +159,8 @@ BODY {
 }
 
 /*=====TEXTE=======*/
-EM { /* Emphasis: gras+italic */
-  font-weight: bold ;
-  font-style: italic ;
-}
-STRONG { /* Strong Emphasis: gras+italic+rouge */
+STRONG { /* Strong Emphasis: gras+rouge */
   font-weight: bold;
-  font-style: italic;
   color: #FF0000 ;
 }
 CITE { /* Citation: gras+droit */
@@ -180,9 +175,6 @@ DFN:after { /*Definition, ajoute un ? a la fin pour inciter a passer la souris d
   content: "?";
   font-size: smaller;
   vertical-align: text-top;
-}
-BLOCKQUOTE { /* citations: utilisé sur les fiches pour les commentaires ET la citation forum */
-  font-style: italic;
 }
 BLOCKQUOTE > DIV { /* en particulier les ciations forum */
   border-left: double blue;
@@ -873,7 +865,7 @@ A.infobulle:hover SPAN { /* qd on passe dessus, ca affiche */
 /* Carte de la page des points mobiles */
 @media screen and (max-width: 640px) {
   #carte-point {
-    width: calc(100vw - 10px);
+    width: calc(98vw - 10px);
     height: 400px;
     max-height: 100vw;
   }
@@ -882,7 +874,7 @@ A.infobulle:hover SPAN { /* qd on passe dessus, ca affiche */
 /* Carte formulaire de modification de point */
 #carte-modif {
   float: right;
-  width: 99vw;
+  width: 96vw;
   height: 97vw;
   max-height: 450px;
 }

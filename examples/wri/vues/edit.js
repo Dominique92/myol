@@ -1,8 +1,8 @@
-var host = 'https://www.refuges.info/',
-  mapKeys = {};
+var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
+  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
+  layerOptions = <?=json_encode($config_wri['layerOptions'])?>;
 
-// PARTIE A REPRENDRE
-var editorLayer = new myol.layer.Editor({
+var editorlayer = new myol.layer.Editor({
     geoJsonId: 'edit-json',
     editOnly: 'poly',
 
@@ -29,7 +29,7 @@ var editorLayer = new myol.layer.Editor({
       new myol.control.MyGeolocation,
       new myol.control.Load(),
       new myol.control.Download({
-        savedLayer: editorLayer,
+        savedLayer: editorlayer,
       }),
 
       // Bas gauche
@@ -50,6 +50,6 @@ var editorLayer = new myol.layer.Editor({
       coucheContourMassif({
         host: host,
       }),
-      editorLayer,
+      editorlayer,
     ],
   });

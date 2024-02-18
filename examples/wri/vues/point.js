@@ -1,10 +1,9 @@
-var host = 'https://www.refuges.info/',
-  mapKeys = {},
-  layerOptions = false,
-  cadre = 'images/cadre.svg';
+var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
+  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
+  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
+  centre = [<?=$vue->point->longitude?>, <?=$vue->point->latitude?>],
+  cadre = '<?=$config_wri["sous_dossier_installation"]?>images/cadre.svg';
 
-// PARTIE A REPRENDRE
-/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'carte-point',
   view: new ol.View({
@@ -59,4 +58,4 @@ var map = new ol.Map({
   ],
 });
 
-myol.trace();
+myol.trace(map);

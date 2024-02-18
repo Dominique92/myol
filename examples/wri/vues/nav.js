@@ -1,26 +1,26 @@
-var host = 'https://www.refuges.info/',
-  initPermalink = false,
-  layerOptions = false,
-  mapKeys = {
-    ign: 'iejxbx4obzhco6c8klxrfbto',
-    thunderforest: 'ee751f43b3af4614b01d1bce72785369',
-    os: 'P8MjahLAlyDAHXEH2engwXJG6KDYsVzF',
-    bing: 'AldBMbaKNyat-j6CBRKxxH05uaxP7dvQu1RnMWCQEGGC3z0gjBu-bLniE_8WZvcC',
-    kompass: '2ba8c124-38b6-11e7-ade1-e0cb4e28e847',
-  };
+var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
+  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
+  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
+  initPermalink = <?=$vue->polygone->id_polygone?'false':'true'?>;
 
+// Forçage de l'init des coches
+  // Supprime toutes les sélections commençant par myol_selecteur
+  Object.keys(localStorage)
+    .filter(k => k.substring(0, 14) == 'myol_selecteur')
+    .forEach(k => localStorage.removeItem(k));
 
+  // Force tous les points et le contour
+<?php if ( $vue->polygone->id_polygone ) { ?>
+  localStorage.myol_selectmassif = <?=$vue->polygone->id_polygone?>;
+<?php } ?>
+  localStorage.myol_selectwri = 'all';
+  localStorage.myol_selectmassifs =
+  localStorage.myol_selectosm =
+  localStorage.myol_selectprc =
+  localStorage.myol_selectcc =
+  localStorage.myol_selectchem =
+  localStorage.myol_selectalpages = '';
 
-
-
-
-
-
-
-
-
-
-// PARTIE A REPRENDRE
 var contourMassif = coucheContourMassif({
     host: host,
     selectName: 'select-massif',
@@ -63,7 +63,9 @@ var contourMassif = coucheContourMassif({
     layers: [
       coucheMassifsColores({
         host: host,
+<?php if ( !$vue->contenu ) { ?>
         selectName: 'select-massifs',
+<?php } ?>
       }),
       new myol.layer.vector.Chemineur({
         selectName: 'select-chem',
@@ -92,8 +94,14 @@ var contourMassif = coucheContourMassif({
     ],
   });
 
-myol.trace();
-// FIN PARTIE A REPRENDRE
+myol.trace(map);
 
-if (!initPermalink)
-  map.getView().fit(ol.proj.transformExtent([5, 44.68, 5.72, 45.33], 'EPSG:4326', 'EPSG:3857'));
+// Centrer sur la zone du polygone
+<?if ($vue->polygone->id_polygone) { ?>
+  map.getView().fit(ol.proj.transformExtent([
+    <?=$vue->polygone->ouest?>,
+    <?=$vue->polygone->sud?>,
+    <?=$vue->polygone->est?>,
+    <?=$vue->polygone->nord?>,
+  ], 'EPSG:4326', 'EPSG:3857'));
+<? } ?>

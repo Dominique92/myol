@@ -2,16 +2,22 @@
  * MyOpenlayers example & test helper
  */
 
-const exampleName = location.search.substring(1) || 'intro',
+const exampleName = location.search.substring(1) || 'index',
   path = location.href.match(/(.*\/)[^/]*/)[1];
 
 // Get the example html & display the javascript code
-['html', 'js'].forEach(type =>
-  fetch(path + exampleName + '.' + type)
-  .then(response => response.text())
-  .then(fileContent => document.getElementById('example-' + type).innerHTML = fileContent.split('§').pop().trim())
-  .catch(error => console.warn(error))
-);
+['html', 'js'].forEach(type => {
+  if (exampleName != 'index' || type == 'js') { // Dont overload index.html
+    fetch(path + exampleName + '.' + type)
+      .then(response => response.text())
+      .then(fileContent => {
+        const el = document.getElementById('example-' + type);
+        if (el)
+          el.innerHTML = fileContent.split('§').pop().trim();
+      })
+      .catch(error => console.warn(error));
+  }
+});
 
 // Execute the example script
 document.body.appendChild(document.createElement('script')).src = path + exampleName + '.js';

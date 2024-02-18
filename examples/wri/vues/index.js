@@ -1,9 +1,6 @@
-var host = 'https://www.refuges.info/',
-  extent = [4, 43.5, 8.5, 47];
+var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
+  extent = [<?=$vue->bbox?>];
 
-
-// PARTIE A REPRENDRE
-/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'carte-accueil',
   view: new ol.View({

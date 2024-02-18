@@ -2,4 +2,4 @@ document.body.appendChild(document.createElement('script')).src = 'vues/_cartes.
 document.body.appendChild(document.createElement('script')).src = 'vues/nav.js';
 
 document.getElementById('example-title').innerHTML = 'Wri carte nav';
-document.getElementById('example-next').href = '?wrimassifedit';
+document.getElementById('example-next').href = '?massifedit';

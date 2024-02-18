@@ -8,7 +8,7 @@ var map = new ol.Map({
   target: 'map',
   view: new ol.View({
     center: ol.proj.transform([2, 47], 'EPSG:4326', 'EPSG:3857'), // France
-    constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+    constrainResolution: true, // Force zoom on the definition of available tiles
     zoom: 5,
   }),
   controls: [

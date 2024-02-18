@@ -5,7 +5,7 @@ document.getElementById('example-next').href = '../gps'; //§
 
 var snaplayer = new ol.layer.Vector({
     source: new ol.source.Vector({
-      url: 'ressource/switzerland.geojson',
+      url: 'images/switzerland.geojson',
       format: new ol.format.GeoJSON(),
     }),
     style: new ol.style.Style({

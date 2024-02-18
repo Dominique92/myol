@@ -43,9 +43,10 @@
   width: 100%;
   max-width: 600px;
   height: 400px;
+  margin-top: 10px;
 }
 
-/* Intro */
+/* Index */
 #example-list a {
   display: block;
 }

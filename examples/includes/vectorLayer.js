@@ -9,7 +9,7 @@ var map = new ol.Map({
   view: new ol.View({
     center: ol.proj.transform([5.885, 44.791], 'EPSG:4326', 'EPSG:3857'), // Cabane double Samblue
     //center: ol.proj.transform([6.51, 45.13], 'EPSG:4326', 'EPSG:3857'), // Cabane double Terre rouge
-    constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+    constrainResolution: true, // Force zoom on the definition of available tiles
     zoom: 14,
   }),
   controls: [

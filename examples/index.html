@@ -20,14 +20,14 @@
   </script>
 
   <!-- Test environment -->
-  <link href="ressource/index.css" type="text/css" rel="stylesheet">
-  <script src="ressource/index.js" defer></script>
+  <link href="index.css" type="text/css" rel="stylesheet">
+  <script src="index.js" defer></script>
 </head>
 
 <body>
   <div id="example-header">
     <a href="https://github.com/Dominique92/myol/">Github &#9654;</a>
-    <h1 id="example-title">Openlayers adaptation</h1>
+    <h1 id="example-title">&nbsp;</h1>
     <a id="example-next" title="Next">Next&#9654;</a>
     <div>
       Examples:
@@ -43,35 +43,13 @@
     </div>
   </div>
 
-  <div id="example-html">
-    <!-- Content to be replaced by exemples/*.html -->
-    <p>This package adds many features to <a href="https://openlayers.org">openlayer maps</a></p>
-
-    <div id="example-list">
-      Examples:
-      <a href="?layerSwitcher">Layer switcher</a>
-      <a href="?tileLayer">Tile layer</a>
-      <a href="?vectorLayer">Vector layer</a>
-      <a href="?controls">Controls</a>
-      <a href="?marker">Marker</a>
-      <a href="?editor">Editor</a>
-      <a href="../gps">Off line GPS</a>
-    </div>
-
-    <p id="select-ext">
-      <label>chemineur.fr <input type="checkbox" name="select-chem" value="all"></label>
-      <label><input type="checkbox" name="select-chem" value="3">Refuge</label>
-      <label><input type="checkbox" name="select-chem" value="8">Abri</label>
-      <label><input type="checkbox" name="select-chem" value="23">Montagne</label>
-    </p>
-
-    <input id="marker-json" size="50" value='{"type":"Point","coordinates":[2.34,48.86]}'>
-  </div>
+  <div data-file="includes/example.html"></div>
 
   <div id="map"></div>
 
   <h2>Javascript :</h2>
-  <pre id="example-js"></pre>
+  <pre data-file="includes/example.js"></pre>
+  <script data-file="includes/example.js"></script>
 </body>
 
 </html>

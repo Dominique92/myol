@@ -1,7 +1,3 @@
-var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
-  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
-  layerOptions = <?=json_encode($config_wri['layerOptions'])?>;
-
 var editorlayer = new myol.layer.Editor({
     geoJsonId: 'edit-json',
     editOnly: 'poly',

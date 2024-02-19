@@ -1,8 +1,6 @@
-var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
-  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
-  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
-  centre = [<?=$vue->point->longitude?>, <?=$vue->point->latitude?>],
-  cadre = '<?=$config_wri["sous_dossier_installation"]?>images/cadre.svg';
+var host = 'https://www.refuges.info/', // Appeler la couche de CE serveur
+  layerOptions = {},
+  centre = [5.88496, 44.79095];
 
 var map = new ol.Map({
   target: 'carte-point',
@@ -48,7 +46,7 @@ var map = new ol.Map({
     new myol.layer.Marker({
       prefix: 'cadre', // S'interface avec les <TAG id="cadre-xxx"...>
       // Prend la position qui est dans <input id="cadre-json">
-      src: cadre,
+      src: host + 'images/cadre.svg',
       focus: 15, // Centrer
       zIndex: 300, // Above the features, under the hover label
     }),

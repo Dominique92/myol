@@ -3,12 +3,12 @@
  */
 
 const exampleName = location.search.substring(1) || 'index',
-  path = location.href.match(/(.*\/)[^/]*/)[1];
+  base = location.href.match(/(.*\/)[^/]*/)[1];
 
 // Fill an element with the content of the file defined in data-file="FILE_NAME"
 document.querySelectorAll('[data-file*="example"]') // Replace example by url?query
   .forEach(el =>
-    fetch(path + el.dataset.file.replace('example', exampleName))
+    fetch(base + el.dataset.file.replace('example', exampleName))
     .then(response => response.text())
     .then(fileContent =>
       el.innerHTML = el.tagName == 'PRE' ?

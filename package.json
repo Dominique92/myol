@@ -24,7 +24,7 @@
   "scripts": {
     "build": "rollup -c build/config.js",
     "lint": "npx eslint build/*.js src/*.js src/*/*.js gps/*/*.js ex*/*.js",
-    "beautify": "js-beautify -s=2 package.json build/*.js src/*.*s src/*/* gps/*/*.*s ex*/*.html ex*/*.*s ex*/*/*.html ex*/*/*.*s"
+    "beautify": "js-beautify -s=2 package.json build/*.js src/*.*s src/*/* gps/*/*.*s ex*/*.html ex*/*.*s ex*/*/*.html ex*/*/*.*s ex*/*/*/*.html ex*/*/*/*.*s"
   },
   "dependencies": {
     "ol": "8.2.0",

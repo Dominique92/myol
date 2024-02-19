@@ -1,20 +1,15 @@
-var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
-  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
-  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
-  initPermalink = <?=$vue->polygone->id_polygone?'false':'true'?>;
-
 // Forçage de l'init des coches
-  // Supprime toutes les sélections commençant par myol_selecteur
-  Object.keys(localStorage)
-    .filter(k => k.substring(0, 14) == 'myol_selecteur')
-    .forEach(k => localStorage.removeItem(k));
+// Supprime toutes les sélections commençant par myol_selecteur
+Object.keys(localStorage)
+  .filter(k => k.substring(0, 14) == 'myol_selecteur')
+  .forEach(k => localStorage.removeItem(k));
 
-  // Force tous les points et le contour
-<?php if ( $vue->polygone->id_polygone ) { ?>
+// Force tous les points et le contour
+/*<?php if ( $vue->polygone->id_polygone ) { ?>
   localStorage.myol_selectmassif = <?=$vue->polygone->id_polygone?>;
-<?php } ?>
-  localStorage.myol_selectwri = 'all';
-  localStorage.myol_selectmassifs =
+<?php } ?>*/
+localStorage.myol_selectwri = 'all';
+localStorage.myol_selectmassifs =
   localStorage.myol_selectosm =
   localStorage.myol_selectprc =
   localStorage.myol_selectcc =
@@ -52,7 +47,7 @@ var contourMassif = coucheContourMassif({
       }),
       new myol.control.Permalink({ // Permet de garder le même réglage de carte
         display: true, // Affiche le lien
-        init: initPermalink, // On cadre le massif, s'il y a massif
+        //TODO        init: initPermalink, // On cadre le massif, s'il y a massif
       }),
 
       // Haut droit
@@ -63,9 +58,9 @@ var contourMassif = coucheContourMassif({
     layers: [
       coucheMassifsColores({
         host: host,
-<?php if ( !$vue->contenu ) { ?>
-        selectName: 'select-massifs',
-<?php } ?>
+        /*<?php if ( !$vue->contenu ) { ?>
+                selectName: 'select-massifs',
+        <?php } ?>*/
       }),
       new myol.layer.vector.Chemineur({
         selectName: 'select-chem',
@@ -97,11 +92,11 @@ var contourMassif = coucheContourMassif({
 myol.trace(map);
 
 // Centrer sur la zone du polygone
-<?if ($vue->polygone->id_polygone) { ?>
+/*<?if ($vue->polygone->id_polygone) { ?>
   map.getView().fit(ol.proj.transformExtent([
     <?=$vue->polygone->ouest?>,
     <?=$vue->polygone->sud?>,
     <?=$vue->polygone->est?>,
     <?=$vue->polygone->nord?>,
   ], 'EPSG:4326', 'EPSG:3857'));
-<? } ?>
+<? } ?>*/

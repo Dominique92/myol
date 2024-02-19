@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 
 <head>
   <title>MyOl adaptation of Openlayers</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
   <link href="https://www.refuges.info/images/icones/favicon.svg" rel="icon" type="image/svg">
 
@@ -19,13 +19,20 @@
     }
   </script>
 
-  <!-- Test environment -->
-  <script src="../ressource/index.js" defer></script>
-  <link href="../ressource/index.css" type="text/css" rel="stylesheet">
-
   <!-- WRI environment -->
   <link href="vues/style.css.php" type="text/css" rel="stylesheet">
-  <script src="vues/_cartes.js"></script>
+  <script src="vues/_cartes.js" defer></script>
+  <script data-file="includes/example.js"></script>
+  <script>
+    var host = 'https://www.refuges.info/',
+      layerOptions = {},
+      extent = [4, 43.5, 8.5, 47],
+      centre = [5.88496, 44.79095];
+  </script>
+
+  <!-- Test environment -->
+  <link href="../index.css" type="text/css" rel="stylesheet">
+  <script src="../index.js" defer></script>
 </head>
 
 <body>
@@ -45,10 +52,7 @@
     </div>
   </div>
 
-  <div id="example-html">
-    <!-- Content to be replaced by exemples/*.html -->
-    <div id="carte-accueil"></div>
-  </div>
+  <div data-file="includes/example.html"></div>
 </body>
 
 </html>

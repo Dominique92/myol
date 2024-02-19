@@ -1,19 +1,6 @@
-// Utilitaire de saisie
-function affiche_et_set(el, affiche, valeur) {
-  document.getElementById(el).style.visibility = affiche;
-  document.getElementById(el).value = valeur;
-  return false;
-}
-
-var host = '<?=$config_wri["sous_dossier_installation"]?>', // Appeler la couche de CE serveur
-  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
-  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
-  centre = [<?=$vue->point->longitude?>, <?=$vue->point->latitude?>],
-  viseur = '<?=$config_wri["sous_dossier_installation"]?>images/viseur.svg';
-
 // Gestion des cartes
 var curseur = new myol.layer.Marker({
-  src: viseur,
+  src: host + 'images/viseur.svg',
   prefix: 'marker', // S'interface avec les <TAG id="marker-xxx"...>
   // Prend la position qui est dans <input id="cadre-json">
   dragable: true,
@@ -52,7 +39,7 @@ new ol.Map({
     couchePointsWRI({
       host: host, // Appeler la couche de CE serveur
       browserClusterMinResolution: null, // Pour ne pas générer de gigue
-	  noClick: true,
+      noClick: true,
     }, 'modif'),
 
     // Le viseur jaune pour modifier la position du point
@@ -62,3 +49,10 @@ new ol.Map({
     new myol.layer.Hover(),
   ],
 });
+
+// Utilitaire de saisie
+function affiche_et_set(el, affiche, valeur) {
+  document.getElementById(el).style.visibility = affiche;
+  document.getElementById(el).value = valeur;
+  return false;
+}

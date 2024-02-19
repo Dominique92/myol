@@ -50,7 +50,7 @@ export async function trace() {
 // Zoom & resolution
 /* global map */
 window.addEventListener('load', () => { // Wait for doculment load
-  if (map && map.once)
+  if (typeof map == 'object' && map.once)
     map.once('precompose', () => { // Wait for view load
       traceZoom(); //BEST put in data.join
       map.getView().on('change:resolution', traceZoom);

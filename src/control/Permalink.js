@@ -40,6 +40,7 @@ export class Permalink extends ol.control.Control {
       urlMod =
       //BEST init with res=<resolution>
       //BEST init with extent (not zoom, lon, lat)
+      //TODO BUG if no options.init by default : Cannot read properties of undefined (reading '0')
       'zoom=' + this.options.init[0] + '&lon=' + this.options.init[1] + '&lat=' + this.options.init[2] + ',' + // init: [<zoom>, <lon>, <lat>]
       location.href.replace( // Get value from params with priority url / ? / #
         /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/, // map=<zoom>/<lon>/<lat>

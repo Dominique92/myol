@@ -11,11 +11,11 @@
   <script>
     if (window.origin.split(':').length > 2)
       // Test with nodejs + vite
-      document.write('<script type="module" src="../../build/index.js"><\/script>');
+      document.write('<script type="module" src="../build/index.js"><\/script>');
     else {
       // apache (production)
-      document.write('<link href="../../dist/myol.css" type="text/css" rel="stylesheet">');
-      document.write('<script src="../../dist/myol-debug.js"><\/script>');
+      document.write('<link href="../dist/myol.css" type="text/css" rel="stylesheet">');
+      document.write('<script src="../dist/myol-debug.js"><\/script>');
     }
   </script>
 
@@ -31,8 +31,8 @@
   </script>
 
   <!-- Test environment -->
-  <link href="../index.css" type="text/css" rel="stylesheet">
-  <script src="../index.js" defer></script>
+  <link href="../examples/index.css" type="text/css" rel="stylesheet">
+  <script src="../examples/index.js" defer></script>
 </head>
 
 <body>
@@ -41,7 +41,7 @@
     <h1 id="example-title">&nbsp;</h1>
     <a id="example-next" title="Next">Next&#9654;</a>
     <div>
-      <a href=".." title="Tests myol">&#127968;</a>
+      <a href="../examples/" title="Tests myol">&#127968;</a>
       <a href="?" title="Index">I</a>
       <a href="?point" title="Point">P</a>
       <a href="?pointmodif" title="Modif point">Mp</a>

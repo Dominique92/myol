@@ -3,7 +3,7 @@
 document.getElementById('example-title').innerHTML = 'Vector layer';
 document.getElementById('example-next').href = '?controls';
 
-/* eslint-disable-next-line no-unused-vars */ //§
+/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
   view: new ol.View({

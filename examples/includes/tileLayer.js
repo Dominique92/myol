@@ -3,7 +3,7 @@
 document.getElementById('example-title').innerHTML = 'Tile layer';
 document.getElementById('example-next').href = '?vectorLayer';
 
-/* eslint-disable-next-line no-unused-vars */ //§
+/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
   view: new ol.View({

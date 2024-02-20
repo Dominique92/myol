@@ -6,15 +6,12 @@ const exampleName = location.search.substring(1) || 'index',
   base = location.href.match(/(.*\/)[^/]*/)[1];
 
 // Fill an element with the content of the file defined in data-file="FILE_NAME"
+// With the content of the text after data-split="SPLIT_CHAIN"
 document.querySelectorAll('[data-file*="example"]') // Replace example by url?query
   .forEach(el =>
     fetch(base + el.dataset.file.replace('example', exampleName))
     .then(response => response.text())
-    .then(fileContent =>
-      el.innerHTML = el.tagName == 'PRE' ?
-      fileContent.split('§').pop().trim() : // Start after the first §
-      fileContent
-    )
+    .then(fileContent => el.innerHTML = fileContent.split(el.dataset.split, 2).pop().trim())
   );
 
 // Default keys for development only

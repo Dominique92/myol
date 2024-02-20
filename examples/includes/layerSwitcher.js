@@ -1,8 +1,9 @@
 /* global ol, myol */
 
 document.getElementById('example-title').innerHTML = 'Layer switcher';
-document.getElementById('example-next').href = '?tileLayer'; //§
+document.getElementById('example-next').href = '?tileLayer';
 
+/* vars */
 var baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),

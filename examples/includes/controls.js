@@ -3,7 +3,7 @@
 document.getElementById('example-title').innerHTML = 'Controls';
 document.getElementById('example-next').href = '?marker';
 
-/* eslint-disable-next-line no-unused-vars */ //§
+/* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
   controls: [

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 19/02/2024 21:06:12 using npm run build from the src/... sources
+ * Built 21/02/2024 09:30:25 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -65309,6 +65309,7 @@ var myol = (function () {
         urlMod =
         //BEST init with res=<resolution>
         //BEST init with extent (not zoom, lon, lat)
+        //TODO BUG if no options.init by default : Cannot read properties of undefined (reading '0')
         'zoom=' + this.options.init[0] + '&lon=' + this.options.init[1] + '&lat=' + this.options.init[2] + ',' + // init: [<zoom>, <lon>, <lat>]
         location.href.replace( // Get value from params with priority url / ? / #
           /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/, // map=<zoom>/<lon>/<lat>

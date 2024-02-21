@@ -2,11 +2,15 @@
 
 console.log('MyGPS version ' + jsVars.lastChangeDate);
 
-// Force https & script name to be compliant with PWA
-if (!location.href.match(/(https|localhost).*\/index.php/)) {
+// Force uri to be compliant with PWA
+if (!location.pathname.match(/index/) || // Force script name 
+  (location.protocol != 'https' && // Force https
+    location.hostname.match(/\./) // Remote server
+  )
+) {
   console.log('index.php reload');
   location.replace(
-    (location.hostname == 'localhost' ? 'http://' : 'https://') +
+    (location.hostname.match(/\./) ? 'https://' : 'http://') +
     location.hostname +
     location.pathname + (location.pathname.slice(-1) == '/' ? 'index.php' : '') +
     location.search +

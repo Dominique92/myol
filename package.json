@@ -23,7 +23,7 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c build/config.js",
-    "lint": "npx eslint build/* src/*.js src/*/*.js gps/*/*.js ex*/*.js ex/*/*.js ex/*/in*.js",
+    "lint": "npx eslint build/* src/*.js src/*/*.js gps/*/*.js ex*/*.js ex*/includes/*.js",
     "beautify": "js-beautify -s=2 package.json build/* src/*.js src/*/* gps/*/*.*s ex*/*.html ex*/*.*s ex*/*/*.html ex*/*/*.*s"
   },
   "dependencies": {

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 21/02/2024 09:30:25 using npm run build from the src/... sources
+ * Built 21/02/2024 11:14:00 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -65279,7 +65279,7 @@ var myol = (function () {
     constructor(options) {
       options = {
         // display: false, // {false | true} Display permalink link the map.
-        // init: false, // {false | true | [<zoom>, <lon>, <lat>]} use url hash or localStorage to position the map.
+        // init: false, // {undefined | false | true | [<zoom>, <lon>, <lat>]} use url hash or localStorage to position the map.
         default: [6, 2, 47], // France
         // setUrl: false, // {false | true} Change url hash when moving the map.
         hash: '?', // {?, #} the permalink delimiter after the url
@@ -65306,11 +65306,10 @@ var myol = (function () {
 
     render(evt) {
       const view = evt.map.getView(),
-        urlMod =
-        //BEST init with res=<resolution>
-        //BEST init with extent (not zoom, lon, lat)
-        //TODO BUG if no options.init by default : Cannot read properties of undefined (reading '0')
-        'zoom=' + this.options.init[0] + '&lon=' + this.options.init[1] + '&lat=' + this.options.init[2] + ',' + // init: [<zoom>, <lon>, <lat>]
+        //BEST init with res=<resolution> or extent (not zoom, lon, lat)
+        urlMod = (typeof this.options.init == 'object' ? // init: [<zoom>, <lon>, <lat>]
+          'zoom=' + this.options.init[0] + '&lon=' + this.options.init[1] + '&lat=' + this.options.init[2] + ',' :
+          '') +
         location.href.replace( // Get value from params with priority url / ? / #
           /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/, // map=<zoom>/<lon>/<lat>
           'zoom=$1&lon=$2&lat=$3' // zoom=<zoom>&lon=<lon>&lat=<lat>

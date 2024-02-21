@@ -5,6 +5,7 @@
   a:active {
     background: #222;
     color: white !important;
+    border-color: white !important;
   }
 
   .ol-viewport {

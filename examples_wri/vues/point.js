@@ -1,13 +1,15 @@
-var host = 'https://www.refuges.info/', // Appeler la couche de CE serveur
-  layerOptions = {},
-  centre = [5.88496, 44.79095];
-
+/*var host = '<?=$config_wri["sous_dossier_installation"]?>',
+  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
+  layerOptions = <?=json_encode($config_wri['layerOptions'])?>;
+*/
 var map = new ol.Map({
   target: 'carte-point',
+
   view: new ol.View({
     enableRotation: false,
     constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
   }),
+
   controls: [
     // Haut gauche
     new ol.control.Zoom(),
@@ -35,10 +37,11 @@ var map = new ol.Map({
       layers: fondsCarte('point', mapKeys),
     }),
   ],
+
   layers: [
     // Les autres points refuges.info
     couchePointsWRI({
-      host: host, // Appeler la couche de CE serveur
+      host: host,
       browserClusterMinResolution: 4, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
     }, 'point'),
 

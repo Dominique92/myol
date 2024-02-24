@@ -47,10 +47,13 @@ new ol.Map({
   layers: [
     // Les autres points refuges.info
     couchePointsWRI({
-      host: host,
-      browserClusterMinResolution: null, // Pour ne pas générer de gigue
-      noClick: true,
-    }, 'modif'),
+        host: host, // Appeler la couche de CE serveur
+        browserClusterMinResolution: null, // Pour ne pas générer de gigue
+        noClick: true,
+      },
+      'modif',
+      layerOptions
+    ),
 
     // Le viseur jaune pour modifier la position du point
     new myol.layer.Marker({

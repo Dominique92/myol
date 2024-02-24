@@ -8,6 +8,5 @@ import myol from '../src'; // Map management pecific functions
 // Export ol & myol as global vars if not already defined
 window.ol ||= ol;
 window.myol ||= myol;
-l
 
 export default myol;

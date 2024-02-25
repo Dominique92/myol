@@ -3,7 +3,7 @@
 document.getElementById('example-title').innerHTML = 'Layer switcher';
 document.getElementById('example-next').href = '?tileLayer';
 
-/* vars */
+/* eslint-disable no-unused-vars */
 var baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),
@@ -18,6 +18,7 @@ var baseLayers = {
     }),
     'Null': null,
   },
+
   countries = new ol.layer.Vector({
     source: new ol.source.Vector({
       url: 'images/switzerland.geojson',
@@ -26,13 +27,14 @@ var baseLayers = {
     zIndex: 2, // Above the base layer
   }),
 
-  /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({
     target: 'map',
+
     view: new ol.View({
       center: ol.proj.transform([4, 47], 'EPSG:4326', 'EPSG:3857'), // France + Swiss
       zoom: 5,
     }),
+
     controls: [
       new myol.control.LayerSwitcher({
         layers: baseLayers,
@@ -42,6 +44,7 @@ var baseLayers = {
         collapsed: false,
       }),
     ],
+
     layers: [countries],
   });
 

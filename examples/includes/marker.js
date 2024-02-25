@@ -6,6 +6,7 @@ document.getElementById('example-next').href = '?editor';
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
+
   layers: [
     new ol.layer.Tile({
       source: new ol.source.OSM(),

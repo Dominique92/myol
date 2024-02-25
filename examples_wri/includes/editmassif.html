@@ -1,3 +1,9 @@
+<style>
+  #sh-editmassif {
+    border: 1px solid black;
+  }
+</style>
+
 <div id="carte-edit"></div>
 
 <div id="myol-edit-help-modify">
@@ -19,4 +25,31 @@
   <p>Un polygone entièrement compris dans un autre crée un "trou"</p>
 </div>
 
-<input id="edit-json" type="text">
+<input id="edit-json" value='{
+  "type": "MultiPolygon",
+  "coordinates": [
+    [
+      [
+        [5.72, 45.18],
+        [5.6, 45.32],
+        [5.2062, 45.08],
+        [5.11632, 44.91],
+        [5.03, 44.73],
+        [5.19035, 44.73],
+        [5.25558, 44.77],
+        [5.29266, 44.78],
+        [5.38193, 44.79],
+        [5.44, 44.74],
+        [5.48, 44.69],
+        [5.54398, 44.7],
+        [5.61, 44.76],
+        [5.62438, 44.78],
+        [5.59, 44.87],
+        [5.63, 44.91],
+        [5.64, 45.02],
+        [5.72, 45.09],
+        [5.72, 45.18]
+      ]
+    ]
+  ]
+}' />

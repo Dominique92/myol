@@ -1,3 +1,8 @@
+/*var host = '<?=$config_wri["sous_dossier_installation"]?>',
+  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
+  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
+  idPoint = <?=intval($vue->point->id_point)?>;
+*/
 // Utilitaire de saisie
 function affiche_et_set(el, affiche, valeur) {
   document.getElementById(el).style.visibility = affiche;
@@ -6,11 +11,6 @@ function affiche_et_set(el, affiche, valeur) {
 }
 
 // Gestion des cartes
-/*var host = '<?=$config_wri["sous_dossier_installation"]?>',
-  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
-  layerOptions = <?=json_encode($config_wri['layerOptions'])?>,
-  idPoint = <?=intval($vue->point->id_point)?>;
-*/
 new ol.Map({
   target: 'carte-modif',
 
@@ -47,7 +47,7 @@ new ol.Map({
   layers: [
     // Les autres points refuges.info
     couchePointsWRI({
-        host: host, // Appeler la couche de CE serveur
+        host: host,
         browserClusterMinResolution: null, // Pour ne pas générer de gigue
         noClick: true,
       },

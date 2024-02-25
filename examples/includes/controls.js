@@ -6,6 +6,7 @@ document.getElementById('example-next').href = '?marker';
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
+
   controls: [
     ...myol.control.collection(),
     new myol.control.Button({ // Help
@@ -17,6 +18,7 @@ var map = new ol.Map({
       init: true,
     }),
   ],
+
   layers: [
     new ol.layer.Tile({
       source: new ol.source.OSM(),

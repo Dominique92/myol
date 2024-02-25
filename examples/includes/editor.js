@@ -12,6 +12,7 @@ var snaplayer = new ol.layer.Vector({
       stroke: new ol.style.Stroke(),
     }),
   }),
+
   editorLayer = new myol.layer.Editor({
     geoJsonId: 'geojson',
   }),
@@ -19,6 +20,7 @@ var snaplayer = new ol.layer.Vector({
   /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({
     target: 'map',
+
     layers: [
       new ol.layer.Tile({
         source: new ol.source.OSM(),

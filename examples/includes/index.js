@@ -6,6 +6,7 @@ document.getElementById('example-next').href = '?layerSwitcher';
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',
+
   controls: [
     ...myol.control.collection(),
     new myol.control.LayerSwitcher({
@@ -16,6 +17,7 @@ var map = new ol.Map({
       init: true,
     }),
   ],
+
   layers: [
     new myol.layer.vector.Chemineur({
       selectName: 'select-chem',

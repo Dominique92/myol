@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 24/02/2024 21:05:30 using npm run build from the src/... sources
+ * Built 25/02/2024 16:35:21 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 

@@ -24,6 +24,7 @@ var map = new ol.Map({
       source: new ol.source.OSM(),
     }),
     new ol.layer.Vector({
+      background: 'transparent',
       source: new ol.source.Vector({
         url: 'images/features.geojson',
         format: new ol.format.GeoJSON(),

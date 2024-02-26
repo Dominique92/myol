@@ -4,6 +4,7 @@ document.getElementById('example-title').innerHTML = 'Editor';
 document.getElementById('example-next').href = '../gps';
 
 var snaplayer = new ol.layer.Vector({
+    background: 'transparent',
     source: new ol.source.Vector({
       url: 'images/switzerland.geojson',
       format: new ol.format.GeoJSON(),

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 26/02/2024 20:45:57 using npm run build from the src/... sources
+ * Built 26/02/2024 21:48:52 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -64728,6 +64728,7 @@ var myol = (function () {
           wrapX: false,
         }),
         gpxLayer = new ol.layer.Vector({
+          background: 'transparent',
           source: gpxSource,
           style: feature => {
             const properties = feature.getProperties();
@@ -66065,6 +66066,7 @@ var myol = (function () {
       }));
 
       this.graticuleLayer = new ol.layer.Vector({
+        background: 'transparent',
         source: new ol.source.Vector({
           features: [this.graticuleFeature, this.northGraticuleFeature],
         }),
@@ -66491,6 +66493,8 @@ var myol = (function () {
   class Editor extends ol.layer.Vector {
     constructor(options) {
       options = {
+        background: 'transparent',
+
         geoJsonId: 'geojson',
         format: new ol.format.GeoJSON(),
         dataProjection: 'EPSG:4326',
@@ -66963,6 +66967,7 @@ var myol = (function () {
   class Hover extends ol.layer.Vector {
     constructor(options) {
       super({
+        background: 'transparent',
         source: new ol.source.Vector(),
         zIndex: 500, // Above all layers
         wrapX: false,
@@ -74449,6 +74454,7 @@ var myol = (function () {
         // dragable: false, // Can draw the marker to edit position
         // focus: number // Center & value of zoom on the marker
         zIndex: 600, // Above points & hover
+        background: 'transparent',
 
         prefix: 'marker', // Will take the values on
         // marker-json, // <input> json form
@@ -75017,6 +75023,8 @@ var myol = (function () {
 
       // High resolutions layer, can call for server clustering
       const hiResOptions = {
+        background: 'transparent',
+
         source: options.nbMaxClusters ?
           new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
           new MyVectorSource(options), // or a vector source to get the data
@@ -75036,6 +75044,7 @@ var myol = (function () {
       if (options.browserClusterMinResolution &&
         options.browserClusterMinResolution < options.maxResolution) {
         const lowResOptions = {
+          background: 'transparent',
           source: new MyVectorSource(options),
 
           ...options,

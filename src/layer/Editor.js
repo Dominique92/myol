@@ -11,6 +11,8 @@ import './editor.css';
 export class Editor extends ol.layer.Vector {
   constructor(options) {
     options = {
+      background: 'transparent',
+
       geoJsonId: 'geojson',
       format: new ol.format.GeoJSON(),
       dataProjection: 'EPSG:4326',

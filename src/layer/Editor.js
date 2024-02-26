@@ -201,7 +201,7 @@ export class Editor extends ol.layer.Vector {
     this.changeInteraction(0, 'click'); // Init to modify
 
     this.map.addControl(new Button({
-      className: 'myol-button-edit-modify',
+      className: 'myol-button-modify',
       subMenuId: 'myol-edit-help-modify',
       subMenuHTML: '<p>Modification</p>',
       subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
@@ -210,7 +210,7 @@ export class Editor extends ol.layer.Vector {
 
     if (this.options.editOnly != 'poly')
       this.map.addControl(new Button({
-        className: 'myol-button-edit-line',
+        className: 'myol-button-draw-line',
         subMenuId: 'myol-edit-help-line',
         subMenuHTML: '<p>New line</p>',
         subMenuHTML_fr: helpLine_fr,
@@ -219,7 +219,7 @@ export class Editor extends ol.layer.Vector {
 
     if (this.options.editOnly != 'line')
       this.map.addControl(new Button({
-        className: 'myol-button-edit-poly',
+        className: 'myol-button-draw-poly',
         subMenuId: 'myol-edit-help-poly',
         subMenuHTML: '<p>New polygon</p>',
         subMenuHTML_fr: helpPoly_fr,
@@ -247,7 +247,7 @@ export class Editor extends ol.layer.Vector {
 
     const mapEl = this.map.getTargetElement();
     if (mapEl)
-      mapEl.style.cursor = ['help', 'grabbing', 'copy', 'copy'][interaction];
+      mapEl.className = 'map-edit-' + interaction;
   }
 
   // Processing the data
@@ -425,7 +425,7 @@ export class Editor extends ol.layer.Vector {
 
 var helpModif_fr = {
   line: '\
-<p><u>Déplacer un sommet:</u> cliquer sur le sommet et le déplacer</p>\
+<p><u>Déplacer un sommet:</u>: cliquer sur le bouton &#x2725;, cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment:</u> cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet:</u> Alt+cliquer sur le sommet</p>\
 <p><u>Couper une ligne en deux:</u> Alt+cliquer sur le segment à supprimer</p>\
@@ -433,7 +433,7 @@ var helpModif_fr = {
 <p><u>Fusionner deux lignes:</u> déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
 <p><u>Supprimer une ligne:</u> Ctrl+Alt+cliquer sur un segment</p>',
   poly: '\
-<p><u>Déplacer un sommet:</u> cliquer sur le sommet et le déplacer</p>\
+<p><u>Déplacer un sommet:</u>: cliquer sur le bouton &#x2725;, cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment:</u> cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet:</u> Alt+cliquer sur le sommet</p>\
 <p><u>Scinder un polygone:</u> joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
@@ -441,7 +441,7 @@ var helpModif_fr = {
  de chaque polygone puis Alt+cliquer dessus</p>\
 <p><u>Supprimer un polygone:</u> Ctrl+Alt+cliquer sur un segment</p>',
   both: '\
-<p><u>Déplacer un sommet:</u> cliquer sur le sommet et le déplacer</p>\
+<p><u>Déplacer un sommet:</u>: cliquer sur le bouton &#x2725;, cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment:</u> cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet:</u> Alt+cliquer sur le sommet</p>\
 <p><u>Couper une ligne en deux:</u> Alt+cliquer sur le segment à supprimer</p>\
@@ -457,7 +457,7 @@ var helpModif_fr = {
 
 var helpLine_fr = '\
   <p><u>Pour créer une ligne:</u></p>\
-  <p><a>Cliquer sur le bouton &#128397;</a></p>\
+  <p>Cliquer sur le bouton &#x1526;</p>\
   <p>Cliquer sur l\'emplacement du début</p>\
   <p>Puis sur chaque sommet</p>\
   <p>Double cliquer sur le dernier sommet pour terminer</p>\

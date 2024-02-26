@@ -27,8 +27,8 @@
     "beautify": "js-beautify -s=2 package.json build/* src/*.js src/*/* gps/*/*.*s ex*/*.html ex*/*.*s ex*/*/*.html ex*/*/*.*s"
   },
   "dependencies": {
-    "ol": "8.2.0",
-    "proj4": "2.9.2",
+    "ol": "9.0.0",
+    "proj4": "2.10.0",
     "@myol/geocoder": "4.2.16"
   },
   "devDependencies": {

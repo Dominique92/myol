@@ -19,7 +19,7 @@ document.querySelectorAll('[data-file*="example"]') // Replace example by url?qu
 var mapKeys = {
   bing: 'AldBMbaKNyat-j6CBRKxxH05uaxP7dvQu1RnMWCQEGGC3z0gjBu-bLniE_8WZvcC',
   //https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
-  ign: 'iejxbx4obzhco6c8klxrfbto',
+  ign: 'ry2ju17rbtmlujviy8njbv5i',
   // https://geoservices.ign.fr/
   kompass: '2ba8c124-38b6-11e7-ade1-e0cb4e28e847',
   // https://manage.thunderforest.com/dashboard

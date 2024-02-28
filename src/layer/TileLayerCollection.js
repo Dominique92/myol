@@ -531,7 +531,6 @@ export function examples(options = {}) {
 
     'OSM fr': new OpenStreetMap({
       url: 'https://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-      //BEST BUG Ensure CORS response header values are valid
     }),
     'OSM orthos FR': new OpenStreetMap({
       url: 'https://wms.openstreetmap.fr/tms/1.0.0/tous_fr/{z}/{x}/{y}',

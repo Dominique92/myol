@@ -94,7 +94,6 @@ export class Marker extends ol.layer.Vector {
       });
 
       map.getTargetElement().style.cursor = hoverDragable.length ? 'move' : 'auto';
-      //BEST change cursor to grab / grabbing
     });
 
     // Drag the marker

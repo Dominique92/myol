@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/02/2024 17:19:11 using npm run build from the src/... sources
+ * Built 28/02/2024 18:24:04 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -64311,7 +64311,6 @@ var myol = (function () {
 
       'OSM fr': new OpenStreetMap({
         url: 'https://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-        //BEST BUG Ensure CORS response header values are valid
       }),
       'OSM orthos FR': new OpenStreetMap({
         url: 'https://wms.openstreetmap.fr/tms/1.0.0/tous_fr/{z}/{x}/{y}',
@@ -95184,8 +95183,7 @@ var myol = (function () {
     constructor(options) {
       this.settings = {
         url: 'https://nominatim.openstreetmap.org/search',
-        ...options, // Allow custom URL for osm provider https://github.com/Dominique92/ol-geocoder/issues/266
-
+        ...options, // Allow custom URL for osm provider
         params: {
           q: '',
           format: 'json',
@@ -95441,7 +95439,7 @@ var myol = (function () {
         background: 'transparent',
         name: this.layerName,
         source: new SourceVector(),
-        displayInLayerSwitcher: false, // Remove search layer from legend https://github.com/Dominique92/ol-geocoder/issues/256
+        displayInLayerSwitcher: false, // Remove search layer from legend
       });
 
       this.options = base.options;
@@ -104440,7 +104438,6 @@ var myol = (function () {
         });
 
         map.getTargetElement().style.cursor = hoverDragable.length ? 'move' : 'auto';
-        //BEST change cursor to grab / grabbing
       });
 
       // Drag the marker

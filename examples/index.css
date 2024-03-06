@@ -47,11 +47,6 @@
   margin-top: 10px;
 }
 
-/* Index */
-#example-list a {
-  display: block;
-}
-
 /* MyVectorLayer */
 .layer-select {
   float: left;

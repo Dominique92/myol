@@ -49,6 +49,7 @@ var map = new ol.Map({
     new myol.layer.Marker({
       prefix: 'cadre', // S'interface avec les <TAG id="cadre-xxx"...>
       // Prend la position qui est dans <input id="cadre-json">
+      //TODO Image pointeurs inline
       src: host + 'images/cadre.svg',
       focus: 15, // Centrer
       zIndex: 300, // Above the features, under the hover label

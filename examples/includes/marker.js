@@ -12,6 +12,7 @@ var map = new ol.Map({
       source: new ol.source.OSM(),
     }),
     new myol.layer.Marker({
+      //TODO Image pointeurs inline
       src: 'images/cadre.png',
       prefix: 'cadre',
     }),

@@ -5,10 +5,13 @@
  * Corrected https://github.com/Dominique92/ol-geocoder
  */
 
-// Geocoder
+// ol-geocoder library (dev repo)
+import '@myol/geocoder/src/base.css';
 import Geocoder from '@myol/geocoder/src/base';
-import '@myol/geocoder/dist/ol-geocoder.css';
-import './myGeocoder.css'; // Import after ol-geocoder.css
+
+// This package css
+// Import after ol-geocoder.css
+import './myGeocoder.css';
 
 export class MyGeocoder extends Geocoder {
   constructor(options) {

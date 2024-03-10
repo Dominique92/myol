@@ -22,8 +22,7 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')),
   .replace('{description}', pkg.description)
   .replace('{homepage}', pkg.homepage)
   .replace('{version}', pkg.version)
-  .replace('{time}', timeBuild)
-  .replace('*/', '*/\n');
+  .replace('{time}', timeBuild);
 
 export default [{
     // Compressed library

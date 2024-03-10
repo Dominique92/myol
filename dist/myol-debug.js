@@ -4,10 +4,9 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 10/03/2024 18:07:46 using npm run build from the src/... sources
+ * Built 10/03/2024 21:39:24 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
-
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -75694,14 +75693,17 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 10/03/2024 18:07:46',
+    VERSION: '1.1.2.dev 10/03/2024 21:39:24',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries
-  // This contains all what is necessary for refuges.info & chemineur.fr websites
+  // It contains all what is necessary for refuges.info & chemineur.fr websites
 
 
-  // Export ol & myol as global vars if not already defined
+  // Add ol as member of myol
+  myol$1.ol = ol;
+
+  // Export ol & myol as globals if not already defined
   window.ol ||= ol;
   window.myol ||= myol$1;
 

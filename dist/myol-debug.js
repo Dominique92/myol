@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 10/03/2024 14:56:05 using npm run build from the src/... sources
+ * Built 10/03/2024 18:07:46 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
@@ -65964,6 +65964,13 @@
     setProviderKey(key) {
       this.options.key = key;
     }
+
+    /**
+     * @return {String} Returns the version & build date
+     */
+    getVersion() {
+      return '4.3.3-3';
+    }
   }
 
   /**
@@ -75618,8 +75625,8 @@
   async function trace() {
     const data = [
       'Ol v' + ol.util.VERSION,
+      'Geocoder ' + Base.prototype.getVersion(), //TODO BUG don't show version as compiles from modules
       'MyOl ' + myol.VERSION,
-      'Geocoder ' + myol.control.MyGeocoder.VERSION,
       'language ' + navigator.language,
     ];
 
@@ -75687,7 +75694,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 10/03/2024 14:56:05',
+    VERSION: '1.1.2.dev 10/03/2024 18:07:46',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

@@ -13,5 +13,5 @@ export default {
   Selector: layer.Selector,
   stylesOptions: stylesOptions,
   trace: trace,
-  VERSION: '__buildVersion__ __buildDate__',
+  VERSION: '__myolBuildVersion__ __myolBuildDate__',
 };

@@ -3,13 +3,14 @@
  */
 
 import ol from './ol';
+import Geocoder from '@myol/geocoder/src/base';
 /* global myol */
 
 export async function trace() {
   const data = [
     'Ol v' + ol.util.VERSION,
+    'Geocoder ' + Geocoder.prototype.getVersion(), //TODO BUG don't show version as compiles from modules
     'MyOl ' + myol.VERSION,
-    'Geocoder ' + myol.control.MyGeocoder.VERSION,
     'language ' + navigator.language,
   ];
 

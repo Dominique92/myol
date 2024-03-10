@@ -4,12 +4,15 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 09/03/2024 16:25:43 using npm run build from the src/... sources
+ * Built 10/03/2024 14:56:05 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 
-var myol = (function () {
-  'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.myol = factory());
+})(this, (function () { 'use strict';
 
   /**
    * @module ol/events/Event
@@ -75610,12 +75613,14 @@ var myol = (function () {
    * Display misc values
    */
 
+  /* global myol */
 
   async function trace() {
     const data = [
-      //BEST myol & geocoder version
       'Ol v' + ol.util.VERSION,
-      'language: ' + navigator.language,
+      'MyOl ' + myol.VERSION,
+      'Geocoder ' + myol.control.MyGeocoder.VERSION,
+      'language ' + navigator.language,
     ];
 
     // Storages in the subdomain
@@ -75659,7 +75664,7 @@ var myol = (function () {
   window.addEventListener('load', () => { // Wait for doculment load
     if (typeof map == 'object' && map.once)
       map.once('precompose', () => { // Wait for view load
-        traceZoom(); //BEST put in data.join
+        traceZoom();
         map.getView().on('change:resolution', traceZoom);
       });
   });
@@ -75676,12 +75681,13 @@ var myol = (function () {
    */
 
 
-  var myol = {
+  var myol$1 = {
     control: control,
     layer: layer,
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
+    VERSION: '1.1.2.dev 10/03/2024 14:56:05',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries
@@ -75690,8 +75696,8 @@ var myol = (function () {
 
   // Export ol & myol as global vars if not already defined
   window.ol ||= ol;
-  window.myol ||= myol;
+  window.myol ||= myol$1;
 
-  return myol;
+  return myol$1;
 
-})();
+}));

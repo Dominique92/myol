@@ -3,12 +3,14 @@
  */
 
 import ol from './ol';
+/* global myol */
 
 export async function trace() {
   const data = [
-    //BEST myol & geocoder version
     'Ol v' + ol.util.VERSION,
-    'language: ' + navigator.language,
+    'MyOl ' + myol.VERSION,
+    'Geocoder ' + myol.control.MyGeocoder.VERSION,
+    'language ' + navigator.language,
   ];
 
   // Storages in the subdomain
@@ -52,7 +54,7 @@ export async function trace() {
 window.addEventListener('load', () => { // Wait for doculment load
   if (typeof map == 'object' && map.once)
     map.once('precompose', () => { // Wait for view load
-      traceZoom(); //BEST put in data.join
+      traceZoom();
       map.getView().on('change:resolution', traceZoom);
     });
 });

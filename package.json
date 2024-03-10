@@ -27,14 +27,15 @@
     "beautify": "js-beautify -s=2 package.json build/* src/*.js src/*/* gps/*/*.*s ex*/*.html ex*/*.*s ex*/*/*.html ex*/*/*.*s"
   },
   "dependencies": {
+    "@myol/geocoder": "latest",
     "ol": "9.0.0",
-    "proj4": "2.10.0",
-    "@myol/geocoder": "latest"
+    "proj4": "2.10.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "25.0.4",
     "@rollup/plugin-json": "6.0.0",
     "@rollup/plugin-node-resolve": "15.2.1",
+    "@rollup/plugin-replace": "5.0.5",
     "@rollup/plugin-terser": "0.4.3",
     "eslint": "8.49.0",
     "js-beautify": "1.14.9",

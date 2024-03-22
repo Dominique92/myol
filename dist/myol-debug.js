@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 10/03/2024 21:39:24 using npm run build from the src/... sources
+ * Built 22/03/2024 19:32:12 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -82,8 +82,6 @@
     evt.stopPropagation();
   }
 
-  var Event = BaseEvent;
-
   /**
    * @module ol/ObjectEventType
    */
@@ -138,8 +136,6 @@
      */
     disposeInternal() {}
   }
-
-  var Disposable$1 = Disposable;
 
   /**
    * @module ol/array
@@ -397,6 +393,27 @@
   }
 
   /**
+   * @template T
+   * @param {function(): (T | Promise<T>)} getter A function that returns a value or a promise for a value.
+   * @return {Promise<T>} A promise for the value.
+   */
+  function toPromise(getter) {
+    function promiseGetter() {
+      let value;
+      try {
+        value = getter();
+      } catch (err) {
+        return Promise.reject(err);
+      }
+      if (value instanceof Promise) {
+        return value;
+      }
+      return Promise.resolve(value);
+    }
+    return promiseGetter();
+  }
+
+  /**
    * @module ol/obj
    */
 
@@ -446,7 +463,7 @@
    *    more listeners after this one will be called. Same as when the listener
    *    returns false.
    */
-  class Target extends Disposable$1 {
+  class Target extends Disposable {
     /**
      * @param {*} [target] Default event target for dispatched events.
      */
@@ -511,7 +528,7 @@
         return;
       }
 
-      const evt = isString ? new Event(event) : /** @type {Event} */ (event);
+      const evt = isString ? new BaseEvent(event) : /** @type {Event} */ (event);
       if (!evt.target) {
         evt.target = this.eventTarget_ || this;
       }
@@ -609,8 +626,6 @@
       }
     }
   }
-
-  var EventTarget = Target;
 
   /**
    * @module ol/events/EventType
@@ -794,7 +809,7 @@
    * @fires import("./events/Event.js").default
    * @api
    */
-  class Observable extends EventTarget {
+  class Observable extends Target {
     constructor() {
       super();
 
@@ -944,8 +959,6 @@
     }
   }
 
-  var Observable$1 = Observable;
-
   /**
    * @module ol/util
    */
@@ -981,7 +994,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '9.0.0';
+  const VERSION = '9.1.0';
 
   /**
    * @module ol/Object
@@ -991,7 +1004,7 @@
    * @classdesc
    * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
    */
-  class ObjectEvent extends Event {
+  class ObjectEvent extends BaseEvent {
     /**
      * @param {string} type The event type.
      * @param {string} key The property name.
@@ -1067,7 +1080,7 @@
    * @fires ObjectEvent
    * @api
    */
-  class BaseObject extends Observable$1 {
+  class BaseObject extends Observable {
     /**
      * @param {Object<string, *>} [values] An object with key-value pairs.
      */
@@ -1250,8 +1263,6 @@
     }
   }
 
-  var BaseObject$1 = BaseObject;
-
   /**
    * @module ol/asserts
    */
@@ -1336,7 +1347,7 @@
    * @api
    * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
    */
-  class Feature extends BaseObject$1 {
+  class Feature extends BaseObject {
     /**
      * @param {Geometry|ObjectWithGeometry<Geometry>} [geometryOrProperties]
      *     You may pass a Geometry object directly, or an object literal containing
@@ -1598,7 +1609,6 @@
       return styles;
     };
   }
-  var Feature$1 = Feature;
 
   /**
    * @module ol/transform
@@ -1638,27 +1648,6 @@
   }
 
   /**
-   * Set the transform components a-f on a given transform.
-   * @param {!Transform} transform Transform.
-   * @param {number} a The a component of the transform.
-   * @param {number} b The b component of the transform.
-   * @param {number} c The c component of the transform.
-   * @param {number} d The d component of the transform.
-   * @param {number} e The e component of the transform.
-   * @param {number} f The f component of the transform.
-   * @return {!Transform} Matrix with transform applied.
-   */
-  function set(transform, a, b, c, d, e, f) {
-    transform[0] = a;
-    transform[1] = b;
-    transform[2] = c;
-    transform[3] = d;
-    transform[4] = e;
-    transform[5] = f;
-    return transform;
-  }
-
-  /**
    * Set transform on one matrix from another matrix.
    * @param {!Transform} transform1 Matrix to set transform to.
    * @param {!Transform} transform2 Matrix to set transform from.
@@ -1689,17 +1678,6 @@
     coordinate[0] = transform[0] * x + transform[2] * y + transform[4];
     coordinate[1] = transform[1] * x + transform[3] * y + transform[5];
     return coordinate;
-  }
-
-  /**
-   * Creates a scale transform.
-   * @param {!Transform} target Transform to overwrite.
-   * @param {number} x Scale factor x.
-   * @param {number} y Scale factor y.
-   * @return {!Transform} The scale transform.
-   */
-  function makeScale(target, x, y) {
-    return set(target, x, 0, 0, y, 0, 0);
   }
 
   /**
@@ -4344,32 +4322,11 @@
    * @module ol/console
    */
 
-  /**
-   * @typedef {'info'|'warn'|'error'|'none'} Level
-   */
-
-  /**
-   * @type {Object<Level, number>}
-   */
-  const levels = {
-    info: 1,
-    warn: 2,
-    error: 3,
-    none: 4,
-  };
-
-  /**
-   * @type {number}
-   */
-  let level = levels.info;
 
   /**
    * @param  {...any} args Arguments to log
    */
   function warn(...args) {
-    if (level > levels.warn) {
-      return;
-    }
     console.warn(...args); // eslint-disable-line no-console
   }
 
@@ -5253,7 +5210,7 @@
    * @abstract
    * @api
    */
-  class Geometry extends BaseObject$1 {
+  class Geometry extends BaseObject {
     constructor() {
       super();
 
@@ -7122,8 +7079,6 @@
     }
   };
 
-  var Point$2 = Point$1;
-
   /**
    * @module ol/geom/flat/contains
    */
@@ -8108,7 +8063,7 @@
      * @api
      */
     getInteriorPoint() {
-      return new Point$2(this.getFlatInteriorPoint(), 'XYM');
+      return new Point$1(this.getFlatInteriorPoint(), 'XYM');
     }
 
     /**
@@ -8405,7 +8360,7 @@
    * @classdesc
    * Events emitted on [GeolocationPositionError](https://developer.mozilla.org/en-US/docs/Web/API/GeolocationPositionError).
    */
-  class GeolocationError extends Event {
+  class GeolocationError extends BaseEvent {
     /**
      * @param {GeolocationPositionError} error error object.
      */
@@ -8479,7 +8434,7 @@
    * @fires GeolocationError
    * @api
    */
-  class Geolocation extends BaseObject$1 {
+  class Geolocation extends BaseObject {
     /**
      * @param {Options} [options] Options.
      */
@@ -8818,7 +8773,7 @@
    * type.
    * @template T
    */
-  class CollectionEvent extends Event {
+  class CollectionEvent extends BaseEvent {
     /**
      * @param {import("./CollectionEventType.js").default} type Type.
      * @param {T} element Element.
@@ -8872,7 +8827,7 @@
    * @template T
    * @api
    */
-  class Collection extends BaseObject$1 {
+  class Collection extends BaseObject {
     /**
      * @param {Array<T>} [array] Array.
      * @param {Options} [options] Collection options.
@@ -9124,8 +9079,6 @@
     }
   }
 
-  var Collection$1 = Collection;
-
   /**
    * @module ol/layer/Property
    */
@@ -9203,7 +9156,7 @@
    *
    * @api
    */
-  class BaseLayer extends BaseObject$1 {
+  class BaseLayer extends BaseObject {
     /**
      * @param {Options} options Layer options.
      */
@@ -9544,8 +9497,6 @@
       super.disposeInternal();
     }
   }
-
-  var BaseLayer$1 = BaseLayer;
 
   /**
    * @module ol/render/EventType
@@ -10356,7 +10307,7 @@
    *
    * @api
    */
-  class View extends BaseObject$1 {
+  class View extends BaseObject {
     /**
      * @param {ViewOptions} [options] View options.
      */
@@ -12296,7 +12247,7 @@
    * @template {import("../renderer/Layer.js").default} [RendererType=import("../renderer/Layer.js").default]
    * @api
    */
-  class Layer extends BaseLayer$1 {
+  class Layer extends BaseLayer {
     /**
      * @param {Options<SourceType>} options Layer options.
      */
@@ -12742,8 +12693,6 @@
     return zoom > layerState.minZoom && zoom <= layerState.maxZoom;
   }
 
-  var Layer$1 = Layer;
-
   function quickselect(arr, k, left, right, compare) {
       quickselectStep(arr, k, left || 0, right || (arr.length - 1), compare || defaultCompare);
   }
@@ -12798,7 +12747,7 @@
       return a < b ? -1 : a > b ? 1 : 0;
   }
 
-  let RBush$2 = class RBush {
+  let RBush$1 = class RBush {
       constructor(maxEntries = 9) {
           // max entries in a node is 9 by default; min node fill is 40% for best performance
           this._maxEntries = Math.max(4, maxEntries);
@@ -13979,162 +13928,156 @@
     return luv.lchuv(xyz.luv(arg));
   };
 
-  function getDefaultExportFromCjs (x) {
-  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-  }
-
-  var colorName = {
-  	"aliceblue": [240, 248, 255],
-  	"antiquewhite": [250, 235, 215],
-  	"aqua": [0, 255, 255],
-  	"aquamarine": [127, 255, 212],
-  	"azure": [240, 255, 255],
-  	"beige": [245, 245, 220],
-  	"bisque": [255, 228, 196],
-  	"black": [0, 0, 0],
-  	"blanchedalmond": [255, 235, 205],
-  	"blue": [0, 0, 255],
-  	"blueviolet": [138, 43, 226],
-  	"brown": [165, 42, 42],
-  	"burlywood": [222, 184, 135],
-  	"cadetblue": [95, 158, 160],
-  	"chartreuse": [127, 255, 0],
-  	"chocolate": [210, 105, 30],
-  	"coral": [255, 127, 80],
-  	"cornflowerblue": [100, 149, 237],
-  	"cornsilk": [255, 248, 220],
-  	"crimson": [220, 20, 60],
-  	"cyan": [0, 255, 255],
-  	"darkblue": [0, 0, 139],
-  	"darkcyan": [0, 139, 139],
-  	"darkgoldenrod": [184, 134, 11],
-  	"darkgray": [169, 169, 169],
-  	"darkgreen": [0, 100, 0],
-  	"darkgrey": [169, 169, 169],
-  	"darkkhaki": [189, 183, 107],
-  	"darkmagenta": [139, 0, 139],
-  	"darkolivegreen": [85, 107, 47],
-  	"darkorange": [255, 140, 0],
-  	"darkorchid": [153, 50, 204],
-  	"darkred": [139, 0, 0],
-  	"darksalmon": [233, 150, 122],
-  	"darkseagreen": [143, 188, 143],
-  	"darkslateblue": [72, 61, 139],
-  	"darkslategray": [47, 79, 79],
-  	"darkslategrey": [47, 79, 79],
-  	"darkturquoise": [0, 206, 209],
-  	"darkviolet": [148, 0, 211],
-  	"deeppink": [255, 20, 147],
-  	"deepskyblue": [0, 191, 255],
-  	"dimgray": [105, 105, 105],
-  	"dimgrey": [105, 105, 105],
-  	"dodgerblue": [30, 144, 255],
-  	"firebrick": [178, 34, 34],
-  	"floralwhite": [255, 250, 240],
-  	"forestgreen": [34, 139, 34],
-  	"fuchsia": [255, 0, 255],
-  	"gainsboro": [220, 220, 220],
-  	"ghostwhite": [248, 248, 255],
-  	"gold": [255, 215, 0],
-  	"goldenrod": [218, 165, 32],
-  	"gray": [128, 128, 128],
-  	"green": [0, 128, 0],
-  	"greenyellow": [173, 255, 47],
-  	"grey": [128, 128, 128],
-  	"honeydew": [240, 255, 240],
-  	"hotpink": [255, 105, 180],
-  	"indianred": [205, 92, 92],
-  	"indigo": [75, 0, 130],
-  	"ivory": [255, 255, 240],
-  	"khaki": [240, 230, 140],
-  	"lavender": [230, 230, 250],
-  	"lavenderblush": [255, 240, 245],
-  	"lawngreen": [124, 252, 0],
-  	"lemonchiffon": [255, 250, 205],
-  	"lightblue": [173, 216, 230],
-  	"lightcoral": [240, 128, 128],
-  	"lightcyan": [224, 255, 255],
-  	"lightgoldenrodyellow": [250, 250, 210],
-  	"lightgray": [211, 211, 211],
-  	"lightgreen": [144, 238, 144],
-  	"lightgrey": [211, 211, 211],
-  	"lightpink": [255, 182, 193],
-  	"lightsalmon": [255, 160, 122],
-  	"lightseagreen": [32, 178, 170],
-  	"lightskyblue": [135, 206, 250],
-  	"lightslategray": [119, 136, 153],
-  	"lightslategrey": [119, 136, 153],
-  	"lightsteelblue": [176, 196, 222],
-  	"lightyellow": [255, 255, 224],
-  	"lime": [0, 255, 0],
-  	"limegreen": [50, 205, 50],
-  	"linen": [250, 240, 230],
-  	"magenta": [255, 0, 255],
-  	"maroon": [128, 0, 0],
-  	"mediumaquamarine": [102, 205, 170],
-  	"mediumblue": [0, 0, 205],
-  	"mediumorchid": [186, 85, 211],
-  	"mediumpurple": [147, 112, 219],
-  	"mediumseagreen": [60, 179, 113],
-  	"mediumslateblue": [123, 104, 238],
-  	"mediumspringgreen": [0, 250, 154],
-  	"mediumturquoise": [72, 209, 204],
-  	"mediumvioletred": [199, 21, 133],
-  	"midnightblue": [25, 25, 112],
-  	"mintcream": [245, 255, 250],
-  	"mistyrose": [255, 228, 225],
-  	"moccasin": [255, 228, 181],
-  	"navajowhite": [255, 222, 173],
-  	"navy": [0, 0, 128],
-  	"oldlace": [253, 245, 230],
-  	"olive": [128, 128, 0],
-  	"olivedrab": [107, 142, 35],
-  	"orange": [255, 165, 0],
-  	"orangered": [255, 69, 0],
-  	"orchid": [218, 112, 214],
-  	"palegoldenrod": [238, 232, 170],
-  	"palegreen": [152, 251, 152],
-  	"paleturquoise": [175, 238, 238],
-  	"palevioletred": [219, 112, 147],
-  	"papayawhip": [255, 239, 213],
-  	"peachpuff": [255, 218, 185],
-  	"peru": [205, 133, 63],
-  	"pink": [255, 192, 203],
-  	"plum": [221, 160, 221],
-  	"powderblue": [176, 224, 230],
-  	"purple": [128, 0, 128],
-  	"rebeccapurple": [102, 51, 153],
-  	"red": [255, 0, 0],
-  	"rosybrown": [188, 143, 143],
-  	"royalblue": [65, 105, 225],
-  	"saddlebrown": [139, 69, 19],
-  	"salmon": [250, 128, 114],
-  	"sandybrown": [244, 164, 96],
-  	"seagreen": [46, 139, 87],
-  	"seashell": [255, 245, 238],
-  	"sienna": [160, 82, 45],
-  	"silver": [192, 192, 192],
-  	"skyblue": [135, 206, 235],
-  	"slateblue": [106, 90, 205],
-  	"slategray": [112, 128, 144],
-  	"slategrey": [112, 128, 144],
-  	"snow": [255, 250, 250],
-  	"springgreen": [0, 255, 127],
-  	"steelblue": [70, 130, 180],
-  	"tan": [210, 180, 140],
-  	"teal": [0, 128, 128],
-  	"thistle": [216, 191, 216],
-  	"tomato": [255, 99, 71],
-  	"turquoise": [64, 224, 208],
-  	"violet": [238, 130, 238],
-  	"wheat": [245, 222, 179],
-  	"white": [255, 255, 255],
-  	"whitesmoke": [245, 245, 245],
-  	"yellow": [255, 255, 0],
-  	"yellowgreen": [154, 205, 50]
+  var names$x = {
+  	aliceblue: [240, 248, 255],
+  	antiquewhite: [250, 235, 215],
+  	aqua: [0, 255, 255],
+  	aquamarine: [127, 255, 212],
+  	azure: [240, 255, 255],
+  	beige: [245, 245, 220],
+  	bisque: [255, 228, 196],
+  	black: [0, 0, 0],
+  	blanchedalmond: [255, 235, 205],
+  	blue: [0, 0, 255],
+  	blueviolet: [138, 43, 226],
+  	brown: [165, 42, 42],
+  	burlywood: [222, 184, 135],
+  	cadetblue: [95, 158, 160],
+  	chartreuse: [127, 255, 0],
+  	chocolate: [210, 105, 30],
+  	coral: [255, 127, 80],
+  	cornflowerblue: [100, 149, 237],
+  	cornsilk: [255, 248, 220],
+  	crimson: [220, 20, 60],
+  	cyan: [0, 255, 255],
+  	darkblue: [0, 0, 139],
+  	darkcyan: [0, 139, 139],
+  	darkgoldenrod: [184, 134, 11],
+  	darkgray: [169, 169, 169],
+  	darkgreen: [0, 100, 0],
+  	darkgrey: [169, 169, 169],
+  	darkkhaki: [189, 183, 107],
+  	darkmagenta: [139, 0, 139],
+  	darkolivegreen: [85, 107, 47],
+  	darkorange: [255, 140, 0],
+  	darkorchid: [153, 50, 204],
+  	darkred: [139, 0, 0],
+  	darksalmon: [233, 150, 122],
+  	darkseagreen: [143, 188, 143],
+  	darkslateblue: [72, 61, 139],
+  	darkslategray: [47, 79, 79],
+  	darkslategrey: [47, 79, 79],
+  	darkturquoise: [0, 206, 209],
+  	darkviolet: [148, 0, 211],
+  	deeppink: [255, 20, 147],
+  	deepskyblue: [0, 191, 255],
+  	dimgray: [105, 105, 105],
+  	dimgrey: [105, 105, 105],
+  	dodgerblue: [30, 144, 255],
+  	firebrick: [178, 34, 34],
+  	floralwhite: [255, 250, 240],
+  	forestgreen: [34, 139, 34],
+  	fuchsia: [255, 0, 255],
+  	gainsboro: [220, 220, 220],
+  	ghostwhite: [248, 248, 255],
+  	gold: [255, 215, 0],
+  	goldenrod: [218, 165, 32],
+  	gray: [128, 128, 128],
+  	green: [0, 128, 0],
+  	greenyellow: [173, 255, 47],
+  	grey: [128, 128, 128],
+  	honeydew: [240, 255, 240],
+  	hotpink: [255, 105, 180],
+  	indianred: [205, 92, 92],
+  	indigo: [75, 0, 130],
+  	ivory: [255, 255, 240],
+  	khaki: [240, 230, 140],
+  	lavender: [230, 230, 250],
+  	lavenderblush: [255, 240, 245],
+  	lawngreen: [124, 252, 0],
+  	lemonchiffon: [255, 250, 205],
+  	lightblue: [173, 216, 230],
+  	lightcoral: [240, 128, 128],
+  	lightcyan: [224, 255, 255],
+  	lightgoldenrodyellow: [250, 250, 210],
+  	lightgray: [211, 211, 211],
+  	lightgreen: [144, 238, 144],
+  	lightgrey: [211, 211, 211],
+  	lightpink: [255, 182, 193],
+  	lightsalmon: [255, 160, 122],
+  	lightseagreen: [32, 178, 170],
+  	lightskyblue: [135, 206, 250],
+  	lightslategray: [119, 136, 153],
+  	lightslategrey: [119, 136, 153],
+  	lightsteelblue: [176, 196, 222],
+  	lightyellow: [255, 255, 224],
+  	lime: [0, 255, 0],
+  	limegreen: [50, 205, 50],
+  	linen: [250, 240, 230],
+  	magenta: [255, 0, 255],
+  	maroon: [128, 0, 0],
+  	mediumaquamarine: [102, 205, 170],
+  	mediumblue: [0, 0, 205],
+  	mediumorchid: [186, 85, 211],
+  	mediumpurple: [147, 112, 219],
+  	mediumseagreen: [60, 179, 113],
+  	mediumslateblue: [123, 104, 238],
+  	mediumspringgreen: [0, 250, 154],
+  	mediumturquoise: [72, 209, 204],
+  	mediumvioletred: [199, 21, 133],
+  	midnightblue: [25, 25, 112],
+  	mintcream: [245, 255, 250],
+  	mistyrose: [255, 228, 225],
+  	moccasin: [255, 228, 181],
+  	navajowhite: [255, 222, 173],
+  	navy: [0, 0, 128],
+  	oldlace: [253, 245, 230],
+  	olive: [128, 128, 0],
+  	olivedrab: [107, 142, 35],
+  	orange: [255, 165, 0],
+  	orangered: [255, 69, 0],
+  	orchid: [218, 112, 214],
+  	palegoldenrod: [238, 232, 170],
+  	palegreen: [152, 251, 152],
+  	paleturquoise: [175, 238, 238],
+  	palevioletred: [219, 112, 147],
+  	papayawhip: [255, 239, 213],
+  	peachpuff: [255, 218, 185],
+  	peru: [205, 133, 63],
+  	pink: [255, 192, 203],
+  	plum: [221, 160, 221],
+  	powderblue: [176, 224, 230],
+  	purple: [128, 0, 128],
+  	rebeccapurple: [102, 51, 153],
+  	red: [255, 0, 0],
+  	rosybrown: [188, 143, 143],
+  	royalblue: [65, 105, 225],
+  	saddlebrown: [139, 69, 19],
+  	salmon: [250, 128, 114],
+  	sandybrown: [244, 164, 96],
+  	seagreen: [46, 139, 87],
+  	seashell: [255, 245, 238],
+  	sienna: [160, 82, 45],
+  	silver: [192, 192, 192],
+  	skyblue: [135, 206, 235],
+  	slateblue: [106, 90, 205],
+  	slategray: [112, 128, 144],
+  	slategrey: [112, 128, 144],
+  	snow: [255, 250, 250],
+  	springgreen: [0, 255, 127],
+  	steelblue: [70, 130, 180],
+  	tan: [210, 180, 140],
+  	teal: [0, 128, 128],
+  	thistle: [216, 191, 216],
+  	tomato: [255, 99, 71],
+  	turquoise: [64, 224, 208],
+  	violet: [238, 130, 238],
+  	wheat: [245, 222, 179],
+  	white: [255, 255, 255],
+  	whitesmoke: [245, 245, 245],
+  	yellow: [255, 255, 0],
+  	yellowgreen: [154, 205, 50]
   };
-
-  var names$x = /*@__PURE__*/getDefaultExportFromCjs(colorName);
 
   /**
    * @module color-parse
@@ -15090,7 +15033,7 @@
    */
   let taintedTestContext = null;
 
-  class IconImage extends EventTarget {
+  class IconImage extends Target {
     /**
      * @param {HTMLImageElement|HTMLCanvasElement|ImageBitmap|null} image Image.
      * @param {string|undefined} src Src.
@@ -15780,7 +15723,7 @@
   /**
    * @type {BaseObject}
    */
-  const checkedFonts = new BaseObject$1();
+  const checkedFonts = new BaseObject();
 
   /**
    * @type {CanvasRenderingContext2D}
@@ -17710,8 +17653,6 @@
     return feature.getGeometry();
   }
 
-  var Style$1 = Style;
-
   /**
    * @module ol/style/Icon
    */
@@ -18273,8 +18214,6 @@
       return this.iconImage_.ready();
     }
   }
-
-  var Icon$1 = Icon;
 
   /**
    * @module ol/style/Text
@@ -18989,9 +18928,9 @@
    *   * `['all', value1, value2, ...]` returns `true` if all the inputs are `true`, `false` otherwise.
    *   * `['any', value1, value2, ...]` returns `true` if any of the inputs are `true`, `false` otherwise.
    *   * `['between', value1, value2, value3]` returns `true` if `value1` is contained between `value2` and `value3`
-   *     (inclusively), or `false` otherwise (WebGL only).
+   *     (inclusively), or `false` otherwise.
    *   * `['in', needle, haystack]` returns `true` if `needle` is found in `haystack`, and
-   *     `false` otherwise (WebGL only).
+   *     `false` otherwise.
    *     This operator has the following limitations:
    *     * `haystack` has to be an array of numbers or strings (searching for a substring in a string is not supported yet)
    *     * Only literal arrays are supported as `haystack` for now; this means that `haystack` cannot be the result of an
@@ -19009,6 +18948,9 @@
    *     (e.g. `'#86A136'`), colors using the rgba[a] functional notation (e.g. `'rgb(134, 161, 54)'` or `'rgba(134, 161, 54, 1)'`),
    *     named colors (e.g. `'red'`), or array literals with 3 ([r, g, b]) or 4 ([r, g, b, a]) values (with r, g, and b
    *     in the 0-255 range and a in the 0-1 range) (WebGL only).
+   *   * `['to-string', value]` converts the input value to a string. If the input is a boolean, the result is "true" or "false".
+   *     If the input is a number, it is converted to a string as specified by the "NumberToString" algorithm of the ECMAScript
+   *     Language Specification. If the input is a color, it is converted to a string of the form "rgba(r,g,b,a)". (Canvas only)
    *
    * Values can either be literals or another operator, as they will be evaluated recursively.
    * Literal values can be of the following types:
@@ -19271,6 +19213,7 @@
     Id: 'id',
     Band: 'band',
     Palette: 'palette',
+    ToString: 'to-string',
   };
 
   /**
@@ -19531,6 +19474,11 @@
       parseArgsOfType(NumberType),
     ),
     [Ops.Palette]: createParser(ColorType, withArgsCount(2, 2), parsePaletteArgs),
+    [Ops.ToString]: createParser(
+      StringType,
+      withArgsCount(1, 1),
+      parseArgsOfType(BooleanType | NumberType | StringType | ColorType),
+    ),
   };
 
   /**
@@ -20192,6 +20140,8 @@
       }
       case Ops.Any:
       case Ops.All:
+      case Ops.Between:
+      case Ops.In:
       case Ops.Not: {
         return compileLogicalExpression(expression);
       }
@@ -20229,14 +20179,15 @@
       case Ops.Interpolate: {
         return compileInterpolateExpression(expression);
       }
+      case Ops.ToString: {
+        return compileConvertExpression(expression);
+      }
       default: {
         throw new Error(`Unsupported operator ${operator}`);
       }
       // TODO: unimplemented
       // Ops.Zoom
       // Ops.Time
-      // Ops.Between
-      // Ops.In
       // Ops.Array
       // Ops.Color
       // Ops.Band
@@ -20374,6 +20325,25 @@
             }
           }
           return true;
+        };
+      }
+      case Ops.Between: {
+        return (context) => {
+          const value = args[0](context);
+          const min = args[1](context);
+          const max = args[2](context);
+          return value >= min && value <= max;
+        };
+      }
+      case Ops.In: {
+        return (context) => {
+          const value = args[0](context);
+          for (let i = 1; i < length; ++i) {
+            if (value === args[i](context)) {
+              return true;
+            }
+          }
+          return false;
         };
       }
       case Ops.Not: {
@@ -20572,6 +20542,35 @@
       }
       return previousOutput;
     };
+  }
+
+  /**
+   * @param {import('./expression.js').CallExpression} expression The call expression.
+   * @param {import('./expression.js').ParsingContext} context The parsing context.
+   * @return {ExpressionEvaluator} The evaluator function.
+   */
+  function compileConvertExpression(expression, context) {
+    const op = expression.operator;
+    const length = expression.args.length;
+
+    const args = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      args[i] = compileExpression(expression.args[i]);
+    }
+    switch (op) {
+      case Ops.ToString: {
+        return (context) => {
+          const value = args[0](context);
+          if (expression.args[0].type === ColorType) {
+            return toString(value);
+          }
+          return value.toString();
+        };
+      }
+      default: {
+        throw new Error(`Unsupported convert operator ${op}`);
+      }
+    }
   }
 
   /**
@@ -20863,7 +20862,7 @@
       );
     }
 
-    const style = new Style$1();
+    const style = new Style();
     return function (context) {
       let empty = true;
       if (evaluateFill) {
@@ -21363,7 +21362,7 @@
       prefix + 'declutter-mode',
     );
 
-    const icon = new Icon$1({
+    const icon = new Icon({
       src,
       anchorOrigin,
       anchorXUnits,
@@ -22022,7 +22021,7 @@
    * @extends {Layer<VectorSourceType, RendererType>}
    * @api
    */
-  class BaseVectorLayer extends Layer$1 {
+  class BaseVectorLayer extends Layer {
     /**
      * @param {Options<VectorSourceType>} [options] Options.
      */
@@ -22170,7 +22169,7 @@
     renderDeclutter(frameState, layerState) {
       const declutterGroup = this.getDeclutter();
       if (declutterGroup in frameState.declutter === false) {
-        frameState.declutter[declutterGroup] = new RBush$2(9);
+        frameState.declutter[declutterGroup] = new RBush$1(9);
       }
       this.getRenderer().renderDeclutter(frameState, layerState);
     }
@@ -22229,7 +22228,7 @@
     if (typeof style === 'function') {
       return style;
     }
-    if (style instanceof Style$1) {
+    if (style instanceof Style) {
       return style;
     }
     if (!Array.isArray(style)) {
@@ -22242,14 +22241,14 @@
     const length = style.length;
     const first = style[0];
 
-    if (first instanceof Style$1) {
+    if (first instanceof Style) {
       /**
        * @type {Array<Style>}
        */
       const styles = new Array(length);
       for (let i = 0; i < length; ++i) {
         const candidate = style[i];
-        if (!(candidate instanceof Style$1)) {
+        if (!(candidate instanceof Style)) {
           throw new Error('Expected a list of style instances');
         }
         styles[i] = candidate;
@@ -22277,8 +22276,6 @@
     return flatStylesToStyleFunction(flatStyles);
   }
 
-  var BaseVectorLayer$1 = BaseVectorLayer;
-
   /**
    * @module ol/renderer/Map
    */
@@ -22296,7 +22293,7 @@
   /**
    * @abstract
    */
-  class MapRenderer extends Disposable$1 {
+  class MapRenderer extends Disposable {
     /**
      * @param {import("../Map.js").default} map Map.
      */
@@ -22513,14 +22510,12 @@
     shared.expire();
   }
 
-  var MapRenderer$1 = MapRenderer;
-
   /**
    * @module ol/render/Event
    */
 
 
-  class RenderEvent extends Event {
+  class RenderEvent extends BaseEvent {
     /**
      * @param {import("./EventType.js").default} type Type.
      * @param {import("../transform.js").Transform} [inversePixelTransform] Transform for
@@ -22557,8 +22552,6 @@
     }
   }
 
-  var RenderEvent$1 = RenderEvent;
-
   /**
    * @module ol/renderer/Composite
    */
@@ -22568,7 +22561,7 @@
    * Canvas map renderer.
    * @api
    */
-  class CompositeMapRenderer extends MapRenderer$1 {
+  class CompositeMapRenderer extends MapRenderer {
     /**
      * @param {import("../Map.js").default} map Map.
      */
@@ -22620,7 +22613,7 @@
     dispatchRenderEvent(type, frameState) {
       const map = this.getMap();
       if (map.hasListener(type)) {
-        const event = new RenderEvent$1(type, undefined, frameState);
+        const event = new RenderEvent(type, undefined, frameState);
         map.dispatchEvent(event);
       }
     }
@@ -22652,7 +22645,7 @@
       });
       const declutter = layerStatesArray.some(
         (layerState) =>
-          layerState.layer instanceof BaseVectorLayer$1 &&
+          layerState.layer instanceof BaseVectorLayer &&
           layerState.layer.getDeclutter(),
       );
       if (declutter) {
@@ -22723,8 +22716,6 @@
     }
   }
 
-  var CompositeMapRenderer$1 = CompositeMapRenderer;
-
   /**
    * @module ol/layer/Group
    */
@@ -22739,7 +22730,7 @@
    * the group or one of its child groups.  When a layer group is added to or removed from another layer group,
    * a single event will be triggered (instead of one per layer in the group added or removed).
    */
-  class GroupEvent extends Event {
+  class GroupEvent extends BaseEvent {
     /**
      * @param {EventType} type The event type.
      * @param {BaseLayer} layer The layer.
@@ -22802,7 +22793,7 @@
    *
    * @api
    */
-  class LayerGroup extends BaseLayer$1 {
+  class LayerGroup extends BaseLayer {
     /**
      * @param {Options} [options] Layer options.
      */
@@ -22846,7 +22837,7 @@
 
       if (layers) {
         if (Array.isArray(layers)) {
-          layers = new Collection$1(layers.slice(), {unique: true});
+          layers = new Collection(layers.slice(), {unique: true});
         } else {
           assert$1(
             typeof (/** @type {?} */ (layers).getArray) === 'function',
@@ -22854,7 +22845,7 @@
           );
         }
       } else {
-        layers = new Collection$1(undefined, {unique: true});
+        layers = new Collection(undefined, {unique: true});
       }
 
       this.setLayers(layers);
@@ -23069,8 +23060,6 @@
     }
   }
 
-  var LayerGroup$1 = LayerGroup;
-
   /**
    * @module ol/MapEvent
    */
@@ -23080,7 +23069,7 @@
    * Events emitted as map events are instances of this type.
    * See {@link module:ol/Map~Map} for which events trigger a map event.
    */
-  class MapEvent extends Event {
+  class MapEvent extends BaseEvent {
     /**
      * @param {string} type Event type.
      * @param {import("./Map.js").default} map Map.
@@ -23105,8 +23094,6 @@
     }
   }
 
-  var MapEvent$1 = MapEvent;
-
   /**
    * @module ol/MapBrowserEvent
    */
@@ -23117,7 +23104,7 @@
    * See {@link module:ol/Map~Map} for which events trigger a map browser event.
    * @template {UIEvent} EVENT
    */
-  class MapBrowserEvent extends MapEvent$1 {
+  class MapBrowserEvent extends MapEvent {
     /**
      * @param {string} type Event type.
      * @param {import("./Map.js").default} map Map.
@@ -23220,8 +23207,6 @@
     }
   }
 
-  var MapBrowserEvent$1 = MapBrowserEvent;
-
   /**
    * @module ol/MapBrowserEventType
    */
@@ -23305,7 +23290,7 @@
    */
 
 
-  class MapBrowserEventHandler extends EventTarget {
+  class MapBrowserEventHandler extends Target {
     /**
      * @param {import("./Map.js").default} map The map with the viewport to listen to events on.
      * @param {number} [moveTolerance] The minimal distance the pointer must travel to trigger a move.
@@ -23420,7 +23405,7 @@
      * @private
      */
     emulateClick_(pointerEvent) {
-      let newEvent = new MapBrowserEvent$1(
+      let newEvent = new MapBrowserEvent(
         MapBrowserEventType.CLICK,
         this.map_,
         pointerEvent,
@@ -23430,7 +23415,7 @@
         // double-click
         clearTimeout(this.clickTimeoutId_);
         this.clickTimeoutId_ = undefined;
-        newEvent = new MapBrowserEvent$1(
+        newEvent = new MapBrowserEvent(
           MapBrowserEventType.DBLCLICK,
           this.map_,
           pointerEvent,
@@ -23440,7 +23425,7 @@
         // click
         this.clickTimeoutId_ = setTimeout(() => {
           this.clickTimeoutId_ = undefined;
-          const newEvent = new MapBrowserEvent$1(
+          const newEvent = new MapBrowserEvent(
             MapBrowserEventType.SINGLECLICK,
             this.map_,
             pointerEvent,
@@ -23492,7 +23477,7 @@
      */
     handlePointerUp_(pointerEvent) {
       this.updateActivePointers_(pointerEvent);
-      const newEvent = new MapBrowserEvent$1(
+      const newEvent = new MapBrowserEvent(
         MapBrowserEventType.POINTERUP,
         this.map_,
         pointerEvent,
@@ -23543,7 +23528,7 @@
     handlePointerDown_(pointerEvent) {
       this.emulateClicks_ = this.activePointers_.length === 0;
       this.updateActivePointers_(pointerEvent);
-      const newEvent = new MapBrowserEvent$1(
+      const newEvent = new MapBrowserEvent(
         MapBrowserEventType.POINTERDOWN,
         this.map_,
         pointerEvent,
@@ -23614,7 +23599,7 @@
       if (this.isMoving_(pointerEvent)) {
         this.updateActivePointers_(pointerEvent);
         this.dragging_ = true;
-        const newEvent = new MapBrowserEvent$1(
+        const newEvent = new MapBrowserEvent(
           MapBrowserEventType.POINTERDRAG,
           this.map_,
           pointerEvent,
@@ -23636,7 +23621,7 @@
       this.originalPointerMoveEvent_ = pointerEvent;
       const dragging = !!(this.down_ && this.isMoving_(pointerEvent));
       this.dispatchEvent(
-        new MapBrowserEvent$1(
+        new MapBrowserEvent(
           MapBrowserEventType.POINTERMOVE,
           this.map_,
           pointerEvent,
@@ -23706,8 +23691,6 @@
       super.disposeInternal();
     }
   }
-
-  var MapBrowserEventHandler$1 = MapBrowserEventHandler;
 
   /**
    * @module ol/MapEventType
@@ -24033,8 +24016,6 @@
     }
   }
 
-  var PriorityQueue$1 = PriorityQueue;
-
   /**
    * @module ol/TileState
    */
@@ -24062,7 +24043,7 @@
    * @typedef {function(import("./Tile.js").default, string, import("./coordinate.js").Coordinate, number): number} PriorityFunction
    */
 
-  class TileQueue extends PriorityQueue$1 {
+  class TileQueue extends PriorityQueue {
     /**
      * @param {PriorityFunction} tilePriorityFunction Tile priority function.
      * @param {function(): ?} tileChangeCallback Function called on each tile change event.
@@ -24176,8 +24157,6 @@
     }
   }
 
-  var TileQueue$1 = TileQueue;
-
   /**
    * @param {import('./Map.js').FrameState} frameState Frame state.
    * @param {import("./Tile.js").default} tile Tile.
@@ -24256,7 +24235,7 @@
    *
    * @api
    */
-  class Control extends BaseObject$1 {
+  class Control extends BaseObject {
     /**
      * @param {Options} options Control options.
      */
@@ -24371,8 +24350,6 @@
     }
   }
 
-  var Control$1 = Control;
-
   /**
    * @module ol/control/Attribution
    */
@@ -24413,7 +24390,7 @@
    *
    * @api
    */
-  class Attribution extends Control$1 {
+  class Attribution extends Control {
     /**
      * @param {Options} [options] Attribution options.
      */
@@ -24585,7 +24562,7 @@
      * @private
      * @param {?import("../Map.js").FrameState} frameState Frame state.
      */
-    updateElement_(frameState) {
+    async updateElement_(frameState) {
       if (!frameState) {
         if (this.renderedVisible_) {
           this.element.style.display = 'none';
@@ -24594,7 +24571,11 @@
         return;
       }
 
-      const attributions = this.collectSourceAttributions_(frameState);
+      const attributions = await Promise.all(
+        this.collectSourceAttributions_(frameState).map((attribution) =>
+          toPromise(() => attribution),
+        ),
+      );
 
       const visible = attributions.length > 0;
       if (this.renderedVisible_ != visible) {
@@ -24733,7 +24714,7 @@
    *
    * @api
    */
-  class Rotate extends Control$1 {
+  class Rotate extends Control {
     /**
      * @param {Options} [options] Rotate options.
      */
@@ -24912,7 +24893,7 @@
    *
    * @api
    */
-  class Zoom extends Control$1 {
+  class Zoom extends Control {
     /**
      * @param {Options} [options] Zoom options.
      */
@@ -25076,7 +25057,7 @@
     options = options ? options : {};
 
     /** @type {Collection<import("./Control.js").default>} */
-    const controls = new Collection$1();
+    const controls = new Collection();
 
     const zoomControl = options.zoom !== undefined ? options.zoom : true;
     if (zoomControl) {
@@ -25145,7 +25126,7 @@
    * vectors and so are visible on the screen.
    * @api
    */
-  class Interaction extends BaseObject$1 {
+  class Interaction extends BaseObject {
     /**
      * @param {InteractionOptions} [options] Options.
      */
@@ -25274,8 +25255,6 @@
     });
   }
 
-  var Interaction$1 = Interaction;
-
   /**
    * @module ol/interaction/DoubleClickZoom
    */
@@ -25291,7 +25270,7 @@
    * Allows the user to zoom by double-clicking on the map.
    * @api
    */
-  class DoubleClickZoom extends Interaction$1 {
+  class DoubleClickZoom extends Interaction {
     /**
      * @param {Options} [options] Options.
      */
@@ -25381,7 +25360,7 @@
    * user function is called and returns `false`.
    * @api
    */
-  class PointerInteraction extends Interaction$1 {
+  class PointerInteraction extends Interaction {
     /**
      * @param {Options} [options] Options.
      */
@@ -26105,14 +26084,12 @@
     }
   }
 
-  var DragRotate$1 = DragRotate;
-
   /**
    * @module ol/render/Box
    */
 
 
-  class RenderBox extends Disposable$1 {
+  class RenderBox extends Disposable {
     /**
      * @param {string} className CSS class name.
      */
@@ -26236,8 +26213,6 @@
     }
   }
 
-  var RenderBox$1 = RenderBox;
-
   /**
    * @module ol/interaction/DragBox
    */
@@ -26303,7 +26278,7 @@
    * Events emitted by {@link module:ol/interaction/DragBox~DragBox} instances are instances of
    * this type.
    */
-  class DragBoxEvent extends Event {
+  class DragBoxEvent extends BaseEvent {
     /**
      * @param {string} type The event type.
      * @param {import("../coordinate.js").Coordinate} coordinate The event coordinate.
@@ -26379,7 +26354,7 @@
        * @type {import("../render/Box.js").default}
        * @private
        */
-      this.box_ = new RenderBox$1(options.className || 'ol-dragbox');
+      this.box_ = new RenderBox(options.className || 'ol-dragbox');
 
       /**
        * @type {number}
@@ -26507,8 +26482,6 @@
     onBoxEnd(event) {}
   }
 
-  var DragBox$1 = DragBox;
-
   /**
    * @module ol/interaction/DragZoom
    */
@@ -26537,7 +26510,7 @@
    * your custom one configured with `className`.
    * @api
    */
-  class DragZoom extends DragBox$1 {
+  class DragZoom extends DragBox {
     /**
      * @param {Options} [options] Options.
      */
@@ -26635,7 +26608,7 @@
    * See also {@link module:ol/interaction/KeyboardZoom~KeyboardZoom}.
    * @api
    */
-  class KeyboardPan extends Interaction$1 {
+  class KeyboardPan extends Interaction {
     /**
      * @param {Options} [options] Options.
      */
@@ -26724,8 +26697,6 @@
     }
   }
 
-  var KeyboardPan$1 = KeyboardPan;
-
   /**
    * @module ol/interaction/KeyboardZoom
    */
@@ -26755,7 +26726,7 @@
    * See also {@link module:ol/interaction/KeyboardPan~KeyboardPan}.
    * @api
    */
-  class KeyboardZoom extends Interaction$1 {
+  class KeyboardZoom extends Interaction {
     /**
      * @param {Options} [options] Options.
      */
@@ -26947,8 +26918,6 @@
     }
   }
 
-  var Kinetic$1 = Kinetic;
-
   /**
    * @module ol/interaction/MouseWheelZoom
    */
@@ -26981,7 +26950,7 @@
    * Allows the user to zoom the map by scrolling the mouse wheel.
    * @api
    */
-  class MouseWheelZoom extends Interaction$1 {
+  class MouseWheelZoom extends Interaction {
     /**
      * @param {Options} [options] Options.
      */
@@ -27396,8 +27365,6 @@
     }
   }
 
-  var PinchRotate$1 = PinchRotate;
-
   /**
    * @module ol/interaction/PinchZoom
    */
@@ -27585,16 +27552,16 @@
     options = options ? options : {};
 
     /** @type {Collection<import("./Interaction.js").default>} */
-    const interactions = new Collection$1();
+    const interactions = new Collection();
 
-    const kinetic = new Kinetic$1(-0.005, 0.05, 100);
+    const kinetic = new Kinetic(-0.005, 0.05, 100);
 
     const altShiftDragRotate =
       options.altShiftDragRotate !== undefined
         ? options.altShiftDragRotate
         : true;
     if (altShiftDragRotate) {
-      interactions.push(new DragRotate$1());
+      interactions.push(new DragRotate());
     }
 
     const doubleClickZoom =
@@ -27621,7 +27588,7 @@
     const pinchRotate =
       options.pinchRotate !== undefined ? options.pinchRotate : true;
     if (pinchRotate) {
-      interactions.push(new PinchRotate$1());
+      interactions.push(new PinchRotate());
     }
 
     const pinchZoom = options.pinchZoom !== undefined ? options.pinchZoom : true;
@@ -27635,7 +27602,7 @@
 
     const keyboard = options.keyboard !== undefined ? options.keyboard : true;
     if (keyboard) {
-      interactions.push(new KeyboardPan$1());
+      interactions.push(new KeyboardPan());
       interactions.push(
         new KeyboardZoom$1({
           delta: options.zoomDelta,
@@ -27786,11 +27753,11 @@
    * @param {import("./layer/Base.js").default} layer Layer.
    */
   function removeLayerMapProperty(layer) {
-    if (layer instanceof Layer$1) {
+    if (layer instanceof Layer) {
       layer.setMapInternal(null);
       return;
     }
-    if (layer instanceof LayerGroup$1) {
+    if (layer instanceof LayerGroup) {
       layer.getLayers().forEach(removeLayerMapProperty);
     }
   }
@@ -27800,11 +27767,11 @@
    * @param {Map} map Map.
    */
   function setLayerMapProperty(layer, map) {
-    if (layer instanceof Layer$1) {
+    if (layer instanceof Layer) {
       layer.setMapInternal(map);
       return;
     }
-    if (layer instanceof LayerGroup$1) {
+    if (layer instanceof LayerGroup) {
       const layers = layer.getLayers().getArray();
       for (let i = 0, ii = layers.length; i < ii; ++i) {
         setLayerMapProperty(layers[i], map);
@@ -27864,7 +27831,7 @@
    * @fires import("./render/Event.js").default#rendercomplete
    * @api
    */
-  class Map extends BaseObject$1 {
+  class Map extends BaseObject {
     /**
      * @param {MapOptions} [options] Map options.
      */
@@ -28105,7 +28072,7 @@
        * @private
        * @type {TileQueue}
        */
-      this.tileQueue_ = new TileQueue$1(
+      this.tileQueue_ = new TileQueue(
         this.getTilePriority.bind(this),
         this.handleTileChange_.bind(this),
       );
@@ -28361,7 +28328,7 @@
       const layers = [];
       function addLayersFrom(layerGroup) {
         layerGroup.forEach(function (layer) {
-          if (layer instanceof LayerGroup$1) {
+          if (layer instanceof LayerGroup) {
             addLayersFrom(layer.getLayers());
           } else {
             layers.push(layer);
@@ -28560,7 +28527,7 @@
      */
     setLayers(layers) {
       const group = this.getLayerGroup();
-      if (layers instanceof Collection$1) {
+      if (layers instanceof Collection) {
         group.setLayers(layers);
         return;
       }
@@ -28727,7 +28694,7 @@
      */
     handleBrowserEvent(browserEvent, type) {
       type = type || browserEvent.type;
-      const mapBrowserEvent = new MapBrowserEvent$1(type, this, browserEvent);
+      const mapBrowserEvent = new MapBrowserEvent(type, this, browserEvent);
       this.handleMapBrowserEvent(mapBrowserEvent);
     }
 
@@ -28831,13 +28798,13 @@
           if (this.loaded_ === false) {
             this.loaded_ = true;
             this.dispatchEvent(
-              new MapEvent$1(MapEventType.LOADEND, this, frameState),
+              new MapEvent(MapEventType.LOADEND, this, frameState),
             );
           }
         } else if (this.loaded_ === true) {
           this.loaded_ = false;
           this.dispatchEvent(
-            new MapEvent$1(MapEventType.LOADSTART, this, frameState),
+            new MapEvent(MapEventType.LOADSTART, this, frameState),
           );
         }
       }
@@ -28915,10 +28882,10 @@
       } else {
         targetElement.appendChild(this.viewport_);
         if (!this.renderer_) {
-          this.renderer_ = new CompositeMapRenderer$1(this);
+          this.renderer_ = new CompositeMapRenderer(this);
         }
 
-        this.mapBrowserEventHandler_ = new MapBrowserEventHandler$1(
+        this.mapBrowserEventHandler_ = new MapBrowserEventHandler(
           this,
           this.moveTolerance_,
         );
@@ -29213,7 +29180,7 @@
               !equals$1(frameState.extent, this.previousExtent_));
           if (moveStart) {
             this.dispatchEvent(
-              new MapEvent$1(MapEventType.MOVESTART, this, previousFrameState),
+              new MapEvent(MapEventType.MOVESTART, this, previousFrameState),
             );
             this.previousExtent_ = createOrUpdateEmpty(this.previousExtent_);
           }
@@ -29227,13 +29194,13 @@
 
         if (idle) {
           this.dispatchEvent(
-            new MapEvent$1(MapEventType.MOVEEND, this, frameState),
+            new MapEvent(MapEventType.MOVEEND, this, frameState),
           );
           clone(frameState.extent, this.previousExtent_);
         }
       }
 
-      this.dispatchEvent(new MapEvent$1(MapEventType.POSTRENDER, this, frameState));
+      this.dispatchEvent(new MapEvent(MapEventType.POSTRENDER, this, frameState));
 
       this.renderComplete_ =
         this.hasListener(MapEventType.LOADSTART) ||
@@ -29394,7 +29361,7 @@
       options.layers &&
       typeof (/** @type {?} */ (options.layers).getLayers) === 'function'
         ? /** @type {LayerGroup} */ (options.layers)
-        : new LayerGroup$1({
+        : new LayerGroup({
             layers:
               /** @type {Collection<import("./layer/Base.js").default>|Array<import("./layer/Base.js").default>} */ (
                 options.layers
@@ -29411,7 +29378,7 @@
     let controls;
     if (options.controls !== undefined) {
       if (Array.isArray(options.controls)) {
-        controls = new Collection$1(options.controls.slice());
+        controls = new Collection(options.controls.slice());
       } else {
         assert$1(
           typeof (/** @type {?} */ (options.controls).getArray) === 'function',
@@ -29425,7 +29392,7 @@
     let interactions;
     if (options.interactions !== undefined) {
       if (Array.isArray(options.interactions)) {
-        interactions = new Collection$1(options.interactions.slice());
+        interactions = new Collection(options.interactions.slice());
       } else {
         assert$1(
           typeof (/** @type {?} */ (options.interactions).getArray) ===
@@ -29440,7 +29407,7 @@
     let overlays;
     if (options.overlays !== undefined) {
       if (Array.isArray(options.overlays)) {
-        overlays = new Collection$1(options.overlays.slice());
+        overlays = new Collection(options.overlays.slice());
       } else {
         assert$1(
           typeof (/** @type {?} */ (options.overlays).getArray) === 'function',
@@ -29449,7 +29416,7 @@
         overlays = options.overlays;
       }
     } else {
-      overlays = new Collection$1();
+      overlays = new Collection();
     }
 
     return {
@@ -31039,7 +31006,7 @@
       if (index < 0 || n <= index) {
         return null;
       }
-      return new Point$2(
+      return new Point$1(
         this.flatCoordinates.slice(
           index * this.stride,
           (index + 1) * this.stride,
@@ -31060,7 +31027,7 @@
       /** @type {Array<Point>} */
       const points = [];
       for (let i = 0, ii = flatCoordinates.length; i < ii; i += stride) {
-        const point = new Point$2(flatCoordinates.slice(i, i + stride), layout);
+        const point = new Point$1(flatCoordinates.slice(i, i + stride), layout);
         points.push(point);
       }
       return points;
@@ -31610,7 +31577,7 @@
     MultiLineString: MultiLineString$1,
     MultiPoint: MultiPoint$1,
     MultiPolygon: MultiPolygon$1,
-    Point: Point$2,
+    Point: Point$1,
     Polygon: Polygon$1,
     SimpleGeometry: SimpleGeometry$1
   });
@@ -32046,8 +32013,6 @@
   RenderFeature.prototype.getFlatCoordinates =
     RenderFeature.prototype.getOrientedFlatCoordinates;
 
-  var RenderFeature$1 = RenderFeature;
-
   /**
    * @module ol/format/Feature
    */
@@ -32161,7 +32126,7 @@
        * @protected
        * @type {import("../Feature.js").FeatureClass}
        */
-      this.featureClass = Feature$1;
+      this.featureClass = Feature;
 
       /**
        * A list media types supported by the format in descending order of preference.
@@ -32366,7 +32331,7 @@
   }
 
   const GeometryConstructor = {
-    Point: Point$2,
+    Point: Point$1,
     LineString: LineString$1,
     Polygon: Polygon$1,
     MultiPoint: MultiPoint$1,
@@ -32414,7 +32379,7 @@
 
     const stride = geometry.layout.length;
     return transformGeometryWithOptions(
-      new RenderFeature$1(
+      new RenderFeature(
         geometryType,
         geometryType === 'Polygon'
           ? orientFlatCoordinates(geometry.flatCoordinates, geometry.ends, stride)
@@ -33235,8 +33200,6 @@
     }
   }
 
-  var XMLFeature$1 = XMLFeature;
-
   /**
    * @module ol/format/OSMXML
    */
@@ -33275,7 +33238,7 @@
    *
    * @api
    */
-  class OSMXML extends XMLFeature$1 {
+  class OSMXML extends XMLFeature {
     constructor() {
       super();
 
@@ -33325,7 +33288,7 @@
             geometry = new LineString$1(flatCoordinates, 'XY');
           }
           transformGeometryWithOptions(geometry, false, options);
-          const feature = new Feature$1(geometry);
+          const feature = new Feature(geometry);
           if (values.id !== undefined) {
             feature.setId(values.id);
           }
@@ -33375,9 +33338,9 @@
       objectStack,
     );
     if (!isEmpty$1(values.tags)) {
-      const geometry = new Point$2(coordinates);
+      const geometry = new Point$1(coordinates);
       transformGeometryWithOptions(geometry, false, options);
-      const feature = new Feature$1(geometry);
+      const feature = new Feature(geometry);
       if (id !== undefined) {
         feature.setId(id);
       }
@@ -33582,8 +33545,6 @@
     }
     return new TileRange(minX, maxX, minY, maxY);
   }
-
-  var TileRange$1 = TileRange;
 
   /**
    * @module ol/tilecoord
@@ -33864,7 +33825,7 @@
 
       if (options.sizes !== undefined) {
         this.fullTileRanges_ = options.sizes.map((size, z) => {
-          const tileRange = new TileRange$1(
+          const tileRange = new TileRange(
             Math.min(0, size[0]),
             Math.max(size[0] - 1, -1),
             Math.min(0, size[1]),
@@ -34330,8 +34291,6 @@
     }
   }
 
-  var TileGrid$1 = TileGrid;
-
   /**
    * @module ol/tilegrid/WMTS
    */
@@ -34374,7 +34333,7 @@
    * Set the grid pattern for sources accessing WMTS tiled-image servers.
    * @api
    */
-  class WMTSTileGrid extends TileGrid$1 {
+  class WMTSTileGrid extends TileGrid {
     /**
      * @param {Options} options WMTS options.
      */
@@ -34490,7 +34449,7 @@
    * @fires FullScreenEventType#leavefullscreen
    * @api
    */
-  class FullScreen extends Control$1 {
+  class FullScreen extends Control {
     /**
      * @param {Options} [options] Options.
      */
@@ -34862,7 +34821,7 @@
    *
    * @api
    */
-  class MousePosition extends Control$1 {
+  class MousePosition extends Control {
     /**
      * @param {Options} [options] Mouse position options.
      */
@@ -35211,7 +35170,7 @@
    *
    * @api
    */
-  class Overlay extends BaseObject$1 {
+  class Overlay extends BaseObject {
     /**
      * @param {Options} options Overlay options.
      */
@@ -35681,8 +35640,6 @@
     }
   }
 
-  var Overlay$1 = Overlay;
-
   /**
    * @module ol/control/OverviewMap
    */
@@ -35728,7 +35685,7 @@
    *
    * @api
    */
-  class OverviewMap extends Control$1 {
+  class OverviewMap extends Control {
     /**
      * @param {Options} [options] OverviewMap options.
      */
@@ -35839,8 +35796,8 @@
 
       const ovmap = new Map$1({
         view: options.view,
-        controls: new Collection$1(),
-        interactions: new Collection$1(),
+        controls: new Collection(),
+        interactions: new Collection(),
       });
 
       /**
@@ -35863,7 +35820,7 @@
        * @type {import("../Overlay.js").default}
        * @private
        */
-      this.boxOverlay_ = new Overlay$1({
+      this.boxOverlay_ = new Overlay({
         position: [0, 0],
         positioning: 'center-center',
         element: box,
@@ -36413,7 +36370,7 @@
    *
    * @api
    */
-  class ScaleLine extends Control$1 {
+  class ScaleLine extends Control {
     /**
      * @param {Options} [options] Scale line options.
      */
@@ -36859,7 +36816,7 @@
    *
    * @api
    */
-  class ZoomSlider extends Control$1 {
+  class ZoomSlider extends Control {
     /**
      * @param {Options} [options] Zoom slider options.
      */
@@ -37231,7 +37188,7 @@
    *
    * @api
    */
-  class ZoomToExtent extends Control$1 {
+  class ZoomToExtent extends Control {
     /**
      * @param {Options} [options] Options.
      */
@@ -37306,7 +37263,7 @@
   var control$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Attribution: Attribution$1,
-    Control: Control$1,
+    Control: Control,
     FullScreen: FullScreen$1,
     MousePosition: MousePosition$1,
     OverviewMap: OverviewMap$1,
@@ -37531,8 +37488,6 @@
     return null;
   }
 
-  var JSONFeature$1 = JSONFeature;
-
   /**
    * @module ol/format/GeoJSON
    */
@@ -37578,7 +37533,7 @@
    * @extends {JSONFeature<T>}
    * @api
    */
-  class GeoJSON extends JSONFeature$1 {
+  class GeoJSON extends JSONFeature {
     /**
      * @param {Options<T>} [options] Options.
      */
@@ -37647,7 +37602,7 @@
       }
 
       const geometry = readGeometryInternal(geoJSONFeature['geometry']);
-      if (this.featureClass === RenderFeature$1) {
+      if (this.featureClass === RenderFeature) {
         return createRenderFeature(
           {
             geometry,
@@ -37658,7 +37613,7 @@
         );
       }
 
-      const feature = new Feature$1();
+      const feature = new Feature();
       if (this.geometryName_) {
         feature.setGeometryName(this.geometryName_);
       } else if (this.extractGeometryName_ && geoJSONFeature['geometry_name']) {
@@ -38484,7 +38439,7 @@
    *
    * @api
    */
-  class GPX extends XMLFeature$1 {
+  class GPX extends XMLFeature {
     /**
      * @param {Options} [options] Options.
      */
@@ -39179,7 +39134,7 @@
     const layout = applyLayoutOptions(layoutOptions, flatCoordinates);
     const geometry = new LineString$1(flatCoordinates, layout);
     transformGeometryWithOptions(geometry, false, options);
-    const feature = new Feature$1(geometry);
+    const feature = new Feature(geometry);
     feature.setProperties(values, true);
     return feature;
   }
@@ -39217,7 +39172,7 @@
     const layout = applyLayoutOptions(layoutOptions, flatCoordinates, ends);
     const geometry = new MultiLineString$1(flatCoordinates, layout, ends);
     transformGeometryWithOptions(geometry, false, options);
-    const feature = new Feature$1(geometry);
+    const feature = new Feature(geometry);
     feature.setProperties(values, true);
     return feature;
   }
@@ -39238,9 +39193,9 @@
     const layoutOptions = /** @type {LayoutOptions} */ ({});
     const coordinates = appendCoordinate([], layoutOptions, node, values);
     const layout = applyLayoutOptions(layoutOptions, coordinates);
-    const geometry = new Point$2(coordinates, layout);
+    const geometry = new Point$1(coordinates, layout);
     transformGeometryWithOptions(geometry, false, options);
-    const feature = new Feature$1(geometry);
+    const feature = new Feature(geometry);
     feature.setProperties(values, true);
     return feature;
   }
@@ -39671,7 +39626,7 @@
     DEFAULT_IMAGE_STYLE_SRC =
       'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png';
 
-    DEFAULT_IMAGE_STYLE = new Icon$1({
+    DEFAULT_IMAGE_STYLE = new Icon({
       anchor: DEFAULT_IMAGE_STYLE_ANCHOR,
       anchorOrigin: 'bottom-left',
       anchorXUnits: DEFAULT_IMAGE_STYLE_ANCHOR_X_UNITS,
@@ -39702,7 +39657,7 @@
       scale: 0.8,
     });
 
-    DEFAULT_STYLE = new Style$1({
+    DEFAULT_STYLE = new Style({
       fill: DEFAULT_FILL_STYLE,
       image: DEFAULT_IMAGE_STYLE,
       text: DEFAULT_TEXT_STYLE,
@@ -39762,7 +39717,7 @@
    *
    * @api
    */
-  class KML extends XMLFeature$1 {
+  class KML extends XMLFeature {
     /**
      * @param {Options} [options] Options.
      */
@@ -39871,7 +39826,7 @@
       if (!object) {
         return undefined;
       }
-      const feature = new Feature$1();
+      const feature = new Feature();
       const id = node.getAttribute('id');
       if (id !== null) {
         feature.setId(id);
@@ -40381,7 +40336,7 @@
     textStyle.setOffsetY(textOffset[1]);
     textStyle.setTextAlign(textAlign);
 
-    const nameStyle = new Style$1({
+    const nameStyle = new Style({
       image: imageStyle,
       text: textStyle,
     });
@@ -40457,7 +40412,7 @@
             // style without image or text for geometries requiring fill or stroke
             // including any polygon specific style if there is one
             nameStyle.setGeometry(new GeometryCollection$1(multiGeometryPoints));
-            const baseStyle = new Style$1({
+            const baseStyle = new Style({
               geometry: featureStyle[0].getGeometry(),
               image: null,
               fill: featureStyle[0].getFill(),
@@ -40729,7 +40684,7 @@
         size = DEFAULT_IMAGE_STYLE_SIZE;
       }
 
-      const imageStyle = new Icon$1({
+      const imageStyle = new Icon({
         anchor: anchor,
         anchorOrigin: anchorOrigin,
         anchorXUnits: anchorXUnits,
@@ -41201,7 +41156,7 @@
     );
     const flatCoordinates = readFlatCoordinatesFromNode(node, objectStack);
     if (flatCoordinates) {
-      const point = new Point$2(flatCoordinates, 'XYZ');
+      const point = new Point$1(flatCoordinates, 'XYZ');
       point.setProperties(properties, true);
       return point;
     }
@@ -41316,7 +41271,7 @@
       // one for non-polygon geometries where linestrings require a stroke
       // and one for polygons where there should be no stroke
       return [
-        new Style$1({
+        new Style({
           geometry: function (feature) {
             const geometry = feature.getGeometry();
             const type = geometry.getType();
@@ -41344,7 +41299,7 @@
           text: textStyle,
           zIndex: undefined, // FIXME
         }),
-        new Style$1({
+        new Style({
           geometry: function (feature) {
             const geometry = feature.getGeometry();
             const type = geometry.getType();
@@ -41373,7 +41328,7 @@
       ];
     }
     return [
-      new Style$1({
+      new Style({
         fill: fillStyle,
         image: imageStyle,
         stroke: strokeStyle,
@@ -42817,8 +42772,6 @@
    */
   const closePathInstruction = [Instruction.CLOSE_PATH];
 
-  var CanvasInstruction = Instruction;
-
   /**
    * @module ol/render/VectorContext
    */
@@ -42944,13 +42897,11 @@
     setTextStyle(textStyle, declutterImageWithText) {}
   }
 
-  var VectorContext$1 = VectorContext;
-
   /**
    * @module ol/render/canvas/Builder
    */
 
-  class CanvasBuilder extends VectorContext$1 {
+  class CanvasBuilder extends VectorContext {
     /**
      * @param {number} tolerance Tolerance.
      * @param {import("../../extent.js").Extent} maxExtent Maximum extent.
@@ -43205,7 +43156,7 @@
             builderEndss.push(myEnds);
           }
           this.instructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEndss,
             geometry,
@@ -43214,7 +43165,7 @@
             index,
           ]);
           this.hitDetectionInstructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEndss,
             geometry,
@@ -43242,7 +43193,7 @@
             builderEnds,
           );
           this.instructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEnds,
             geometry,
@@ -43251,7 +43202,7 @@
             index,
           ]);
           this.hitDetectionInstructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEnds,
             geometry,
@@ -43272,7 +43223,7 @@
             false,
           );
           this.instructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEnd,
             geometry,
@@ -43281,7 +43232,7 @@
             index,
           ]);
           this.hitDetectionInstructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEnd,
             geometry,
@@ -43296,7 +43247,7 @@
 
           if (builderEnd > builderBegin) {
             this.instructions.push([
-              CanvasInstruction.CUSTOM,
+              Instruction.CUSTOM,
               builderBegin,
               builderEnd,
               geometry,
@@ -43305,7 +43256,7 @@
               index,
             ]);
             this.hitDetectionInstructions.push([
-              CanvasInstruction.CUSTOM,
+              Instruction.CUSTOM,
               builderBegin,
               builderEnd,
               geometry,
@@ -43321,7 +43272,7 @@
           builderEnd = this.coordinates.length;
 
           this.instructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEnd,
             geometry,
@@ -43330,7 +43281,7 @@
             index,
           ]);
           this.hitDetectionInstructions.push([
-            CanvasInstruction.CUSTOM,
+            Instruction.CUSTOM,
             builderBegin,
             builderEnd,
             geometry,
@@ -43351,7 +43302,7 @@
      */
     beginGeometry(geometry, feature, index) {
       this.beginGeometryInstruction1_ = [
-        CanvasInstruction.BEGIN_GEOMETRY,
+        Instruction.BEGIN_GEOMETRY,
         feature,
         0,
         geometry,
@@ -43359,7 +43310,7 @@
       ];
       this.instructions.push(this.beginGeometryInstruction1_);
       this.beginGeometryInstruction2_ = [
-        CanvasInstruction.BEGIN_GEOMETRY,
+        Instruction.BEGIN_GEOMETRY,
         feature,
         0,
         geometry,
@@ -43395,9 +43346,9 @@
       for (i = 0; i < n; ++i) {
         instruction = hitDetectionInstructions[i];
         type = /** @type {import("./Instruction.js").default} */ (instruction[0]);
-        if (type == CanvasInstruction.END_GEOMETRY) {
+        if (type == Instruction.END_GEOMETRY) {
           begin = i;
-        } else if (type == CanvasInstruction.BEGIN_GEOMETRY) {
+        } else if (type == Instruction.BEGIN_GEOMETRY) {
           instruction[2] = i;
           reverseSubArray(this.hitDetectionInstructions, begin, i);
           begin = -1;
@@ -43478,7 +43429,7 @@
     createFill(state) {
       const fillStyle = state.fillStyle;
       /** @type {Array<*>} */
-      const fillInstruction = [CanvasInstruction.SET_FILL_STYLE, fillStyle];
+      const fillInstruction = [Instruction.SET_FILL_STYLE, fillStyle];
       if (typeof fillStyle !== 'string') {
         // Fill is a pattern or gradient - align and scale it!
         fillInstruction.push(state.fillPatternScale);
@@ -43499,7 +43450,7 @@
      */
     createStroke(state) {
       return [
-        CanvasInstruction.SET_STROKE_STYLE,
+        Instruction.SET_STROKE_STYLE,
         state.strokeStyle,
         state.lineWidth * this.pixelRatio,
         state.lineCap,
@@ -43567,7 +43518,7 @@
       this.beginGeometryInstruction1_ = null;
       this.beginGeometryInstruction2_[2] = this.hitDetectionInstructions.length;
       this.beginGeometryInstruction2_ = null;
-      const endGeometryInstruction = [CanvasInstruction.END_GEOMETRY, feature];
+      const endGeometryInstruction = [Instruction.END_GEOMETRY, feature];
       this.instructions.push(endGeometryInstruction);
       this.hitDetectionInstructions.push(endGeometryInstruction);
     }
@@ -43591,13 +43542,11 @@
     }
   }
 
-  var Builder = CanvasBuilder;
-
   /**
    * @module ol/render/canvas/ImageBuilder
    */
 
-  class CanvasImageBuilder extends Builder {
+  class CanvasImageBuilder extends CanvasBuilder {
     /**
      * @param {number} tolerance Tolerance.
      * @param {import("../../extent.js").Extent} maxExtent Maximum extent.
@@ -43718,7 +43667,7 @@
       const myBegin = this.coordinates.length;
       const myEnd = this.appendFlatPointCoordinates(flatCoordinates, stride);
       this.instructions.push([
-        CanvasInstruction.DRAW_IMAGE,
+        Instruction.DRAW_IMAGE,
         myBegin,
         myEnd,
         this.image_,
@@ -43740,7 +43689,7 @@
         this.declutterImageWithText_,
       ]);
       this.hitDetectionInstructions.push([
-        CanvasInstruction.DRAW_IMAGE,
+        Instruction.DRAW_IMAGE,
         myBegin,
         myEnd,
         this.hitDetectionImage_,
@@ -43791,7 +43740,7 @@
       const myBegin = this.coordinates.length;
       const myEnd = this.appendFlatPointCoordinates(filteredFlatCoordinates, 2);
       this.instructions.push([
-        CanvasInstruction.DRAW_IMAGE,
+        Instruction.DRAW_IMAGE,
         myBegin,
         myEnd,
         this.image_,
@@ -43813,7 +43762,7 @@
         this.declutterImageWithText_,
       ]);
       this.hitDetectionInstructions.push([
-        CanvasInstruction.DRAW_IMAGE,
+        Instruction.DRAW_IMAGE,
         myBegin,
         myEnd,
         this.hitDetectionImage_,
@@ -43888,7 +43837,7 @@
    * @module ol/render/canvas/LineStringBuilder
    */
 
-  class CanvasLineStringBuilder extends Builder {
+  class CanvasLineStringBuilder extends CanvasBuilder {
     /**
      * @param {number} tolerance Tolerance.
      * @param {import("../../extent.js").Extent} maxExtent Maximum extent.
@@ -43918,7 +43867,7 @@
         false,
       );
       const moveToLineToInstruction = [
-        CanvasInstruction.MOVE_TO_LINE_TO,
+        Instruction.MOVE_TO_LINE_TO,
         myBegin,
         myEnd,
       ];
@@ -43943,7 +43892,7 @@
       this.beginGeometry(lineStringGeometry, feature, index);
       this.hitDetectionInstructions.push(
         [
-          CanvasInstruction.SET_STROKE_STYLE,
+          Instruction.SET_STROKE_STYLE,
           state.strokeStyle,
           state.lineWidth,
           state.lineCap,
@@ -43982,7 +43931,7 @@
       this.beginGeometry(multiLineStringGeometry, feature, index);
       this.hitDetectionInstructions.push(
         [
-          CanvasInstruction.SET_STROKE_STYLE,
+          Instruction.SET_STROKE_STYLE,
           state.strokeStyle,
           state.lineWidth,
           state.lineCap,
@@ -44048,7 +43997,7 @@
    * @module ol/render/canvas/PolygonBuilder
    */
 
-  class CanvasPolygonBuilder extends Builder {
+  class CanvasPolygonBuilder extends CanvasBuilder {
     /**
      * @param {number} tolerance Tolerance.
      * @param {import("../../extent.js").Extent} maxExtent Maximum extent.
@@ -44086,7 +44035,7 @@
           !stroke,
         );
         const moveToLineToInstruction = [
-          CanvasInstruction.MOVE_TO_LINE_TO,
+          Instruction.MOVE_TO_LINE_TO,
           myBegin,
           myEnd,
         ];
@@ -44127,13 +44076,13 @@
       this.beginGeometry(circleGeometry, feature, index);
       if (state.fillStyle !== undefined) {
         this.hitDetectionInstructions.push([
-          CanvasInstruction.SET_FILL_STYLE,
+          Instruction.SET_FILL_STYLE,
           defaultFillStyle,
         ]);
       }
       if (state.strokeStyle !== undefined) {
         this.hitDetectionInstructions.push([
-          CanvasInstruction.SET_STROKE_STYLE,
+          Instruction.SET_STROKE_STYLE,
           state.strokeStyle,
           state.lineWidth,
           state.lineCap,
@@ -44154,7 +44103,7 @@
         false,
         false,
       );
-      const circleInstruction = [CanvasInstruction.CIRCLE, myBegin];
+      const circleInstruction = [Instruction.CIRCLE, myBegin];
       this.instructions.push(beginPathInstruction, circleInstruction);
       this.hitDetectionInstructions.push(beginPathInstruction, circleInstruction);
       if (state.fillStyle !== undefined) {
@@ -44184,13 +44133,13 @@
       this.beginGeometry(polygonGeometry, feature, index);
       if (state.fillStyle !== undefined) {
         this.hitDetectionInstructions.push([
-          CanvasInstruction.SET_FILL_STYLE,
+          Instruction.SET_FILL_STYLE,
           defaultFillStyle,
         ]);
       }
       if (state.strokeStyle !== undefined) {
         this.hitDetectionInstructions.push([
-          CanvasInstruction.SET_STROKE_STYLE,
+          Instruction.SET_STROKE_STYLE,
           state.strokeStyle,
           state.lineWidth,
           state.lineCap,
@@ -44228,13 +44177,13 @@
       this.beginGeometry(multiPolygonGeometry, feature, index);
       if (state.fillStyle !== undefined) {
         this.hitDetectionInstructions.push([
-          CanvasInstruction.SET_FILL_STYLE,
+          Instruction.SET_FILL_STYLE,
           defaultFillStyle,
         ]);
       }
       if (state.strokeStyle !== undefined) {
         this.hitDetectionInstructions.push([
-          CanvasInstruction.SET_STROKE_STYLE,
+          Instruction.SET_STROKE_STYLE,
           state.strokeStyle,
           state.lineWidth,
           state.lineCap,
@@ -44422,7 +44371,7 @@
     'bottom': 1,
   };
 
-  class CanvasTextBuilder extends Builder {
+  class CanvasTextBuilder extends CanvasBuilder {
     /**
      * @param {number} tolerance Tolerance.
      * @param {import("../../extent.js").Extent} maxExtent Maximum extent.
@@ -44760,7 +44709,7 @@
         // render time.
         const pixelRatio = this.pixelRatio;
         this.instructions.push([
-          CanvasInstruction.DRAW_IMAGE,
+          Instruction.DRAW_IMAGE,
           begin,
           end,
           null,
@@ -44799,7 +44748,7 @@
           this.hitDetectionInstructions.push(this.createFill(this.state));
         }
         this.hitDetectionInstructions.push([
-          CanvasInstruction.DRAW_IMAGE,
+          Instruction.DRAW_IMAGE,
           begin,
           end,
           null,
@@ -44902,7 +44851,7 @@
         : 0;
 
       this.instructions.push([
-        CanvasInstruction.DRAW_CHARS,
+        Instruction.DRAW_CHARS,
         begin,
         end,
         baseline,
@@ -44919,7 +44868,7 @@
         this.declutterMode_,
       ]);
       this.hitDetectionInstructions.push([
-        CanvasInstruction.DRAW_CHARS,
+        Instruction.DRAW_CHARS,
         begin,
         end,
         baseline,
@@ -45061,7 +45010,7 @@
    */
   const BATCH_CONSTRUCTORS = {
     'Circle': PolygonBuilder,
-    'Default': Builder,
+    'Default': CanvasBuilder,
     'Image': ImageBuilder,
     'LineString': LineStringBuilder,
     'Polygon': PolygonBuilder,
@@ -45150,8 +45099,6 @@
     }
   }
 
-  var CanvasBuilderGroup = BuilderGroup;
-
   /**
    * @module ol/renderer/Layer
    */
@@ -45159,7 +45106,7 @@
   /**
    * @template {import("../layer/Layer.js").default} LayerType
    */
-  class LayerRenderer extends Observable$1 {
+  class LayerRenderer extends Observable {
     /**
      * @param {LayerType} layer Layer.
      */
@@ -45353,8 +45300,6 @@
     }
   }
 
-  var LayerRenderer$1 = LayerRenderer;
-
   /**
    * @module ol/render/canvas/ZIndexContext
    */
@@ -45470,8 +45415,6 @@
     }
   }
 
-  var ZIndexContext$1 = ZIndexContext;
-
   /**
    * @module ol/renderer/canvas/Layer
    */
@@ -45497,7 +45440,7 @@
    * @template {import("../../layer/Layer.js").default} LayerType
    * @extends {LayerRenderer<LayerType>}
    */
-  class CanvasLayerRenderer extends LayerRenderer$1 {
+  class CanvasLayerRenderer extends LayerRenderer {
     /**
      * @param {LayerType} layer Layer.
      */
@@ -45710,7 +45653,7 @@
     dispatchRenderEvent_(type, context, frameState) {
       const layer = this.getLayer();
       if (layer.hasListener(type)) {
-        const event = new RenderEvent$1(
+        const event = new RenderEvent(
           type,
           this.inversePixelTransform,
           frameState,
@@ -45756,7 +45699,7 @@
      */
     getRenderContext(frameState) {
       if (frameState.declutter && !this.deferredContext_) {
-        this.deferredContext_ = new ZIndexContext$1();
+        this.deferredContext_ = new ZIndexContext();
       }
       return frameState.declutter
         ? this.deferredContext_.getContext()
@@ -45835,8 +45778,6 @@
       super.disposeInternal();
     }
   }
-
-  var CanvasLayerRenderer$1 = CanvasLayerRenderer;
 
   /**
    * @module ol/geom/flat/textpath
@@ -46201,7 +46142,7 @@
        * @private
        * @type {import("../canvas/ZIndexContext.js").default}
        */
-      this.zIndexContext_ = deferredRendering ? new ZIndexContext$1() : null;
+      this.zIndexContext_ = deferredRendering ? new ZIndexContext() : null;
     }
 
     /**
@@ -46706,7 +46647,7 @@
           instruction[0]
         );
         switch (type) {
-          case CanvasInstruction.BEGIN_GEOMETRY:
+          case Instruction.BEGIN_GEOMETRY:
             feature = /** @type {import("../../Feature.js").FeatureLike} */ (
               instruction[1]
             );
@@ -46725,7 +46666,7 @@
               zIndexContext.zIndex = instruction[4];
             }
             break;
-          case CanvasInstruction.BEGIN_PATH:
+          case Instruction.BEGIN_PATH:
             if (pendingFill > batchSize) {
               this.fill_(context);
               pendingFill = 0;
@@ -46741,7 +46682,7 @@
             }
             ++i;
             break;
-          case CanvasInstruction.CIRCLE:
+          case Instruction.CIRCLE:
             d = /** @type {number} */ (instruction[1]);
             const x1 = pixelCoordinates[d];
             const y1 = pixelCoordinates[d + 1];
@@ -46754,11 +46695,11 @@
             context.arc(x1, y1, r, 0, 2 * Math.PI, true);
             ++i;
             break;
-          case CanvasInstruction.CLOSE_PATH:
+          case Instruction.CLOSE_PATH:
             context.closePath();
             ++i;
             break;
-          case CanvasInstruction.CUSTOM:
+          case Instruction.CUSTOM:
             d = /** @type {number} */ (instruction[1]);
             dd = instruction[2];
             const geometry =
@@ -46786,7 +46727,7 @@
             renderer(coords, state);
             ++i;
             break;
-          case CanvasInstruction.DRAW_IMAGE:
+          case Instruction.DRAW_IMAGE:
             d = /** @type {number} */ (instruction[1]);
             dd = /** @type {number} */ (instruction[2]);
             image =
@@ -46959,7 +46900,7 @@
             }
             ++i;
             break;
-          case CanvasInstruction.DRAW_CHARS:
+          case Instruction.DRAW_CHARS:
             const begin = /** @type {number} */ (instruction[1]);
             const end = /** @type {number} */ (instruction[2]);
             const baseline = /** @type {number} */ (instruction[3]);
@@ -47121,7 +47062,7 @@
             }
             ++i;
             break;
-          case CanvasInstruction.END_GEOMETRY:
+          case Instruction.END_GEOMETRY:
             if (featureCallback !== undefined) {
               feature = /** @type {import("../../Feature.js").FeatureLike} */ (
                 instruction[1]
@@ -47133,7 +47074,7 @@
             }
             ++i;
             break;
-          case CanvasInstruction.FILL:
+          case Instruction.FILL:
             if (batchSize) {
               pendingFill++;
             } else {
@@ -47141,7 +47082,7 @@
             }
             ++i;
             break;
-          case CanvasInstruction.MOVE_TO_LINE_TO:
+          case Instruction.MOVE_TO_LINE_TO:
             d = /** @type {number} */ (instruction[1]);
             dd = /** @type {number} */ (instruction[2]);
             x = pixelCoordinates[d];
@@ -47166,7 +47107,7 @@
             }
             ++i;
             break;
-          case CanvasInstruction.SET_FILL_STYLE:
+          case Instruction.SET_FILL_STYLE:
             lastFillInstruction = instruction;
             this.alignAndScaleFill_ = instruction[2];
 
@@ -47183,7 +47124,7 @@
             context.fillStyle = instruction[1];
             ++i;
             break;
-          case CanvasInstruction.SET_STROKE_STYLE:
+          case Instruction.SET_STROKE_STYLE:
             lastStrokeInstruction = instruction;
             if (pendingStroke) {
               context.stroke();
@@ -47192,7 +47133,7 @@
             this.setStrokeStyle_(context, /** @type {Array<*>} */ (instruction));
             ++i;
             break;
-          case CanvasInstruction.STROKE:
+          case Instruction.STROKE:
             if (batchSize) {
               pendingStroke++;
             } else {
@@ -47272,8 +47213,6 @@
       );
     }
   }
-
-  var Executor$1 = Executor;
 
   /**
    * @module ol/render/canvas/ExecutorGroup
@@ -47385,9 +47324,9 @@
       this.renderedContext_ = null;
 
       /**
-       * @type {Array<Array<import("./ZIndexContext.js").default>>}
+       * @type {Object<number, Array<import("./ZIndexContext.js").default>>}
        */
-      this.deferredZIndexContexts_ = [];
+      this.deferredZIndexContexts_ = {};
 
       this.createExecutors_(allInstructions, deferredRendering);
     }
@@ -47422,7 +47361,7 @@
         const instructionByZindex = allInstructions[zIndex];
         for (const builderType in instructionByZindex) {
           const instructions = instructionByZindex[builderType];
-          executors[builderType] = new Executor$1(
+          executors[builderType] = new Executor(
             this.resolution_,
             this.pixelRatio_,
             this.overlaps_,
@@ -47692,12 +47631,14 @@
     }
 
     renderDeferred() {
-      this.deferredZIndexContexts_.forEach((zIndexContexts) => {
-        zIndexContexts.forEach((zIndexContext) => {
+      const deferredZIndexContexts = this.deferredZIndexContexts_;
+      const zs = Object.keys(deferredZIndexContexts).map(Number).sort(ascending);
+      for (let i = 0, ii = zs.length; i < ii; ++i) {
+        deferredZIndexContexts[zs[i]].forEach((zIndexContext) => {
           zIndexContext.draw(this.renderedContext_); // FIXME Pass clip to replay for temporarily enabling clip
           zIndexContext.clear();
         });
-      });
+      }
     }
   }
 
@@ -47759,8 +47700,6 @@
     return pixelIndex;
   }
 
-  var CanvasExecutorGroup = ExecutorGroup;
-
   /**
    * @module ol/render/canvas/Immediate
    */
@@ -47778,7 +47717,7 @@
    * {@link module:ol/render/Event~RenderEvent} object associated with postcompose, precompose and
    * render events emitted by layers and maps.
    */
-  class CanvasImmediateRenderer extends VectorContext$1 {
+  class CanvasImmediateRenderer extends VectorContext {
     /**
      * @param {CanvasRenderingContext2D} context Context.
      * @param {number} pixelRatio Pixel ratio.
@@ -48927,12 +48866,12 @@
     __proto__: null,
     Circle: Circle$2,
     Fill: Fill$1,
-    Icon: Icon$1,
+    Icon: Icon,
     IconImage: IconImage$1,
     Image: ImageStyle$1,
     RegularShape: RegularShape$1,
     Stroke: Stroke$1,
-    Style: Style$1,
+    Style: Style,
     Text: Text$1
   });
 
@@ -49040,7 +48979,7 @@
           imgContext.fillStyle = color;
           imgContext.fillRect(0, 0, img.width, img.height);
           style.setImage(
-            new Icon$1({
+            new Icon({
               img: img,
               anchor: image.getAnchor(),
               anchorXUnits: 'pixels',
@@ -49205,14 +49144,15 @@
    * @param {import("../geom/Circle.js").default} geometry Geometry.
    * @param {import("../style/Style.js").default} style Style.
    * @param {import("../Feature.js").default} feature Feature.
+   * @param {number} [index] Render order index.
    */
-  function renderCircleGeometry(builderGroup, geometry, style, feature) {
+  function renderCircleGeometry(builderGroup, geometry, style, feature, index) {
     const fillStyle = style.getFill();
     const strokeStyle = style.getStroke();
     if (fillStyle || strokeStyle) {
       const circleReplay = builderGroup.getBuilder(style.getZIndex(), 'Circle');
       circleReplay.setFillStrokeStyle(fillStyle, strokeStyle);
-      circleReplay.drawCircle(geometry, feature);
+      circleReplay.drawCircle(geometry, feature, index);
     }
     const textStyle = style.getText();
     if (textStyle && textStyle.getText()) {
@@ -49579,7 +49519,7 @@
    * Canvas renderer for vector layers.
    * @api
    */
-  class CanvasVectorLayerRenderer extends CanvasLayerRenderer$1 {
+  class CanvasVectorLayerRenderer extends CanvasLayerRenderer {
     /**
      * @param {import("../../layer/BaseVector.js").default} vectorLayer Vector layer.
      */
@@ -49680,7 +49620,7 @@
        * @private
        * @type {CanvasRenderingContext2D}
        */
-      this.compositionContext_ = null;
+      this.targetContext_ = null;
 
       /**
        * @private
@@ -49710,9 +49650,9 @@
       const snapToPixel = !(
         viewHints[ViewHint.ANIMATING] || viewHints[ViewHint.INTERACTING]
       );
-      const context = this.compositionContext_;
-      const width = Math.round(frameState.size[0] * pixelRatio);
-      const height = Math.round(frameState.size[1] * pixelRatio);
+      const context = this.context;
+      const width = Math.round((getWidth(extent) / resolution) * pixelRatio);
+      const height = Math.round((getHeight(extent) / resolution) * pixelRatio);
 
       const multiWorld = vectorSource.getWrapX() && projection.canWrapX();
       const worldWidth = multiWorld ? getWidth(projectionExtent) : null;
@@ -49750,28 +49690,33 @@
       } while (++world < endWorld);
     }
 
-    setupCompositionContext_() {
+    /**
+     * @private
+     */
+    setDrawContext_() {
       if (this.opacity_ !== 1) {
-        const compositionContext = createCanvasContext2D(
+        this.targetContext_ = this.context;
+        this.context = createCanvasContext2D(
           this.context.canvas.width,
           this.context.canvas.height,
           canvasPool$1,
         );
-        this.compositionContext_ = compositionContext;
-      } else {
-        this.compositionContext_ = this.context;
       }
     }
 
-    releaseCompositionContext_() {
+    /**
+     * @private
+     */
+    resetDrawContext_() {
       if (this.opacity_ !== 1) {
-        const alpha = this.context.globalAlpha;
-        this.context.globalAlpha = this.opacity_;
-        this.context.drawImage(this.compositionContext_.canvas, 0, 0);
-        this.context.globalAlpha = alpha;
-        releaseCanvas(this.compositionContext_);
-        canvasPool$1.push(this.compositionContext_.canvas);
-        this.compositionContext_ = null;
+        const alpha = this.targetContext_.globalAlpha;
+        this.targetContext_.globalAlpha = this.opacity_;
+        this.targetContext_.drawImage(this.context.canvas, 0, 0);
+        this.targetContext_.globalAlpha = alpha;
+        releaseCanvas(this.context);
+        canvasPool$1.push(this.context.canvas);
+        this.context = this.targetContext_;
+        this.targetContext_ = null;
       }
     }
 
@@ -49780,13 +49725,10 @@
      * @param {import("../../Map.js").FrameState} frameState Frame state.
      */
     renderDeclutter(frameState) {
-      const declutter = this.getLayer().getDeclutter();
-      if (!declutter) {
+      if (!this.replayGroup_ || !this.getLayer().getDeclutter()) {
         return;
       }
-      this.setupCompositionContext_(); //FIXME Check if this works, or if we need to defer something.
       this.renderWorlds(this.replayGroup_, frameState, true);
-      this.releaseCompositionContext_();
     }
 
     /**
@@ -49794,7 +49736,11 @@
      * @param {import("../../Map.js").FrameState} frameState Frame state.
      */
     renderDeferredInternal(frameState) {
+      if (!this.replayGroup_) {
+        return;
+      }
       this.replayGroup_.renderDeferred();
+      this.resetDrawContext_();
     }
 
     /**
@@ -49806,14 +49752,29 @@
     renderFrame(frameState, target) {
       const pixelRatio = frameState.pixelRatio;
       const layerState = frameState.layerStatesArray[frameState.layerIndex];
+      this.opacity_ = layerState.opacity;
+      const extent = frameState.extent;
+      const resolution = frameState.viewState.resolution;
+      const width = Math.round((getWidth(extent) / resolution) * pixelRatio);
+      const height = Math.round((getHeight(extent) / resolution) * pixelRatio);
 
       // set forward and inverse pixel transforms
-      makeScale(this.pixelTransform, 1 / pixelRatio, 1 / pixelRatio);
+      compose(
+        this.pixelTransform,
+        frameState.size[0] / 2,
+        frameState.size[1] / 2,
+        1 / pixelRatio,
+        1 / pixelRatio,
+        0,
+        -width / 2,
+        -height / 2,
+      );
       makeInverse(this.inversePixelTransform, this.pixelTransform);
 
       const canvasTransform = toString$1(this.pixelTransform);
 
       this.useContainer(target, canvasTransform, this.getBackground(frameState));
+
       const context = this.context;
       const canvas = context.canvas;
 
@@ -49829,8 +49790,6 @@
       }
 
       // resize and clear
-      const width = Math.round(frameState.size[0] * pixelRatio);
-      const height = Math.round(frameState.size[1] * pixelRatio);
       if (canvas.width != width || canvas.height != height) {
         canvas.width = width;
         canvas.height = height;
@@ -49841,13 +49800,12 @@
         context.clearRect(0, 0, width, height);
       }
 
+      this.setDrawContext_();
+
       this.preRender(context, frameState);
 
       const viewState = frameState.viewState;
       const projection = viewState.projection;
-
-      this.opacity_ = layerState.opacity;
-      this.setupCompositionContext_();
 
       // clipped rendering if layer extent is set
       let clipped = false;
@@ -49856,7 +49814,7 @@
         render = intersects$1(layerExtent, frameState.extent);
         clipped = render && !containsExtent(layerExtent, frameState.extent);
         if (clipped) {
-          this.clipUnrotated(this.compositionContext_, frameState, layerExtent);
+          this.clipUnrotated(context, frameState, layerExtent);
         }
       }
 
@@ -49869,16 +49827,17 @@
       }
 
       if (clipped) {
-        this.compositionContext_.restore();
+        context.restore();
       }
-
-      this.releaseCompositionContext_();
 
       this.postRender(context, frameState);
 
       if (this.renderedRotation_ !== viewState.rotation) {
         this.renderedRotation_ = viewState.rotation;
         this.hitDetectionImageData_ = null;
+      }
+      if (!frameState.declutter) {
+        this.resetDrawContext_();
       }
       return this.container;
     }
@@ -50184,7 +50143,7 @@
 
       this.replayGroup_ = null;
 
-      const replayGroup = new CanvasBuilderGroup(
+      const replayGroup = new BuilderGroup(
         getTolerance(resolution, pixelRatio),
         extent,
         resolution,
@@ -50251,7 +50210,7 @@
       this.ready = ready;
 
       const replayGroupInstructions = replayGroup.finish();
-      const executorGroup = new CanvasExecutorGroup(
+      const executorGroup = new ExecutorGroup(
         extent,
         resolution,
         pixelRatio,
@@ -50329,8 +50288,6 @@
     }
   }
 
-  var CanvasVectorLayerRenderer$1 = CanvasVectorLayerRenderer;
-
   /**
    * @module ol/layer/Vector
    */
@@ -50350,7 +50307,7 @@
    * @extends {BaseVectorLayer<VectorSourceType, CanvasVectorLayerRenderer>}
    * @api
    */
-  class VectorLayer extends BaseVectorLayer$1 {
+  class VectorLayer extends BaseVectorLayer {
     /**
      * @param {import("./BaseVector.js").Options<VectorSourceType>} [options] Options.
      */
@@ -50359,11 +50316,9 @@
     }
 
     createRenderer() {
-      return new CanvasVectorLayerRenderer$1(this);
+      return new CanvasVectorLayerRenderer(this);
     }
   }
-
-  var LayerVector = VectorLayer;
 
   /**
    * @module ol/structs/RBush
@@ -50393,7 +50348,7 @@
       /**
        * @private
        */
-      this.rbush_ = new RBush$2(maxEntries);
+      this.rbush_ = new RBush$1(maxEntries);
 
       /**
        * A mapping between the objects added to this rbush wrapper
@@ -50580,8 +50535,6 @@
     }
   }
 
-  var RBush$1 = RBush;
-
   /**
    * @module ol/source/Source
    */
@@ -50630,7 +50583,7 @@
    * @abstract
    * @api
    */
-  class Source extends BaseObject$1 {
+  class Source extends BaseObject {
     /**
      * @param {Options} options Source options.
      */
@@ -50823,8 +50776,6 @@
       return [attributionLike];
     };
   }
-
-  var Source$1 = Source;
 
   /**
    * @module ol/source/VectorEventType
@@ -51159,7 +51110,7 @@
    * type.
    * @template {import("../Feature.js").FeatureLike} [FeatureClass=import("../Feature.js").default]
    */
-  class VectorSourceEvent extends Event {
+  class VectorSourceEvent extends BaseEvent {
     /**
      * @param {string} type Type.
      * @param {FeatureClass} [feature] Feature.
@@ -51301,7 +51252,7 @@
    * @api
    * @template {import("../Feature.js").FeatureLike} [FeatureType=import("../Feature.js").default]
    */
-  class VectorSource extends Source$1 {
+  class VectorSource extends Source {
     /**
      * @param {Options<FeatureType>} [options] Vector source options.
      */
@@ -51380,13 +51331,13 @@
        * @private
        * @type {RBush<FeatureType>}
        */
-      this.featuresRtree_ = useSpatialIndex ? new RBush$1() : null;
+      this.featuresRtree_ = useSpatialIndex ? new RBush() : null;
 
       /**
        * @private
        * @type {RBush<{extent: import("../extent.js").Extent}>}
        */
-      this.loadedExtentsRtree_ = new RBush$1();
+      this.loadedExtentsRtree_ = new RBush();
 
       /**
        * @type {number}
@@ -51437,7 +51388,7 @@
         features = collection.getArray();
       }
       if (!useSpatialIndex && collection === undefined) {
-        collection = new Collection$1(features);
+        collection = new Collection(features);
       }
       if (features !== undefined) {
         this.addFeaturesInternal(features);
@@ -51502,7 +51453,7 @@
      * @private
      */
     setupChangeEvents_(featureKey, feature) {
-      if (feature instanceof RenderFeature$1) {
+      if (feature instanceof RenderFeature) {
         return;
       }
       this.featureChangeKeys_[featureKey] = [
@@ -51529,9 +51480,9 @@
         const id = String(feature.getId());
         if (!(id in this.idIndex_)) {
           this.idIndex_[id] = feature;
-        } else if (feature instanceof RenderFeature$1) {
+        } else if (feature instanceof RenderFeature) {
           const indexedFeature = this.idIndex_[id];
-          if (!(indexedFeature instanceof RenderFeature$1)) {
+          if (!(indexedFeature instanceof RenderFeature)) {
             valid = false;
           } else {
             if (!Array.isArray(indexedFeature)) {
@@ -51754,7 +51705,7 @@
       return this.forEachFeatureInExtent(extent, function (feature) {
         const geometry = feature.getGeometry();
         if (
-          geometry instanceof RenderFeature$1 ||
+          geometry instanceof RenderFeature ||
           geometry.intersectsCoordinate(coordinate)
         ) {
           return callback(feature);
@@ -51816,7 +51767,7 @@
         function (feature) {
           const geometry = feature.getGeometry();
           if (
-            geometry instanceof RenderFeature$1 ||
+            geometry instanceof RenderFeature ||
             geometry.intersectsExtent(extent)
           ) {
             const result = callback(feature);
@@ -51944,7 +51895,7 @@
             const geometry = feature.getGeometry();
             const previousMinSquaredDistance = minSquaredDistance;
             minSquaredDistance =
-              geometry instanceof RenderFeature$1
+              geometry instanceof RenderFeature
                 ? 0
                 : geometry.closestPointXY(x, y, closestPoint, minSquaredDistance);
             if (minSquaredDistance < previousMinSquaredDistance) {
@@ -52192,8 +52143,28 @@
     }
 
     /**
-     * Remove a single feature from the source.  If you want to remove all features
+     * Batch remove features from the source.  If you want to remove all features
      * at once, use the {@link module:ol/source/Vector~VectorSource#clear #clear()} method
+     * instead.
+     * @param {Array<FeatureType>} features Features to remove.
+     */
+    removeFeatures(features) {
+      const removedFeatures = [];
+      for (let i = 0, ii = features.length; i < ii; ++i) {
+        const feature = features[i];
+        const removedFeature = this.removeFeatureInternal(feature);
+        if (removedFeature) {
+          removedFeatures.push(removedFeature);
+        }
+      }
+      if (removedFeatures.length > 0) {
+        this.changed();
+      }
+    }
+
+    /**
+     * Remove a single feature from the source. If you want to batch remove
+     * features, use the {@link module:ol/source/Vector~VectorSource#removeFeatures #removeFeatures()} method
      * instead.
      * @param {FeatureType} feature Feature to remove.
      * @api
@@ -52201,14 +52172,6 @@
     removeFeature(feature) {
       if (!feature) {
         return;
-      }
-      const featureKey = getUid(feature);
-      if (featureKey in this.nullGeometryFeatures_) {
-        delete this.nullGeometryFeatures_[featureKey];
-      } else {
-        if (this.featuresRtree_) {
-          this.featuresRtree_.remove(feature);
-        }
       }
       const result = this.removeFeatureInternal(feature);
       if (result) {
@@ -52225,6 +52188,13 @@
      */
     removeFeatureInternal(feature) {
       const featureKey = getUid(feature);
+      if (featureKey in this.nullGeometryFeatures_) {
+        delete this.nullGeometryFeatures_[featureKey];
+      } else {
+        if (this.featuresRtree_) {
+          this.featuresRtree_.remove(feature);
+        }
+      }
       const featureChangeKeys = this.featureChangeKeys_[featureKey];
       if (!featureChangeKeys) {
         return;
@@ -52236,9 +52206,11 @@
         delete this.idIndex_[id.toString()];
       }
       delete this.uidIndex_[featureKey];
-      this.dispatchEvent(
-        new VectorSourceEvent(VectorEventType.REMOVEFEATURE, feature),
-      );
+      if (this.hasListener(VectorEventType.REMOVEFEATURE)) {
+        this.dispatchEvent(
+          new VectorSourceEvent(VectorEventType.REMOVEFEATURE, feature),
+        );
+      }
       return feature;
     }
 
@@ -52254,7 +52226,7 @@
       for (const id in this.idIndex_) {
         const indexedFeature = this.idIndex_[id];
         if (
-          feature instanceof RenderFeature$1 &&
+          feature instanceof RenderFeature &&
           Array.isArray(indexedFeature) &&
           indexedFeature.includes(feature)
         ) {
@@ -52289,8 +52261,6 @@
       this.setLoader(xhr(url, this.format_));
     }
   }
-
-  var SourceVector = VectorSource;
 
   /**
    * @module ol/interaction/Draw
@@ -52447,7 +52417,7 @@
    * Events emitted by {@link module:ol/interaction/Draw~Draw} instances are
    * instances of this type.
    */
-  class DrawEvent extends Event {
+  class DrawEvent extends BaseEvent {
     /**
      * @param {DrawEventType} type Type.
      * @param {Feature} feature The feature drawn.
@@ -53033,7 +53003,7 @@
         } else {
           let Constructor;
           if (mode === 'Point') {
-            Constructor = Point$2;
+            Constructor = Point$1;
           } else if (mode === 'LineString') {
             Constructor = LineString$1;
           } else if (mode === 'Polygon') {
@@ -53140,8 +53110,8 @@
        * @type {VectorLayer}
        * @private
        */
-      this.overlay_ = new LayerVector({
-        source: new SourceVector({
+      this.overlay_ = new VectorLayer({
+        source: new VectorSource({
           useSpatialIndex: false,
           wrapX: options.wrapX ? options.wrapX : false,
         }),
@@ -53325,7 +53295,7 @@
       this.lastDragTime_ = Date.now();
       this.downTimeout_ = setTimeout(() => {
         this.handlePointerMove_(
-          new MapBrowserEvent$1(
+          new MapBrowserEvent(
             MapBrowserEventType.POINTERMOVE,
             event.map,
             event.originalEvent,
@@ -53695,7 +53665,7 @@
      */
     createOrUpdateSketchPoint_(coordinates) {
       if (!this.sketchPoint_) {
-        this.sketchPoint_ = new Feature$1(new Point$2(coordinates));
+        this.sketchPoint_ = new Feature(new Point$1(coordinates));
         this.updateSketchFeatures_();
       } else {
         const sketchPointGeom = this.sketchPoint_.getGeometry();
@@ -53709,7 +53679,7 @@
      */
     createOrUpdateCustomSketchLine_(geometry) {
       if (!this.sketchLine_) {
-        this.sketchLine_ = new Feature$1();
+        this.sketchLine_ = new Feature();
       }
       const ring = geometry.getLinearRing(0);
       let sketchLineGeom = this.sketchLine_.getGeometry();
@@ -53749,14 +53719,14 @@
         this.sketchCoords_ = [start.slice(), start.slice()];
       }
       if (this.sketchLineCoords_) {
-        this.sketchLine_ = new Feature$1(new LineString$1(this.sketchLineCoords_));
+        this.sketchLine_ = new Feature(new LineString$1(this.sketchLineCoords_));
       }
       const geometry = this.geometryFunction_(
         this.sketchCoords_,
         undefined,
         projection,
       );
-      this.sketchFeature_ = new Feature$1();
+      this.sketchFeature_ = new Feature();
       if (this.geometryName_) {
         this.sketchFeature_.setGeometryName(this.geometryName_);
       }
@@ -54066,7 +54036,7 @@
       const last = this.sketchCoords_[this.sketchCoords_.length - 1];
       this.finishCoordinate_ = last.slice();
       this.sketchCoords_.push(last.slice());
-      this.sketchPoint_ = new Feature$1(new Point$2(last));
+      this.sketchPoint_ = new Feature(new Point$1(last));
       this.updateSketchFeatures_();
       this.dispatchEvent(
         new DrawEvent(DrawEventType.DRAWSTART, this.sketchFeature_),
@@ -54239,7 +54209,7 @@
    * Events emitted by {@link module:ol/interaction/Modify~Modify} instances are
    * instances of this type.
    */
-  class ModifyEvent extends Event {
+  class ModifyEvent extends BaseEvent {
     /**
      * @param {ModifyEventType} type Type.
      * @param {Collection<Feature>} features
@@ -54392,7 +54362,7 @@
        * @type {RBush<SegmentData>}
        * @private
        */
-      this.rBush_ = new RBush$1();
+      this.rBush_ = new RBush();
 
       /**
        * @type {number}
@@ -54426,8 +54396,8 @@
        * @type {VectorLayer}
        * @private
        */
-      this.overlay_ = new LayerVector({
-        source: new SourceVector({
+      this.overlay_ = new VectorLayer({
+        source: new VectorSource({
           useSpatialIndex: false,
           wrapX: !!options.wrapX,
         }),
@@ -54470,7 +54440,7 @@
         features = options.features;
       } else if (options.source) {
         this.source_ = options.source;
-        features = new Collection$1(this.source_.getFeatures());
+        features = new Collection(this.source_.getFeatures());
         this.source_.addEventListener(
           VectorEventType.ADDFEATURE,
           this.handleSourceAdd_.bind(this),
@@ -54552,7 +54522,7 @@
      */
     willModifyFeatures_(evt, segments) {
       if (!this.featuresBeingModified_) {
-        this.featuresBeingModified_ = new Collection$1();
+        this.featuresBeingModified_ = new Collection();
         const features = this.featuresBeingModified_.getArray();
         for (let i = 0, ii = segments.length; i < ii; ++i) {
           const segment = segments[i];
@@ -54923,7 +54893,7 @@
     createOrUpdateVertexFeature_(coordinates, features, geometries) {
       let vertexFeature = this.vertexFeature_;
       if (!vertexFeature) {
-        vertexFeature = new Feature$1(new Point$2(coordinates));
+        vertexFeature = new Feature(new Point$1(coordinates));
         this.vertexFeature_ = vertexFeature;
         this.overlay_.getSource().addFeature(vertexFeature);
       } else {
@@ -55286,13 +55256,13 @@
           pixel,
           (feature, layer, geometry) => {
             if (geometry && geometry.getType() === 'Point') {
-              geometry = new Point$2(
+              geometry = new Point$1(
                 toUserCoordinate(geometry.getCoordinates(), projection),
               );
             }
             const geom = geometry || feature.getGeometry();
             if (
-              feature instanceof Feature$1 &&
+              feature instanceof Feature &&
               this.features_.getArray().includes(feature)
             ) {
               hitPointGeometry = /** @type {Point} */ (geom);
@@ -55843,7 +55813,7 @@
    * Events emitted by {@link module:ol/interaction/Select~Select} instances are instances of
    * this type.
    */
-  class SelectEvent extends Event {
+  class SelectEvent extends BaseEvent {
     /**
      * @param {SelectEventType} type The event type.
      * @param {Array<import("../Feature.js").default>} selected Selected features.
@@ -55906,7 +55876,7 @@
    * @fires SelectEvent
    * @api
    */
-  class Select extends Interaction$1 {
+  class Select extends Interaction {
     /**
      * @param {Options} [options] Options.
      */
@@ -55997,7 +55967,7 @@
        * @private
        * @type {Collection<Feature>}
        */
-      this.features_ = options.features || new Collection$1();
+      this.features_ = options.features || new Collection();
 
       /** @type {function(import("../layer/Layer.js").default<import("../source/Source").default>): boolean} */
       let layerFilter;
@@ -56131,7 +56101,7 @@
             .getAllLayers()
             .find(function (layer) {
               if (
-                layer instanceof LayerVector &&
+                layer instanceof VectorLayer &&
                 layer.getSource() &&
                 layer.getSource().hasFeature(feature)
               ) {
@@ -56246,7 +56216,7 @@
            * @return {boolean|undefined} Continue to iterate over the features.
            */
           (feature, layer) => {
-            if (!(feature instanceof Feature$1) || !this.filter_(feature, layer)) {
+            if (!(feature instanceof Feature) || !this.filter_(feature, layer)) {
               return;
             }
             this.addFeatureLayerAssociation_(feature, layer);
@@ -56282,7 +56252,7 @@
            * @return {boolean|undefined} Continue to iterate over the features.
            */
           (feature, layer) => {
-            if (!(feature instanceof Feature$1) || !this.filter_(feature, layer)) {
+            if (!(feature instanceof Feature) || !this.filter_(feature, layer)) {
               return;
             }
             if ((add || toggle) && !features.getArray().includes(feature)) {
@@ -56359,7 +56329,7 @@
    * @classdesc
    * Events emitted by {@link module:ol/interaction/Snap~Snap} instances are instances of this
    */
-  class SnapEvent extends Event {
+  class SnapEvent extends BaseEvent {
     /**
      * @param {SnapEventType} type Type.
      * @param {Object} options Options.
@@ -56585,7 +56555,7 @@
        * @type {import("../structs/RBush.js").default<SegmentData>}
        * @private
        */
-      this.rBush_ = new RBush$1();
+      this.rBush_ = new RBush();
 
       /**
        * @const
@@ -57157,7 +57127,7 @@
    *
    * @abstract
    */
-  class Tile extends EventTarget {
+  class Tile extends Target {
     /**
      * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
      * @param {import("./TileState.js").default} state State.
@@ -57398,8 +57368,6 @@
       }
     }
   }
-
-  var Tile$1 = Tile;
 
   /**
    * @module ol/reproj/Triangulation
@@ -57888,8 +57856,6 @@
     }
   }
 
-  var Triangulation$1 = Triangulation;
-
   /**
    * @module ol/reproj
    */
@@ -58362,7 +58328,7 @@
    * See {@link module:ol/source/TileImage~TileImage}.
    *
    */
-  class ReprojTile extends Tile$1 {
+  class ReprojTile extends Tile {
     /**
      * @param {import("../proj/Projection.js").default} sourceProj Source projection.
      * @param {import("../tilegrid/TileGrid.js").default} sourceTileGrid Source tile grid.
@@ -58505,7 +58471,7 @@
        * @private
        * @type {!import("./Triangulation.js").default}
        */
-      this.triangulation_ = new Triangulation$1(
+      this.triangulation_ = new Triangulation(
         sourceProj,
         targetProj,
         limitedTargetExtent,
@@ -58696,13 +58662,11 @@
     }
   }
 
-  var ReprojTile$1 = ReprojTile;
-
   /**
    * @module ol/ImageTile
    */
 
-  class ImageTile extends Tile$1 {
+  class ImageTile extends Tile {
     /**
      * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
      * @param {import("./TileState.js").default} state State.
@@ -58880,8 +58844,6 @@
     ctx.fillRect(0, 0, 1, 1);
     return ctx.canvas;
   }
-
-  var ImageTile$1 = ImageTile;
 
   /**
    * @module ol/structs/LRUCache
@@ -59174,8 +59136,6 @@
     }
   }
 
-  var LRUCache$1 = LRUCache;
-
   /**
    * @module ol/layer/TileProperty
    */
@@ -59246,7 +59206,7 @@
    * @extends {Layer<TileSourceType, RendererType>}
    * @api
    */
-  class BaseTileLayer extends Layer$1 {
+  class BaseTileLayer extends Layer {
     /**
      * @param {Options<TileSourceType>} [options] Tile layer options.
      */
@@ -59345,8 +59305,6 @@
     }
   }
 
-  var BaseTileLayer$1 = BaseTileLayer;
-
   /**
    * @module ol/renderer/canvas/TileLayer
    */
@@ -59358,7 +59316,7 @@
    * @template {import("../../layer/Tile.js").default<import("../../source/Tile.js").default>|import("../../layer/VectorTile.js").default} [LayerType=import("../../layer/Tile.js").default<import("../../source/Tile.js").default>|import("../../layer/VectorTile.js").default]
    * @extends {CanvasLayerRenderer<LayerType>}
    */
-  class CanvasTileLayerRenderer extends CanvasLayerRenderer$1 {
+  class CanvasTileLayerRenderer extends CanvasLayerRenderer {
     /**
      * @param {LayerType} tileLayer Tile layer.
      */
@@ -59417,7 +59375,7 @@
        * @private
        * @type {import("../../TileRange.js").default}
        */
-      this.tmpTileRange_ = new TileRange$1(0, 0, 0, 0);
+      this.tmpTileRange_ = new TileRange(0, 0, 0, 0);
     }
 
     /**
@@ -59505,8 +59463,8 @@
           projection,
         );
         if (
-          !(tile instanceof ImageTile$1 || tile instanceof ReprojTile$1) ||
-          (tile instanceof ReprojTile$1 && tile.getState() === TileState.EMPTY)
+          !(tile instanceof ImageTile || tile instanceof ReprojTile) ||
+          (tile instanceof ReprojTile && tile.getState() === TileState.EMPTY)
         ) {
           return null;
         }
@@ -60092,8 +60050,6 @@
     }
   }
 
-  var CanvasTileLayerRenderer$1 = CanvasTileLayerRenderer;
-
   /**
    * @module ol/layer/Tile
    */
@@ -60110,7 +60066,7 @@
    * @extends BaseTileLayer<TileSourceType, CanvasTileLayerRenderer>
    * @api
    */
-  class TileLayer extends BaseTileLayer$1 {
+  class TileLayer extends BaseTileLayer {
     /**
      * @param {import("./BaseTile.js").Options<TileSourceType>} [options] Tile layer options.
      */
@@ -60119,7 +60075,7 @@
     }
 
     createRenderer() {
-      return new CanvasTileLayerRenderer$1(this);
+      return new CanvasTileLayerRenderer(this);
     }
   }
 
@@ -60357,7 +60313,7 @@
    * @module ol/TileCache
    */
 
-  class TileCache extends LRUCache$1 {
+  class TileCache extends LRUCache {
     clear() {
       while (this.getCount() > 0) {
         this.pop().release();
@@ -60397,8 +60353,6 @@
       });
     }
   }
-
-  var TileCache$1 = TileCache;
 
   /**
    * @module ol/source/TileEventType
@@ -60490,7 +60444,7 @@
 
     const resolutions = resolutionsFromExtent(extent, maxZoom, tileSize);
 
-    return new TileGrid$1({
+    return new TileGrid({
       extent: extent,
       origin: getCorner(extent, corner),
       resolutions: resolutions,
@@ -60532,7 +60486,7 @@
         xyzOptions.maxResolution,
       ),
     };
-    return new TileGrid$1(gridOptions);
+    return new TileGrid(gridOptions);
   }
 
   /**
@@ -60635,7 +60589,7 @@
    * @abstract
    * @api
    */
-  class TileSource extends Source$1 {
+  class TileSource extends Source {
     /**
      * @param {Options} options SourceTile source options.
      */
@@ -60691,7 +60645,7 @@
        * @protected
        * @type {import("../TileCache.js").default}
        */
-      this.tileCache = new TileCache$1(options.cacheSize || 0);
+      this.tileCache = new TileCache(options.cacheSize || 0);
 
       /**
        * @protected
@@ -60963,7 +60917,7 @@
    * Events emitted by {@link module:ol/source/Tile~TileSource} instances are instances of this
    * type.
    */
-  class TileSourceEvent extends Event {
+  class TileSourceEvent extends BaseEvent {
     /**
      * @param {string} type Type.
      * @param {import("../Tile.js").default} tile The tile.
@@ -60979,8 +60933,6 @@
       this.tile = tile;
     }
   }
-
-  var TileSource$1 = TileSource;
 
   /**
    * @module ol/tileurlfunction
@@ -61128,7 +61080,7 @@
    *
    * @fires import("./Tile.js").TileSourceEvent
    */
-  class UrlTile extends TileSource$1 {
+  class UrlTile extends TileSource {
     /**
      * @param {Options} options Image tile options.
      */
@@ -61320,8 +61272,6 @@
     }
   }
 
-  var UrlTile$1 = UrlTile;
-
   /**
    * @module ol/source/TileImage
    */
@@ -61378,7 +61328,7 @@
    * @fires import("./Tile.js").TileSourceEvent
    * @api
    */
-  class TileImage extends UrlTile$1 {
+  class TileImage extends UrlTile {
     /**
      * @param {!Options} options Image tile options.
      */
@@ -61418,7 +61368,7 @@
        * @type {typeof ImageTile}
        */
       this.tileClass =
-        options.tileClass !== undefined ? options.tileClass : ImageTile$1;
+        options.tileClass !== undefined ? options.tileClass : ImageTile;
 
       /**
        * @protected
@@ -61554,7 +61504,7 @@
       }
       const projKey = getUid(projection);
       if (!(projKey in this.tileCacheForProjection)) {
-        this.tileCacheForProjection[projKey] = new TileCache$1(
+        this.tileCacheForProjection[projKey] = new TileCache(
           this.tileCache.highWaterMark,
         );
       }
@@ -61633,7 +61583,7 @@
         tileCoord,
         projection,
       );
-      const newTile = new ReprojTile$1(
+      const newTile = new ReprojTile(
         sourceProjection,
         sourceTileGrid,
         projection,
@@ -61754,8 +61704,6 @@
       src;
   }
 
-  var TileImage$1 = TileImage;
-
   /**
    * @module ol/source/BingMaps
    */
@@ -61867,7 +61815,7 @@
    * Layer source for Bing Maps tile data.
    * @api
    */
-  class BingMaps extends TileImage$1 {
+  class BingMaps extends TileImage {
     /**
      * @param {Options} options Bing Maps options.
      */
@@ -62158,7 +62106,7 @@
    * ```
    * @api
    */
-  let XYZ$1 = class XYZ extends TileImage$1 {
+  let XYZ$1 = class XYZ extends TileImage {
     /**
      * @param {Options} [options] XYZ options.
      */
@@ -62271,7 +62219,7 @@
    * from the wrapped source.
    * @api
    */
-  class Cluster extends SourceVector {
+  class Cluster extends VectorSource {
     /**
      * @param {Options} options Cluster options.
      */
@@ -62518,14 +62466,14 @@
       scale$2(centroid, 1 / features.length);
       const searchCenter = getCenter(extent);
       const ratio = this.interpolationRatio;
-      const geometry = new Point$2([
+      const geometry = new Point$1([
         centroid[0] * (1 - ratio) + searchCenter[0] * ratio,
         centroid[1] * (1 - ratio) + searchCenter[1] * ratio,
       ]);
       if (this.createCustomCluster_) {
         return this.createCustomCluster_(geometry, features);
       }
-      return new Feature$1({
+      return new Feature({
         geometry,
         features,
       });
@@ -62855,7 +62803,7 @@
    * Layer source for tile data from WMS servers.
    * @api
    */
-  class TileWMS extends TileImage$1 {
+  class TileWMS extends TileImage {
     /**
      * @param {Options} [options] Tile WMS options.
      */
@@ -63249,7 +63197,7 @@
    * Layer source for tile data from WMTS servers.
    * @api
    */
-  class WMTS extends TileImage$1 {
+  class WMTS extends TileImage {
     /**
      * @param {Options} options WMTS options.
      */
@@ -63530,7 +63478,7 @@
       },
     },
     extent: extent,
-    Feature: Feature$1,
+    Feature: Feature,
     format: { // Not all formats are used & the total file is big
       GeoJSON: GeoJSON$1,
       GPX: GPX$1,
@@ -63549,7 +63497,7 @@
     },
     layer: {
       Tile: TileLayer$1,
-      Vector: LayerVector,
+      Vector: VectorLayer,
     },
     Map: Map$1,
     loadingstrategy: loadingstrategy,
@@ -63562,7 +63510,7 @@
       Cluster: Cluster$1,
       OSM: OSM$1,
       TileWMS: TileWMS$1,
-      Vector: SourceVector,
+      Vector: VectorSource,
       WMTS: WMTS$1,
       XYZ: XYZ$2,
     },
@@ -65535,10 +65483,10 @@
       this.Base = base;
 
       this.layerName = randomId('geocoder-layer-');
-      this.layer = new LayerVector({
+      this.layer = new VectorLayer({
         background: 'transparent',
         name: this.layerName,
-        source: new SourceVector(),
+        source: new VectorSource(),
         displayInLayerSwitcher: false, // Remove search layer from legend
       });
 
@@ -65761,7 +65709,7 @@
     }
 
     createFeature(coord) {
-      const feature = new Feature$1(new Point$2(coord));
+      const feature = new Feature(new Point$1(coord));
 
       this.addLayer();
       feature.setStyle(this.options.featureStyle);
@@ -65879,7 +65827,7 @@
    * @class Base
    * @extends {ol.control.Control}
    */
-  class Base extends Control$1 {
+  class Base extends Control {
     /**
      * @constructor
      * @param {string} type nominatim|reverse.
@@ -65895,8 +65843,8 @@
       const options = {
         ...DEFAULT_OPTIONS,
         featureStyle: [
-          new Style$1({
-            image: new Icon$1({
+          new Style({
+            image: new Icon({
               anchor: [0.5, 1],
               src: 'data:image/svg+xml;charset=utf-8,' +
                 '<svg width="26" height="42" viewBox="0 0 26 42" xmlns="http://www.w3.org/2000/svg">' +
@@ -75693,7 +75641,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 10/03/2024 21:39:24',
+    VERSION: '1.1.2.dev 22/03/2024 19:32:12',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

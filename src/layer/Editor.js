@@ -104,9 +104,46 @@ export class Editor extends ol.layer.Vector {
     });
 
     this.optimiseEdited(); // Optimise at init
+    //TODO BUG color default modify if deselect others
+
+    this.buttons = [
+      new Button({ // 0
+        className: 'myol-button-modify',
+        subMenuId: 'myol-edit-help-modify',
+        subMenuHTML: '<p>Modification</p>',
+        subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
+        buttonAction: (type, active) => this.changeInteraction(0, type, active),
+      }),
+      new Button({ // 1
+        className: 'myol-button-inspect',
+        subMenuId: 'myol-edit-help-inspect',
+        subMenuHTML: '<p>Inspect</p>',
+        subMenuHTML_fr: helpModif_fr['inspect'],
+        buttonAction: (type, active) => this.changeInteraction(1, type, active),
+      }),
+      new Button({ // 2
+        className: 'myol-button-draw-line',
+        subMenuId: 'myol-edit-help-line',
+        subMenuHTML: '<p>New line</p>',
+        subMenuHTML_fr: helpLine_fr,
+        buttonAction: (type, active) => this.changeInteraction(2, type, active),
+      }),
+      new Button({ // 3
+        className: 'myol-button-draw-poly',
+        subMenuId: 'myol-edit-help-poly',
+        subMenuHTML: '<p>New polygon</p>',
+        subMenuHTML_fr: helpPoly_fr,
+        buttonAction: (type, active) => this.changeInteraction(3, type, active),
+      }),
+    ];
 
     this.interactions = [
-      new ol.interaction.Select({ // 0 Hover
+      new ol.interaction.Modify({ // 0 Modify
+        source: this.source,
+        pixelTolerance: 16, // Default is 10
+        style: this.style,
+      }),
+      new ol.interaction.Select({ // 1 Inspect
         condition: ol.events.condition.pointerMove,
         style: () => new ol.style.Style({
           // Lines or polygons border
@@ -114,12 +151,11 @@ export class Editor extends ol.layer.Vector {
             color: 'red',
             width: 3,
           }),
+          // Polygons
+          fill: new ol.style.Fill({
+            color: 'rgba(0,0,255,0.5)',
+          }),
         }),
-      }),
-      new ol.interaction.Modify({ // 1 Modify
-        source: this.source,
-        pixelTolerance: 16, // Default is 10
-        style: this.style,
       }),
       new ol.interaction.Draw({ // 2 Draw line
         source: this.source,
@@ -139,8 +175,8 @@ export class Editor extends ol.layer.Vector {
       }),
     ];
 
-    // End of modify
-    this.interactions[1].on('modifyend', evt => {
+    // End of one modify interaction
+    this.interactions[0].on('modifyend', evt => {
       //BEST move only one summit when dragging
       //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -184,7 +220,9 @@ export class Editor extends ol.layer.Vector {
       this.source.modified = true;
 
       // Reset interaction & button to modify
-      this.changeInteraction(0); // Init to hover
+      this.buttons[0].buttonListener({
+        type: 'click',
+      });
     }));
 
     // End of feature creation
@@ -200,33 +238,19 @@ export class Editor extends ol.layer.Vector {
       }
     });
 
-    this.changeInteraction(0, 'click'); // Init to modify
-
-    this.map.addControl(new Button({
-      className: 'myol-button-modify',
-      subMenuId: 'myol-edit-help-modify',
-      subMenuHTML: '<p>Modification</p>',
-      subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
-      buttonAction: (type, active) => this.changeInteraction(1, type, active),
-    }));
+    this.map.addControl(this.buttons[0]);
+    this.map.addControl(this.buttons[1]);
 
     if (this.options.editOnly != 'poly')
-      this.map.addControl(new Button({
-        className: 'myol-button-draw-line',
-        subMenuId: 'myol-edit-help-line',
-        subMenuHTML: '<p>New line</p>',
-        subMenuHTML_fr: helpLine_fr,
-        buttonAction: (type, active) => this.changeInteraction(2, type, active),
-      }));
+      this.map.addControl(this.buttons[2]);
 
     if (this.options.editOnly != 'line')
-      this.map.addControl(new Button({
-        className: 'myol-button-draw-poly',
-        subMenuId: 'myol-edit-help-poly',
-        subMenuHTML: '<p>New polygon</p>',
-        subMenuHTML_fr: helpPoly_fr,
-        buttonAction: (type, active) => this.changeInteraction(3, type, active),
-      }));
+      this.map.addControl(this.buttons[3]);
+
+    // At init, set modify
+    this.buttons[0].buttonListener({
+      type: 'click',
+    });
 
     return super.setMapInternal(map);
   } // End setMapInternal
@@ -427,7 +451,13 @@ export class Editor extends ol.layer.Vector {
 
 // Default french text
 var helpModif_fr = {
+    inspect: '\
+<p><b>Inspecter une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton ? puis survoler pour l\'objet avec le curseur pour:</p>\
+<p>Distinguer une ligne ou un polygone des autres</p>\
+<p>Calculer la longueur d\'une ligne ou un polygone</p>',
     line: '\
+<p><b>Modifier une ligne</b></p>\
 <p>Cliquer sur le bouton &#x2725; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
@@ -437,6 +467,7 @@ var helpModif_fr = {
 <p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
 <p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
     poly: '\
+<p><b>Modifier un polygone</b></p>\
 <p>Cliquer sur le bouton &#x2725; puis </p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
@@ -446,6 +477,7 @@ var helpModif_fr = {
  de chaque polygone puis Alt+cliquer dessus</p>\
 <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
     both: '\
+<p><b>Modifier une ligne ou un polygone</b></p>\
 <p>Cliquer sur le bouton &#x2725; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
@@ -462,21 +494,21 @@ var helpModif_fr = {
   },
 
   helpLine_fr = '\
-  <p><u>Pour créer une ligne</u>:</p>\
-  <p>Cliquer sur le bouton &#x1526;</p>\
-  <p>Cliquer sur l\'emplacement du début</p>\
-  <p>Puis sur chaque sommet</p>\
-  <p>Double cliquer sur le dernier sommet pour terminer</p>\
-  <hr>\
-  <p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
+<p><b>Créer une ligne</b></p>\
+<p>Cliquer sur le bouton &#x1526;</p>\
+<p>Cliquer sur l\'emplacement du début</p>\
+<p>Puis sur chaque sommet</p>\
+<p>Double cliquer sur le dernier sommet pour terminer</p>\
+<hr>\
+<p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
 
   helpPoly_fr = '\
-  <p><u>Pour créer un polygone</u>:</p>\
-  <p>Cliquer sur le bouton &#9186;</p>\
-  <p>Cliquer sur l\'emplacement du premier sommet</p>\
-  <p>Puis sur chaque sommet</p>\
-  <p>Double cliquer sur le dernier sommet pour terminer</p>\
-  <hr>\
-  <p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
+<p><b>réer un polygone</b></p>\
+<p>Cliquer sur le bouton &#9186;</p>\
+<p>Cliquer sur l\'emplacement du premier sommet</p>\
+<p>Puis sur chaque sommet</p>\
+<p>Double cliquer sur le dernier sommet pour terminer</p>\
+<hr>\
+<p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
 export default Editor;

@@ -85,7 +85,8 @@ export class Button extends ol.control.Control {
 
     // Close other open buttons
     for (let el of document.getElementsByClassName('myol-button'))
-      if (el != this.element)
+      //TODO BUG don't work for editor default
+      if (el != this.element && !el.classList.contains('wwmyol-button-nodeselect')) //TODO www
         el.classList.remove('myol-button-selected');
 
     this.buttonAction(evt.type, this.element.classList.contains('myol-button-selected'));

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 28/03/2024 17:49:52 using npm run build from the src/... sources
+ * Built 29/03/2024 09:02:02 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63600,6 +63600,7 @@
     }
 
     buttonListener(evt) {
+      //TODO leave the selected button blue
       if (evt.type == 'mouseover')
         this.element.classList.add('myol-button-hover');
       else // mouseout | click
@@ -75673,7 +75674,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 28/03/2024 17:49:52',
+    VERSION: '1.1.2.dev 29/03/2024 09:02:02',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

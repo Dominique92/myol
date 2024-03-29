@@ -104,21 +104,20 @@ export class Editor extends ol.layer.Vector {
     });
 
     this.optimiseEdited(); // Optimise at init
-    //TODO BUG color default modify if deselect others
 
     this.buttons = [
       new Button({ // 0
-        className: 'myol-button-modify',
-        subMenuId: 'myol-edit-help-modify',
-        subMenuHTML: '<p>Modification</p>',
-        subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
-        buttonAction: (type, active) => this.changeInteraction(0, type, active),
-      }),
-      new Button({ // 1
         className: 'myol-button-inspect',
         subMenuId: 'myol-edit-help-inspect',
         subMenuHTML: '<p>Inspect</p>',
         subMenuHTML_fr: helpModif_fr['inspect'],
+        buttonAction: (type, active) => this.changeInteraction(0, type, active),
+      }),
+      new Button({ // 1
+        className: 'myol-button-modify wwwmyol-button-nodeselect',
+        subMenuId: 'myol-edit-help-modify',
+        subMenuHTML: '<p>Modification</p>',
+        subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
         buttonAction: (type, active) => this.changeInteraction(1, type, active),
       }),
       new Button({ // 2
@@ -138,12 +137,7 @@ export class Editor extends ol.layer.Vector {
     ];
 
     this.interactions = [
-      new ol.interaction.Modify({ // 0 Modify
-        source: this.source,
-        pixelTolerance: 16, // Default is 10
-        style: this.style,
-      }),
-      new ol.interaction.Select({ // 1 Inspect
+      new ol.interaction.Select({ // 0 Inspect
         condition: ol.events.condition.pointerMove,
         style: () => new ol.style.Style({
           // Lines or polygons border
@@ -156,6 +150,11 @@ export class Editor extends ol.layer.Vector {
             color: 'rgba(0,0,255,0.5)',
           }),
         }),
+      }),
+      new ol.interaction.Modify({ // 1 Modify
+        source: this.source,
+        pixelTolerance: 16, // Default is 10
+        style: this.style,
       }),
       new ol.interaction.Draw({ // 2 Draw line
         source: this.source,
@@ -176,7 +175,7 @@ export class Editor extends ol.layer.Vector {
     ];
 
     // End of one modify interaction
-    this.interactions[0].on('modifyend', evt => {
+    this.interactions[1].on('modifyend', evt => {
       //BEST move only one summit when dragging
       //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -220,7 +219,7 @@ export class Editor extends ol.layer.Vector {
       this.source.modified = true;
 
       // Reset interaction & button to modify
-      this.buttons[0].buttonListener({
+      this.buttons[1].buttonListener({
         type: 'click',
       });
     }));
@@ -248,7 +247,7 @@ export class Editor extends ol.layer.Vector {
       this.map.addControl(this.buttons[3]);
 
     // At init, set modify
-    this.buttons[0].buttonListener({
+    this.buttons[1].buttonListener({
       type: 'click',
     });
 
@@ -503,7 +502,7 @@ var helpModif_fr = {
 <p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
 
   helpPoly_fr = '\
-<p><b>réer un polygone</b></p>\
+<p><b>Créer un polygone</b></p>\
 <p>Cliquer sur le bouton &#9186;</p>\
 <p>Cliquer sur l\'emplacement du premier sommet</p>\
 <p>Puis sur chaque sommet</p>\

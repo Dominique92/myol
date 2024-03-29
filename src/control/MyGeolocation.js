@@ -99,6 +99,7 @@ export class MyGeolocation extends Button {
   }
 
   subMenuAction(evt) {
+    //TODO BUG don't enable when select the control
     const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
       displayEls = document.getElementsByName('myol-gps-display'),
       displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),

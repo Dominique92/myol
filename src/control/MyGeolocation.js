@@ -90,16 +90,15 @@ export class MyGeolocation extends Button {
     return super.setMap(map);
   }
 
-  buttonAction(evt) {
+  buttonAction(evt, active) {
     const sourceEls = document.getElementsByName('myol-gps-source'),
       buttonSelected = document.querySelector('.myol-button-geolocation.myol-button-selected');
 
-    if (evt.type == 'click' && !buttonSelected && sourceEls[0].checked)
+    if (evt.type == 'click' && active && sourceEls[0].checked)
       sourceEls[1].click();
   }
 
   subMenuAction(evt) {
-    //TODO BUG don't enable when select the control
     const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
       displayEls = document.getElementsByName('myol-gps-display'),
       displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),

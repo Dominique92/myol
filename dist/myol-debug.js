@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 30/03/2024 16:35:36 using npm run build from the src/... sources
+ * Built 30/03/2024 16:40:43 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -66055,19 +66055,15 @@
       return super.setMap(map);
     }
 
-    buttonAction(evt) {
-      //*DCMM*/{var _r=' == ',_v=evt;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
-      const sourceEls = document.getElementsByName('myol-gps-source'),
-        buttonSelected = document.querySelector('.myol-button-geolocation.myol-button-selected');
-      //*DCMM*/console.log(new Error().stack);
-      //*DCMM*/{var _r=evt.type+' == ',_v=[(evt.type == 'click') +' '+!buttonSelected +' '+ sourceEls[0].checked];if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
+    buttonAction(evt, active) {
+      const sourceEls = document.getElementsByName('myol-gps-source');
+        document.querySelector('.myol-button-geolocation.myol-button-selected');
 
-      if (evt.type == 'click' && !buttonSelected && sourceEls[0].checked)
+      if (evt.type == 'click' && active && sourceEls[0].checked)
         sourceEls[1].click();
     }
 
     subMenuAction(evt) {
-      //TODO BUG don't enable when select the control
       const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
         displayEls = document.getElementsByName('myol-gps-display'),
         displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),
@@ -75684,7 +75680,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 30/03/2024 16:35:36',
+    VERSION: '1.1.2.dev 30/03/2024 16:40:43',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

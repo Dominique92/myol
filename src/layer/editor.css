@@ -38,10 +38,8 @@
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\1F58C</text></svg>') 2 34, copy;
 }
 
-/* Close the submenu after enabling actions */
-.myol-button-modify.myol-button-selected div,
-.myol-button-inspect.myol-button-selected div,
-.myol-button-draw-line.myol-button-selected div,
-.myol-button-draw-poly.myol-button-selected div {
-  display: none;
+/* Submenu */
+.myol-button:not(.myol-button-hover)>div {
+  max-height: 0;
+  opacity: 0;
 }

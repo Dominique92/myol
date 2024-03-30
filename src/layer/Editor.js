@@ -107,28 +107,28 @@ export class Editor extends ol.layer.Vector {
 
     this.buttons = [
       new Button({ // 0
-        className: 'myol-button-inspect',
+        className: 'myol-button-inspect myol-button-keepselect',
         subMenuId: 'myol-edit-help-inspect',
         subMenuHTML: '<p>Inspect</p>',
         subMenuHTML_fr: helpModif_fr['inspect'],
         buttonAction: (type, active) => this.changeInteraction(0, type, active),
       }),
       new Button({ // 1
-        className: 'myol-button-modify wwwmyol-button-nodeselect',
+        className: 'myol-button-modify myol-button-keepselect',
         subMenuId: 'myol-edit-help-modify',
         subMenuHTML: '<p>Modification</p>',
         subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
         buttonAction: (type, active) => this.changeInteraction(1, type, active),
       }),
       new Button({ // 2
-        className: 'myol-button-draw-line',
+        className: 'myol-button-draw-line myol-button-keepselect',
         subMenuId: 'myol-edit-help-line',
         subMenuHTML: '<p>New line</p>',
         subMenuHTML_fr: helpLine_fr,
         buttonAction: (type, active) => this.changeInteraction(2, type, active),
       }),
       new Button({ // 3
-        className: 'myol-button-draw-poly',
+        className: 'myol-button-draw-poly myol-button-keepselect',
         subMenuId: 'myol-edit-help-poly',
         subMenuHTML: '<p>New polygon</p>',
         subMenuHTML_fr: helpPoly_fr,
@@ -246,30 +246,35 @@ export class Editor extends ol.layer.Vector {
     if (this.options.editOnly != 'line')
       this.map.addControl(this.buttons[3]);
 
-    // At init, set modify
+    super.setMapInternal(map);
+
+    // After map init, set modify
     this.buttons[1].buttonListener({
       type: 'click',
     });
-
-    return super.setMapInternal(map);
   } // End setMapInternal
 
   changeInteraction(interaction, type, active) {
     if (!active) // Click twice on the same button
-      interaction = 0;
+      return this.buttons[1].buttonListener({
+        type: 'click',
+      });
 
-    this.interactions.forEach(i => this.map.removeInteraction(i));
-    this.map.addInteraction(this.interactions[interaction]);
-    this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
+    if (type == 'click') {
+      this.interactions.forEach(inter => this.map.removeInteraction(inter));
+      this.map.addInteraction(this.interactions[interaction]);
+      this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
 
-    // Register again the full list of features as addFeature manages already registered
-    this.map.getLayers().forEach(l => {
-      if (l.getSource() && l.getSource().getFeatures) // Vector layers only
-        l.getSource().getFeatures().forEach(f =>
-          this.interactions[4].addFeature(f)
-        );
-    });
+      // For snap : register again the full list of features as addFeature manages already registered
+      this.map.getLayers().forEach(l => {
+        if (l.getSource() && l.getSource().getFeatures) // Vector layers only
+          l.getSource().getFeatures().forEach(f =>
+            this.interactions[4].addFeature(f)
+          );
+      });
+    }
 
+    // Set the cursor dependng on the activity
     const mapEl = this.map.getTargetElement();
     if (mapEl)
       mapEl.className = 'map-edit-' + interaction;

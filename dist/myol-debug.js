@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 29/03/2024 09:02:02 using npm run build from the src/... sources
+ * Built 30/03/2024 14:39:36 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63600,7 +63600,6 @@
     }
 
     buttonListener(evt) {
-      //TODO leave the selected button blue
       if (evt.type == 'mouseover')
         this.element.classList.add('myol-button-hover');
       else // mouseout | click
@@ -63611,7 +63610,7 @@
 
       // Close other open buttons
       for (let el of document.getElementsByClassName('myol-button'))
-        if (el != this.element)
+        if (el != this.element && !el.classList.contains('myol-button-keepselect'))
           el.classList.remove('myol-button-selected');
 
       this.buttonAction(evt.type, this.element.classList.contains('myol-button-selected'));
@@ -65949,7 +65948,8 @@
       // Close other opened buttons when hover with a mouse
       this.element.addEventListener('pointerover', () => {
         for (let el of document.getElementsByClassName('myol-button-selected'))
-          el.classList.remove('myol-button-selected');
+          if (!el.classList.contains('myol-button-keepselect'))
+            el.classList.remove('myol-button-selected');
       });
 
       // Close submenu when hover another button
@@ -66062,6 +66062,7 @@
     }
 
     subMenuAction(evt) {
+      //TODO BUG don't enable when select the control
       const sourceLevelEl = document.querySelector('input[name="myol-gps-source"]:checked'),
         displayEls = document.getElementsByName('myol-gps-display'),
         displayLevelEl = document.querySelector('input[name="myol-gps-display"]:checked'),
@@ -66546,32 +66547,31 @@
       });
 
       this.optimiseEdited(); // Optimise at init
-      //TODO BUG color default modify if deselect others
 
       this.buttons = [
         new Button({ // 0
-          className: 'myol-button-modify',
-          subMenuId: 'myol-edit-help-modify',
-          subMenuHTML: '<p>Modification</p>',
-          subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
-          buttonAction: (type, active) => this.changeInteraction(0, type, active),
-        }),
-        new Button({ // 1
-          className: 'myol-button-inspect',
+          className: 'myol-button-inspect myol-button-keepselect',
           subMenuId: 'myol-edit-help-inspect',
           subMenuHTML: '<p>Inspect</p>',
           subMenuHTML_fr: helpModif_fr['inspect'],
+          buttonAction: (type, active) => this.changeInteraction(0, type, active),
+        }),
+        new Button({ // 1
+          className: 'myol-button-modify myol-button-keepselect',
+          subMenuId: 'myol-edit-help-modify',
+          subMenuHTML: '<p>Modification</p>',
+          subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
           buttonAction: (type, active) => this.changeInteraction(1, type, active),
         }),
         new Button({ // 2
-          className: 'myol-button-draw-line',
+          className: 'myol-button-draw-line myol-button-keepselect',
           subMenuId: 'myol-edit-help-line',
           subMenuHTML: '<p>New line</p>',
           subMenuHTML_fr: helpLine_fr,
           buttonAction: (type, active) => this.changeInteraction(2, type, active),
         }),
         new Button({ // 3
-          className: 'myol-button-draw-poly',
+          className: 'myol-button-draw-poly myol-button-keepselect',
           subMenuId: 'myol-edit-help-poly',
           subMenuHTML: '<p>New polygon</p>',
           subMenuHTML_fr: helpPoly_fr,
@@ -66580,12 +66580,7 @@
       ];
 
       this.interactions = [
-        new ol.interaction.Modify({ // 0 Modify
-          source: this.source,
-          pixelTolerance: 16, // Default is 10
-          style: this.style,
-        }),
-        new ol.interaction.Select({ // 1 Inspect
+        new ol.interaction.Select({ // 0 Inspect
           condition: ol.events.condition.pointerMove,
           style: () => new ol.style.Style({
             // Lines or polygons border
@@ -66598,6 +66593,11 @@
               color: 'rgba(0,0,255,0.5)',
             }),
           }),
+        }),
+        new ol.interaction.Modify({ // 1 Modify
+          source: this.source,
+          pixelTolerance: 16, // Default is 10
+          style: this.style,
         }),
         new ol.interaction.Draw({ // 2 Draw line
           source: this.source,
@@ -66618,7 +66618,7 @@
       ];
 
       // End of one modify interaction
-      this.interactions[0].on('modifyend', evt => {
+      this.interactions[1].on('modifyend', evt => {
         //BEST move only one summit when dragging
         //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -66660,11 +66660,6 @@
         // Warn source 'on change' to save the feature
         // Don't do it now as it's not yet added to the source
         this.source.modified = true;
-
-        // Reset interaction & button to modify
-        this.buttons[0].buttonListener({
-          type: 'click',
-        });
       }));
 
       // End of feature creation
@@ -66690,7 +66685,7 @@
         this.map.addControl(this.buttons[3]);
 
       // At init, set modify
-      this.buttons[0].buttonListener({
+      this.buttons[1].buttonListener({
         type: 'click',
       });
 
@@ -66698,24 +66693,17 @@
     } // End setMapInternal
 
     changeInteraction(interaction, type, active) {
-      if (!active) // Click twice on the same button
-        interaction = 0;
+   
+  // Color the active button
+       //   this.buttons[interaction].element.classList.add('myol-button-selected');
 
-      this.interactions.forEach(i => this.map.removeInteraction(i));
-      this.map.addInteraction(this.interactions[interaction]);
-      this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
-
-      // Register again the full list of features as addFeature manages already registered
-      this.map.getLayers().forEach(l => {
-        if (l.getSource() && l.getSource().getFeatures) // Vector layers only
-          l.getSource().getFeatures().forEach(f =>
-            this.interactions[4].addFeature(f)
-          );
-      });
-
+  //return;
+  	// Set the cursor dependng on the activity
+  	//TODO don't set cursor at init
       const mapEl = this.map.getTargetElement();
       if (mapEl)
         mapEl.className = 'map-edit-' + interaction;
+  	  
     }
 
     // Processing the data
@@ -66945,7 +66933,7 @@
 <p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
 
     helpPoly_fr = '\
-<p><b>réer un polygone</b></p>\
+<p><b>Créer un polygone</b></p>\
 <p>Cliquer sur le bouton &#9186;</p>\
 <p>Cliquer sur l\'emplacement du premier sommet</p>\
 <p>Puis sur chaque sommet</p>\
@@ -75674,7 +75662,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 29/03/2024 09:02:02',
+    VERSION: '1.1.2.dev 30/03/2024 14:39:36',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

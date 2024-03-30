@@ -509,7 +509,7 @@
 .myol-button:not(.myol-button-hover):not(.myol-button-selected)>div,
 .myol-button>*:empty {
   max-height: 0;
-  /* For beauty of the transition */
+  /* For the beauty of the transition */
   opacity: 0;
 }
 
@@ -520,14 +520,16 @@
   font-size: 16px;
 }
 
-/* Coloring the button when touch selected */
-.myol-button-selected button,
 .myol-button div {
   background: #d1e9ff;
 }
 
 .myol-button div a {
   color: blue !important;
+}
+
+.myol-button.myol-button-selected button {
+  background: #d1e9ff;
 }
 
 .myol-button p,
@@ -999,22 +1001,22 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
  * editor.css
  */
 
-/* Modify */
-.myol-button-modify button::after {
-  content: "\2725";
-}
-
-.map-edit-0 {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">+</text></svg>') 17 17, move;
-}
-
 /* Inspect */
 .myol-button-inspect button::after {
   content: "?";
 }
 
-.map-edit-1 {
+.map-edit-0 {
   cursor: help;
+}
+
+/* Modify */
+.myol-button-modify button::after {
+  content: "\1F90F";
+}
+
+.map-edit-1 {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\1F90F</text></svg>') 2 17, grabbing;
 }
 
 /* Draw line */
@@ -1040,5 +1042,13 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 .myol-button-inspect.myol-button-selected div,
 .myol-button-draw-line.myol-button-selected div,
 .myol-button-draw-poly.myol-button-selected div {
-  display: none;
+  wwdisplay: none;/*//TODO*/
 }
+
+
+/* Submenu */
+.myol-button:not(.myol-button-hover) >div{
+  max-height: 0;
+   opacity: 0;
+}
+

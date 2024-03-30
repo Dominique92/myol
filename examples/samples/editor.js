@@ -22,6 +22,8 @@ var snaplayer = new ol.layer.Vector({
   map = new ol.Map({
     target: 'map',
 
+    controls: myol.control.collection(),
+
     layers: [
       new ol.layer.Tile({
         source: new ol.source.OSM(),

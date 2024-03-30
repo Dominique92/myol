@@ -7,9 +7,9 @@ const exampleName = location.search.substring(1) || 'index',
 
 // Fill an element with the content of the file defined in data-file="FILE_NAME"
 // With the content of the text after data-split="SPLIT_CHAIN"
-document.querySelectorAll('[data-file*="example"]') // Replace example by url?query
+document.querySelectorAll('[data-file*="item"]') // Replace item by url?query
   .forEach(el =>
-    fetch(base + el.dataset.file.replace('example', exampleName))
+    fetch(base + el.dataset.file.replace('item', exampleName))
     .then(response => response.text())
     .then(fileContent => el.innerHTML = fileContent.split(el.dataset.split, 2).pop().trim())
   );

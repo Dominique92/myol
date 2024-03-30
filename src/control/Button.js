@@ -21,8 +21,8 @@ export class Button extends ol.control.Control {
       // subMenuHTML_fr: '', // html code of the scrolling menu in locale lang
       subMenuHTML: '', // html code of the scrolling menu
 
+      // buttonAction() {}, // (evt, active) To run when an <input> ot <a> of the subMenu is clicked / hovered, ...
       // subMenuAction() {}, // (evt) To run when the button is clicked / hovered, ...
-      // buttonAction() {}, // (evt) To run when an <input> ot <a> of the subMenu is clicked / hovered, ...
 
       // All ol.control.Control options
 
@@ -89,7 +89,8 @@ export class Button extends ol.control.Control {
         (!el.classList.contains('myol-button-keepselect') || evt.type == 'click'))
         el.classList.remove('myol-button-selected');
 
-    this.buttonAction(evt.type, this.element.classList.contains('myol-button-selected'));
+    // Trigger action on the selected button
+    this.buttonAction(evt, this.element.classList.contains('myol-button-selected'));
   }
 
   buttonAction() {}

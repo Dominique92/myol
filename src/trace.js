@@ -9,7 +9,7 @@ import Geocoder from '@myol/geocoder/src/base';
 export async function trace() {
   const data = [
     'Ol v' + ol.util.VERSION,
-    'Geocoder ' + Geocoder.prototype.getVersion(), //TODO BUG don't show version as compiles from modules
+    'Geocoder ' + Geocoder.prototype.getVersion(),
     'MyOl ' + myol.VERSION,
     'language ' + navigator.language,
   ];

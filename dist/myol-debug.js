@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 30/03/2024 14:39:36 using npm run build from the src/... sources
+ * Built 30/03/2024 16:35:36 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63546,8 +63546,8 @@
         // subMenuHTML_fr: '', // html code of the scrolling menu in locale lang
         subMenuHTML: '', // html code of the scrolling menu
 
+        // buttonAction() {}, // (evt, active) To run when an <input> ot <a> of the subMenu is clicked / hovered, ...
         // subMenuAction() {}, // (evt) To run when the button is clicked / hovered, ...
-        // buttonAction() {}, // (evt) To run when an <input> ot <a> of the subMenu is clicked / hovered, ...
 
         // All ol.control.Control options
 
@@ -63610,10 +63610,12 @@
 
       // Close other open buttons
       for (let el of document.getElementsByClassName('myol-button'))
-        if (el != this.element && !el.classList.contains('myol-button-keepselect'))
+        if (el != this.element &&
+          (!el.classList.contains('myol-button-keepselect') || evt.type == 'click'))
           el.classList.remove('myol-button-selected');
 
-      this.buttonAction(evt.type, this.element.classList.contains('myol-button-selected'));
+      // Trigger action on the selected button
+      this.buttonAction(evt, this.element.classList.contains('myol-button-selected'));
     }
 
     buttonAction() {}
@@ -66054,8 +66056,11 @@
     }
 
     buttonAction(evt) {
+      //*DCMM*/{var _r=' == ',_v=evt;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
       const sourceEls = document.getElementsByName('myol-gps-source'),
         buttonSelected = document.querySelector('.myol-button-geolocation.myol-button-selected');
+      //*DCMM*/console.log(new Error().stack);
+      //*DCMM*/{var _r=evt.type+' == ',_v=[(evt.type == 'click') +' '+!buttonSelected +' '+ sourceEls[0].checked];if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
 
       if (evt.type == 'click' && !buttonSelected && sourceEls[0].checked)
         sourceEls[1].click();
@@ -66554,28 +66559,28 @@
           subMenuId: 'myol-edit-help-inspect',
           subMenuHTML: '<p>Inspect</p>',
           subMenuHTML_fr: helpModif_fr['inspect'],
-          buttonAction: (type, active) => this.changeInteraction(0, type, active),
+          buttonAction: (evt, active) => this.changeInteraction(0, evt, active),
         }),
         new Button({ // 1
           className: 'myol-button-modify myol-button-keepselect',
           subMenuId: 'myol-edit-help-modify',
           subMenuHTML: '<p>Modification</p>',
           subMenuHTML_fr: helpModif_fr[this.options.editOnly || 'both'],
-          buttonAction: (type, active) => this.changeInteraction(1, type, active),
+          buttonAction: (evt, active) => this.changeInteraction(1, evt, active),
         }),
         new Button({ // 2
           className: 'myol-button-draw-line myol-button-keepselect',
           subMenuId: 'myol-edit-help-line',
           subMenuHTML: '<p>New line</p>',
           subMenuHTML_fr: helpLine_fr,
-          buttonAction: (type, active) => this.changeInteraction(2, type, active),
+          buttonAction: (evt, active) => this.changeInteraction(2, evt, active),
         }),
         new Button({ // 3
           className: 'myol-button-draw-poly myol-button-keepselect',
           subMenuId: 'myol-edit-help-poly',
           subMenuHTML: '<p>New polygon</p>',
           subMenuHTML_fr: helpPoly_fr,
-          buttonAction: (type, active) => this.changeInteraction(3, type, active),
+          buttonAction: (evt, active) => this.changeInteraction(3, evt, active),
         }),
       ];
 
@@ -66660,6 +66665,11 @@
         // Warn source 'on change' to save the feature
         // Don't do it now as it's not yet added to the source
         this.source.modified = true;
+
+        // Reset interaction & button to modify
+        this.buttons[1].buttonListener({
+          type: 'click',
+        });
       }));
 
       // End of feature creation
@@ -66684,26 +66694,38 @@
       if (this.options.editOnly != 'line')
         this.map.addControl(this.buttons[3]);
 
-      // At init, set modify
+      super.setMapInternal(map);
+
+      // Set modify after map init
       this.buttons[1].buttonListener({
         type: 'click',
       });
-
-      return super.setMapInternal(map);
     } // End setMapInternal
 
-    changeInteraction(interaction, type, active) {
-   
-  // Color the active button
-       //   this.buttons[interaction].element.classList.add('myol-button-selected');
+    changeInteraction(interaction, evt, active) {
+      if (!active) // Click twice on the same button
+        return this.buttons[1].buttonListener({
+          type: 'click',
+        });
 
-  //return;
-  	// Set the cursor dependng on the activity
-  	//TODO don't set cursor at init
+      if (evt.type == 'click') {
+        this.interactions.forEach(inter => this.map.removeInteraction(inter));
+        this.map.addInteraction(this.interactions[interaction]);
+        this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
+
+        // For snap : register again the full list of features as addFeature manages already registered
+        this.map.getLayers().forEach(l => {
+          if (l.getSource() && l.getSource().getFeatures) // Vector layers only
+            l.getSource().getFeatures().forEach(f =>
+              this.interactions[4].addFeature(f)
+            );
+        });
+      }
+
+      // Set the cursor dependng on the activity
       const mapEl = this.map.getTargetElement();
       if (mapEl)
         mapEl.className = 'map-edit-' + interaction;
-  	  
     }
 
     // Processing the data
@@ -75593,7 +75615,7 @@
   async function trace() {
     const data = [
       'Ol v' + ol.util.VERSION,
-      'Geocoder ' + Base.prototype.getVersion(), //TODO BUG don't show version as compiles from modules
+      'Geocoder ' + Base.prototype.getVersion(),
       'MyOl ' + myol.VERSION,
       'language ' + navigator.language,
     ];
@@ -75662,7 +75684,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 30/03/2024 14:39:36',
+    VERSION: '1.1.2.dev 30/03/2024 16:35:36',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

@@ -3,7 +3,7 @@
  */
 
 const exampleName = location.search.substring(1) || 'index',
-  base = location.href.match(/(.*\/)[^/]*/)[1];
+  base = location.href.match(/([^?]*\/)[^/]*/)[1];
 
 // Fill an element with the content of the file defined in data-file="FILE_NAME"
 // With the content of the text after data-split="SPLIT_CHAIN"

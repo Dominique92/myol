@@ -1,6 +1,6 @@
 <link href="../examples_wri/vues/style.css.php" type="text/css" rel="stylesheet">
 <style>
-  #sh-index {
+  #sh-point {
     border: 1px solid black;
   }
 
@@ -13,7 +13,7 @@
 </style>
 
 <div id="example-header">
-  <a id="example-next-wri" href="?../../examples_wri/point">Next&#9654;</a>
+  <a id="example-next-wri" href="?../../examples_wri/modifpoint">Next&#9654;</a>
   <div>
     <span>Refuges.info:</span>
     <a id="sh-index" href="?../../examples_wri/index" title="Index">&nbsp;I</a>
@@ -27,4 +27,15 @@
   </div>
 </div>
 
-<div id="carte-accueil"></div>
+<div id="carte-point"></div>
+
+<p><b>Colimateur:</b>
+  <input type="hidden" id="cadre-json" name="geojson" value='{"type":"Point","coordinates":[5.88496,44.79095]}' />
+  <span id="cadre-string"></span>
+  <select id="cadre-select">
+    <option value="dec" selected="selected">Degrés décimaux</option>
+    <option value="dms">Deg Min Sec</option>
+    <option class="xy" value="swiss">Suisse</option>
+    <option value="utm">UTM</option>
+  </select>
+</p>

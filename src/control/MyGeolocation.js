@@ -91,8 +91,7 @@ export class MyGeolocation extends Button {
   }
 
   buttonAction(evt, active) {
-    const sourceEls = document.getElementsByName('myol-gps-source'),
-      buttonSelected = document.querySelector('.myol-button-geolocation.myol-button-selected');
+    const sourceEls = document.getElementsByName('myol-gps-source');
 
     if (evt.type == 'click' && active && sourceEls[0].checked)
       sourceEls[1].click();

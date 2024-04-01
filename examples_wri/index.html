@@ -1,54 +1,28 @@
-<!DOCTYPE html>
-<html>
+<link href="../examples_wri/vues/style.css.php" type="text/css" rel="stylesheet">
 
-<head>
-  <title>MyOl adaptation of Openlayers</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-  <link rel="icon" href="https://www.refuges.info/images/icones/favicon.svg" type="image/svg">
+<style>
+  #sh-index {
+    border: 1px solid black;
+  }
 
-  <!-- Openlayers & MyOl package -->
-  <script>
-    if (window.origin.split(':').length > 2)
-      // Test with nodejs + vite
-      document.write('<script type="module" src="../build/index.js"><\/script>');
-    else {
-      // apache (production)
-      document.write('<link href="../dist/myol.css" type="text/css" rel="stylesheet">');
-      document.write('<script src="../dist/myol-debug.js"><\/script>');
-    }
-  </script>
+  #map {
+    display: none;
+  }
+</style>
 
-  <!-- WRI environment -->
-  <link href="vues/style.css.php" type="text/css" rel="stylesheet">
-  <script src="vues/_cartes.js" defer></script>
-  <!-- Includes js relative to the example name (passed as url search) -->
-  <script data-file="includes/example.js"></script>
-
-  <!-- Test environment -->
-  <link href="../examples/index.css" type="text/css" rel="stylesheet">
-  <script src="../examples/index.js" defer></script>
-</head>
-
-<body>
-  <div id="example-header">
-    <a href="https://github.com/Dominique92/myol/">Github &#9654;</a>
-    <h1 id="example-title">&nbsp;</h1>
-    <a id="example-next" title="Next">Next&#9654;</a>
-    <div>
-      <a href="../examples/" title="Tests myol">&#127968;</a>
-      <a id="sh-index" href="." title="Index">&nbsp;I</a>
-      <a id="sh-point" href="?point" title="Point">P</a>
-      <a id="sh-modifpoint" href="?modifpoint" title="Modif point">Mp</a>
-      <a id="sh-creepoint" href="?creepoint" title="Crée point">Cp</a>
-      <a id="sh-nav" href="?nav" title="Nav">N</a>
-      <a id="sh-navmassif" href="?navmassif" title="Nav massif">Nm</a>
-      <a id="sh-editmassif" href="?editmassif" title="Edit massif">Em</a>
-      <a id="sh-creemassif" href="?creemassif" title="Crée massif">Cm</a>
-    </div>
+<div id="example-header">
+  <a id="example-next-wri" title="Next">Next&#9654;</a>
+  <div>
+    <span>Refuges.info:</span>
+    <a id="sh-index" href="." title="Index">&nbsp;I</a>
+    <a id="sh-point" href="?../../examples_wri/point" title="Point">P</a>
+    <a id="sh-modifpoint" href="?../../examples_wri/modifpoint" title="Modif point">Mp</a>
+    <a id="sh-creepoint" href="?../../examples_wri/creepoint" title="Crée point">Cp</a>
+    <a id="sh-nav" href="?../../examples_wri/nav" title="Nav">N</a>
+    <a id="sh-navmassif" href="?../../examples_wri/navmassif" title="Nav massif">Nm</a>
+    <a id="sh-editmassif" href="?../../examples_wri/editmassif" title="Edit massif">Em</a>
+    <a id="sh-creemassif" href="?../../examples_wri/creemassif" title="Crée massif">Cm</a>
   </div>
+</div>
 
-  <div data-file="includes/example.html"></div>
-</body>
-
-</html>
+<div id="carte-accueil"></div>

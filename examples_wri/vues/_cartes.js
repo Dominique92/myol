@@ -1,6 +1,26 @@
-// Contient les fonctions communes à plusieurs cartes
+// Contient les fonctions gérant les cartes
 
-function couchePointsWRI(options, page, layerOptions) {
+// Fabrique le texte de l'étiquette à partir des propriétés reçues du serveur
+function etiquetteComplette(properties) {
+  const caracteristiques = [],
+    lignes = [];
+
+  // On calcule d'abord la deuxième ligne
+  if (properties.coord && properties.coord.alt)
+    caracteristiques.push(parseInt(properties.coord.alt) + ' m');
+  if (properties.places && properties.places.valeur)
+    caracteristiques.push(parseInt(properties.places.valeur) + '\u255E\u2550\u2555');
+
+  // Calcul des lignes de l'étiquette
+  lignes.push(properties.name);
+  if (caracteristiques.length)
+    lignes.push(caracteristiques.join(','));
+  lignes.push(properties.type);
+
+  return lignes.join('\n');
+}
+
+function couchePointsWRI(options, page) {
   const layer = new myol.layer.MyVectorLayer({
     selectMassif: new myol.Selector('no-selector'), // Defaut = pas de sélecteur de massif
 
@@ -9,7 +29,6 @@ function couchePointsWRI(options, page, layerOptions) {
     nbMaxClusters: 108, // Nombre de clusters sur la carte (12 rangées de 9). Remplace la distance
     browserClusterMinResolution: 10, // (mètres par pixel) résolution en-dessous de laquelle le navigateur ne clusterise plus et ajoute une gigue
 
-    ...layerOptions, // Config_privee
     ...options,
 
     // Calcul de l'url de l'API refuges?.info
@@ -54,26 +73,6 @@ function couchePointsWRI(options, page, layerOptions) {
   layer.options.selectMassif.callbacks.push(() => layer.reload());
 
   return layer;
-}
-
-// Fabrique le texte de l'étiquette à partir des propriétés reçues du serveur
-function etiquetteComplette(properties) {
-  const caracteristiques = [],
-    lignes = [];
-
-  // On calcule d'abord la deuxième ligne
-  if (properties.coord && properties.coord.alt)
-    caracteristiques.push(parseInt(properties.coord.alt) + ' m');
-  if (properties.places && properties.places.valeur)
-    caracteristiques.push(parseInt(properties.places.valeur) + '\u255E\u2550\u2555');
-
-  // Calcul des lignes de l'étiquette
-  lignes.push(properties.name);
-  if (caracteristiques.length)
-    lignes.push(caracteristiques.join(','));
-  lignes.push(properties.type);
-
-  return lignes.join('\n');
 }
 
 // La couche des massifs colorés (accueil et couche carte nav)
@@ -200,4 +199,156 @@ function fondsCarte(page, mapKeys) {
       key: mapKeys.mapbox,
     }),
   };
+}
+
+// Page d'accueil
+function mapIndex(options) {
+  const map = new ol.Map({
+    target: 'carte-accueil',
+
+    view: new ol.View({
+      enableRotation: false,
+      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+    }),
+
+    controls: [
+      new ol.control.Attribution({ // Du fond de carte
+        collapsed: false,
+      }),
+    ],
+
+    layers: [
+      new myol.layer.tile.MRI(), // Fond de carte
+      coucheMassifsColores({ // Les massifs
+        host: options.host,
+      }),
+      new myol.layer.Hover(), // Gère le survol du curseur
+    ],
+  });
+
+  map.getView().fit(ol.proj.transformExtent(options.extent, 'EPSG:4326', 'EPSG:3857'));
+
+  return map;
+}
+
+// Page des points
+function mapPoint(options) {
+  return new ol.Map({
+    target: 'carte-point',
+
+    view: new ol.View({
+      enableRotation: false,
+      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+    }),
+
+    controls: [
+      // Haut gauche
+      new ol.control.Zoom(),
+      new ol.control.FullScreen(),
+      new myol.control.MyGeocoder(),
+      new myol.control.MyGeolocation(),
+      new myol.control.Download(),
+      new myol.control.Print(),
+
+      // Bas gauche
+      new myol.control.MyMousePosition(),
+      new ol.control.ScaleLine(),
+
+      // Bas droit
+      new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
+        collapsed: false,
+      }),
+      new myol.control.Permalink({ // Permet de garder le même réglage de carte
+        visible: false, // Mais on ne visualise pas le lien du permalink
+        init: false, // Ici, on utilisera plutôt la position du point
+      }),
+
+      // Haut droit
+      new myol.control.LayerSwitcher({
+        layers: fondsCarte('point', options.mapKeys),
+      }),
+    ],
+
+    layers: [
+      // Les autres points refuges.info
+      couchePointsWRI({
+        host: options.host,
+        browserClusterMinResolution: 4, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
+        ...options.layerOptions,
+      }, 'point'),
+
+      // Le cadre rouge autour du point de la fiche
+      new myol.layer.Marker({
+        prefix: 'cadre', // S'interface avec les <TAG id="cadre-xxx"...>
+        // Prend la position qui est dans <input id="cadre-json">
+        src: options.host + 'images/cadre.svg',
+        focus: 15, // Centrer
+        zIndex: 300, // Above the features, under the hover label
+      }),
+
+      // Gère le survol du curseur
+      new myol.layer.Hover(),
+    ],
+  });
+}
+
+// Page de modification des points
+function mapModif(options) {
+  return new ol.Map({
+    target: 'carte-modif',
+
+    view: new ol.View({
+      enableRotation: false,
+      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+    }),
+
+    controls: [
+      // Haut gauche
+      new ol.control.Zoom(),
+      new ol.control.FullScreen(),
+      new myol.control.MyGeocoder(),
+      new myol.control.MyGeolocation(),
+
+      // Bas gauche
+      new myol.control.MyMousePosition(),
+      new ol.control.ScaleLine(),
+
+      // Bas droit
+      new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
+        collapsed: false,
+      }),
+      new myol.control.Permalink({
+        init: !options.idPoint, // Garde la position courante en création de point
+      }),
+
+      // Haut droit
+      new myol.control.LayerSwitcher({
+        layers: fondsCarte('modif', options.mapKeys),
+      }),
+    ],
+
+    layers: [
+      // Les autres points refuges.info
+      couchePointsWRI({
+          host: options.host,
+          browserClusterMinResolution: null, // Pour ne pas générer de gigue
+          noClick: true,
+          ...options.layerOptions,
+        },
+        'modif',
+      ),
+
+      // Le viseur jaune pour modifier la position du point
+      new myol.layer.Marker({
+        src: options.host + 'images/viseur.svg',
+        prefix: 'marker', // S'interface avec les <TAG id="marker-xxx"...>
+        // Prend la position qui est dans <input id="cadre-json">
+        dragable: true,
+        focus: 15, // Centre la carte sur le curseur
+      }),
+
+      // Gère le survol du curseur
+      new myol.layer.Hover(),
+    ],
+  });
 }

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 30/03/2024 16:40:43 using npm run build from the src/... sources
+ * Built 01/04/2024 20:42:19 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -65950,7 +65950,7 @@
       // Close other opened buttons when hover with a mouse
       this.element.addEventListener('pointerover', () => {
         for (let el of document.getElementsByClassName('myol-button-selected'))
-          if (!el.classList.contains('myol-button-keepselect'))
+          if (!el.classList.contains('myol-button-keepselect')) //TODO colorer en bleu le bouton quand sélectionné
             el.classList.remove('myol-button-selected');
       });
 
@@ -66057,7 +66057,6 @@
 
     buttonAction(evt, active) {
       const sourceEls = document.getElementsByName('myol-gps-source');
-        document.querySelector('.myol-button-geolocation.myol-button-selected');
 
       if (evt.type == 'click' && active && sourceEls[0].checked)
         sourceEls[1].click();
@@ -66450,6 +66449,10 @@
    * geoJson lines & polygons edit
    */
 
+
+  //TODO pointeur reste aux graphiques sur les sous-menus des autres controles
+  //TODO controle charge fichier pas édité
+  //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
 
   // Editor
   class Editor extends ol.layer.Vector {
@@ -75680,7 +75683,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 30/03/2024 16:40:43',
+    VERSION: '1.1.2.dev 01/04/2024 20:42:19',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

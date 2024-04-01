@@ -7,6 +7,10 @@ import ol from '../ol';
 import Button from '../control/Button';
 import './editor.css';
 
+//TODO pointeur reste aux graphiques sur les sous-menus des autres controles
+//TODO controle charge fichier pas édité
+//TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
+
 // Editor
 export class Editor extends ol.layer.Vector {
   constructor(options) {

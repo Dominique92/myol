@@ -1,7 +1,7 @@
 /* global ol, myol, mapKeys */
 
-document.getElementById('example-title').innerHTML = 'Openlayers adaptation';
-document.getElementById('example-next').href = '?layerSwitcher';
+document.getElementById('item-title').innerHTML = 'Openlayers adaptation';
+document.getElementById('item-next').href = '?layerSwitcher';
 
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({

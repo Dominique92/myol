@@ -1,6 +1,6 @@
-document.getElementById('example-title').innerHTML = 'WRI modif point';
+document.getElementById('item-title').innerHTML = 'WRI modif point';
 
-/* global mapPoint */
+/* global mapModif */
 const elScript = document.createElement('script');
 
 document.body.appendChild(elScript);

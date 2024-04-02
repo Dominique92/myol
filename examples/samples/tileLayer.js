@@ -1,7 +1,7 @@
 /* global ol, myol, mapKeys */
 
-document.getElementById('example-title').innerHTML = 'Tile layer';
-document.getElementById('example-next').href = '?vectorLayer';
+document.getElementById('item-title').innerHTML = 'Tile layer';
+document.getElementById('item-next').href = '?vectorLayer';
 
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({

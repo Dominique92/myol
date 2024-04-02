@@ -1,7 +1,7 @@
 /* global ol, myol */
 
-document.getElementById('example-title').innerHTML = 'Controls';
-document.getElementById('example-next').href = '?marker';
+document.getElementById('item-title').innerHTML = 'Controls';
+document.getElementById('item-next').href = '?marker';
 
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({

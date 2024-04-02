@@ -1,7 +1,7 @@
 /* global ol, myol */
 
-document.getElementById('example-title').innerHTML = 'Layer switcher';
-document.getElementById('example-next').href = '?tileLayer';
+document.getElementById('item-title').innerHTML = 'Layer switcher';
+document.getElementById('item-next').href = '?tileLayer';
 
 /* eslint-disable no-unused-vars */
 var baseLayers = {

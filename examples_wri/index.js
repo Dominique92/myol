@@ -1,4 +1,4 @@
-document.getElementById('example-title').innerHTML = 'Refuges.info';
+document.getElementById('item-title').innerHTML = 'Refuges.info';
 
 /* global mapIndex */
 const elScript = document.createElement('script');

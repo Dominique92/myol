@@ -1,7 +1,7 @@
 /* global ol, myol */
 
-document.getElementById('example-title').innerHTML = 'Editor';
-document.getElementById('example-next').href = '../gps';
+document.getElementById('item-title').innerHTML = 'Editor';
+document.getElementById('item-next').href = '?../../examples_wri/index';
 
 var snaplayer = new ol.layer.Vector({
     background: 'transparent',

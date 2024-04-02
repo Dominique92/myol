@@ -233,6 +233,26 @@ function mapIndex(options) {
   return map;
 }
 
+const basicControls=[
+      // Haut gauche
+      new ol.control.Zoom(),
+      new ol.control.FullScreen(),
+      new myol.control.MyGeocoder(),
+      new myol.control.MyGeolocation(),
+        new myol.control.Load(),
+      new myol.control.Download(),
+      new myol.control.Print(),
+
+      // Bas gauche
+      new myol.control.MyMousePosition(),
+      new ol.control.ScaleLine(),
+	  
+      // Bas droit
+      new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
+        collapsed: false,
+      }),
+];
+
 // Page des points
 /* eslint-disable-next-line no-unused-vars */
 function mapPoint(options) {
@@ -245,22 +265,9 @@ function mapPoint(options) {
     }),
 
     controls: [
-      // Haut gauche
-      new ol.control.Zoom(),
-      new ol.control.FullScreen(),
-      new myol.control.MyGeocoder(),
-      new myol.control.MyGeolocation(),
-      new myol.control.Download(),
-      new myol.control.Print(),
-
-      // Bas gauche
-      new myol.control.MyMousePosition(),
-      new ol.control.ScaleLine(),
+	...basicControls,
 
       // Bas droit
-      new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
-        collapsed: false,
-      }),
       new myol.control.Permalink({ // Permet de garder le même réglage de carte
         visible: false, // Mais on ne visualise pas le lien du permalink
         init: false, // Ici, on utilisera plutôt la position du point
@@ -308,21 +315,10 @@ function mapModif(options) {
     }),
 
     controls: [
-      // Haut gauche
-      new ol.control.Zoom(),
-      new ol.control.FullScreen(),
-      new myol.control.MyGeocoder(),
-      new myol.control.MyGeolocation(),
-
-      // Bas gauche
-      new myol.control.MyMousePosition(),
-      new ol.control.ScaleLine(),
+	...basicControls,
 
       // Bas droit
-      new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
-        collapsed: false,
-      }),
-      new myol.control.Permalink({
+       new myol.control.Permalink({
         init: !options.idPoint, // Garde la position courante en création de point
       }),
 
@@ -377,53 +373,20 @@ function mapNav(options) {
   if (options.id_polygone)
     localStorage.myol_selectmassif = options.id_polygone;
 
-  var contourMassif = coucheContourMassif({
+  const contourMassif = coucheContourMassif({
       host: options.host,
       selectName: 'select-massif',
     }),
 
-    map = new ol.Map({
-      target: 'carte-nav',
-
-      view: new ol.View({
-        enableRotation: false,
-        constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
-      }),
-
-      controls: [
-        // Haut gauche
-        new ol.control.Zoom(),
-        new ol.control.FullScreen(),
-        new myol.control.MyGeocoder(),
-        new myol.control.MyGeolocation(),
-        new myol.control.Load(),
-        new myol.control.Download(),
-        new myol.control.Print(),
-
-        // Bas gauche
-        new myol.control.MyMousePosition(),
-        new ol.control.ScaleLine(),
-
-        // Bas droit
-        new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
-          collapsed: false,
-        }),
-        new myol.control.Permalink({ // Permet de garder le même réglage de carte
-          display: true, // Affiche le lien
-          init: !options.extent, // On reprend la même position s'il n'y a pas de massif
-        }),
-
-        // Haut droit
-        new myol.control.LayerSwitcher({
-          layers: fondsCarte('nav', options.mapKeys),
-        }),
-      ],
-
-      layers: [
-        coucheMassifsColores({
+        pointsWRI=        couchePointsWRI({
           host: options.host,
-          selectName: 'select-massifs',
+          selectName: 'select-wri',
+          selectMassif: contourMassif.options.selector,
+          page: 'nav',
+          ...options.layerOptions,
         }),
+
+      externLayers= [
         new myol.layer.vector.Chemineur({
           selectName: 'select-chem',
         }),
@@ -439,16 +402,39 @@ function mapNav(options) {
         new myol.layer.vector.Overpass({
           selectName: 'select-osm',
         }),
+	  ],
 
-        contourMassif,
+    map = new ol.Map({
+      target: 'carte-nav',
 
-        couchePointsWRI({
-          host: options.host,
-          selectName: 'select-wri',
-          selectMassif: contourMassif.options.selector,
-          page: 'nav',
-          ...options.layerOptions,
+      view: new ol.View({
+        enableRotation: false,
+        constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+      }),
+
+      controls: [
+	...basicControls,
+ 
+        // Bas droit
+         new myol.control.Permalink({ // Permet de garder le même réglage de carte
+          display: true, // Affiche le lien
+          init: !options.extent, // On reprend la même position s'il n'y a pas de massif
         }),
+
+        // Haut droit
+        new myol.control.LayerSwitcher({
+          layers: fondsCarte('nav', options.mapKeys),
+        }),
+      ],
+  
+      layers: [
+        coucheMassifsColores({
+          host: options.host,
+          selectName: 'select-massifs',
+        }),
+		...externLayers,
+        contourMassif,
+        pointsWRI,
         new myol.layer.Hover(), // Gère le survol du curseur
       ],
     });

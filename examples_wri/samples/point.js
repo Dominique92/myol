@@ -1,6 +1,8 @@
-document.getElementById('item-title').innerHTML = 'WRI point';
+/* global myol, mapPoint, mapKeys */
 
-/* global myol, mapPoint */
+document.getElementById('item-title').innerHTML = 'WRI point';
+document.getElementById('item-next').href = '?../../examples_wri/samples/pointmodif';
+
 const elScript = document.createElement('script');
 
 document.body.appendChild(elScript);

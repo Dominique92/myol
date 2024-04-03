@@ -233,25 +233,27 @@ function mapIndex(options) {
   return map;
 }
 
-const basicControls=[
-      // Haut gauche
-      new ol.control.Zoom(),
-      new ol.control.FullScreen(),
-      new myol.control.MyGeocoder(),
-      new myol.control.MyGeolocation(),
-        new myol.control.Load(),
-      new myol.control.Download(),
-      new myol.control.Print(),
+function basicControls() {
+  return [
+    // Haut gauche
+    new ol.control.Zoom(),
+    new ol.control.FullScreen(),
+    new myol.control.MyGeocoder(),
+    new myol.control.MyGeolocation(),
+    new myol.control.Load(),
+    new myol.control.Download(),
+    new myol.control.Print(),
 
-      // Bas gauche
-      new myol.control.MyMousePosition(),
-      new ol.control.ScaleLine(),
-	  
-      // Bas droit
-      new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
-        collapsed: false,
-      }),
-];
+    // Bas gauche
+    new myol.control.MyMousePosition(),
+    new ol.control.ScaleLine(),
+
+    // Bas droit
+    new ol.control.Attribution({ // Attribution doit être défini avant LayerSwitcher
+      collapsed: false,
+    }),
+  ];
+}
 
 // Page des points
 /* eslint-disable-next-line no-unused-vars */
@@ -265,7 +267,7 @@ function mapPoint(options) {
     }),
 
     controls: [
-	...basicControls,
+      ...basicControls(),
 
       // Bas droit
       new myol.control.Permalink({ // Permet de garder le même réglage de carte
@@ -315,10 +317,10 @@ function mapModif(options) {
     }),
 
     controls: [
-	...basicControls,
+      ...basicControls(),
 
       // Bas droit
-       new myol.control.Permalink({
+      new myol.control.Permalink({
         init: !options.idPoint, // Garde la position courante en création de point
       }),
 
@@ -378,31 +380,31 @@ function mapNav(options) {
       selectName: 'select-massif',
     }),
 
-        pointsWRI=        couchePointsWRI({
-          host: options.host,
-          selectName: 'select-wri',
-          selectMassif: contourMassif.options.selector,
-          page: 'nav',
-          ...options.layerOptions,
-        }),
+    pointsWRI = couchePointsWRI({
+      host: options.host,
+      selectName: 'select-wri',
+      selectMassif: contourMassif.options.selector,
+      page: 'nav',
+      ...options.layerOptions,
+    }),
 
-      externLayers= [
-        new myol.layer.vector.Chemineur({
-          selectName: 'select-chem',
-        }),
-        new myol.layer.vector.Alpages({
-          selectName: 'select-alpages',
-        }),
-        new myol.layer.vector.PRC({
-          selectName: 'select-prc',
-        }),
-        new myol.layer.vector.C2C({
-          selectName: 'select-c2c',
-        }),
-        new myol.layer.vector.Overpass({
-          selectName: 'select-osm',
-        }),
-	  ],
+    externLayers = [
+      new myol.layer.vector.Chemineur({
+        selectName: 'select-chem',
+      }),
+      new myol.layer.vector.Alpages({
+        selectName: 'select-alpages',
+      }),
+      new myol.layer.vector.PRC({
+        selectName: 'select-prc',
+      }),
+      new myol.layer.vector.C2C({
+        selectName: 'select-c2c',
+      }),
+      new myol.layer.vector.Overpass({
+        selectName: 'select-osm',
+      }),
+    ],
 
     map = new ol.Map({
       target: 'carte-nav',
@@ -413,10 +415,10 @@ function mapNav(options) {
       }),
 
       controls: [
-	...basicControls,
- 
+        ...basicControls(),
+
         // Bas droit
-         new myol.control.Permalink({ // Permet de garder le même réglage de carte
+        new myol.control.Permalink({ // Permet de garder le même réglage de carte
           display: true, // Affiche le lien
           init: !options.extent, // On reprend la même position s'il n'y a pas de massif
         }),
@@ -426,13 +428,13 @@ function mapNav(options) {
           layers: fondsCarte('nav', options.mapKeys),
         }),
       ],
-  
+
       layers: [
         coucheMassifsColores({
           host: options.host,
           selectName: 'select-massifs',
         }),
-		...externLayers,
+        ...externLayers,
         contourMassif,
         pointsWRI,
         new myol.layer.Hover(), // Gère le survol du curseur

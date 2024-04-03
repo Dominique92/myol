@@ -1,6 +1,8 @@
-document.getElementById('item-title').innerHTML = 'WRI crée point ';
+/* global mapModif, mapKeys */
 
-/* global mapModif */
+document.getElementById('item-title').innerHTML = 'WRI crée point ';
+document.getElementById('item-next').href = '?../../examples_wri/samples/nav';
+
 const elScript = document.createElement('script');
 
 document.body.appendChild(elScript);

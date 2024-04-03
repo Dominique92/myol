@@ -1,6 +1,8 @@
-document.getElementById('item-title').innerHTML = 'Wri carte nav';
+/* global mapNav, mapKeys */
 
-/* global mapNav */
+document.getElementById('item-title').innerHTML = 'Wri carte nav';
+document.getElementById('item-next').href = '?../../examples_wri/samples/navmassif';
+
 const elScript = document.createElement('script');
 
 document.body.appendChild(elScript);

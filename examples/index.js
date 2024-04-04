@@ -2,16 +2,23 @@
  * MyOpenlayers example & test helper
  */
 
-const exampleName = location.search.substring(1) || 'index',
-  base = location.href.match(/([^?]*\/)[^/]*/)[1];
+// Analyse url & args
+const base = location.href.match(/([^?]*\/)[^/]*/)[1],
+  urlParams = {};
+
+for (const p of new URLSearchParams(location.search))
+  if (p[1])
+    urlParams[p[0]] = p[1];
+  else
+    urlParams[0] = p[0]; // item name
 
 // Fill an element with the content of the file defined in data-file="FILE_NAME"
-// With the content of the text after data-split="SPLIT_CHAIN"
-document.querySelectorAll('[data-file*="item"]') // Replace item by url?query
+//TODO REMOVE With the content of the text after data-split="SPLIT_CHAIN"
+document.querySelectorAll('[data-file*="ITEM"]') // Replace ITEM by url?query
   .forEach(el =>
-    fetch(base + el.dataset.file.replace('item', exampleName))
+    fetch(base + el.dataset.file.replace('ITEM', urlParams[0] || 'index'))
     .then(response => response.text())
-    .then(fileContent => el.innerHTML = fileContent.split(el.dataset.split, 2).pop().trim())
+    .then(fileContent => el.innerHTML = fileContent.replace(/\/\/#.*/, '').trim())
   );
 
 // Default keys for development only

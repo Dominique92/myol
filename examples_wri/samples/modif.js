@@ -1,7 +1,7 @@
 /* global mapModif, mapKeys */
 
 document.getElementById('item-title').innerHTML = 'WRI modif point';
-document.getElementById('item-next').href = '?../../examples_wri/samples/pointcree';
+document.getElementById('item-next').href = '?../../examples_wri/samples/modif&id_point_type=7';
 
 const elScript = document.createElement('script');
 

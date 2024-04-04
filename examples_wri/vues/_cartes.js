@@ -321,7 +321,7 @@ function mapModif(options) {
 
       // Bas droit
       new myol.control.Permalink({
-        init: !options.idPoint, // Garde la position courante en création de point
+        init: !options.idPoint, // Va à la position du point sauf en création
       }),
 
       // Haut droit

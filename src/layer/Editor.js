@@ -8,7 +8,7 @@ import Button from '../control/Button';
 import './editor.css';
 
 //TODO pointeur reste aux graphiques sur les sous-menus des autres controles
-//TODO controle charge fichier pas édité
+//TODO le controle ne charge pas le fichier dans la zone édition
 //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
 
 // Editor

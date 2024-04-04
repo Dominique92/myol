@@ -8,6 +8,8 @@ import pluginReplace from '@rollup/plugin-replace'; // To include the version in
 import css from 'rollup-plugin-import-css'; // Collect css
 import terser from '@rollup/plugin-terser'; // Rollup plugin to minify generated es bundle
 
+//BEST remove TODO & BEST from build
+
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')),
   geocoderPkg = JSON.parse(readFileSync('./node_modules/@myol/geocoder/package.json', 'utf-8')),
   timeBuild = new Date().toLocaleString(),

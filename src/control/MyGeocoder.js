@@ -33,7 +33,7 @@ export class MyGeocoder extends Geocoder {
     // Close other opened buttons when hover with a mouse
     this.element.addEventListener('pointerover', () => {
       for (let el of document.getElementsByClassName('myol-button-selected'))
-        if (!el.classList.contains('myol-button-keepselect')) //TODO colorer en bleu le bouton quand sélectionné
+        if (!el.classList.contains('myol-button-keepselect')) //BEST colorer en bleu le bouton quand sélectionné
           el.classList.remove('myol-button-selected');
     });
 

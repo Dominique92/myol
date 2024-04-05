@@ -1,8 +1,5 @@
 /* global ol, myol */
 
-document.getElementById('item-title').innerHTML = 'Marker';
-document.getElementById('item-next').href = '?editor';
-
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',

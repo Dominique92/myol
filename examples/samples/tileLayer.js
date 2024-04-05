@@ -1,8 +1,5 @@
 /* global ol, myol, mapKeys */
 
-document.getElementById('item-title').innerHTML = 'Tile layer';
-document.getElementById('item-next').href = '?vectorLayer';
-
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',

@@ -52,7 +52,7 @@ export async function trace() {
 
 // Zoom & resolution
 /* global map */
-window.addEventListener('load', () => { // Wait for doculment load
+window.addEventListener('load', () => { // Wait for document load
   if (typeof map == 'object' && map.once)
     map.once('precompose', () => { // Wait for view load
       traceZoom();

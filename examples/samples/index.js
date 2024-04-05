@@ -1,8 +1,5 @@
 /* global ol, myol, mapKeys */
 
-document.getElementById('item-title').innerHTML = 'Openlayers adaptation';
-document.getElementById('item-next').href = '?layerSwitcher';
-
 /* eslint-disable-next-line no-unused-vars */
 var map = new ol.Map({
   target: 'map',

@@ -1,8 +1,5 @@
 /* global ol, myol */
 
-document.getElementById('item-title').innerHTML = 'Layer switcher';
-document.getElementById('item-next').href = '?tileLayer';
-
 /* eslint-disable no-unused-vars */
 var baseLayers = {
     'OSM org': new ol.layer.Tile({

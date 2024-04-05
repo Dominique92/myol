@@ -447,3 +447,7 @@ function mapNav(options) {
 
   return map;
 }
+
+// Page d'édition des polygones
+/* eslint-disable-next-line no-unused-vars */
+function navEdit(options) {}

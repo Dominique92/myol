@@ -1,11 +1,11 @@
-/* global mapNav, mapKeys, urlParams */
+/* global navEdit, mapKeys, urlParams */
 
 const elScript = document.createElement('script');
 
 document.body.appendChild(elScript);
 elScript.src = '../examples_wri/vues/_cartes.js';
 elScript.addEventListener('load', () =>
-  mapNav({
+  navEdit({
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
     // layerOptions: <?=json_encode($config_wri['layerOptions'])?>,

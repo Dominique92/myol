@@ -4,7 +4,7 @@ const sampleEl =
 
 if (sampleEl) {
   document.getElementById(sampleEl.id).style.border = '1px solid black';
-  document.getElementById('item-title').innerHTML = 'WRI ' + sampleEl.title;
+  document.getElementById('item-title').innerHTML = sampleEl.title;
   document.getElementById('item-next').href = sampleEl
     .nextElementSibling
     .getAttribute('href');

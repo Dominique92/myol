@@ -9,7 +9,7 @@ let sampleLink = 'index';
 
 for (const p of new URLSearchParams(location.search))
   if (p[1])
-    urlParams[p[0]] = p[1];
+    urlParams[p[0]] = JSON.parse(p[1]);
   else
     sampleLink = p[0];
 

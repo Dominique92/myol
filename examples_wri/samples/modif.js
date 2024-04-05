@@ -1,7 +1,14 @@
-/* global mapModif, mapKeys */
+/* global urlParams, mapModif, mapKeys */
 
-document.getElementById('item-title').innerHTML = 'WRI modif point';
-document.getElementById('item-next').href = '?../../examples_wri/samples/modif&id_point_type=7';
+if (urlParams['id_point']) {
+  document.getElementById('item-title').innerHTML = 'WRI modif point';
+  document.getElementById('sh-modif').style.border = '1px solid black';
+  document.getElementById('item-next').href = '?../../examples_wri/samples/modif&id_point_type=7';
+} else {
+  document.getElementById('item-title').innerHTML = 'WRI crée point';
+  document.getElementById('sh-pointcree').style.border = '1px solid black';
+  document.getElementById('item-next').href = '?../../examples_wri/samples/nav';
+}
 
 const elScript = document.createElement('script');
 
@@ -12,6 +19,7 @@ elScript.addEventListener('load', () =>
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
     layerOptions: {}, //<?=json_encode($config_wri['layerOptions'])?>,
-    idPoint: 1234, // <?=intval($vue->point->id_point)?>;
+    idPoint: urlParams['id_point'], // <?=intval($vue->point->id_point)?>;
   })
 );
+//TODO BUG position curseur crée

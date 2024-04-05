@@ -1,6 +1,7 @@
 /* global mapIndex */
 
 document.getElementById('item-title').innerHTML = 'Refuges.info';
+document.getElementById('sh-index').style.border = '1px solid black';
 document.getElementById('item-next').href = '?../../examples_wri/samples/point';
 
 const elScript = document.createElement('script');

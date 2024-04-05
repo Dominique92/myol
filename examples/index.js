@@ -28,12 +28,15 @@ document.getElementById('sampleList')
 */
 
 // Fill an element with the content of the file defined in data-file="FILE_NAME"
-//TODO REMOVE With the content of the text after data-split="SPLIT_CHAIN"
 document.querySelectorAll('[data-file*="ITEM"]') // Replace ITEM by url?query
   .forEach(el =>
     fetch(base + el.dataset.file.replace('ITEM', sampleLink))
     .then(response => response.text())
-    .then(fileContent => el.innerHTML = fileContent.replace(/\/\/#.*/, '').trim())
+    .then(fileContent => el.innerHTML = fileContent
+      .replace(/\/\*.*\*\//, '') // Remove /* comments */
+      .replace(/\/\/#.*/, '') // remove //# sourceMappingURL
+      .trim()
+    )
   );
 
 // Default keys for development only

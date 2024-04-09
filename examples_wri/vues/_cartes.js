@@ -305,7 +305,7 @@ function mapPoint(options) {
   });
 }
 
-// Page de modification des points
+// Pages de création et modification des points
 /* eslint-disable-next-line no-unused-vars */
 function mapModif(options) {
   return new ol.Map({

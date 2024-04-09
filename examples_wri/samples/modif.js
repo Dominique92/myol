@@ -1,7 +1,9 @@
 /* global urlParams, mapModif, mapKeys */
 
-// Simule la page de création qui n'a pas de position initiale du curseur
-document.getElementById('marker-json').value = '';
+// Simule la position du point donnée à la page de modification
+const markerJson = document.getElementById('marker-json');
+if (urlParams.id_point && markerJson)
+  markerJson.value = '{"type":"Point","coordinates":[5.88496,44.79095]}';
 
 const elScript = document.createElement('script');
 

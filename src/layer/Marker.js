@@ -79,10 +79,11 @@ export class Marker extends ol.layer.Vector {
     map.once('postrender', () => { //HACK the only event to trigger if the map is not centered
       this.view = map.getView();
 
-      this.action(this.els.lon); // Il value is provided in lon / lat inputs fields
-      this.action(this.els.json); // Il value is provided in json inputs fields
-      if (this.options.focus)
+      if (this.options.focus) {
+        this.action(this.els.lon); // Il value is provided in lon / lat inputs fields
+        this.action(this.els.json); // Il value is provided in json inputs fields
         this.view.setZoom(this.options.focus);
+      }
     });
 
     // Change the cursor over a dragable feature

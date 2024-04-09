@@ -20,6 +20,7 @@ export class Marker extends ol.layer.Vector {
       // marker-lon, marker-lat, // <input> longitude / latitude
       // marker-x, marker-y', // <input> Swiss EPSG:21781
       // marker-select, marker-string, select // display coords format
+      //BEST split in 4 options
 
       ...options,
     };
@@ -44,7 +45,7 @@ export class Marker extends ol.layer.Vector {
         marker: true, // To recognise that this is a marker
       },
 
-      ...options
+      ...options,
     });
 
     this.options = options;

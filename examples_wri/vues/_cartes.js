@@ -287,7 +287,7 @@ function mapPoint(options) {
         host: options.host,
         browserClusterMinResolution: 4, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
         page: 'point',
-        ...options.layerOptions,
+        ...options, // Options à ajouter depuis config_privee.php      }),
       }),
 
       // Le cadre rouge autour du point de la fiche
@@ -321,7 +321,7 @@ function mapModif(options) {
 
       // Bas droit
       new myol.control.Permalink({
-        init: !options.idPoint, // Va à la position du point sauf en création
+        init: !options.idPoint, // Va à la position courante en création
       }),
 
       // Haut droit
@@ -337,7 +337,7 @@ function mapModif(options) {
         browserClusterMinResolution: null, // Pour ne pas générer de gigue
         noClick: true,
         page: 'modif',
-        ...options.layerOptions,
+        ...options, // Options à ajouter depuis config_privee.php      }),
       }),
 
       // Le viseur jaune pour modifier la position du point
@@ -385,7 +385,7 @@ function mapNav(options) {
       selectName: 'select-wri',
       selectMassif: contourMassif.options.selector,
       page: 'nav',
-      ...options.layerOptions,
+      ...options, // Options à ajouter depuis config_privee.php    }),
     }),
 
     externLayers = [

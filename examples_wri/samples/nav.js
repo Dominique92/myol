@@ -8,9 +8,10 @@ elScript.addEventListener('load', () =>
   mapNav({
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
-    // layerOptions: <?=json_encode($config_wri['layerOptions'])?>,
     // id_polygone: <?=isset($vue->polygone)?$vue->polygone->id_polygone:0?>,
+    // id_polygone_type: <?=isset($vue->polygone)?$vue->polygone->id_polygone_type:0?>,
     // extent :null <?=json_encode($vue->polygone->extent)?>,
     ...urlParams,
+    //...<?=json_encode($config_wri['layerOptions'])?>,
   })
 );

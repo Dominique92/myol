@@ -168,8 +168,10 @@ export class Marker extends ol.layer.Vector {
 
     ll4326[0] -= Math.round(ll4326[0] / 360) * 360; // Wrap +-180°
 
-    const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857'),
-      inEPSG21781 = typeof proj4Lib == 'function' &&
+    const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857');
+
+    const inEPSG21781 =
+      typeof proj4Lib == 'function' &&
       ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
 
     // Move the marker

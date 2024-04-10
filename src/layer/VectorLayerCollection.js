@@ -254,6 +254,7 @@ export class Overpass extends MyVectorLayer {
         // Create a new 'node' element centered on the surface
         if (node.nodeName == 'way') {
           const newNode = doc.createElement('node');
+
           newNode.id = node.id;
           doc.documentElement.appendChild(newNode);
 
@@ -284,6 +285,7 @@ export class Overpass extends MyVectorLayer {
 
       function addTag(node, k, v) {
         const newTag = doc.createElement('tag');
+
         newTag.setAttribute('k', k);
         newTag.setAttribute('v', v);
         node.appendChild(newTag);

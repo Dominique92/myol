@@ -39,34 +39,36 @@ export class Editor extends ol.layer.Vector {
     };
 
     const geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
-      geoJson = (geoJsonEl ? geoJsonEl.value : '') || '{"type":"FeatureCollection","features":[]}',
-      source = new ol.source.Vector({
-        features: options.format.readFeatures(geoJson, options),
-        wrapX: false,
+      geoJson = (geoJsonEl ? geoJsonEl.value : '') || '{"type":"FeatureCollection","features":[]}';
 
-        ...options,
-      }),
-      style = new ol.style.Style({
-        // Marker
-        image: new ol.style.Circle({
-          radius: 4,
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 2,
-          }),
-        }),
-        // Lines or polygons border
+    const source = new ol.source.Vector({
+      features: options.format.readFeatures(geoJson, options),
+      wrapX: false,
+
+      ...options,
+    });
+
+    const style = new ol.style.Style({
+      // Marker
+      image: new ol.style.Circle({
+        radius: 4,
         stroke: new ol.style.Stroke({
           color: 'red',
           width: 2,
         }),
-        // Polygons
-        fill: new ol.style.Fill({
-          color: 'rgba(0,0,255,0.2)',
-        }),
+      }),
+      // Lines or polygons border
+      stroke: new ol.style.Stroke({
+        color: 'red',
+        width: 2,
+      }),
+      // Polygons
+      fill: new ol.style.Fill({
+        color: 'rgba(0,0,255,0.2)',
+      }),
 
-        ...options.styleOptions,
-      });
+      ...options.styleOptions,
+    });
 
     super({
       source: source,
@@ -280,18 +282,20 @@ export class Editor extends ol.layer.Vector {
 
     // Set the cursor dependng on the activity
     const mapEl = this.map.getTargetElement();
+
     if (mapEl)
       mapEl.className = 'map-edit-' + interaction;
   }
 
   // Processing the data
   optimiseEdited(selectedVertex, reverseLine) {
-    const view = this.map.getView(),
-      coordinates = this.optimiseFeatures(
-        this.source.getFeatures(),
-        selectedVertex,
-        reverseLine
-      );
+    const view = this.map.getView();
+
+    const coordinates = this.optimiseFeatures(
+      this.source.getFeatures(),
+      selectedVertex,
+      reverseLine
+    );
 
     // Recreate features
     this.source.clear();
@@ -333,6 +337,7 @@ export class Editor extends ol.layer.Vector {
       for (let b = 0; b < a; b++) // Once each combination
         if (lines[b]) {
           const m = [a, b];
+
           for (let i = 4; i; i--) // 4 times
             if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
               // Shake lines end to explore all possibilities
@@ -348,8 +353,7 @@ export class Editor extends ol.layer.Vector {
 
     // Make polygons with looped lines
     for (let a in lines)
-      if (this.options.editOnly != 'line' &&
-        lines[a]) {
+      if (this.options.editOnly != 'line' && lines[a]) {
         // Close open lines
         if (this.options.editOnly == 'poly')
           if (!this.compareCoords(lines[a]))
@@ -376,9 +380,9 @@ export class Editor extends ol.layer.Vector {
 
     // Makes holes if a polygon is included in a biggest one
     for (let p1 in polys) // Explore all Polygons combinaison
-      if (this.options.withHoles &&
-        polys[p1]) {
+      if (this.options.withHoles && polys[p1]) {
         const fs = new ol.geom.Polygon(polys[p1]);
+
         for (let p2 in polys)
           if (polys[p2] && p1 != p2) {
             let intersects = true;
@@ -403,6 +407,7 @@ export class Editor extends ol.layer.Vector {
     // Expand geometryCollection
     if (geom.getType() == 'GeometryCollection') {
       const geometries = geom.getGeometries();
+
       for (let g in geometries)
         this.flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
     }

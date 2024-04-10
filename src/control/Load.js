@@ -44,35 +44,43 @@ export class Load extends Button {
     const map = this.getMap(),
       formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
       loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
-      receivedLat = text.match(/lat="-?([0-9]+)/), // Received projection depending on the first value
-      receivedProjection = receivedLat && receivedLat.length && parseInt(receivedLat[1]) > 100 ? 'EPSG:3857' : 'EPSG:4326',
-      features = loadFormat.readFeatures(text, {
-        dataProjection: receivedProjection,
-        featureProjection: map.getView().getProjection(), // Map projection
-      }),
-      gpxSource = new ol.source.Vector({
-        format: loadFormat,
-        features: features,
-        wrapX: false,
-      }),
-      gpxLayer = new ol.layer.Vector({
-        background: 'transparent',
-        source: gpxSource,
-        style: feature => {
-          const properties = feature.getProperties();
+      receivedLat = text.match(/lat="-?([0-9]+)/); // Received projection depending on the first value
 
-          return new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              color: 'blue',
-              width: 2,
-            }),
-            image: properties.sym ? new ol.style.Icon({
-              src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
-            }) : null,
-          });
-        },
-      }),
-      fileExtent = gpxSource.getExtent();
+    const receivedProjection =
+      receivedLat &&
+      receivedLat.length &&
+      (parseInt(receivedLat[1]) > 100 ? 'EPSG:3857' : 'EPSG:4326');
+
+    const features = loadFormat.readFeatures(text, {
+      dataProjection: receivedProjection,
+      featureProjection: map.getView().getProjection(), // Map projection
+    });
+
+    const gpxSource = new ol.source.Vector({
+      format: loadFormat,
+      features: features,
+      wrapX: false,
+    });
+
+    const gpxLayer = new ol.layer.Vector({
+      background: 'transparent',
+      source: gpxSource,
+      style: feature => {
+        const properties = feature.getProperties();
+
+        return new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'blue',
+            width: 2,
+          }),
+          image: properties.sym ? new ol.style.Icon({
+            src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
+          }) : null,
+        });
+      },
+    });
+
+    const fileExtent = gpxSource.getExtent();
 
     if (ol.extent.isEmpty(fileExtent))
       alert(url + ' ne comporte pas de point ni de trace.');

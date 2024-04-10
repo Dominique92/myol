@@ -353,7 +353,9 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
 
   // Function returning an array of styles options
   style(feature) {
-    const sof = feature.getProperties().cluster ? stylesOptions.cluster : this.options.basicStylesOptions;
+    const sof = feature.getProperties().cluster ?
+      stylesOptions.cluster :
+      this.options.basicStylesOptions;
 
     return sof(...arguments) // Call the styleOptions function
       .map(so => new ol.style.Style(so)); // Transform into an array of Style objects

@@ -33,6 +33,7 @@ export class BackgroundLayer extends layerTile.Positron {
 
   tuneDisplay(map) {
     const mapExtent = map.getView().calculateExtent(map.getSize());
+
     let needed = true;
 
     map.getLayers().forEach(l => {

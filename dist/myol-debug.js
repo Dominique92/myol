@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 01/04/2024 20:42:19 using npm run build from the src/... sources
+ * Built 10/04/2024 16:55:44 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63659,6 +63659,7 @@
         downloadFormat = new ol.format[formatName](),
         mime = evt.target.getAttribute('mime'),
         mapExtent = map.getView().calculateExtent();
+
       let featuresToSave = [];
 
       if (this.options.savedLayer)
@@ -63706,11 +63707,11 @@
         .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
         .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
         .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
-        .replace(/ ([cvx])/g, '\n\t$1'),
+        .replace(/ ([cvx])/g, '\n\t$1');
 
-        file = new Blob([data], {
-          type: mime,
-        });
+      const file = new Blob([data], {
+        type: mime,
+      });
 
       this.hiddenEl.download = this.options.fileName + '.' + formatName.toLowerCase();
       this.hiddenEl.href = URL.createObjectURL(file);
@@ -64410,6 +64411,7 @@
 
     tuneDisplay(map) {
       const mapExtent = map.getView().calculateExtent(map.getSize());
+
       let needed = true;
 
       map.getLayers().forEach(l => {
@@ -64453,6 +64455,7 @@
 
       // Get baselayer from url hash (#baselayer=...) if any
       const bl = location.href.match(/baselayer=([^&]+)/);
+
       if (bl)
         localStorage.myol_baselayer = decodeURI(bl[1]);
 
@@ -64479,6 +64482,7 @@
 
       // Attach html additional selector (must be there to be after base layers)
       const selectExtEl = document.getElementById(this.selectExtId);
+
       if (selectExtEl) {
         selectExtEl.classList.add('select-ext');
         this.subMenuEl.appendChild(selectExtEl);
@@ -64667,35 +64671,43 @@
       const map = this.getMap(),
         formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
         loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
-        receivedLat = text.match(/lat="-?([0-9]+)/), // Received projection depending on the first value
-        receivedProjection = receivedLat && receivedLat.length && parseInt(receivedLat[1]) > 100 ? 'EPSG:3857' : 'EPSG:4326',
-        features = loadFormat.readFeatures(text, {
-          dataProjection: receivedProjection,
-          featureProjection: map.getView().getProjection(), // Map projection
-        }),
-        gpxSource = new ol.source.Vector({
-          format: loadFormat,
-          features: features,
-          wrapX: false,
-        }),
-        gpxLayer = new ol.layer.Vector({
-          background: 'transparent',
-          source: gpxSource,
-          style: feature => {
-            const properties = feature.getProperties();
+        receivedLat = text.match(/lat="-?([0-9]+)/); // Received projection depending on the first value
 
-            return new ol.style.Style({
-              stroke: new ol.style.Stroke({
-                color: 'blue',
-                width: 2,
-              }),
-              image: properties.sym ? new ol.style.Icon({
-                src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
-              }) : null,
-            });
-          },
-        }),
-        fileExtent = gpxSource.getExtent();
+      const receivedProjection =
+        receivedLat &&
+        receivedLat.length &&
+        (parseInt(receivedLat[1]) > 100 ? 'EPSG:3857' : 'EPSG:4326');
+
+      const features = loadFormat.readFeatures(text, {
+        dataProjection: receivedProjection,
+        featureProjection: map.getView().getProjection(), // Map projection
+      });
+
+      const gpxSource = new ol.source.Vector({
+        format: loadFormat,
+        features: features,
+        wrapX: false,
+      });
+
+      const gpxLayer = new ol.layer.Vector({
+        background: 'transparent',
+        source: gpxSource,
+        style: feature => {
+          const properties = feature.getProperties();
+
+          return new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'blue',
+              width: 2,
+            }),
+            image: properties.sym ? new ol.style.Icon({
+              src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
+            }) : null,
+          });
+        },
+      });
+
+      const fileExtent = gpxSource.getExtent();
 
       if (ol.extent.isEmpty(fileExtent))
         alert(url + ' ne comporte pas de point ni de trace.');
@@ -65950,7 +65962,7 @@
       // Close other opened buttons when hover with a mouse
       this.element.addEventListener('pointerover', () => {
         for (let el of document.getElementsByClassName('myol-button-selected'))
-          if (!el.classList.contains('myol-button-keepselect')) //TODO colorer en bleu le bouton quand sélectionné
+          if (!el.classList.contains('myol-button-keepselect')) //BEST colorer en bleu le bouton quand sélectionné
             el.classList.remove('myol-button-selected');
       });
 
@@ -66084,6 +66096,7 @@
       // Get geolocation values
       ['Position', 'AccuracyGeometry', 'Speed', 'Altitude'].forEach(valueName => {
         const value = this.geolocation['get' + valueName]();
+
         if (value)
           this[valueName.toLowerCase()] = value;
       });
@@ -66105,8 +66118,9 @@
         const p = this.position,
           hg = map.getCoordinateFromPixel([0, 0]),
           bd = map.getCoordinateFromPixel(map.getSize()),
-          far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10,
-          // The graticule
+          far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10;
+
+        const // The graticule
           geometry = [
             new ol.geom.MultiLineString([
               [
@@ -66451,7 +66465,7 @@
 
 
   //TODO pointeur reste aux graphiques sur les sous-menus des autres controles
-  //TODO controle charge fichier pas édité
+  //TODO le controle ne charge pas le fichier dans la zone édition
   //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
 
   // Editor
@@ -66482,34 +66496,36 @@
       };
 
       const geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
-        geoJson = (geoJsonEl ? geoJsonEl.value : '') || '{"type":"FeatureCollection","features":[]}',
-        source = new ol.source.Vector({
-          features: options.format.readFeatures(geoJson, options),
-          wrapX: false,
+        geoJson = (geoJsonEl ? geoJsonEl.value : '') || '{"type":"FeatureCollection","features":[]}';
 
-          ...options,
-        }),
-        style = new ol.style.Style({
-          // Marker
-          image: new ol.style.Circle({
-            radius: 4,
-            stroke: new ol.style.Stroke({
-              color: 'red',
-              width: 2,
-            }),
-          }),
-          // Lines or polygons border
+      const source = new ol.source.Vector({
+        features: options.format.readFeatures(geoJson, options),
+        wrapX: false,
+
+        ...options,
+      });
+
+      const style = new ol.style.Style({
+        // Marker
+        image: new ol.style.Circle({
+          radius: 4,
           stroke: new ol.style.Stroke({
             color: 'red',
             width: 2,
           }),
-          // Polygons
-          fill: new ol.style.Fill({
-            color: 'rgba(0,0,255,0.2)',
-          }),
+        }),
+        // Lines or polygons border
+        stroke: new ol.style.Stroke({
+          color: 'red',
+          width: 2,
+        }),
+        // Polygons
+        fill: new ol.style.Fill({
+          color: 'rgba(0,0,255,0.2)',
+        }),
 
-          ...options.styleOptions,
-        });
+        ...options.styleOptions,
+      });
 
       super({
         source: source,
@@ -66723,18 +66739,20 @@
 
       // Set the cursor dependng on the activity
       const mapEl = this.map.getTargetElement();
+
       if (mapEl)
         mapEl.className = 'map-edit-' + interaction;
     }
 
     // Processing the data
     optimiseEdited(selectedVertex, reverseLine) {
-      const view = this.map.getView(),
-        coordinates = this.optimiseFeatures(
-          this.source.getFeatures(),
-          selectedVertex,
-          reverseLine
-        );
+      const view = this.map.getView();
+
+      const coordinates = this.optimiseFeatures(
+        this.source.getFeatures(),
+        selectedVertex,
+        reverseLine
+      );
 
       // Recreate features
       this.source.clear();
@@ -66776,6 +66794,7 @@
         for (let b = 0; b < a; b++) // Once each combination
           if (lines[b]) {
             const m = [a, b];
+
             for (let i = 4; i; i--) // 4 times
               if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
                 // Shake lines end to explore all possibilities
@@ -66791,8 +66810,7 @@
 
       // Make polygons with looped lines
       for (let a in lines)
-        if (this.options.editOnly != 'line' &&
-          lines[a]) {
+        if (this.options.editOnly != 'line' && lines[a]) {
           // Close open lines
           if (this.options.editOnly == 'poly')
             if (!this.compareCoords(lines[a]))
@@ -66819,9 +66837,9 @@
 
       // Makes holes if a polygon is included in a biggest one
       for (let p1 in polys) // Explore all Polygons combinaison
-        if (this.options.withHoles &&
-          polys[p1]) {
+        if (this.options.withHoles && polys[p1]) {
           const fs = new ol.geom.Polygon(polys[p1]);
+
           for (let p2 in polys)
             if (polys[p2] && p1 != p2) {
               let intersects = true;
@@ -66846,6 +66864,7 @@
       // Expand geometryCollection
       if (geom.getType() == 'GeometryCollection') {
         const geometries = geom.getGeometries();
+
         for (let g in geometries)
           this.flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
       }
@@ -74466,6 +74485,7 @@
         // marker-lon, marker-lat, // <input> longitude / latitude
         // marker-x, marker-y', // <input> Swiss EPSG:21781
         // marker-select, marker-string, select // display coords format
+        //BEST split in 4 options
 
         ...options,
       };
@@ -74490,7 +74510,7 @@
           marker: true, // To recognise that this is a marker
         },
 
-        ...options
+        ...options,
       });
 
       this.options = options;
@@ -74524,10 +74544,11 @@
       map.once('postrender', () => { //HACK the only event to trigger if the map is not centered
         this.view = map.getView();
 
-        this.action(this.els.lon); // Il value is provided in lon / lat inputs fields
-        this.action(this.els.json); // Il value is provided in json inputs fields
-        if (this.options.focus)
+        if (this.options.focus) {
+          this.action(this.els.lon); // Il value is provided in lon / lat inputs fields
+          this.action(this.els.json); // Il value is provided in json inputs fields
           this.view.setZoom(this.options.focus);
+        }
       });
 
       // Change the cursor over a dragable feature
@@ -74612,8 +74633,10 @@
 
       ll4326[0] -= Math.round(ll4326[0] / 360) * 360; // Wrap +-180°
 
-      const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857'),
-        inEPSG21781 = typeof proj4 == 'function' &&
+      const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857');
+
+      const inEPSG21781 =
+        typeof proj4 == 'function' &&
         ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
 
       // Move the marker
@@ -75227,7 +75250,9 @@
 
     // Function returning an array of styles options
     style(feature) {
-      const sof = feature.getProperties().cluster ? cluster : this.options.basicStylesOptions;
+      const sof = feature.getProperties().cluster ?
+        cluster :
+        this.options.basicStylesOptions;
 
       return sof(...arguments) // Call the styleOptions function
         .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
@@ -75499,6 +75524,7 @@
           // Create a new 'node' element centered on the surface
           if (node.nodeName == 'way') {
             const newNode = doc.createElement('node');
+
             newNode.id = node.id;
             doc.documentElement.appendChild(newNode);
 
@@ -75529,6 +75555,7 @@
 
         function addTag(node, k, v) {
           const newTag = doc.createElement('tag');
+
           newTag.setAttribute('k', k);
           newTag.setAttribute('v', v);
           node.appendChild(newTag);
@@ -75657,7 +75684,7 @@
 
   // Zoom & resolution
   /* global map */
-  window.addEventListener('load', () => { // Wait for doculment load
+  window.addEventListener('load', () => { // Wait for document load
     if (typeof map == 'object' && map.once)
       map.once('precompose', () => { // Wait for view load
         traceZoom();
@@ -75683,7 +75710,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 01/04/2024 20:42:19',
+    VERSION: '1.1.2.dev 10/04/2024 16:55:44',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

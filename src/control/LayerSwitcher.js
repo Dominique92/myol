@@ -29,6 +29,7 @@ export class LayerSwitcher extends Button {
 
     // Get baselayer from url hash (#baselayer=...) if any
     const bl = location.href.match(/baselayer=([^&]+)/);
+
     if (bl)
       localStorage.myol_baselayer = decodeURI(bl[1]);
 
@@ -55,6 +56,7 @@ export class LayerSwitcher extends Button {
 
     // Attach html additional selector (must be there to be after base layers)
     const selectExtEl = document.getElementById(this.selectExtId);
+
     if (selectExtEl) {
       selectExtEl.classList.add('select-ext');
       this.subMenuEl.appendChild(selectExtEl);

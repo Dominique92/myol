@@ -119,6 +119,7 @@ export class MyGeolocation extends Button {
     // Get geolocation values
     ['Position', 'AccuracyGeometry', 'Speed', 'Altitude'].forEach(valueName => {
       const value = this.geolocation['get' + valueName]();
+
       if (value)
         this[valueName.toLowerCase()] = value;
     });
@@ -140,8 +141,9 @@ export class MyGeolocation extends Button {
       const p = this.position,
         hg = map.getCoordinateFromPixel([0, 0]),
         bd = map.getCoordinateFromPixel(map.getSize()),
-        far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10,
-        // The graticule
+        far = Math.hypot(hg[0] - bd[0], hg[1] - bd[1]) * 10;
+
+      const // The graticule
         geometry = [
           new ol.geom.MultiLineString([
             [

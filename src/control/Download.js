@@ -36,6 +36,7 @@ export class Download extends Button {
       downloadFormat = new ol.format[formatName](),
       mime = evt.target.getAttribute('mime'),
       mapExtent = map.getView().calculateExtent();
+
     let featuresToSave = [];
 
     if (this.options.savedLayer)
@@ -83,11 +84,11 @@ export class Download extends Button {
       .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
       .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
       .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
-      .replace(/ ([cvx])/g, '\n\t$1'),
+      .replace(/ ([cvx])/g, '\n\t$1');
 
-      file = new Blob([data], {
-        type: mime,
-      });
+    const file = new Blob([data], {
+      type: mime,
+    });
 
     this.hiddenEl.download = this.options.fileName + '.' + formatName.toLowerCase();
     this.hiddenEl.href = URL.createObjectURL(file);

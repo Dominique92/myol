@@ -1,10 +1,10 @@
 /* global mapIndex */
 
-const elScript = document.createElement('script');
+const scriptEl = document.createElement('script');
 
-document.body.appendChild(elScript);
-elScript.src = '../examples_wri/vues/_cartes.js';
-elScript.addEventListener('load', () =>
+document.body.appendChild(scriptEl);
+scriptEl.src = '../examples_wri/vues/_cartes.js';
+scriptEl.addEventListener('load', () =>
   mapIndex({
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     extent: [4, 43.5, 8.5, 47], // [<?=$vue->bbox?>];

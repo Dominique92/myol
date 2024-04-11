@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 10/04/2024 16:55:44 using npm run build from the src/... sources
+ * Built 11/04/2024 16:51:27 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -74700,10 +74700,13 @@
    */
 
   class Selector {
-    constructor(name) {
+    constructor(name, initSelect) {
       if (name) {
         this.safeName = 'myol_' + name.replace(/[^a-z]/ig, '');
-        this.init = (localStorage[this.safeName] || '').split(',');
+        this.init =
+          initSelect !== undefined ? initSelect.toString() :
+          localStorage[this.safeName] || '';
+        this.init = this.init.split(',');
         this.selectEls = [...document.getElementsByName(name)];
         this.selectEls.forEach(el => {
           el.addEventListener('click', evt => this.action(evt));
@@ -75178,7 +75181,8 @@
         basicStylesOptions: basic, // (feature, resolution, layer)
         hoverStylesOptions: hover, // (feature, resolution, layer)
         // selectName: '', // Name of checkbox inputs to tune the url parameters
-        selector: new Selector(options.selectName), // Tune the url parameters
+        // initSelect: string|true|false, // If defined, force the selector
+        selector: new Selector(options.selectName, options.initSelect), // Tune the url parameters
         zIndex: 100, // Above tiles layers
 
         // Any ol.source.Vector options
@@ -75710,7 +75714,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 10/04/2024 16:55:44',
+    VERSION: '1.1.2.dev 11/04/2024 16:51:27',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

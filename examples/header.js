@@ -1,6 +1,5 @@
-const sampleEl =
-  document.getElementById('sampleList')
-  .querySelectorAll('[href="' + location.search + '"]')[0];
+const sampleListEl = document.getElementById('sampleList'),
+  sampleEl = sampleListEl.querySelectorAll('[href="' + location.search + '"]')[0];
 
 if (sampleEl) {
   document.getElementById(sampleEl.id).style.border = '1px solid black';

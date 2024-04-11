@@ -11,10 +11,13 @@
  */
 
 export class Selector {
-  constructor(name) {
+  constructor(name, initSelect) {
     if (name) {
       this.safeName = 'myol_' + name.replace(/[^a-z]/ig, '');
-      this.init = (localStorage[this.safeName] || '').split(',');
+      this.init =
+        initSelect !== undefined ? initSelect.toString() :
+        localStorage[this.safeName] || '';
+      this.init = this.init.split(',');
       this.selectEls = [...document.getElementsByName(name)];
       this.selectEls.forEach(el => {
         el.addEventListener('click', evt => this.action(evt));

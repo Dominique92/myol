@@ -281,7 +281,8 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
       basicStylesOptions: stylesOptions.basic, // (feature, resolution, layer)
       hoverStylesOptions: stylesOptions.hover, // (feature, resolution, layer)
       // selectName: '', // Name of checkbox inputs to tune the url parameters
-      selector: new Selector(options.selectName), // Tune the url parameters
+      // initSelect: string|true|false, // If defined, force the selector
+      selector: new Selector(options.selectName, options.initSelect), // Tune the url parameters
       zIndex: 100, // Above tiles layers
 
       // Any ol.source.Vector options

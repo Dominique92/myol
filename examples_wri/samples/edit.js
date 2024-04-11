@@ -1,16 +1,15 @@
 /* global navEdit, mapKeys, urlParams */
 
-const elScript = document.createElement('script');
+const scriptEl = document.createElement('script');
 
-document.body.appendChild(elScript);
-elScript.src = '../examples_wri/vues/_cartes.js';
-elScript.addEventListener('load', () =>
+document.body.appendChild(scriptEl);
+scriptEl.src = '../examples_wri/vues/_cartes.js';
+scriptEl.addEventListener('load', () =>
   navEdit({
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
     // id_polygone: <?=isset($vue->polygone)?$vue->polygone->id_polygone:0?>,
     // extent: <?=json_encode($vue->polygone->extent)?>,
     ...urlParams,
-    //...<?=json_encode($config_wri['layerOptions'])?>,
   })
 );

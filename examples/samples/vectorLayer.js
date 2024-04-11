@@ -26,6 +26,7 @@ var map = new ol.Map({
     // Vector layers
     new myol.layer.vector.Chemineur({
       selectName: 'select-chem',
+      initSelect: '',
     }),
     new myol.layer.vector.Alpages({
       selectName: 'select-alpages',

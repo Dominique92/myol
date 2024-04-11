@@ -287,7 +287,7 @@ function mapPoint(options) {
         host: options.host,
         browserClusterMinResolution: 4, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
         page: 'point',
-        ...options, // Options à ajouter depuis config_privee.php      }),
+        ...options, // Options à ajouter depuis config_privee.php
       }),
 
       // Le cadre rouge autour du point de la fiche
@@ -337,7 +337,7 @@ function mapModif(options) {
         browserClusterMinResolution: null, // Pour ne pas générer de gigue
         noClick: true,
         page: 'modif',
-        ...options, // Options à ajouter depuis config_privee.php      }),
+        ...options.layerOptions, // Options à ajouter depuis config_privee.php
       }),
 
       // Le viseur jaune pour modifier la position du point
@@ -358,88 +358,80 @@ function mapModif(options) {
 // Page de navigation de la carte
 /* eslint-disable-next-line no-unused-vars */
 function mapNav(options) {
-  // Forçage de l'init des coches
-  // Supprime toutes les sélections commençant par myol_selecteur
-  Object.keys(localStorage)
-    .filter(k => k.substring(0, 14) == 'myol_selecteur')
-    .forEach(k => localStorage.removeItem(k));
-
-  // Force tous les points et le contour
-  localStorage.myol_selectwri = 'all';
-  localStorage.myol_selectmassifs =
-    localStorage.myol_selectosm =
-    localStorage.myol_selectprc =
-    localStorage.myol_selectcc =
-    localStorage.myol_selectchem =
-    localStorage.myol_selectalpages = '';
-  if (options.id_polygone)
-    localStorage.myol_selectmassif = options.id_polygone;
-
   const contourMassif = coucheContourMassif({
-      host: options.host,
-      selectName: 'select-massif',
+    host: options.host,
+    selectName: 'select-massif',
+    initSelect: options.id_polygone,
+  });
+
+  const pointsWRI = couchePointsWRI({
+    zIndex: 10000,
+    host: options.host,
+    selectName: 'select-wri',
+    initSelect: 'all',
+    selectMassif: contourMassif.options.selector,
+    page: 'nav',
+    ...options.layerOptions, // Options à ajouter depuis config_privee.php
+  });
+
+  const externLayers = [
+    new myol.layer.vector.Chemineur({
+      selectName: 'select-chem',
+      initSelect: '',
+    }),
+    new myol.layer.vector.Alpages({
+      selectName: 'select-alpages',
+      initSelect: '',
+    }),
+    new myol.layer.vector.PRC({
+      selectName: 'select-prc',
+      initSelect: '',
+    }),
+    new myol.layer.vector.C2C({
+      selectName: 'select-c2c',
+      initSelect: '',
+    }),
+    new myol.layer.vector.Overpass({
+      selectName: 'select-osm',
+      initSelect: '',
+    }),
+  ];
+
+  const map = new ol.Map({
+    target: 'carte-nav',
+
+    view: new ol.View({
+      enableRotation: false,
+      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
     }),
 
-    pointsWRI = couchePointsWRI({
-      host: options.host,
-      selectName: 'select-wri',
-      selectMassif: contourMassif.options.selector,
-      page: 'nav',
-      ...options, // Options à ajouter depuis config_privee.php    }),
-    }),
+    controls: [
+      ...basicControls(),
 
-    externLayers = [
-      new myol.layer.vector.Chemineur({
-        selectName: 'select-chem',
+      // Bas droit
+      new myol.control.Permalink({ // Permet de garder le même réglage de carte
+        display: true, // Affiche le lien
+        init: !options.extent, // On reprend la même position s'il n'y a pas de massif
       }),
-      new myol.layer.vector.Alpages({
-        selectName: 'select-alpages',
-      }),
-      new myol.layer.vector.PRC({
-        selectName: 'select-prc',
-      }),
-      new myol.layer.vector.C2C({
-        selectName: 'select-c2c',
-      }),
-      new myol.layer.vector.Overpass({
-        selectName: 'select-osm',
+
+      // Haut droit
+      new myol.control.LayerSwitcher({
+        layers: fondsCarte('nav', options.mapKeys),
       }),
     ],
 
-    map = new ol.Map({
-      target: 'carte-nav',
-
-      view: new ol.View({
-        enableRotation: false,
-        constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
+    layers: [
+      coucheMassifsColores({
+        host: options.host,
+        selectName: 'select-massifs',
+        initSelect: '',
       }),
-
-      controls: [
-        ...basicControls(),
-
-        // Bas droit
-        new myol.control.Permalink({ // Permet de garder le même réglage de carte
-          display: true, // Affiche le lien
-          init: !options.extent, // On reprend la même position s'il n'y a pas de massif
-        }),
-
-        // Haut droit
-        new myol.control.LayerSwitcher({
-          layers: fondsCarte('nav', options.mapKeys),
-        }),
-      ],
-
-      layers: [
-        coucheMassifsColores({
-          host: options.host,
-          selectName: 'select-massifs',
-        }),
-        ...externLayers,
-        contourMassif,
-        pointsWRI,
-        new myol.layer.Hover(), // Gère le survol du curseur
-      ],
-    });
+      ...externLayers,
+      contourMassif,
+      pointsWRI,
+      new myol.layer.Hover(), // Gère le survol du curseur
+    ],
+  });
 
   // Centrer sur la zone du polygone
   if (options.extent)

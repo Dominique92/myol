@@ -17,25 +17,21 @@
   }
 }
 
-/* header */
-#example-header {
-  padding-bottom: 7px;
-  border-bottom: 2px solid;
-}
-
-#example-header h1 {
+/* Header */
+#sample-title {
   margin: 10px;
 }
 
-#example-header>a {
+#github,
+#sample-next {
   float: right;
 }
 
-#example-header div {
+#sampleList {
   text-align: center;
 }
 
-#example-header div a {
+#sampleList a {
   text-decoration: none;
 }
 
@@ -45,9 +41,18 @@
   max-width: 600px;
   height: 400px;
   margin-top: 10px;
+  background: grey;
 }
 
+/*
+#example-header {
+  padding-bottom: 7px;
+  border-bottom: 2px solid;
+}
+*/
+
 /* MyVectorLayer */
+/*
 .layer-select {
   float: left;
   border-right: solid;
@@ -66,8 +71,10 @@
 .layer-select label:hover {
   background: lightgray;
 }
+*/
 
 /* javascript */
+/*
 br,
 h2 {
   clear: both;
@@ -78,3 +85,4 @@ pre {
   margin-left: 4vw;
   overflow-x: auto;
 }
+*/

@@ -3,27 +3,53 @@
  */
 
 // Analyse url & args
-const base = location.href.match(/([^?]*\/)[^/]*/)[1],
-  urlParams = {};
-let sampleLink = 'index';
+let urlParams = {},
+  sampleName = 'index';
 
 for (const p of new URLSearchParams(location.search))
   if (p[1])
     urlParams[p[0]] = JSON.parse(p[1]);
   else
-    sampleLink = p[0];
+    sampleName = p[0];
 
-// Fill an element with the content of the file defined in data-file="FILE_NAME"
-document.querySelectorAll('[data-file]') // Replace ITEM by url?query
-  .forEach(el =>
-    fetch(base + el.dataset.file.replace('ITEM', sampleLink))
+// Helper
+async function getText(fileName) {
+  return fetch(fileName)
     .then(response => response.text())
-    .then(fileContent => el.innerHTML = fileContent
-      .replace(/\/\*.*\*\//, '') // Remove /* comments */
+    .then(text => text
+      .replace(/<script.*vite.*script>/, '') // Remove vite scripts tags
+      .replace(/\/\*.*\*\//g, '') // Remove /* comments */
       .replace(/\/\/#.*/, '') // Remove //# sourceMappingURL
       .trim()
-    )
-  );
+    );
+}
+
+// Populate the body
+(async function() {
+  document.body.insertAdjacentHTML('afterbegin', await getText('samples/' + sampleName + '.html'));
+  document.body.insertAdjacentHTML('afterbegin', await getText('header.html'));
+
+  const sampleCodeEl = document.getElementById('sample-code');
+  sampleCodeEl.insertAdjacentHTML('afterbegin', await getText('samples/' + sampleName + '.js'));
+
+  // Load & run the sample script
+  const script = document.createElement('script');
+  script.src = 'samples/' + sampleName + '.js';
+  document.head.appendChild(script);
+
+  // Search the sample data in the header.html & populate the tags
+  const sampleEl = document.querySelector('a[href="' + (location.search || '.') + '"]');
+
+  if (sampleEl) {
+    sampleEl.style.border = '1px solid black';
+
+    document.getElementById('sample-title').innerHTML = sampleEl.title;
+    document.getElementById('sample-next').setAttribute('href', sampleEl.nextElementSibling.href);
+  }
+
+  /* global myol */
+  myol.trace();
+})();
 
 // Default keys for development only
 /* eslint-disable-next-line no-unused-vars */
@@ -45,6 +71,3 @@ var mapKeys = {
   thunderforest: 'ee751f43b3af4614b01d1bce72785369',
   // https://www.mapbox.com/
 };
-
-/* global myol */
-myol.trace();

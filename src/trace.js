@@ -3,7 +3,7 @@
  */
 
 import ol from './ol';
-import Geocoder from '@myol/geocoder/src/base';
+import Geocoder from '@myol/geocoder/src/base'; //TODO BUG to be replaced by ol-geocoder when /src published in npm
 /* global myol */
 
 export async function trace() {

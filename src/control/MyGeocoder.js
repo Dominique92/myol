@@ -6,8 +6,8 @@
  */
 
 // ol-geocoder library (dev repo)
-import '@myol/geocoder/src/base.css';
-import Geocoder from '@myol/geocoder/src/base';
+import '@myol/geocoder/src/base.css'; //TODO BUG to be replaced by ol-geocoder when /src published in npm
+import Geocoder from '@myol/geocoder/src/base'; //TODO BUG to be replaced by ol-geocoder when /src published in npm
 
 // This package css
 // Import after ol-geocoder.css

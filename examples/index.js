@@ -39,7 +39,6 @@ async function getText(fileName) {
 
   // Search the sample data in the header.html & populate the tags
   const sampleEl = document.querySelector('a[href="' + (location.search || '.') + '"]');
-
   if (sampleEl) {
     sampleEl.style.border = '1px solid black';
 

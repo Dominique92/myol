@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 11/04/2024 16:51:27 using npm run build from the src/... sources
+ * Built 06/05/2024 15:12:21 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -328,7 +328,7 @@
         return true;
       }
       const res = compare(arr[index - 1], currentVal);
-      return !(res > 0 || (strict && res === 0));
+      return !(res > 0 || (res === 0));
     });
   }
 
@@ -8298,7 +8298,7 @@
     }
     const ends = [flatCoordinates.length];
     const polygon = new Polygon(flatCoordinates, layout, ends);
-    makeRegular(polygon, center, circle.getRadius(), angle);
+    makeRegular(polygon, center, circle.getRadius());
     return polygon;
   }
 
@@ -8314,7 +8314,7 @@
     const flatCoordinates = polygon.getFlatCoordinates();
     const stride = polygon.getStride();
     const sides = flatCoordinates.length / stride - 1;
-    const startAngle = angle ? angle : 0;
+    const startAngle = 0;
     for (let i = 0; i <= sides; ++i) {
       const offset = i * stride;
       const angle = startAngle + (modulo(i, sides) * 2 * Math.PI) / sides;
@@ -8730,8 +8730,6 @@
       this.set(Property$4.TRACKING_OPTIONS, options);
     }
   }
-
-  var Geolocation$1 = Geolocation;
 
   /**
    * @module ol/CollectionEventType
@@ -9976,7 +9974,7 @@
    * @return {Type} Rotation constraint.
    */
   function createSnapToZero(tolerance) {
-    const t = tolerance === undefined ? toRadians(5) : tolerance;
+    const t = toRadians(5) ;
     return (
       /**
        * @param {number|undefined} rotation Rotation.
@@ -12154,8 +12152,6 @@
     return [centerX, centerY];
   }
 
-  var View$1 = View;
-
   /**
    * @module ol/layer/Layer
    */
@@ -12450,7 +12446,7 @@
       if (!view && map) {
         view = map.getView();
       }
-      if (view instanceof View$1) {
+      if (view instanceof View) {
         frameState = {
           viewState: view.getState(),
           extent: view.calculateExtent(),
@@ -12498,7 +12494,7 @@
         return [];
       }
       const frameState =
-        view instanceof View$1 ? view.getViewStateAndExtent() : view;
+        view instanceof View ? view.getViewStateAndExtent() : view;
       let attributions = getAttributions(frameState);
       if (!Array.isArray(attributions)) {
         attributions = [attributions];
@@ -14841,9 +14837,6 @@
       }
       image.addEventListener('load', handleLoad);
       image.addEventListener('error', handleError);
-      if (src) {
-        image.src = src;
-      }
     });
   }
 
@@ -25316,8 +25309,6 @@
     }
   }
 
-  var DoubleClickZoom$1 = DoubleClickZoom;
-
   /**
    * @module ol/interaction/Pointer
    */
@@ -25520,8 +25511,6 @@
     }
     return {clientX: clientX / length, clientY: clientY / length};
   }
-
-  var PointerInteraction$1 = PointerInteraction;
 
   /**
    * @module ol/events/condition
@@ -25814,7 +25803,7 @@
    * Allows the user to pan the map by dragging the map.
    * @api
    */
-  class DragPan extends PointerInteraction$1 {
+  class DragPan extends PointerInteraction {
     /**
      * @param {Options} [options] Options.
      */
@@ -25967,8 +25956,6 @@
     }
   }
 
-  var DragPan$1 = DragPan;
-
   /**
    * @module ol/interaction/DragRotate
    */
@@ -25991,7 +25978,7 @@
    * This interaction is only supported for mouse devices.
    * @api
    */
-  class DragRotate extends PointerInteraction$1 {
+  class DragRotate extends PointerInteraction {
     /**
      * @param {Options} [options] Options.
      */
@@ -26326,7 +26313,7 @@
    * @fires DragBoxEvent
    * @api
    */
-  class DragBox extends PointerInteraction$1 {
+  class DragBox extends PointerInteraction {
     /**
      * @param {Options} [options] Options.
      */
@@ -26562,8 +26549,6 @@
     }
   }
 
-  var DragZoom$1 = DragZoom;
-
   /**
    * @module ol/events/Key
    */
@@ -26790,8 +26775,6 @@
       return !stopEvent;
     }
   }
-
-  var KeyboardZoom$1 = KeyboardZoom;
 
   /**
    * @module ol/Kinetic
@@ -27210,8 +27193,6 @@
     }
   }
 
-  var MouseWheelZoom$1 = MouseWheelZoom;
-
   /**
    * @module ol/interaction/PinchRotate
    */
@@ -27229,7 +27210,7 @@
    * on a touch screen.
    * @api
    */
-  class PinchRotate extends PointerInteraction$1 {
+  class PinchRotate extends PointerInteraction {
     /**
      * @param {Options} [options] Options.
      */
@@ -27380,7 +27361,7 @@
    * on a touch screen.
    * @api
    */
-  class PinchZoom extends PointerInteraction$1 {
+  class PinchZoom extends PointerInteraction {
     /**
      * @param {Options} [options] Options.
      */
@@ -27495,8 +27476,6 @@
     }
   }
 
-  var PinchZoom$1 = PinchZoom;
-
   /**
    * @module ol/interaction/defaults
    */
@@ -27568,7 +27547,7 @@
       options.doubleClickZoom !== undefined ? options.doubleClickZoom : true;
     if (doubleClickZoom) {
       interactions.push(
-        new DoubleClickZoom$1({
+        new DoubleClickZoom({
           delta: options.zoomDelta,
           duration: options.zoomDuration,
         }),
@@ -27578,7 +27557,7 @@
     const dragPan = options.dragPan !== undefined ? options.dragPan : true;
     if (dragPan) {
       interactions.push(
-        new DragPan$1({
+        new DragPan({
           onFocusOnly: options.onFocusOnly,
           kinetic: kinetic,
         }),
@@ -27594,7 +27573,7 @@
     const pinchZoom = options.pinchZoom !== undefined ? options.pinchZoom : true;
     if (pinchZoom) {
       interactions.push(
-        new PinchZoom$1({
+        new PinchZoom({
           duration: options.zoomDuration,
         }),
       );
@@ -27604,7 +27583,7 @@
     if (keyboard) {
       interactions.push(new KeyboardPan());
       interactions.push(
-        new KeyboardZoom$1({
+        new KeyboardZoom({
           delta: options.zoomDelta,
           duration: options.zoomDuration,
         }),
@@ -27615,7 +27594,7 @@
       options.mouseWheelZoom !== undefined ? options.mouseWheelZoom : true;
     if (mouseWheelZoom) {
       interactions.push(
-        new MouseWheelZoom$1({
+        new MouseWheelZoom({
           onFocusOnly: options.onFocusOnly,
           duration: options.zoomDuration,
         }),
@@ -27626,7 +27605,7 @@
       options.shiftDragZoom !== undefined ? options.shiftDragZoom : true;
     if (shiftDragZoom) {
       interactions.push(
-        new DragZoom$1({
+        new DragZoom({
           duration: options.zoomDuration,
         }),
       );
@@ -28090,9 +28069,9 @@
       this.setProperties(optionsInternal.values);
 
       const map = this;
-      if (options.view && !(options.view instanceof View$1)) {
+      if (options.view && !(options.view instanceof View)) {
         options.view.then(function (viewOptions) {
-          map.setView(new View$1(viewOptions));
+          map.setView(new View(viewOptions));
         });
       }
 
@@ -29264,15 +29243,15 @@
      * @api
      */
     setView(view) {
-      if (!view || view instanceof View$1) {
+      if (!view || view instanceof View) {
         this.set(MapProperty.VIEW, view);
         return;
       }
-      this.set(MapProperty.VIEW, new View$1());
+      this.set(MapProperty.VIEW, new View());
 
       const map = this;
       view.then(function (viewOptions) {
-        map.setView(new View$1(viewOptions));
+        map.setView(new View(viewOptions));
       });
     }
 
@@ -29372,7 +29351,7 @@
     values[MapProperty.TARGET] = options.target;
 
     values[MapProperty.VIEW] =
-      options.view instanceof View$1 ? options.view : new View$1();
+      options.view instanceof View ? options.view : new View();
 
     /** @type {Collection<import("./control/Control.js").default>} */
     let controls;
@@ -29427,7 +29406,6 @@
       values: values,
     };
   }
-  var Map$1 = Map;
 
   /**
    * @module ol/geom/flat/interpolate
@@ -32478,9 +32456,7 @@
       node.nodeType == Node.CDATA_SECTION_NODE ||
       node.nodeType == Node.TEXT_NODE
     ) {
-      if (normalizeWhitespace) {
-        accumulator.push(String(node.nodeValue).replace(/(\r\n|\r|\n)/g, ''));
-      } else {
+      {
         accumulator.push(node.nodeValue);
       }
     } else {
@@ -32586,7 +32562,7 @@
        */
       function (node, objectStack) {
         const value = valueReader.call(
-          thisArg !== undefined ? thisArg : this,
+          this,
           node,
           objectStack,
         );
@@ -32613,7 +32589,7 @@
        */
       function (node, objectStack) {
         const value = valueReader.call(
-          thisArg !== undefined ? thisArg : this,
+          this,
           node,
           objectStack,
         );
@@ -32640,7 +32616,7 @@
   function makeChildAppender(nodeWriter, thisArg) {
     return function (node, value, objectStack) {
       nodeWriter.call(
-        thisArg !== undefined ? thisArg : this,
+        this,
         node,
         value,
         objectStack,
@@ -32711,7 +32687,7 @@
         }
 
         const namespaceURI =
-          fixedNamespaceURI !== undefined ? fixedNamespaceURI : node.namespaceURI;
+          node.namespaceURI;
         return createElementNS(namespaceURI, /** @type {string} */ (nodeName));
       }
     );
@@ -33392,8 +33368,6 @@
     values.tags[node.getAttribute('k')] = node.getAttribute('v');
   }
 
-  var OSMXML$1 = OSMXML;
-
   /**
    * @module ol/TileRange
    */
@@ -33707,9 +33681,7 @@
            * @param {number} b Second resolution
            * @return {number} Comparison result
            */
-          (a, b) => b - a,
-          true,
-        ),
+          (a, b) => b - a),
         '`resolutions` must be sorted in descending order',
       );
 
@@ -34372,8 +34344,6 @@
       return this.matrixIds_;
     }
   }
-
-  var WMTSTileGrid$1 = WMTSTileGrid;
 
   /**
    * @module ol/control/FullScreen
@@ -35794,7 +35764,7 @@
        */
       this.view_ = options.view;
 
-      const ovmap = new Map$1({
+      const ovmap = new Map({
         view: options.view,
         controls: new Collection(),
         interactions: new Collection(),
@@ -35961,7 +35931,7 @@
     bindView_(view) {
       if (!this.view_) {
         // Unless an explicit view definition was given, derive default from whatever main map uses.
-        const newView = new View$1({
+        const newView = new View({
           projection: view.getProjection(),
         });
         this.ovmap_.setView(newView);
@@ -38120,8 +38090,6 @@
     };
   }
 
-  var GeoJSON$1 = GeoJSON;
-
   /**
    * @module ol/format/xsd
    */
@@ -39373,8 +39341,6 @@
       writeWptType(node, point.getCoordinates(), objectStack);
     }
   }
-
-  var GPX$1 = GPX;
 
   /**
    * @module ol/format/KML
@@ -42727,8 +42693,6 @@
     node.setAttribute('yunits', vec2.yunits);
   }
 
-  var KML$1 = KML;
-
   /**
    * @module ol/render/canvas/Instruction
    */
@@ -43831,8 +43795,6 @@
     }
   }
 
-  var ImageBuilder = CanvasImageBuilder;
-
   /**
    * @module ol/render/canvas/LineStringBuilder
    */
@@ -43990,8 +43952,6 @@
       this.instructions.push(beginPathInstruction);
     }
   }
-
-  var LineStringBuilder = CanvasLineStringBuilder;
 
   /**
    * @module ol/render/canvas/PolygonBuilder
@@ -44242,8 +44202,6 @@
       }
     }
   }
-
-  var PolygonBuilder = CanvasPolygonBuilder;
 
   /**
    * Creates chunks of equal length from a linestring
@@ -45009,11 +44967,11 @@
    * @type {Object<import("../canvas.js").BuilderType, typeof Builder>}
    */
   const BATCH_CONSTRUCTORS = {
-    'Circle': PolygonBuilder,
+    'Circle': CanvasPolygonBuilder,
     'Default': CanvasBuilder,
-    'Image': ImageBuilder,
-    'LineString': LineStringBuilder,
-    'Polygon': PolygonBuilder,
+    'Image': CanvasImageBuilder,
+    'LineString': CanvasLineStringBuilder,
+    'Polygon': CanvasPolygonBuilder,
     'Text': CanvasTextBuilder,
   };
 
@@ -48856,8 +48814,6 @@
     }
   }
 
-  var CanvasImmediateRenderer$1 = CanvasImmediateRenderer;
-
   /**
    * @module ol/style
    */
@@ -48915,7 +48871,7 @@
     const context = createCanvasContext2D(width, height);
     context.imageSmoothingEnabled = false;
     const canvas = context.canvas;
-    const renderer = new CanvasImmediateRenderer$1(
+    const renderer = new CanvasImmediateRenderer(
       context,
       HIT_DETECT_RESOLUTION,
       extent,
@@ -52816,7 +52772,7 @@
    * @fires DrawEvent
    * @api
    */
-  class Draw extends PointerInteraction$1 {
+  class Draw extends PointerInteraction {
     /**
      * @param {Options} options Options.
      */
@@ -54110,8 +54066,6 @@
     }
   }
 
-  var Draw$1 = Draw;
-
   /**
    * @module ol/interaction/Modify
    */
@@ -54267,7 +54221,7 @@
    * @fires ModifyEvent
    * @api
    */
-  class Modify extends PointerInteraction$1 {
+  class Modify extends PointerInteraction {
     /**
      * @param {Options} options Options.
      */
@@ -55728,8 +55682,6 @@
     };
   }
 
-  var Modify$1 = Modify;
-
   /**
    * @module ol/interaction/Select
    */
@@ -56307,8 +56259,6 @@
     };
   }
 
-  var Select$1 = Select;
-
   /**
    * @module ol/events/SnapEvent
    */
@@ -56454,7 +56404,7 @@
    * @fires SnapEvent
    * @api
    */
-  class Snap extends PointerInteraction$1 {
+  class Snap extends PointerInteraction {
     /**
      * @param {Options} [options] Options.
      */
@@ -57042,8 +56992,6 @@
       }
     }
   }
-
-  var Snap$1 = Snap;
 
   /**
    * @module ol/reproj/common
@@ -58101,7 +58049,7 @@
     // Round up Float32 scale values to prevent interpolation in Firefox.
     const inverseScale = (interpolate ? 1 : 1 + Math.pow(2, -24)) / stitchScale;
 
-    if (!drawSingle || sources.length !== 1 || gutter !== 0) {
+    {
       stitchContext = createCanvasContext2D(
         Math.round(getWidth(sourceDataExtent) * stitchScale),
         Math.round(getHeight(sourceDataExtent) * stitchScale),
@@ -60079,8 +60027,6 @@
     }
   }
 
-  var TileLayer$1 = TileLayer;
-
   /**
    * @module ol/proj/proj4
    */
@@ -62034,8 +61980,6 @@
     }
   }
 
-  var BingMaps$1 = BingMaps;
-
   /**
    * @module ol/source/XYZ
    */
@@ -62161,8 +62105,6 @@
       return this.gutter_;
     }
   };
-
-  var XYZ$2 = XYZ$1;
 
   /**
    * @module ol/source/Cluster
@@ -62480,8 +62422,6 @@
     }
   }
 
-  var Cluster$1 = Cluster;
-
   /**
    * @module ol/source/common
    */
@@ -62693,7 +62633,7 @@
    * Layer source for the OpenStreetMap tile server.
    * @api
    */
-  class OSM extends XYZ$2 {
+  class OSM extends XYZ$1 {
     /**
      * @param {Options} [options] Open Street Map options.
      */
@@ -62732,8 +62672,6 @@
       });
     }
   }
-
-  var OSM$1 = OSM;
 
   /**
    * @module ol/source/TileWMS
@@ -63132,8 +63070,6 @@
     }
   }
 
-  var TileWMS$1 = TileWMS;
-
   /**
    * @module ol/source/WMTS
    */
@@ -63463,8 +63399,6 @@
     }
   }
 
-  var WMTS$1 = WMTS;
-
   // Openlayers imports used in this package
   // Will be used both in the sources & the build
 
@@ -63480,49 +63414,49 @@
     extent: extent,
     Feature: Feature,
     format: { // Not all formats are used & the total file is big
-      GeoJSON: GeoJSON$1,
-      GPX: GPX$1,
-      KML: KML$1,
-      OSMXML: OSMXML$1,
+      GeoJSON: GeoJSON,
+      GPX: GPX,
+      KML: KML,
+      OSMXML: OSMXML,
     },
-    Geolocation: Geolocation$1,
+    Geolocation: Geolocation,
     geom: geom,
     interaction: {
-      Draw: Draw$1,
-      Modify: Modify$1,
-      MouseWheelZoom: MouseWheelZoom$1,
-      Pointer: PointerInteraction$1,
-      Select: Select$1,
-      Snap: Snap$1,
+      Draw: Draw,
+      Modify: Modify,
+      MouseWheelZoom: MouseWheelZoom,
+      Pointer: PointerInteraction,
+      Select: Select,
+      Snap: Snap,
     },
     layer: {
-      Tile: TileLayer$1,
+      Tile: TileLayer,
       Vector: VectorLayer,
     },
-    Map: Map$1,
+    Map: Map,
     loadingstrategy: loadingstrategy,
     proj: {
       ...proj,
       proj4: projProj4,
     },
     source: {
-      BingMaps: BingMaps$1,
-      Cluster: Cluster$1,
-      OSM: OSM$1,
-      TileWMS: TileWMS$1,
+      BingMaps: BingMaps,
+      Cluster: Cluster,
+      OSM: OSM,
+      TileWMS: TileWMS,
       Vector: VectorSource,
-      WMTS: WMTS$1,
-      XYZ: XYZ$2,
+      WMTS: WMTS,
+      XYZ: XYZ$1,
     },
     sphere: sphere$1,
     style: style,
     tilegrid: {
-      WMTS: WMTSTileGrid$1,
+      WMTS: WMTSTileGrid,
     },
     util: {
       VERSION: VERSION,
     },
-    View: View$1,
+    View: View,
   };
 
   /**
@@ -64862,10 +64796,6 @@
     return prefix ? prefix + id : id;
   }
 
-  function isNumeric(str) {
-    return /^\d+$/u.test(str);
-  }
-
   /* eslint-disable prefer-named-capture-group */
 
   /**
@@ -64887,7 +64817,7 @@
 
     while (i--) {
       if (!hasClass(element, array[i])) {
-        _addClass(element, array[i], timeout);
+        _addClass(element, array[i]);
       }
     }
   }
@@ -64900,7 +64830,7 @@
    */
   function removeClass(element, classname, timeout) {
     if (Array.isArray(element)) {
-      element.forEach((each) => removeClass(each, classname, timeout));
+      element.forEach((each) => removeClass(each, classname));
 
       return;
     }
@@ -64911,7 +64841,7 @@
 
     while (i--) {
       if (hasClass(element, array[i])) {
-        _removeClass(element, array[i], timeout);
+        _removeClass(element, array[i]);
       }
     }
   }
@@ -64998,10 +64928,6 @@
     } else {
       el.className = `${el.className} ${klass}`.trim();
     }
-
-    if (timeout && isNumeric(timeout)) {
-      window.setTimeout(() => _removeClass(el, klass), timeout);
-    }
   }
 
   function _removeClass(el, klass, timeout) {
@@ -65009,10 +64935,6 @@
       el.classList.remove(klass);
     } else {
       el.className = el.className.replace(classRegex(klass), ' ').trim();
-    }
-
-    if (timeout && isNumeric(timeout)) {
-      window.setTimeout(() => _addClass(el, klass), timeout);
     }
   }
 
@@ -75285,7 +75207,7 @@
     if (type) {
       const icons = type.split(' ');
 
-      return (host || 'https://chemineur.fr/') +
+      return ('https://chemineur.fr/') +
         'ext/Dominique92/GeoBB/icones/' +
         icons[0] +
         (icons.length > 1 ? '_' + icons[1] : '') + // Limit to 2 type names & ' ' -> '_'
@@ -75506,7 +75428,7 @@
 
       // Extract features from data when received
       this.format.readFeatures = function(doc, options) {
-        // Transform an area to a node (picto) at the center of this area
+        const newNodes = [];
 
         for (let node = doc.documentElement.firstElementChild; node; node = node.nextSibling) {
           // Translate attributes to standard myol
@@ -75517,20 +75439,21 @@
                 tag.getAttribute('k') != 'type') {
                 addTag(node, 'type', tag.getAttribute('v'));
                 addTag(node, 'icon', chemIconUrl(tag.getAttribute('v')));
+
                 // Only once for a node
-                addTag(node, 'link', 'https://www.openstreetmap.org/node/' + node.id);
+                addTag(node, 'link', 'https://www.openstreetmap.org/' + node.nodeName + '/' + node.id);
               }
 
               if (tag.getAttribute('k') && tag.getAttribute('k').includes('capacity:'))
                 addTag(node, 'capacity', tag.getAttribute('v'));
             }
 
-          // Create a new 'node' element centered on the surface
+          // Transform an area to a node (picto) at the center of this area
           if (node.nodeName == 'way') {
             const newNode = doc.createElement('node');
 
             newNode.id = node.id;
-            doc.documentElement.appendChild(newNode);
+            newNodes.push(newNode);
 
             // Browse <way> attributes to build a new node
             for (let subTagNode = node.firstElementChild; subTagNode; subTagNode = subTagNode.nextSibling)
@@ -75542,13 +75465,12 @@
                   newNode.setAttribute('nodeName', subTagNode.nodeName);
                   break;
 
-                case 'tag': {
+                case 'tag':
                   // Get existing properties
                   newNode.appendChild(subTagNode.cloneNode());
 
                   // Add a tag to mem what node type it was (for link build)
                   addTag(newNode, 'nodetype', node.nodeName);
-                }
               }
           }
 
@@ -75557,6 +75479,11 @@
             statusEl.textContent = node.textContent;
         }
 
+        // Add new nodes to the document
+        newNodes.forEach(n => doc.documentElement.appendChild(n));
+
+        return ol.format.OSMXML.prototype.readFeatures.call(this, doc, options);
+
         function addTag(node, k, v) {
           const newTag = doc.createElement('tag');
 
@@ -75564,8 +75491,6 @@
           newTag.setAttribute('v', v);
           node.appendChild(newTag);
         }
-
-        return ol.format.OSMXML.prototype.readFeatures.call(this, doc, options);
       };
     }
 
@@ -75714,7 +75639,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 11/04/2024 16:51:27',
+    VERSION: '1.1.2.dev 06/05/2024 15:12:21',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

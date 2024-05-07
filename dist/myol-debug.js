@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 06/05/2024 21:07:10 using npm run build from the src/... sources
+ * Built 07/05/2024 16:08:59 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -75502,10 +75502,7 @@
 
       for (let s = 0; s < selections.length; s++) // For each selected input checkbox
         selections[s].split('+').forEach(sel => // Multiple choices separated by +
-          args.push(
-            'node' + sel + bbox + // Ask for nodes in the bbox
-            'way' + sel + bbox // Also ask for areas
-          ));
+          args.push(          'nwr' + sel + bbox  ));  // Ask for node, way & relation in the bbox
 
       return {
         _path: '/api/interpreter',
@@ -75634,7 +75631,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 06/05/2024 21:07:10',
+    VERSION: '1.1.2.dev 07/05/2024 16:08:59',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

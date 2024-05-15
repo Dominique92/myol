@@ -12,8 +12,9 @@ document.body.appendChild(scriptEl);
 scriptEl.src = '../examples_wri/vues/_cartes.js';
 scriptEl.addEventListener('load', () =>
   mapModif({
+    target: 'carte-modif',
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
-    idPoint: urlParams['id_point'], // <?=intval($vue->point->id_point)?>;
+    idPoint: urlParams['id_point'], // <?=intval($vue->point->id_point)?>,
   })
 );

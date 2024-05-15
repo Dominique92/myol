@@ -2,7 +2,7 @@
 //TODO DELETE THIS FILE
 
 /*var host = '<?=$config_wri["sous_dossier_installation"]?>',
-  mapKeys = <?=json_encode($config_wri['mapKeys'])?>;
+  mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
 */
 var editorlayer = new myol.layer.Editor({
     geoJsonId: 'edit-json',

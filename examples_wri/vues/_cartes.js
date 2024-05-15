@@ -202,37 +202,6 @@ function fondsCarte(page, mapKeys) {
   };
 }
 
-// Page d'accueil
-/* eslint-disable-next-line no-unused-vars */
-function mapIndex(options) {
-  const map = new ol.Map({
-    target: 'carte-accueil',
-
-    view: new ol.View({
-      enableRotation: false,
-      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
-    }),
-
-    controls: [
-      new ol.control.Attribution({ // Du fond de carte
-        collapsed: false,
-      }),
-    ],
-
-    layers: [
-      new myol.layer.tile.MRI(), // Fond de carte
-      coucheMassifsColores({ // Les massifs
-        host: options.host,
-      }),
-      new myol.layer.Hover(), // Gère le survol du curseur
-    ],
-  });
-
-  map.getView().fit(ol.proj.transformExtent(options.extent, 'EPSG:4326', 'EPSG:3857'));
-
-  return map;
-}
-
 function basicControls() {
   return [
     // Haut gauche
@@ -255,16 +224,48 @@ function basicControls() {
   ];
 }
 
-// Page des points
-/* eslint-disable-next-line no-unused-vars */
-function mapPoint(options) {
-  return new ol.Map({
-    target: 'carte-point',
+function basicMapOptions(options) {
+  return [
+    target: options.target,
 
     view: new ol.View({
       enableRotation: false,
       constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
     }),
+  ];
+}
+
+// Carte de la page d'accueil
+/* eslint-disable-next-line no-unused-vars */
+function mapIndex(options) {
+  const map = new ol.Map({
+    ...basicMapOptions(options),
+
+    controls: [
+      new ol.control.Attribution({ // Du fond de carte
+        collapsed: false,
+      }),
+    ],
+
+    layers: [
+      new myol.layer.tile.MRI(), // Fond de carte
+      coucheMassifsColores({ // Les massifs
+        host: options.host,
+      }),
+      new myol.layer.Hover(), // Gère le survol du curseur
+    ],
+  });
+
+  map.getView().fit(ol.proj.transformExtent(options.extent, 'EPSG:4326', 'EPSG:3857'));
+
+  return map;
+}
+
+// Carte de la page de visualisation d'un point
+/* eslint-disable-next-line no-unused-vars */
+function mapPoint(options) {
+  return new ol.Map({
+    ...basicMapOptions(options),
 
     controls: [
       ...basicControls(),
@@ -305,16 +306,11 @@ function mapPoint(options) {
   });
 }
 
-// Pages de création et modification des points
+// Carte des pages de création et de modification d'un point
 /* eslint-disable-next-line no-unused-vars */
 function mapModif(options) {
   return new ol.Map({
-    target: 'carte-modif',
-
-    view: new ol.View({
-      enableRotation: false,
-      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
-    }),
+    ...basicMapOptions(options),
 
     controls: [
       ...basicControls(),
@@ -355,7 +351,7 @@ function mapModif(options) {
   });
 }
 
-// Page de navigation de la carte
+// Carte de la page de navigation
 /* eslint-disable-next-line no-unused-vars */
 function mapNav(options) {
   const contourMassif = coucheContourMassif({
@@ -398,12 +394,7 @@ function mapNav(options) {
   ];
 
   const map = new ol.Map({
-    target: 'carte-nav',
-
-    view: new ol.View({
-      enableRotation: false,
-      constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
-    }),
+    ...basicMapOptions(options),
 
     controls: [
       ...basicControls(),
@@ -440,6 +431,38 @@ function mapNav(options) {
   return map;
 }
 
-// Page d'édition des polygones
+// Carte de la page de création ou d'édion de massif ou de zone
 /* eslint-disable-next-line no-unused-vars */
-function navEdit(options) {}
+function navEdit(options) {
+  const editorlayer = new myol.layer.Editor({
+    geoJsonId: 'edit-json',
+    editOnly: 'poly',
+
+    featuresToSave: function(coordinates) {
+      return this.format.writeGeometry(
+        new ol.geom.MultiPolygon(coordinates.polys), {
+          featureProjection: 'EPSG:3857',
+          decimals: 5,
+        });
+    },
+  });
+
+  return new ol.Map({
+    ...basicMapOptions(options),
+
+    controls: [
+      ...basicControls(),
+      savedLayer: editorlayer,
+      new myol.control.LayerSwitcher({
+        layers: fondsCarte('edit', options.mapKeys),
+      }),
+    ],
+
+    layers: [
+      coucheContourMassif({
+        host: options.host,
+      }),
+      editorlayer,
+    ],
+  });
+}

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 07/05/2024 16:08:59 using npm run build from the src/... sources
+ * Built 16/05/2024 16:10:38 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -994,7 +994,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '9.1.0';
+  const VERSION = '9.2.0';
 
   /**
    * @module ol/Object
@@ -2669,9 +2669,10 @@
    *
    * @param {Extent} extent Extent.
    * @param {import("./proj/Projection.js").default} projection Projection
+   * @param {boolean} [multiWorld] Return all worlds
    * @return {Array<Extent>} The extent within the real world extent.
    */
-  function wrapAndSliceX(extent, projection) {
+  function wrapAndSliceX(extent, projection, multiWorld) {
     if (projection.canWrapX()) {
       const projectionExtent = projection.getExtent();
 
@@ -2682,7 +2683,7 @@
       wrapX$2(extent, projection);
       const worldWidth = getWidth(projectionExtent);
 
-      if (getWidth(extent) > worldWidth) {
+      if (getWidth(extent) > worldWidth && !multiWorld) {
         // the extent wraps around on itself
         return [[projectionExtent[0], extent[1], projectionExtent[2], extent[3]]];
       }
@@ -13924,7 +13925,7 @@
     return luv.lchuv(xyz.luv(arg));
   };
 
-  var names$x = {
+  var names$y = {
   	aliceblue: [240, 248, 255],
   	antiquewhite: [250, 235, 215],
   	aqua: [0, 255, 255],
@@ -14110,8 +14111,8 @@
   	cstr = String(cstr).toLowerCase();
 
   	//keyword
-  	if (names$x[cstr]) {
-  		parts = names$x[cstr].slice();
+  	if (names$y[cstr]) {
+  		parts = names$y[cstr].slice();
   		space = 'rgb';
   	}
 
@@ -15325,7 +15326,7 @@
     if (!iconImage) {
       iconImage = new IconImage(
         image,
-        image instanceof HTMLImageElement ? image.src || undefined : cacheKey,
+        image && 'src' in image ? image.src || undefined : cacheKey,
         crossOrigin,
         imageState,
         color,
@@ -15936,6 +15937,7 @@
         lineWidths.push(lineWidth);
         lineWidth = 0;
         height += lineHeight;
+        lineHeight = 0;
         continue;
       }
       const font = chunks[i + 1] || baseStyle.font;
@@ -17827,7 +17829,7 @@
       if (options.src !== undefined) {
         imageState = ImageState.IDLE;
       } else if (image !== undefined) {
-        if (image instanceof HTMLImageElement) {
+        if ('complete' in image) {
           if (image.complete) {
             imageState = image.src ? ImageState.LOADED : ImageState.IDLE;
           } else {
@@ -18852,7 +18854,7 @@
    * Base type used for literal style parameters; can be a number literal or the output of an operator,
    * which in turns takes {@link import("./expression.js").ExpressionValue} arguments.
    *
-   * The following operators can be used:
+   * See below for details on the available operators (with notes for those that are WebGL or Canvas only).
    *
    * * Reading operators:
    *   * `['band', bandIndex, xOffset, yOffset]` For tile layers only. Fetches pixel values from band
@@ -18907,8 +18909,15 @@
    *     `input` and `stopX` values must all be of type `number`. `outputX` values can be `number` or `color` values.
    *     Note: `input` will be clamped between `stop1` and `stopN`, meaning that all output values will be comprised
    *     between `output1` and `outputN`.
+   *   * `['string', value1, value2, ...]` returns the first value in the list that evaluates to a string.
+   *     An example would be to provide a default value for get: `['string', ['get', 'propertyname'], 'default value']]`
+   *     (Canvas only).
+   *   * `['number', value1, value2, ...]` returns the first value in the list that evaluates to a number.
+   *     An example would be to provide a default value for get: `['string', ['get', 'propertyname'], 42]]`
+   *     (Canvas only).
    *   * `['coalesce', value1, value2, ...]` returns the first value in the list which is not null or undefined.
-   *     An example would be to provide a default value for get: ['coalesce',['get','propertynanme'],'default value']]
+   *     An example would be to provide a default value for get: `['coalesce', ['get','propertyname'], 'default value']]`
+   *     (Canvas only).
    *
    * * Logical operators:
    *   * `['<', value1, value2]` returns `true` if `value1` is strictly lower than `value2`, or `false` otherwise.
@@ -19701,6 +19710,7 @@
           `, got ${typeName(inputType)} instead`,
       );
     }
+    inputType &= expectedInputType;
     if (isType(outputType, NoneType)) {
       throw new Error(
         `Could not find a common output type for the following match operation: ` +
@@ -21945,7 +21955,7 @@
    */
 
   /**
-   * @template {import("../source/Vector.js").default|import("../source/VectorTile.js").default} VectorSourceType
+   * @template {import("../source/Vector.js").default<import('../Feature').FeatureLike>|import("../source/VectorTile.js").default<import('../Feature').FeatureLike>} VectorSourceType
    * @typedef {Object} Options
    * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
    * @property {number} [opacity=1] Opacity (0, 1).
@@ -22009,7 +22019,7 @@
    * property on the layer object; for example, setting `title: 'My Title'` in the
    * options means that `title` is observable, and has get/set accessors.
    *
-   * @template {import("../source/Vector.js").default|import("../source/VectorTile.js").default} VectorSourceType
+   * @template {import("../source/Vector.js").default<import('../Feature').FeatureLike>|import("../source/VectorTile.js").default<import('../Feature').FeatureLike>} VectorSourceType
    * @template {import("../renderer/canvas/VectorLayer.js").default|import("../renderer/canvas/VectorTileLayer.js").default|import("../renderer/canvas/VectorImageLayer.js").default|import("../renderer/webgl/PointsLayer.js").default} RendererType
    * @extends {Layer<VectorSourceType, RendererType>}
    * @api
@@ -22044,7 +22054,7 @@
 
       /**
        * User provided style.
-       * @type {import("../style/Style.js").StyleLike}
+       * @type {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike}
        * @private
        */
       this.style_ = null;
@@ -22122,7 +22132,7 @@
     /**
      * Get the style for features.  This returns whatever was passed to the `style`
      * option at construction or to the `setStyle` method.
-     * @return {import("../style/Style.js").StyleLike|null|undefined} Layer style.
+     * @return {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike|null|undefined} Layer style.
      * @api
      */
     getStyle() {
@@ -22197,9 +22207,10 @@
      * @api
      */
     setStyle(style) {
-      this.style_ = toStyleLike(style);
+      this.style_ = style === undefined ? createDefaultStyle : style;
+      const styleLike = toStyleLike(style);
       this.styleFunction_ =
-        style === null ? undefined : toFunction(this.style_);
+        style === null ? undefined : toFunction(styleLike);
       this.changed();
     }
   }
@@ -22696,6 +22707,9 @@
      * @param {Array<import('../layer/Layer.js').State>} layerStates Layers.
      */
     declutter(frameState, layerStates) {
+      if (!frameState.declutter) {
+        return;
+      }
       for (let i = layerStates.length - 1; i >= 0; --i) {
         const layerState = layerStates[i];
         const layer = layerState.layer;
@@ -22714,7 +22728,7 @@
    */
 
   /**
-   * @typedef {'addlayer'|'removelayer'} EventType
+   * @typedef {'addlayer'|'removelayer'} GroupEventType
    */
 
   /**
@@ -22725,7 +22739,7 @@
    */
   class GroupEvent extends BaseEvent {
     /**
-     * @param {EventType} type The event type.
+     * @param {GroupEventType} type The event type.
      * @param {BaseLayer} layer The layer.
      */
     constructor(type, layer) {
@@ -26171,6 +26185,10 @@
      * Creates or updates the cached geometry.
      */
     createOrUpdateGeometry() {
+      if (!this.map_) {
+        return;
+      }
+
       const startPixel = this.startPixel_;
       const endPixel = this.endPixel_;
       const pixels = [
@@ -26403,6 +26421,10 @@
      * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Event.
      */
     handleDragEvent(mapBrowserEvent) {
+      if (!this.startPixel_) {
+        return;
+      }
+
       this.box_.setPixels(this.startPixel_, mapBrowserEvent.pixel);
 
       this.dispatchEvent(
@@ -26420,6 +26442,10 @@
      * @return {boolean} If the event was consumed.
      */
     handleUpEvent(mapBrowserEvent) {
+      if (!this.startPixel_) {
+        return false;
+      }
+
       this.box_.setMap(null);
 
       const completeBox = this.boxEndCondition_(
@@ -26467,6 +26493,26 @@
      * @param {import("../MapBrowserEvent.js").default} event Event.
      */
     onBoxEnd(event) {}
+
+    /**
+     * Activate or deactivate the interaction.
+     * @param {boolean} active Active.
+     * @observable
+     * @api
+     */
+    setActive(active) {
+      if (!active) {
+        this.box_.setMap(null);
+        if (this.startPixel_) {
+          this.dispatchEvent(
+            new DragBoxEvent(DragBoxEventType.BOXCANCEL, this.startPixel_, null),
+          );
+          this.startPixel_ = null;
+        }
+      }
+
+      super.setActive(active);
+    }
   }
 
   /**
@@ -45085,11 +45131,6 @@
        * @type {LayerType}
        */
       this.layer_ = layer;
-
-      /**
-       * @type {import("../render/canvas/ExecutorGroup").default}
-       */
-      this.declutterExecutorGroup = null;
     }
 
     /**
@@ -45289,7 +45330,7 @@
        * @type {ZIndexContextProxy}
        */
       this.context_ = /** @type {ZIndexContextProxy} */ (
-        new Proxy(CanvasRenderingContext2D.prototype, {
+        new Proxy(getSharedCanvasContext2D(), {
           get: (target, property) => {
             if (
               typeof (/** @type {*} */ (getSharedCanvasContext2D())[property]) !==
@@ -45326,6 +45367,14 @@
     };
 
     /**
+     * Push a function that renders to the context directly.
+     * @param {function(CanvasRenderingContext2D): void} render Function.
+     */
+    pushFunction(render) {
+      this.instructions_[this.zIndex + this.offset_].push(render);
+    }
+
+    /**
      * Get a proxy for CanvasRenderingContext2D which does not support getting state
      * (e.g. `context.globalAlpha`, which will return `undefined`). To set state, if it relies on a
      * previous state (e.g. `context.globalAlpha = context.globalAlpha / 2`), set a function,
@@ -45341,9 +45390,13 @@
      */
     draw(context) {
       this.instructions_.forEach((instructionsAtIndex) => {
-        for (let i = 0, ii = instructionsAtIndex.length; i < ii; i += 2) {
+        for (let i = 0, ii = instructionsAtIndex.length; i < ii; ++i) {
           const property = instructionsAtIndex[i];
-          const instructionAtIndex = instructionsAtIndex[i + 1];
+          if (typeof property === 'function') {
+            property(context);
+            continue;
+          }
+          const instructionAtIndex = instructionsAtIndex[++i];
           if (typeof (/** @type {*} */ (context)[property]) === 'function') {
             /** @type {*} */ (context)[property](...instructionAtIndex);
           } else {
@@ -45600,6 +45653,48 @@
       context.lineTo(Math.round(bottomRight[0]), Math.round(bottomRight[1]));
       context.lineTo(Math.round(bottomLeft[0]), Math.round(bottomLeft[1]));
       context.clip();
+    }
+
+    /**
+     * @param {import("../../Map.js").FrameState} frameState Frame state.
+     * @param {HTMLElement} target Target that may be used to render content to.
+     * @protected
+     */
+    prepareContainer(frameState, target) {
+      const extent = frameState.extent;
+      const resolution = frameState.viewState.resolution;
+      const rotation = frameState.viewState.rotation;
+      const pixelRatio = frameState.pixelRatio;
+      const width = Math.round((getWidth(extent) / resolution) * pixelRatio);
+      const height = Math.round((getHeight(extent) / resolution) * pixelRatio);
+      // set forward and inverse pixel transforms
+      compose(
+        this.pixelTransform,
+        frameState.size[0] / 2,
+        frameState.size[1] / 2,
+        1 / pixelRatio,
+        1 / pixelRatio,
+        rotation,
+        -width / 2,
+        -height / 2,
+      );
+      makeInverse(this.inversePixelTransform, this.pixelTransform);
+
+      const canvasTransform = toString$1(this.pixelTransform);
+      this.useContainer(target, canvasTransform, this.getBackground(frameState));
+
+      if (!this.containerReused) {
+        const canvas = this.context.canvas;
+        if (canvas.width != width || canvas.height != height) {
+          canvas.width = width;
+          canvas.height = height;
+        } else {
+          this.context.clearRect(0, 0, width, height);
+        }
+        if (canvasTransform !== canvas.style.transform) {
+          canvas.style.transform = canvasTransform;
+        }
+      }
     }
 
     /**
@@ -45922,7 +46017,7 @@
 
   /**
    * @template T
-   * @typedef {function(import("../../Feature.js").FeatureLike, import("../../geom/SimpleGeometry.js").default): T} FeatureCallback
+   * @typedef {function(import("../../Feature.js").FeatureLike, import("../../geom/SimpleGeometry.js").default, import("../../style/Style.js").DeclutterMode): T} FeatureCallback
    */
 
   /**
@@ -47025,7 +47120,11 @@
               feature = /** @type {import("../../Feature.js").FeatureLike} */ (
                 instruction[1]
               );
-              const result = featureCallback(feature, currentGeometry);
+              const result = featureCallback(
+                feature,
+                currentGeometry,
+                declutterMode,
+              );
               if (result) {
                 return result;
               }
@@ -47045,13 +47144,9 @@
             dd = /** @type {number} */ (instruction[2]);
             x = pixelCoordinates[d];
             y = pixelCoordinates[d + 1];
-            roundX = (x + 0.5) | 0;
-            roundY = (y + 0.5) | 0;
-            if (roundX !== prevX || roundY !== prevY) {
-              context.moveTo(x, y);
-              prevX = roundX;
-              prevY = roundY;
-            }
+            context.moveTo(x, y);
+            prevX = (x + 0.5) | 0;
+            prevY = (y + 0.5) | 0;
             for (d += 2; d < dd; d += 2) {
               x = pixelCoordinates[d];
               y = pixelCoordinates[d + 1];
@@ -47419,9 +47514,10 @@
       /**
        * @param {import("../../Feature.js").FeatureLike} feature Feature.
        * @param {import("../../geom/SimpleGeometry.js").default} geometry Geometry.
+       * @param {import('../../style/Style.js').DeclutterMode} declutterMode Declutter mode.
        * @return {T|undefined} Callback result.
        */
-      function featureCallback(feature, geometry) {
+      function featureCallback(feature, geometry, declutterMode) {
         const imageData = context.getImageData(
           0,
           0,
@@ -47432,6 +47528,7 @@
           if (imageData[indexes[i]] > 0) {
             if (
               !declutteredFeatures ||
+              declutterMode === 'none' ||
               (builderType !== 'Image' && builderType !== 'Text') ||
               declutteredFeatures.includes(feature)
             ) {
@@ -47528,7 +47625,8 @@
       zs.sort(ascending);
 
       builderTypes = builderTypes ? builderTypes : ALL;
-      let i, ii, j, jj, replays, replay;
+      const maxBuilderTypes = ALL.length;
+      let i, ii, j, jj, replays;
       if (declutterTree) {
         zs.reverse();
       }
@@ -47537,7 +47635,7 @@
         replays = this.executorsByZIndex_[zIndexKey];
         for (j = 0, jj = builderTypes.length; j < jj; ++j) {
           const builderType = builderTypes[j];
-          replay = replays[builderType];
+          const replay = replays[builderType];
           if (replay !== undefined) {
             const zIndexContext =
               declutterTree === null ? undefined : replay.getZIndexContext();
@@ -47554,24 +47652,41 @@
               // visible outside the current extent when panning
               this.clip(context, transform);
             }
-            replay.execute(
-              context,
-              scaledCanvasSize,
-              transform,
-              viewRotation,
-              snapToPixel,
-              declutterTree,
-            );
+            if (
+              !zIndexContext ||
+              builderType === 'Text' ||
+              builderType === 'Image'
+            ) {
+              replay.execute(
+                context,
+                scaledCanvasSize,
+                transform,
+                viewRotation,
+                snapToPixel,
+                declutterTree,
+              );
+            } else {
+              zIndexContext.pushFunction((context) =>
+                replay.execute(
+                  context,
+                  scaledCanvasSize,
+                  transform,
+                  viewRotation,
+                  snapToPixel,
+                  declutterTree,
+                ),
+              );
+            }
             if (requireClip) {
               context.restore();
             }
             if (zIndexContext) {
               zIndexContext.offset();
-              const z = zs[i];
-              if (!this.deferredZIndexContexts_[z]) {
-                this.deferredZIndexContexts_[z] = [];
+              const index = zs[i] * maxBuilderTypes + j;
+              if (!this.deferredZIndexContexts_[index]) {
+                this.deferredZIndexContexts_[index] = [];
               }
-              this.deferredZIndexContexts_[z].push(zIndexContext);
+              this.deferredZIndexContexts_[index].push(zIndexContext);
             }
           }
         }
@@ -47596,6 +47711,7 @@
           zIndexContext.draw(this.renderedContext_); // FIXME Pass clip to replay for temporarily enabling clip
           zIndexContext.clear();
         });
+        deferredZIndexContexts[zs[i]].length = 0;
       }
     }
   }
@@ -49496,6 +49612,13 @@
       this.hitDetectionImageData_ = null;
 
       /**
+       * @private
+       * @type {boolean}
+       */
+      this.clipped_ = false;
+
+      /**
+       * @private
        * @type {Array<import("../../Feature.js").default>}
        */
       this.renderedFeatures_ = null;
@@ -49553,6 +49676,12 @@
        * @type {function(import("../../Feature.js").default, import("../../Feature.js").default): number|null}
        */
       this.renderedRenderOrder_ = null;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.renderedFrameDeclutter_;
 
       /**
        * @private
@@ -49619,15 +49748,18 @@
         ? Math.floor((extent[0] - projectionExtent[0]) / worldWidth)
         : 0;
       do {
-        const transform = this.getRenderTransform(
+        let transform = this.getRenderTransform(
           center,
           resolution,
-          rotation,
+          0,
           pixelRatio,
           width,
           height,
           world * worldWidth,
         );
+        if (frameState.declutter) {
+          transform = transform.slice(0);
+        }
         executorGroup.execute(
           context,
           [context.canvas.width, context.canvas.height],
@@ -49696,6 +49828,9 @@
         return;
       }
       this.replayGroup_.renderDeferred();
+      if (this.clipped_) {
+        this.context.restore();
+      }
       this.resetDrawContext_();
     }
 
@@ -49706,33 +49841,12 @@
      * @return {HTMLElement|null} The rendered element.
      */
     renderFrame(frameState, target) {
-      const pixelRatio = frameState.pixelRatio;
       const layerState = frameState.layerStatesArray[frameState.layerIndex];
       this.opacity_ = layerState.opacity;
-      const extent = frameState.extent;
-      const resolution = frameState.viewState.resolution;
-      const width = Math.round((getWidth(extent) / resolution) * pixelRatio);
-      const height = Math.round((getHeight(extent) / resolution) * pixelRatio);
+      const viewState = frameState.viewState;
 
-      // set forward and inverse pixel transforms
-      compose(
-        this.pixelTransform,
-        frameState.size[0] / 2,
-        frameState.size[1] / 2,
-        1 / pixelRatio,
-        1 / pixelRatio,
-        0,
-        -width / 2,
-        -height / 2,
-      );
-      makeInverse(this.inversePixelTransform, this.pixelTransform);
-
-      const canvasTransform = toString$1(this.pixelTransform);
-
-      this.useContainer(target, canvasTransform, this.getBackground(frameState));
-
+      this.prepareContainer(frameState, target);
       const context = this.context;
-      const canvas = context.canvas;
 
       const replayGroup = this.replayGroup_;
       let render = replayGroup && !replayGroup.isEmpty();
@@ -49745,31 +49859,19 @@
         }
       }
 
-      // resize and clear
-      if (canvas.width != width || canvas.height != height) {
-        canvas.width = width;
-        canvas.height = height;
-        if (canvas.style.transform !== canvasTransform) {
-          canvas.style.transform = canvasTransform;
-        }
-      } else if (!this.containerReused) {
-        context.clearRect(0, 0, width, height);
-      }
-
       this.setDrawContext_();
 
       this.preRender(context, frameState);
 
-      const viewState = frameState.viewState;
       const projection = viewState.projection;
 
       // clipped rendering if layer extent is set
-      let clipped = false;
+      this.clipped_ = false;
       if (render && layerState.extent && this.clipping) {
         const layerExtent = fromUserExtent(layerState.extent, projection);
         render = intersects$1(layerExtent, frameState.extent);
-        clipped = render && !containsExtent(layerExtent, frameState.extent);
-        if (clipped) {
+        this.clipped_ = render && !containsExtent(layerExtent, frameState.extent);
+        if (this.clipped_) {
           this.clipUnrotated(context, frameState, layerExtent);
         }
       }
@@ -49782,7 +49884,7 @@
         );
       }
 
-      if (clipped) {
+      if (!frameState.declutter && this.clipped_) {
         context.restore();
       }
 
@@ -49806,9 +49908,12 @@
      */
     getFeatures(pixel) {
       return new Promise((resolve) => {
-        if (!this.hitDetectionImageData_ && !this.animatingOrInteracting_) {
-          const size = [this.context.canvas.width, this.context.canvas.height];
-          apply(this.pixelTransform, size);
+        if (
+          this.frameState &&
+          !this.hitDetectionImageData_ &&
+          !this.animatingOrInteracting_
+        ) {
+          const size = this.frameState.size.slice();
           const center = this.renderedCenter_;
           const resolution = this.renderedResolution_;
           const rotation = this.renderedRotation_;
@@ -50086,6 +50191,7 @@
         this.renderedResolution_ == resolution &&
         this.renderedRevision_ == vectorLayerRevision &&
         this.renderedRenderOrder_ == vectorLayerRenderOrder &&
+        this.renderedFrameDeclutter_ === !!frameState.declutter &&
         containsExtent(this.wrappedRenderedExtent_, extent)
       ) {
         if (!equals$2(this.renderedExtent_, renderedExtent)) {
@@ -50179,6 +50285,7 @@
       this.renderedResolution_ = resolution;
       this.renderedRevision_ = vectorLayerRevision;
       this.renderedRenderOrder_ = vectorLayerRenderOrder;
+      this.renderedFrameDeclutter_ = !!frameState.declutter;
       this.renderedExtent_ = renderedExtent;
       this.wrappedRenderedExtent_ = extent;
       this.renderedCenter_ = center;
@@ -50259,7 +50366,7 @@
    * property on the layer object; for example, setting `title: 'My Title'` in the
    * options means that `title` is observable, and has get/set accessors.
    *
-   * @template {import("../source/Vector.js").default} VectorSourceType
+   * @template {import("../source/Vector.js").default<import('../Feature.js').FeatureLike>} VectorSourceType
    * @extends {BaseVectorLayer<VectorSourceType, CanvasVectorLayerRenderer>}
    * @api
    */
@@ -50902,11 +51009,13 @@
    *
    * The function is responsible for loading the features and adding them to the
    * source.
+   *
+   * @template {import("./Feature.js").FeatureLike} [FeatureType=import("./Feature.js").default]
    * @typedef {function(this:(import("./source/Vector").default|import("./VectorTile.js").default),
    *           import("./extent.js").Extent,
    *           number,
    *           import("./proj/Projection.js").default,
-   *           function(Array<import("./Feature.js").default>): void=,
+   *           function(Array<FeatureType>): void=,
    *           function(): void=): void} FeatureLoader
    * @api
    */
@@ -50924,12 +51033,13 @@
    */
 
   /**
+   * @template {import("./Feature.js").FeatureLike} [FeatureType=import("./Feature.js").FeatureLike]
    * @param {string|FeatureUrlFunction} url Feature URL service.
    * @param {import("./format/Feature.js").default} format Feature format.
    * @param {import("./extent.js").Extent} extent Extent.
    * @param {number} resolution Resolution.
    * @param {import("./proj/Projection.js").default} projection Projection.
-   * @param {function(Array<import("./Feature.js").default>, import("./proj/Projection.js").default): void} success Success
+   * @param {function(Array<FeatureType>, import("./proj/Projection.js").default): void} success Success
    *      Function called with the loaded features and optionally with the data projection.
    * @param {function(): void} failure Failure
    *      Function called when loading failed.
@@ -50961,35 +51071,31 @@
       // status will be 0 for file:// urls
       if (!xhr.status || (xhr.status >= 200 && xhr.status < 300)) {
         const type = format.getType();
-        /** @type {Document|Node|Object|string|undefined} */
-        let source;
-        if (type == 'json') {
-          source = JSON.parse(xhr.responseText);
-        } else if (type == 'text') {
-          source = xhr.responseText;
-        } else if (type == 'xml') {
-          source = xhr.responseXML;
-          if (!source) {
-            source = new DOMParser().parseFromString(
-              xhr.responseText,
-              'application/xml',
-            );
+        try {
+          /** @type {Document|Node|Object|string|undefined} */
+          let source;
+          if (type == 'text' || type == 'json') {
+            source = xhr.responseText;
+          } else if (type == 'xml') {
+            source = xhr.responseXML || xhr.responseText;
+          } else if (type == 'arraybuffer') {
+            source = /** @type {ArrayBuffer} */ (xhr.response);
           }
-        } else if (type == 'arraybuffer') {
-          source = /** @type {ArrayBuffer} */ (xhr.response);
-        }
-        if (source) {
-          success(
-            /** @type {Array<import("./Feature.js").default>} */
-            (
-              format.readFeatures(source, {
-                extent: extent,
-                featureProjection: projection,
-              })
-            ),
-            format.readProjection(source),
-          );
-        } else {
+          if (source) {
+            success(
+              /** @type {Array<FeatureType>} */
+              (
+                format.readFeatures(source, {
+                  extent: extent,
+                  featureProjection: projection,
+                })
+              ),
+              format.readProjection(source),
+            );
+          } else {
+            failure();
+          }
+        } catch {
           failure();
         }
       } else {
@@ -51007,9 +51113,10 @@
    * Create an XHR feature loader for a `url` and `format`. The feature loader
    * loads features (with XHR), parses the features, and adds them to the
    * vector source.
+   * @template {import("./Feature.js").FeatureLike} [FeatureType=import("./Feature.js").FeatureLike]
    * @param {string|FeatureUrlFunction} url Feature URL service.
-   * @param {import("./format/Feature.js").default<typeof import("./Feature.js").default|typeof import("./render/Feature.js").default>} format Feature format.
-   * @return {FeatureLoader} The feature loader.
+   * @param {import("./format/Feature.js").default<import('./format/Feature.js').FeatureToFeatureClass<FeatureType>>} format Feature format.
+   * @return {FeatureLoader<FeatureType>} The feature loader.
    * @api
    */
   function xhr(url, format) {
@@ -51017,13 +51124,14 @@
      * @param {import("./extent.js").Extent} extent Extent.
      * @param {number} resolution Resolution.
      * @param {import("./proj/Projection.js").default} projection Projection.
-     * @param {function(Array<import("./Feature.js").default>): void} [success] Success
+     * @param {function(Array<FeatureType>): void} [success] Success
      *      Function called when loading succeeded.
      * @param {function(): void} [failure] Failure
      *      Function called when loading failed.
      */
     return function (extent, resolution, projection, success, failure) {
-      const source = /** @type {import("./source/Vector").default} */ (this);
+      const source =
+        /** @type {import("./source/Vector").default<FeatureType>} */ (this);
       loadFeaturesXhr(
         url,
         format,
@@ -51031,7 +51139,7 @@
         resolution,
         projection,
         /**
-         * @param {Array<import("./Feature.js").default>} features The loaded features.
+         * @param {Array<FeatureType>} features The loaded features.
          * @param {import("./proj/Projection.js").default} dataProjection Data
          * projection.
          */
@@ -51098,9 +51206,10 @@
 
   /***
    * @template Return
+   * @template {import("../Feature.js").FeatureLike} [FeatureType=import("../Feature.js").default]
    * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes, import("../events/Event.js").default, Return> &
    *   import("../Observable").OnSignature<import("../ObjectEventType").Types, import("../Object").ObjectEvent, Return> &
-   *   import("../Observable").OnSignature<import("./VectorEventType").VectorSourceEventTypes, VectorSourceEvent, Return> &
+   *   import("../Observable").OnSignature<import("./VectorEventType").VectorSourceEventTypes, VectorSourceEvent<FeatureType>, Return> &
    *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|import("../ObjectEventType").Types|
    *     import("./VectorEventType").VectorSourceEventTypes, Return>} VectorSourceOnSignature
    */
@@ -51114,7 +51223,7 @@
    * and the collection will stay in sync.
    * @property {import("../format/Feature.js").default<import("../format/Feature.js").FeatureToFeatureClass<FeatureType>>} [format] The feature format used by the XHR
    * feature loader when `url` is set. Required if `url` is set, otherwise ignored.
-   * @property {import("../featureloader.js").FeatureLoader} [loader]
+   * @property {import("../featureloader.js").FeatureLoader<FeatureType>} [loader]
    * The loader function used to load features, from a remote source for example.
    * If this is not set and `url` is set, the source will create and use an XHR
    * feature loader. The `'featuresloadend'` and `'featuresloaderror'` events
@@ -51224,12 +51333,12 @@
       });
 
       /***
-       * @type {VectorSourceOnSignature<import("../events").EventsKey>}
+       * @type {VectorSourceOnSignature<import("../events").EventsKey, FeatureType>}
        */
       this.on;
 
       /***
-       * @type {VectorSourceOnSignature<import("../events").EventsKey>}
+       * @type {VectorSourceOnSignature<import("../events").EventsKey, FeatureType>}
        */
       this.once;
 
@@ -51240,7 +51349,7 @@
 
       /**
        * @private
-       * @type {import("../featureloader.js").FeatureLoader}
+       * @type {import("../featureloader.js").FeatureLoader<FeatureType>}
        */
       this.loader_ = VOID;
 
@@ -52103,6 +52212,7 @@
      * at once, use the {@link module:ol/source/Vector~VectorSource#clear #clear()} method
      * instead.
      * @param {Array<FeatureType>} features Features to remove.
+     * @api
      */
     removeFeatures(features) {
       const removedFeatures = [];
@@ -52144,6 +52254,10 @@
      */
     removeFeatureInternal(feature) {
       const featureKey = getUid(feature);
+      if (!(featureKey in this.uidIndex_)) {
+        return;
+      }
+
       if (featureKey in this.nullGeometryFeatures_) {
         delete this.nullGeometryFeatures_[featureKey];
       } else {
@@ -52151,15 +52265,23 @@
           this.featuresRtree_.remove(feature);
         }
       }
+
       const featureChangeKeys = this.featureChangeKeys_[featureKey];
-      if (!featureChangeKeys) {
-        return;
-      }
-      featureChangeKeys.forEach(unlistenByKey);
+      featureChangeKeys?.forEach(unlistenByKey);
       delete this.featureChangeKeys_[featureKey];
+
       const id = feature.getId();
       if (id !== undefined) {
-        delete this.idIndex_[id.toString()];
+        const idString = id.toString();
+        const indexedFeature = this.idIndex_[idString];
+        if (indexedFeature === feature) {
+          delete this.idIndex_[idString];
+        } else if (Array.isArray(indexedFeature)) {
+          indexedFeature.splice(indexedFeature.indexOf(feature), 1);
+          if (indexedFeature.length === 1) {
+            this.idIndex_[idString] = indexedFeature[0];
+          }
+        }
       }
       delete this.uidIndex_[featureKey];
       if (this.hasListener(VectorEventType.REMOVEFEATURE)) {
@@ -52199,7 +52321,7 @@
     /**
      * Set the new loader of the source. The next render cycle will use the
      * new loader.
-     * @param {import("../featureloader.js").FeatureLoader} loader The loader to set.
+     * @param {import("../featureloader.js").FeatureLoader<FeatureType>} loader The loader to set.
      * @api
      */
     setLoader(loader) {
@@ -56851,6 +56973,7 @@
                   ? null
                   : segmentData.segment;
               minSquaredDistance = delta;
+              closestFeature = segmentData.feature;
             }
           }
         }
@@ -57979,6 +58102,7 @@
   /**
    * @typedef {Object} ImageExtent
    * @property {import("./extent.js").Extent} extent Extent.
+   * @property {import("./extent.js").Extent} [clipExtent] Clip extent.
    * @property {import('./DataTile.js').ImageLike} image Image.
    */
 
@@ -58069,13 +58193,27 @@
       }
 
       sources.forEach(function (src, i, arr) {
-        const xPos = (src.extent[0] - sourceDataExtent[0]) * stitchScale;
-        const yPos = -(src.extent[3] - sourceDataExtent[3]) * stitchScale;
-        const srcWidth = getWidth(src.extent) * stitchScale;
-        const srcHeight = getHeight(src.extent) * stitchScale;
-
         // This test should never fail -- but it does. Need to find a fix the upstream condition
         if (src.image.width > 0 && src.image.height > 0) {
+          if (src.clipExtent) {
+            stitchContext.save();
+            const xPos = (src.clipExtent[0] - sourceDataExtent[0]) * stitchScale;
+            const yPos = -(src.clipExtent[3] - sourceDataExtent[3]) * stitchScale;
+            const width = getWidth(src.clipExtent) * stitchScale;
+            const height = getHeight(src.clipExtent) * stitchScale;
+            stitchContext.rect(
+              interpolate ? xPos : Math.round(xPos),
+              interpolate ? yPos : Math.round(yPos),
+              interpolate ? width : Math.round(xPos + width) - Math.round(xPos),
+              interpolate ? height : Math.round(yPos + height) - Math.round(yPos),
+            );
+            stitchContext.clip();
+          }
+
+          const xPos = (src.extent[0] - sourceDataExtent[0]) * stitchScale;
+          const yPos = -(src.extent[3] - sourceDataExtent[3]) * stitchScale;
+          const srcWidth = getWidth(src.extent) * stitchScale;
+          const srcHeight = getHeight(src.extent) * stitchScale;
           stitchContext.drawImage(
             src.image,
             gutter,
@@ -58091,6 +58229,10 @@
               ? srcHeight
               : Math.round(yPos + srcHeight) - Math.round(yPos),
           );
+
+          if (src.clipExtent) {
+            stitchContext.restore();
+          }
         }
       });
     }
@@ -58271,6 +58413,12 @@
    */
 
   /**
+   * @typedef {Object} TileOffset
+   * @property {import("../ImageTile.js").default} tile Tile.
+   * @property {number} offset Offset.
+   */
+
+  /**
    * @classdesc
    * Class encapsulating single reprojected tile.
    * See {@link module:ol/source/TileImage~TileImage}.
@@ -58352,7 +58500,7 @@
 
       /**
        * @private
-       * @type {!Array<import("../ImageTile.js").default>}
+       * @type {!Array<TileOffset>}
        */
       this.sourceTiles_ = [];
 
@@ -58367,6 +58515,14 @@
        * @type {number}
        */
       this.sourceZ_ = 0;
+
+      /**
+       * @private
+       * @type {import("../extent.js").Extent}
+       */
+      this.clipExtent_ = sourceProj.canWrapX()
+        ? sourceProj.getExtent()
+        : undefined;
 
       const targetExtent = targetTileGrid.getTileCoordExtent(
         this.wrappedTileCoord_,
@@ -58457,19 +58613,37 @@
       if (!getArea$1(sourceExtent)) {
         this.state = TileState.EMPTY;
       } else {
-        const sourceRange = sourceTileGrid.getTileRangeForExtentAndZ(
-          sourceExtent,
-          this.sourceZ_,
-        );
+        let worldWidth = 0;
+        let worldsAway = 0;
+        if (sourceProj.canWrapX()) {
+          worldWidth = getWidth(sourceProjExtent);
+          worldsAway = Math.floor(
+            (sourceExtent[0] - sourceProjExtent[0]) / worldWidth,
+          );
+        }
 
-        for (let srcX = sourceRange.minX; srcX <= sourceRange.maxX; srcX++) {
-          for (let srcY = sourceRange.minY; srcY <= sourceRange.maxY; srcY++) {
-            const tile = getTileFunction(this.sourceZ_, srcX, srcY, pixelRatio);
-            if (tile) {
-              this.sourceTiles_.push(tile);
+        const sourceExtents = wrapAndSliceX(
+          sourceExtent.slice(),
+          sourceProj,
+          true,
+        );
+        sourceExtents.forEach((extent) => {
+          const sourceRange = sourceTileGrid.getTileRangeForExtentAndZ(
+            extent,
+            this.sourceZ_,
+          );
+
+          for (let srcX = sourceRange.minX; srcX <= sourceRange.maxX; srcX++) {
+            for (let srcY = sourceRange.minY; srcY <= sourceRange.maxY; srcY++) {
+              const tile = getTileFunction(this.sourceZ_, srcX, srcY, pixelRatio);
+              if (tile) {
+                const offset = worldsAway * worldWidth;
+                this.sourceTiles_.push({tile, offset});
+              }
             }
           }
-        }
+          ++worldsAway;
+        });
 
         if (this.sourceTiles_.length === 0) {
           this.state = TileState.EMPTY;
@@ -58490,10 +58664,20 @@
      */
     reproject_() {
       const sources = [];
-      this.sourceTiles_.forEach((tile) => {
+      this.sourceTiles_.forEach((source) => {
+        const tile = source.tile;
         if (tile && tile.getState() == TileState.LOADED) {
+          const extent = this.sourceTileGrid_.getTileCoordExtent(tile.tileCoord);
+          extent[0] += source.offset;
+          extent[2] += source.offset;
+          const clipExtent = this.clipExtent_?.slice();
+          if (clipExtent) {
+            clipExtent[0] += source.offset;
+            clipExtent[2] += source.offset;
+          }
           sources.push({
-            extent: this.sourceTileGrid_.getTileCoordExtent(tile.tileCoord),
+            extent: extent,
+            clipExtent: clipExtent,
             image: tile.getImage(),
           });
         }
@@ -58547,7 +58731,7 @@
         let leftToLoad = 0;
 
         this.sourcesListenerKeys_ = [];
-        this.sourceTiles_.forEach((tile) => {
+        this.sourceTiles_.forEach(({tile}) => {
           const state = tile.getState();
           if (state == TileState.IDLE || state == TileState.LOADING) {
             leftToLoad++;
@@ -58579,7 +58763,7 @@
         if (leftToLoad === 0) {
           setTimeout(this.reproject_.bind(this), 0);
         } else {
-          this.sourceTiles_.forEach(function (tile, i, arr) {
+          this.sourceTiles_.forEach(function ({tile}, i, arr) {
             const state = tile.getState();
             if (state == TileState.IDLE) {
               tile.load();
@@ -59494,9 +59678,12 @@
       let extent = frameState.extent;
       const resolution = frameState.viewState.resolution;
       const tilePixelRatio = tileSource.getTilePixelRatio(pixelRatio);
+
+      this.prepareContainer(frameState, target);
+
       // desired dimensions of the canvas in pixels
-      const width = Math.round((getWidth(extent) / resolution) * pixelRatio);
-      const height = Math.round((getHeight(extent) / resolution) * pixelRatio);
+      const width = this.context.canvas.width;
+      const height = this.context.canvas.height;
 
       const layerExtent =
         layerState.extent && fromUserExtent(layerState.extent, projection);
@@ -59597,26 +59784,7 @@
       const canvasScale =
         ((tileResolution / viewResolution) * pixelRatio) / tilePixelRatio;
 
-      // set forward and inverse pixel transforms
-      compose(
-        this.pixelTransform,
-        frameState.size[0] / 2,
-        frameState.size[1] / 2,
-        1 / pixelRatio,
-        1 / pixelRatio,
-        rotation,
-        -width / 2,
-        -height / 2,
-      );
-
-      const canvasTransform = toString$1(this.pixelTransform);
-
-      this.useContainer(target, canvasTransform, this.getBackground(frameState));
-
       const context = this.getRenderContext(frameState);
-      const canvas = this.context.canvas;
-
-      makeInverse(this.inversePixelTransform, this.pixelTransform);
 
       // set scale transform for calculating tile positions on the canvas
       compose(
@@ -59629,13 +59797,6 @@
         -width / 2,
         -height / 2,
       );
-
-      if (canvas.width != width || canvas.height != height) {
-        canvas.width = width;
-        canvas.height = height;
-      } else if (!this.containerReused) {
-        context.clearRect(0, 0, width, height);
-      }
 
       if (layerExtent) {
         this.clipUnrotated(context, frameState, layerExtent);
@@ -59794,10 +59955,6 @@
         context.restore();
       }
       context.imageSmoothingEnabled = true;
-
-      if (canvasTransform !== canvas.style.transform) {
-        canvas.style.transform = canvasTransform;
-      }
 
       return this.container;
     }
@@ -67173,6 +67330,9 @@
       b: function(v) {
         self.b = parseFloat(v);
       },
+      r: function(v) {
+        self.a = self.b = parseFloat(v);
+      },
       r_a: function() {
         self.R_A = true;
       },
@@ -67886,7 +68046,7 @@
     return -9999;
   }
 
-  function init$v() {
+  function init$w() {
     var con = this.b / this.a;
     this.es = 1 - con * con;
     if(!('x0' in this)){
@@ -67919,7 +68079,7 @@
   /* Mercator forward equations--mapping lat,long to x,y
     --------------------------------------------------*/
 
-  function forward$u(p) {
+  function forward$v(p) {
     var lon = p.x;
     var lat = p.y;
     // convert to radians
@@ -67950,7 +68110,7 @@
 
   /* Mercator inverse equations--mapping x,y to lat/long
     --------------------------------------------------*/
-  function inverse$u(p) {
+  function inverse$v(p) {
 
     var x = p.x - this.x0;
     var y = p.y - this.y0;
@@ -67973,31 +68133,31 @@
     return p;
   }
 
-  var names$w = ["Mercator", "Popular Visualisation Pseudo Mercator", "Mercator_1SP", "Mercator_Auxiliary_Sphere", "merc"];
+  var names$x = ["Mercator", "Popular Visualisation Pseudo Mercator", "Mercator_1SP", "Mercator_Auxiliary_Sphere", "merc"];
   var merc = {
-    init: init$v,
-    forward: forward$u,
-    inverse: inverse$u,
-    names: names$w
+    init: init$w,
+    forward: forward$v,
+    inverse: inverse$v,
+    names: names$x
   };
 
-  function init$u() {
+  function init$v() {
     //no-op for longlat
   }
 
   function identity(pt) {
     return pt;
   }
-  var names$v = ["longlat", "identity"];
+  var names$w = ["longlat", "identity"];
   var longlat = {
-    init: init$u,
+    init: init$v,
     forward: identity,
     inverse: identity,
-    names: names$v
+    names: names$w
   };
 
   var projs = [merc, longlat];
-  var names$u = {};
+  var names$v = {};
   var projStore = [];
 
   function add(proj, i) {
@@ -68008,7 +68168,7 @@
     }
     projStore[len] = proj;
     proj.names.forEach(function(n) {
-      names$u[n.toLowerCase()] = len;
+      names$v[n.toLowerCase()] = len;
     });
     return this;
   }
@@ -68018,8 +68178,8 @@
       return false;
     }
     var n = name.toLowerCase();
-    if (typeof names$u[n] !== 'undefined' && projStore[names$u[n]]) {
-      return projStore[names$u[n]];
+    if (typeof names$v[n] !== 'undefined' && projStore[names$v[n]]) {
+      return projStore[names$v[n]];
     }
   }
 
@@ -69428,8 +69588,8 @@
   var V = 86; // V
   var Z = 90; // Z
   var mgrs = {
-    forward: forward$t,
-    inverse: inverse$t,
+    forward: forward$u,
+    inverse: inverse$u,
     toPoint: toPoint
   };
   /**
@@ -69441,7 +69601,7 @@
    *      100 m, 2 for 1000 m or 1 for 10000 m). Optional, default is 5.
    * @return {string} the MGRS string for the given location and accuracy.
    */
-  function forward$t(ll, accuracy) {
+  function forward$u(ll, accuracy) {
     accuracy = accuracy || 5; // default accuracy 1m
     return encode(LLtoUTM({
       lat: ll[1],
@@ -69456,7 +69616,7 @@
    *     (longitude) and top (latitude) values in WGS84, representing the
    *     bounding box for the provided MGRS reference.
    */
-  function inverse$t(mgrs) {
+  function inverse$u(mgrs) {
     var bbox = UTMtoLL(decode(mgrs.toUpperCase()));
     if (bbox.lat && bbox.lon) {
       return [bbox.lon, bbox.lat, bbox.lon, bbox.lat];
@@ -70168,7 +70328,7 @@
     return new Point(toPoint(mgrsStr));
   };
   Point.prototype.toMGRS = function(accuracy) {
-    return forward$t([this.x, this.y], accuracy);
+    return forward$u([this.x, this.y], accuracy);
   };
 
   var C00 = 1;
@@ -70226,7 +70386,7 @@
   // https://github.com/mbloch/mapshaper-proj/blob/master/src/projections/tmerc.js
 
 
-  function init$t() {
+  function init$u() {
     this.x0 = this.x0 !== undefined ? this.x0 : 0;
     this.y0 = this.y0 !== undefined ? this.y0 : 0;
     this.long0 = this.long0 !== undefined ? this.long0 : 0;
@@ -70242,7 +70402,7 @@
       Transverse Mercator Forward  - long/lat to x/y
       long/lat in radians
     */
-  function forward$s(p) {
+  function forward$t(p) {
     var lon = p.x;
     var lat = p.y;
 
@@ -70317,7 +70477,7 @@
   /**
       Transverse Mercator Inverse  -  x/y to long/lat
     */
-  function inverse$s(p) {
+  function inverse$t(p) {
     var con, phi;
     var lat, lon;
     var x = (p.x - this.x0) * (1 / this.a);
@@ -70381,12 +70541,12 @@
     return p;
   }
 
-  var names$t = ["Fast_Transverse_Mercator", "Fast Transverse Mercator"];
+  var names$u = ["Fast_Transverse_Mercator", "Fast Transverse Mercator"];
   var tmerc = {
-    init: init$t,
-    forward: forward$s,
-    inverse: inverse$s,
-    names: names$t
+    init: init$u,
+    forward: forward$t,
+    inverse: inverse$t,
+    names: names$u
   };
 
   function sinh(x) {
@@ -70490,7 +70650,7 @@
   // https://github.com/mbloch/mapshaper-proj/blob/master/src/projections/etmerc.js
 
 
-  function init$s() {
+  function init$t() {
     if (!this.approx && (isNaN(this.es) || this.es <= 0)) {
       throw new Error('Incorrect elliptical usage. Try using the +approx option in the proj string, or PROJECTION["Fast_Transverse_Mercator"] in the WKT.');
     }
@@ -70567,7 +70727,7 @@
     this.Zb = -this.Qn * (Z + clens(this.gtu, 2 * Z));
   }
 
-  function forward$r(p) {
+  function forward$s(p) {
     var Ce = adjust_lon(p.x - this.long0);
     var Cn = p.y;
 
@@ -70604,7 +70764,7 @@
     return p;
   }
 
-  function inverse$r(p) {
+  function inverse$s(p) {
     var Ce = (p.x - this.x0) * (1 / this.a);
     var Cn = (p.y - this.y0) * (1 / this.a);
 
@@ -70643,12 +70803,12 @@
     return p;
   }
 
-  var names$s = ["Extended_Transverse_Mercator", "Extended Transverse Mercator", "etmerc", "Transverse_Mercator", "Transverse Mercator", "Gauss Kruger", "Gauss_Kruger", "tmerc"];
+  var names$t = ["Extended_Transverse_Mercator", "Extended Transverse Mercator", "etmerc", "Transverse_Mercator", "Transverse Mercator", "Gauss Kruger", "Gauss_Kruger", "tmerc"];
   var etmerc = {
-    init: init$s,
-    forward: forward$r,
-    inverse: inverse$r,
-    names: names$s
+    init: init$t,
+    forward: forward$s,
+    inverse: inverse$s,
+    names: names$t
   };
 
   function adjust_zone(zone, lon) {
@@ -70667,7 +70827,7 @@
   var dependsOn = 'etmerc';
 
 
-  function init$r() {
+  function init$s() {
     var zone = adjust_zone(this.zone, this.long0);
     if (zone === undefined) {
       throw new Error('unknown utm zone');
@@ -70683,10 +70843,10 @@
     this.inverse = etmerc.inverse;
   }
 
-  var names$r = ["Universal Transverse Mercator System", "utm"];
+  var names$s = ["Universal Transverse Mercator System", "utm"];
   var utm = {
-    init: init$r,
-    names: names$r,
+    init: init$s,
+    names: names$s,
     dependsOn: dependsOn
   };
 
@@ -70696,7 +70856,7 @@
 
   var MAX_ITER$2 = 20;
 
-  function init$q() {
+  function init$r() {
     var sphi = Math.sin(this.lat0);
     var cphi = Math.cos(this.lat0);
     cphi *= cphi;
@@ -70707,7 +70867,7 @@
     this.K = Math.tan(0.5 * this.phic0 + FORTPI) / (Math.pow(Math.tan(0.5 * this.lat0 + FORTPI), this.C) * srat(this.e * sphi, this.ratexp));
   }
 
-  function forward$q(p) {
+  function forward$r(p) {
     var lon = p.x;
     var lat = p.y;
 
@@ -70716,7 +70876,7 @@
     return p;
   }
 
-  function inverse$q(p) {
+  function inverse$r(p) {
     var DEL_TOL = 1e-14;
     var lon = p.x / this.C;
     var lat = p.y;
@@ -70737,15 +70897,15 @@
     return p;
   }
 
-  var names$q = ["gauss"];
+  var names$r = ["gauss"];
   var gauss = {
-    init: init$q,
-    forward: forward$q,
-    inverse: inverse$q,
-    names: names$q
+    init: init$r,
+    forward: forward$r,
+    inverse: inverse$r,
+    names: names$r
   };
 
-  function init$p() {
+  function init$q() {
     gauss.init.apply(this);
     if (!this.rc) {
       return;
@@ -70758,7 +70918,7 @@
     }
   }
 
-  function forward$p(p) {
+  function forward$q(p) {
     var sinc, cosc, cosl, k;
     p.x = adjust_lon(p.x - this.long0);
     gauss.forward.apply(this, [p]);
@@ -70773,7 +70933,7 @@
     return p;
   }
 
-  function inverse$p(p) {
+  function inverse$q(p) {
     var sinc, cosc, lon, lat, rho;
     p.x = (p.x - this.x0) / this.a;
     p.y = (p.y - this.y0) / this.a;
@@ -70799,12 +70959,12 @@
     return p;
   }
 
-  var names$p = ["Stereographic_North_Pole", "Oblique_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
+  var names$q = ["Stereographic_North_Pole", "Oblique_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
   var sterea = {
-    init: init$p,
-    forward: forward$p,
-    inverse: inverse$p,
-    names: names$p
+    init: init$q,
+    forward: forward$q,
+    inverse: inverse$q,
+    names: names$q
   };
 
   function ssfn_(phit, sinphi, eccen) {
@@ -70812,7 +70972,7 @@
     return (Math.tan(0.5 * (HALF_PI + phit)) * Math.pow((1 - sinphi) / (1 + sinphi), 0.5 * eccen));
   }
 
-  function init$o() {
+  function init$p() {
 
     // setting default parameters
     this.x0 = this.x0 || 0;
@@ -70854,7 +71014,7 @@
   }
 
   // Stereographic forward equations--mapping lat,long to x,y
-  function forward$o(p) {
+  function forward$p(p) {
     var lon = p.x;
     var lat = p.y;
     var sinlat = Math.sin(lat);
@@ -70907,7 +71067,7 @@
   }
 
   //* Stereographic inverse equations--mapping x,y to lat/long
-  function inverse$o(p) {
+  function inverse$p(p) {
     p.x -= this.x0;
     p.y -= this.y0;
     var lon, lat, ts, ce, Chi;
@@ -70974,12 +71134,12 @@
 
   }
 
-  var names$o = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)", "Polar_Stereographic"];
+  var names$p = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)", "Polar_Stereographic"];
   var stere = {
-    init: init$o,
-    forward: forward$o,
-    inverse: inverse$o,
-    names: names$o,
+    init: init$p,
+    forward: forward$p,
+    inverse: inverse$p,
+    names: names$p,
     ssfn_: ssfn_
   };
 
@@ -70991,7 +71151,7 @@
       http://www.swisstopo.admin.ch/internet/swisstopo/fr/home/topics/survey/sys/refsys/switzerland.parsysrelated1.31216.downloadList.77004.DownloadFile.tmp/swissprojectionfr.pdf
     */
 
-  function init$n() {
+  function init$o() {
     var phy0 = this.lat0;
     this.lambda0 = this.long0;
     var sinPhy0 = Math.sin(phy0);
@@ -71009,7 +71169,7 @@
     this.K = k1 - this.alpha * k2 + this.alpha * e / 2 * k3;
   }
 
-  function forward$n(p) {
+  function forward$o(p) {
     var Sa1 = Math.log(Math.tan(Math.PI / 4 - p.y / 2));
     var Sa2 = this.e / 2 * Math.log((1 + this.e * Math.sin(p.y)) / (1 - this.e * Math.sin(p.y)));
     var S = -this.alpha * (Sa1 + Sa2) + this.K;
@@ -71030,7 +71190,7 @@
     return p;
   }
 
-  function inverse$n(p) {
+  function inverse$o(p) {
     var Y = p.x - this.x0;
     var X = p.y - this.y0;
 
@@ -71062,12 +71222,12 @@
     return p;
   }
 
-  var names$n = ["somerc"];
+  var names$o = ["somerc"];
   var somerc = {
-    init: init$n,
-    forward: forward$n,
-    inverse: inverse$n,
-    names: names$n
+    init: init$o,
+    forward: forward$o,
+    inverse: inverse$o,
+    names: names$o
   };
 
   var TOL = 1e-7;
@@ -71082,7 +71242,7 @@
 
   /* Initialize the Oblique Mercator  projection
       ------------------------------------------*/
-  function init$m() {  
+  function init$n() {  
     var con, com, cosph0, D, F, H, L, sinph0, p, J, gamma = 0,
       gamma0, lamc = 0, lam1 = 0, lam2 = 0, phi1 = 0, phi2 = 0, alpha_c = 0;
     
@@ -71213,7 +71373,7 @@
 
   /* Oblique Mercator forward equations--mapping lat,long to x,y
       ----------------------------------------------------------*/
-  function forward$m(p) {
+  function forward$n(p) {
     var coords = {};
     var S, T, U, V, W, temp, u, v;
     p.x = p.x - this.lam0;
@@ -71259,7 +71419,7 @@
     return coords;
   }
 
-  function inverse$m(p) {
+  function inverse$n(p) {
     var u, v, Qp, Sp, Tp, Vp, Up;
     var coords = {};
     
@@ -71299,15 +71459,15 @@
     return coords;
   }
 
-  var names$m = ["Hotine_Oblique_Mercator", "Hotine Oblique Mercator", "Hotine_Oblique_Mercator_Azimuth_Natural_Origin", "Hotine_Oblique_Mercator_Two_Point_Natural_Origin", "Hotine_Oblique_Mercator_Azimuth_Center", "Oblique_Mercator", "omerc"];
+  var names$n = ["Hotine_Oblique_Mercator", "Hotine Oblique Mercator", "Hotine_Oblique_Mercator_Azimuth_Natural_Origin", "Hotine_Oblique_Mercator_Two_Point_Natural_Origin", "Hotine_Oblique_Mercator_Azimuth_Center", "Oblique_Mercator", "omerc"];
   var omerc = {
-    init: init$m,
-    forward: forward$m,
-    inverse: inverse$m,
-    names: names$m
+    init: init$n,
+    forward: forward$n,
+    inverse: inverse$n,
+    names: names$n
   };
 
-  function init$l() {
+  function init$m() {
     
     //double lat0;                    /* the reference latitude               */
     //double long0;                   /* the reference longitude              */
@@ -71367,7 +71527,7 @@
 
   // Lambert Conformal conic forward equations--mapping lat,long to x,y
   // -----------------------------------------------------------------
-  function forward$l(p) {
+  function forward$m(p) {
 
     var lon = p.x;
     var lat = p.y;
@@ -71399,7 +71559,7 @@
 
   // Lambert Conformal Conic inverse equations--mapping x,y to lat/long
   // -----------------------------------------------------------------
-  function inverse$l(p) {
+  function inverse$m(p) {
 
     var rh1, con, ts;
     var lat, lon;
@@ -71435,7 +71595,7 @@
     return p;
   }
 
-  var names$l = [
+  var names$m = [
     "Lambert Tangential Conformal Conic Projection",
     "Lambert_Conformal_Conic",
     "Lambert_Conformal_Conic_1SP",
@@ -71446,13 +71606,13 @@
   ];
 
   var lcc = {
-    init: init$l,
-    forward: forward$l,
-    inverse: inverse$l,
-    names: names$l
+    init: init$m,
+    forward: forward$m,
+    inverse: inverse$m,
+    names: names$m
   };
 
-  function init$k() {
+  function init$l() {
     this.a = 6377397.155;
     this.es = 0.006674372230614;
     this.e = Math.sqrt(this.es);
@@ -71487,7 +71647,7 @@
   /* ellipsoid */
   /* calculate xy from lat/lon */
   /* Constants, identical to inverse transform function */
-  function forward$k(p) {
+  function forward$l(p) {
     var gfi, u, deltav, s, d, eps, ro;
     var lon = p.x;
     var lat = p.y;
@@ -71511,7 +71671,7 @@
   }
 
   /* calculate lat/lon from xy */
-  function inverse$k(p) {
+  function inverse$l(p) {
     var u, deltav, s, d, eps, ro, fi1;
     var ok;
 
@@ -71549,12 +71709,12 @@
     return (p);
   }
 
-  var names$k = ["Krovak", "krovak"];
+  var names$l = ["Krovak", "krovak"];
   var krovak = {
-    init: init$k,
-    forward: forward$k,
-    inverse: inverse$k,
-    names: names$k
+    init: init$l,
+    forward: forward$l,
+    inverse: inverse$l,
+    names: names$l
   };
 
   function mlfn(e0, e1, e2, e3, phi) {
@@ -71603,7 +71763,7 @@
     return NaN;
   }
 
-  function init$j() {
+  function init$k() {
     if (!this.sphere) {
       this.e0 = e0fn(this.es);
       this.e1 = e1fn(this.es);
@@ -71615,7 +71775,7 @@
 
   /* Cassini forward equations--mapping lat,long to x,y
     -----------------------------------------------------------------------*/
-  function forward$j(p) {
+  function forward$k(p) {
 
     /* Forward equations
         -----------------*/
@@ -71652,7 +71812,7 @@
 
   /* Inverse equations
     -----------------*/
-  function inverse$j(p) {
+  function inverse$k(p) {
     p.x -= this.x0;
     p.y -= this.y0;
     var x = p.x / this.a;
@@ -71693,12 +71853,12 @@
 
   }
 
-  var names$j = ["Cassini", "Cassini_Soldner", "cass"];
+  var names$k = ["Cassini", "Cassini_Soldner", "cass"];
   var cass = {
-    init: init$j,
-    forward: forward$j,
-    inverse: inverse$j,
-    names: names$j
+    init: init$k,
+    forward: forward$k,
+    inverse: inverse$k,
+    names: names$k
   };
 
   function qsfnz(eccent, sinphi) {
@@ -71726,7 +71886,7 @@
 
   /* Initialize the Lambert Azimuthal Equal Area projection
     ------------------------------------------------------*/
-  function init$i() {
+  function init$j() {
     var t = Math.abs(this.lat0);
     if (Math.abs(t - HALF_PI) < EPSLN) {
       this.mode = this.lat0 < 0 ? this.S_POLE : this.N_POLE;
@@ -71777,7 +71937,7 @@
 
   /* Lambert Azimuthal Equal Area forward equations--mapping lat,long to x,y
     -----------------------------------------------------------------------*/
-  function forward$i(p) {
+  function forward$j(p) {
 
     /* Forward equations
         -----------------*/
@@ -71875,7 +72035,7 @@
 
   /* Inverse equations
     -----------------*/
-  function inverse$i(p) {
+  function inverse$j(p) {
     p.x -= this.x0;
     p.y -= this.y0;
     var x = p.x / this.a;
@@ -71993,12 +72153,12 @@
     return (beta + APA[0] * Math.sin(t) + APA[1] * Math.sin(t + t) + APA[2] * Math.sin(t + t + t));
   }
 
-  var names$i = ["Lambert Azimuthal Equal Area", "Lambert_Azimuthal_Equal_Area", "laea"];
+  var names$j = ["Lambert Azimuthal Equal Area", "Lambert_Azimuthal_Equal_Area", "laea"];
   var laea = {
-    init: init$i,
-    forward: forward$i,
-    inverse: inverse$i,
-    names: names$i,
+    init: init$j,
+    forward: forward$j,
+    inverse: inverse$j,
+    names: names$j,
     S_POLE: S_POLE,
     N_POLE: N_POLE,
     EQUIT: EQUIT,
@@ -72012,7 +72172,7 @@
     return Math.asin(x);
   }
 
-  function init$h() {
+  function init$i() {
 
     if (Math.abs(this.lat1 + this.lat2) < EPSLN) {
       return;
@@ -72051,7 +72211,7 @@
 
   /* Albers Conical Equal Area forward equations--mapping lat,long to x,y
     -------------------------------------------------------------------*/
-  function forward$h(p) {
+  function forward$i(p) {
 
     var lon = p.x;
     var lat = p.y;
@@ -72070,7 +72230,7 @@
     return p;
   }
 
-  function inverse$h(p) {
+  function inverse$i(p) {
     var rh1, qs, con, theta, lon, lat;
 
     p.x -= this.x0;
@@ -72127,12 +72287,12 @@
     return null;
   }
 
-  var names$h = ["Albers_Conic_Equal_Area", "Albers", "aea"];
+  var names$i = ["Albers_Conic_Equal_Area", "Albers", "aea"];
   var aea = {
-    init: init$h,
-    forward: forward$h,
-    inverse: inverse$h,
-    names: names$h,
+    init: init$i,
+    forward: forward$i,
+    inverse: inverse$i,
+    names: names$i,
     phi1z: phi1z
   };
 
@@ -72142,7 +72302,7 @@
       http://mathworld.wolfram.com/GnomonicProjection.html
       Accessed: 12th November 2009
     */
-  function init$g() {
+  function init$h() {
 
     /* Place parameters in static storage for common use
         -------------------------------------------------*/
@@ -72155,7 +72315,7 @@
 
   /* Gnomonic forward equations--mapping lat,long to x,y
       ---------------------------------------------------*/
-  function forward$g(p) {
+  function forward$h(p) {
     var sinphi, cosphi; /* sin and cos value        */
     var dlon; /* delta longitude value      */
     var coslon; /* cos of longitude        */
@@ -72196,7 +72356,7 @@
     return p;
   }
 
-  function inverse$g(p) {
+  function inverse$h(p) {
     var rh; /* Rho */
     var sinc, cosc;
     var c;
@@ -72229,12 +72389,12 @@
     return p;
   }
 
-  var names$g = ["gnom"];
+  var names$h = ["gnom"];
   var gnom = {
-    init: init$g,
-    forward: forward$g,
-    inverse: inverse$g,
-    names: names$g
+    init: init$h,
+    forward: forward$h,
+    inverse: inverse$h,
+    names: names$h
   };
 
   function iqsfnz(eccent, q) {
@@ -72274,7 +72434,7 @@
       A User's Manual" by Gerald I. Evenden,
       USGS Open File Report 90-284and Release 4 Interim Reports (2003)
   */
-  function init$f() {
+  function init$g() {
     //no-op
     if (!this.sphere) {
       this.k0 = msfnz(this.e, Math.sin(this.lat_ts), Math.cos(this.lat_ts));
@@ -72283,7 +72443,7 @@
 
   /* Cylindrical Equal Area forward equations--mapping lat,long to x,y
       ------------------------------------------------------------*/
-  function forward$f(p) {
+  function forward$g(p) {
     var lon = p.x;
     var lat = p.y;
     var x, y;
@@ -72307,7 +72467,7 @@
 
   /* Cylindrical Equal Area inverse equations--mapping x,y to lat/long
       ------------------------------------------------------------*/
-  function inverse$f(p) {
+  function inverse$g(p) {
     p.x -= this.x0;
     p.y -= this.y0;
     var lon, lat;
@@ -72326,15 +72486,15 @@
     return p;
   }
 
-  var names$f = ["cea"];
+  var names$g = ["cea"];
   var cea = {
-    init: init$f,
-    forward: forward$f,
-    inverse: inverse$f,
-    names: names$f
+    init: init$g,
+    forward: forward$g,
+    inverse: inverse$g,
+    names: names$g
   };
 
-  function init$e() {
+  function init$f() {
 
     this.x0 = this.x0 || 0;
     this.y0 = this.y0 || 0;
@@ -72348,7 +72508,7 @@
 
   // forward equations--mapping lat,long to x,y
   // -----------------------------------------------------------------
-  function forward$e(p) {
+  function forward$f(p) {
 
     var lon = p.x;
     var lat = p.y;
@@ -72362,7 +72522,7 @@
 
   // inverse equations--mapping x,y to lat/long
   // -----------------------------------------------------------------
-  function inverse$e(p) {
+  function inverse$f(p) {
 
     var x = p.x;
     var y = p.y;
@@ -72372,17 +72532,17 @@
     return p;
   }
 
-  var names$e = ["Equirectangular", "Equidistant_Cylindrical", "eqc"];
+  var names$f = ["Equirectangular", "Equidistant_Cylindrical", "eqc"];
   var eqc = {
-    init: init$e,
-    forward: forward$e,
-    inverse: inverse$e,
-    names: names$e
+    init: init$f,
+    forward: forward$f,
+    inverse: inverse$f,
+    names: names$f
   };
 
   var MAX_ITER$1 = 20;
 
-  function init$d() {
+  function init$e() {
     /* Place parameters in static storage for common use
         -------------------------------------------------*/
     this.temp = this.b / this.a;
@@ -72397,7 +72557,7 @@
 
   /* Polyconic forward equations--mapping lat,long to x,y
       ---------------------------------------------------*/
-  function forward$d(p) {
+  function forward$e(p) {
     var lon = p.x;
     var lat = p.y;
     var x, y, el;
@@ -72432,7 +72592,7 @@
 
   /* Inverse equations
     -----------------*/
-  function inverse$d(p) {
+  function inverse$e(p) {
     var lon, lat, x, y, i;
     var al, bl;
     var phi, dphi;
@@ -72498,15 +72658,15 @@
     return p;
   }
 
-  var names$d = ["Polyconic", "poly"];
+  var names$e = ["Polyconic", "poly"];
   var poly = {
-    init: init$d,
-    forward: forward$d,
-    inverse: inverse$d,
-    names: names$d
+    init: init$e,
+    forward: forward$e,
+    inverse: inverse$e,
+    names: names$e
   };
 
-  function init$c() {
+  function init$d() {
     this.A = [];
     this.A[1] = 0.6399175073;
     this.A[2] = -0.1358797613;
@@ -72565,7 +72725,7 @@
       New Zealand Map Grid Forward  - long/lat to x/y
       long/lat in radians
     */
-  function forward$c(p) {
+  function forward$d(p) {
     var n;
     var lon = p.x;
     var lat = p.y;
@@ -72616,7 +72776,7 @@
   /**
       New Zealand Map Grid Inverse  -  x/y to long/lat
     */
-  function inverse$c(p) {
+  function inverse$d(p) {
     var n;
     var x = p.x;
     var y = p.y;
@@ -72707,12 +72867,12 @@
     return p;
   }
 
-  var names$c = ["New_Zealand_Map_Grid", "nzmg"];
+  var names$d = ["New_Zealand_Map_Grid", "nzmg"];
   var nzmg = {
-    init: init$c,
-    forward: forward$c,
-    inverse: inverse$c,
-    names: names$c
+    init: init$d,
+    forward: forward$d,
+    inverse: inverse$d,
+    names: names$d
   };
 
   /*
@@ -72724,13 +72884,13 @@
 
   /* Initialize the Miller Cylindrical projection
     -------------------------------------------*/
-  function init$b() {
+  function init$c() {
     //no-op
   }
 
   /* Miller Cylindrical forward equations--mapping lat,long to x,y
       ------------------------------------------------------------*/
-  function forward$b(p) {
+  function forward$c(p) {
     var lon = p.x;
     var lat = p.y;
     /* Forward equations
@@ -72746,7 +72906,7 @@
 
   /* Miller Cylindrical inverse equations--mapping x,y to lat/long
       ------------------------------------------------------------*/
-  function inverse$b(p) {
+  function inverse$c(p) {
     p.x -= this.x0;
     p.y -= this.y0;
 
@@ -72758,18 +72918,18 @@
     return p;
   }
 
-  var names$b = ["Miller_Cylindrical", "mill"];
+  var names$c = ["Miller_Cylindrical", "mill"];
   var mill = {
-    init: init$b,
-    forward: forward$b,
-    inverse: inverse$b,
-    names: names$b
+    init: init$c,
+    forward: forward$c,
+    inverse: inverse$c,
+    names: names$c
   };
 
   var MAX_ITER = 20;
 
 
-  function init$a() {
+  function init$b() {
     /* Place parameters in static storage for common use
       -------------------------------------------------*/
 
@@ -72789,7 +72949,7 @@
 
   /* Sinusoidal forward equations--mapping lat,long to x,y
     -----------------------------------------------------*/
-  function forward$a(p) {
+  function forward$b(p) {
     var x, y;
     var lon = p.x;
     var lat = p.y;
@@ -72828,7 +72988,7 @@
     return p;
   }
 
-  function inverse$a(p) {
+  function inverse$b(p) {
     var lat, temp, lon, s;
 
     p.x -= this.x0;
@@ -72866,18 +73026,18 @@
     return p;
   }
 
-  var names$a = ["Sinusoidal", "sinu"];
+  var names$b = ["Sinusoidal", "sinu"];
   var sinu = {
-    init: init$a,
-    forward: forward$a,
-    inverse: inverse$a,
-    names: names$a
+    init: init$b,
+    forward: forward$b,
+    inverse: inverse$b,
+    names: names$b
   };
 
-  function init$9() {}
+  function init$a() {}
   /* Mollweide forward equations--mapping lat,long to x,y
       ----------------------------------------------------*/
-  function forward$9(p) {
+  function forward$a(p) {
 
     /* Forward equations
         -----------------*/
@@ -72913,7 +73073,7 @@
     return p;
   }
 
-  function inverse$9(p) {
+  function inverse$a(p) {
     var theta;
     var arg;
 
@@ -72948,15 +73108,15 @@
     return p;
   }
 
-  var names$9 = ["Mollweide", "moll"];
+  var names$a = ["Mollweide", "moll"];
   var moll = {
-    init: init$9,
-    forward: forward$9,
-    inverse: inverse$9,
-    names: names$9
+    init: init$a,
+    forward: forward$a,
+    inverse: inverse$a,
+    names: names$a
   };
 
-  function init$8() {
+  function init$9() {
 
     /* Place parameters in static storage for common use
         -------------------------------------------------*/
@@ -72996,7 +73156,7 @@
 
   /* Equidistant Conic forward equations--mapping lat,long to x,y
     -----------------------------------------------------------*/
-  function forward$8(p) {
+  function forward$9(p) {
     var lon = p.x;
     var lat = p.y;
     var rh1;
@@ -73020,7 +73180,7 @@
 
   /* Inverse equations
     -----------------*/
-  function inverse$8(p) {
+  function inverse$9(p) {
     p.x -= this.x0;
     p.y = this.rh - p.y + this.y0;
     var con, rh1, lat, lon;
@@ -73055,22 +73215,22 @@
 
   }
 
-  var names$8 = ["Equidistant_Conic", "eqdc"];
+  var names$9 = ["Equidistant_Conic", "eqdc"];
   var eqdc = {
-    init: init$8,
-    forward: forward$8,
-    inverse: inverse$8,
-    names: names$8
+    init: init$9,
+    forward: forward$9,
+    inverse: inverse$9,
+    names: names$9
   };
 
   /* Initialize the Van Der Grinten projection
     ----------------------------------------*/
-  function init$7() {
+  function init$8() {
     //this.R = 6370997; //Radius of earth
     this.R = this.a;
   }
 
-  function forward$7(p) {
+  function forward$8(p) {
 
     var lon = p.x;
     var lat = p.y;
@@ -73127,7 +73287,7 @@
 
   /* Van Der Grinten inverse equations--mapping x,y to lat/long
     ---------------------------------------------------------*/
-  function inverse$7(p) {
+  function inverse$8(p) {
     var lon, lat;
     var xx, yy, xys, c1, c2, c3;
     var a1;
@@ -73179,20 +73339,20 @@
     return p;
   }
 
-  var names$7 = ["Van_der_Grinten_I", "VanDerGrinten", "vandg"];
+  var names$8 = ["Van_der_Grinten_I", "VanDerGrinten", "vandg"];
   var vandg = {
-    init: init$7,
-    forward: forward$7,
-    inverse: inverse$7,
-    names: names$7
+    init: init$8,
+    forward: forward$8,
+    inverse: inverse$8,
+    names: names$8
   };
 
-  function init$6() {
+  function init$7() {
     this.sin_p12 = Math.sin(this.lat0);
     this.cos_p12 = Math.cos(this.lat0);
   }
 
-  function forward$6(p) {
+  function forward$7(p) {
     var lon = p.x;
     var lat = p.y;
     var sinphi = Math.sin(p.y);
@@ -73277,7 +73437,7 @@
 
   }
 
-  function inverse$6(p) {
+  function inverse$7(p) {
     p.x -= this.x0;
     p.y -= this.y0;
     var rh, z, sinz, cosz, lon, lat, con, e0, e1, e2, e3, Mlp, M, N1, psi, Az, cosAz, tmp, A, B, D, Ee, F, sinpsi;
@@ -73374,15 +73534,15 @@
 
   }
 
-  var names$6 = ["Azimuthal_Equidistant", "aeqd"];
+  var names$7 = ["Azimuthal_Equidistant", "aeqd"];
   var aeqd = {
-    init: init$6,
-    forward: forward$6,
-    inverse: inverse$6,
-    names: names$6
+    init: init$7,
+    forward: forward$7,
+    inverse: inverse$7,
+    names: names$7
   };
 
-  function init$5() {
+  function init$6() {
     //double temp;      /* temporary variable    */
 
     /* Place parameters in static storage for common use
@@ -73393,7 +73553,7 @@
 
   /* Orthographic forward equations--mapping lat,long to x,y
       ---------------------------------------------------*/
-  function forward$5(p) {
+  function forward$6(p) {
     var sinphi, cosphi; /* sin and cos value        */
     var dlon; /* delta longitude value      */
     var coslon; /* cos of longitude        */
@@ -73420,7 +73580,7 @@
     return p;
   }
 
-  function inverse$5(p) {
+  function inverse$6(p) {
     var rh; /* height above ellipsoid      */
     var z; /* angle          */
     var sinz, cosz; /* sin of z and cos of z      */
@@ -73462,12 +73622,12 @@
     return p;
   }
 
-  var names$5 = ["ortho"];
+  var names$6 = ["ortho"];
   var ortho = {
-    init: init$5,
-    forward: forward$5,
-    inverse: inverse$5,
-    names: names$5
+    init: init$6,
+    forward: forward$6,
+    inverse: inverse$6,
+    names: names$6
   };
 
   // QSC projection rewritten from the original PROJ4
@@ -73491,7 +73651,7 @@
       AREA_3: 4
   };
 
-  function init$4() {
+  function init$5() {
 
     this.x0 = this.x0 || 0;
     this.y0 = this.y0 || 0;
@@ -73523,7 +73683,7 @@
 
   // QSC forward equations--mapping lat,long to x,y
   // -----------------------------------------------------------------
-  function forward$4(p) {
+  function forward$5(p) {
     var xy = {x: 0, y: 0};
     var lat, lon;
     var theta, phi;
@@ -73646,7 +73806,7 @@
 
   // QSC inverse equations--mapping x,y to lat/long
   // -----------------------------------------------------------------
-  function inverse$4(p) {
+  function inverse$5(p) {
     var lp = {lam: 0, phi: 0};
     var mu, nu, cosmu, tannu;
     var tantheta, theta, cosphi, phi;
@@ -73829,12 +73989,12 @@
     return slon;
   }
 
-  var names$4 = ["Quadrilateralized Spherical Cube", "Quadrilateralized_Spherical_Cube", "qsc"];
+  var names$5 = ["Quadrilateralized Spherical Cube", "Quadrilateralized_Spherical_Cube", "qsc"];
   var qsc = {
-    init: init$4,
-    forward: forward$4,
-    inverse: inverse$4,
-    names: names$4
+    init: init$5,
+    forward: forward$5,
+    inverse: inverse$5,
+    names: names$5
   };
 
   // Robinson projection
@@ -73912,7 +74072,7 @@
       return x;
   }
 
-  function init$3() {
+  function init$4() {
       this.x0 = this.x0 || 0;
       this.y0 = this.y0 || 0;
       this.long0 = this.long0 || 0;
@@ -73920,7 +74080,7 @@
       this.title = this.title || "Robinson";
   }
 
-  function forward$3(ll) {
+  function forward$4(ll) {
       var lon = adjust_lon(ll.x - this.long0);
 
       var dphi = Math.abs(ll.y);
@@ -73944,7 +74104,7 @@
       return xy;
   }
 
-  function inverse$3(xy) {
+  function inverse$4(xy) {
       var ll = {
           x: (xy.x - this.x0) / (this.a * FXC),
           y: Math.abs(xy.y - this.y0) / (this.a * FYC)
@@ -73989,35 +74149,35 @@
       return ll;
   }
 
-  var names$3 = ["Robinson", "robin"];
+  var names$4 = ["Robinson", "robin"];
   var robin = {
-    init: init$3,
-    forward: forward$3,
-    inverse: inverse$3,
-    names: names$3
+    init: init$4,
+    forward: forward$4,
+    inverse: inverse$4,
+    names: names$4
   };
 
-  function init$2() {
+  function init$3() {
       this.name = 'geocent';
 
   }
 
-  function forward$2(p) {
+  function forward$3(p) {
       var point = geodeticToGeocentric(p, this.es, this.a);
       return point;
   }
 
-  function inverse$2(p) {
+  function inverse$3(p) {
       var point = geocentricToGeodetic(p, this.es, this.a, this.b);
       return point;
   }
 
-  var names$2 = ["Geocentric", 'geocentric', "geocent", "Geocent"];
+  var names$3 = ["Geocentric", 'geocentric', "geocent", "Geocent"];
   var geocent = {
-      init: init$2,
-      forward: forward$2,
-      inverse: inverse$2,
-      names: names$2
+      init: init$3,
+      forward: forward$3,
+      inverse: inverse$3,
+      names: names$3
   };
 
   var mode = {
@@ -74035,7 +74195,7 @@
     lat0:  { def: 0, num: true }                 // default is Equator, conversion to rad is automatic
   };
 
-  function init$1() {
+  function init$2() {
     Object.keys(params).forEach(function (p) {
       if (typeof this[p] === "undefined") {
         this[p] = params[p].def;
@@ -74079,7 +74239,7 @@
     this.sw = Math.sin(omega);
   }
 
-  function forward$1(p) {
+  function forward$2(p) {
     p.x -= this.long0;
     var sinphi = Math.sin(p.y);
     var cosphi = Math.cos(p.y);
@@ -74129,7 +74289,7 @@
     return p;
   }
 
-  function inverse$1(p) {
+  function inverse$2(p) {
     p.x /= this.a;
     p.y /= this.a;
     var r = { x: p.x, y: p.y };
@@ -74178,15 +74338,15 @@
     return p;
   }
 
-  var names$1 = ["Tilted_Perspective", "tpers"];
+  var names$2 = ["Tilted_Perspective", "tpers"];
   var tpers = {
-    init: init$1,
-    forward: forward$1,
-    inverse: inverse$1,
-    names: names$1
+    init: init$2,
+    forward: forward$2,
+    inverse: inverse$2,
+    names: names$2
   };
 
-  function init() {
+  function init$1() {
       this.flip_axis = (this.sweep === 'x' ? 1 : 0);
       this.h = Number(this.h);
       this.radius_g_1 = this.h / this.a;
@@ -74220,7 +74380,7 @@
       }
   }
 
-  function forward(p) {
+  function forward$1(p) {
       var lon = p.x;
       var lat = p.y;
       var tmp, v_x, v_y, v_z;
@@ -74268,7 +74428,7 @@
       return p;
   }
 
-  function inverse(p) {
+  function inverse$1(p) {
       var v_x = -1.0;
       var v_y = 0.0;
       var v_z = 0.0;
@@ -74335,12 +74495,105 @@
       return p;
   }
 
-  var names = ["Geostationary Satellite View", "Geostationary_Satellite", "geos"];
+  var names$1 = ["Geostationary Satellite View", "Geostationary_Satellite", "geos"];
   var geos = {
-      init: init,
-      forward: forward,
-      inverse: inverse,
-      names: names,
+      init: init$1,
+      forward: forward$1,
+      inverse: inverse$1,
+      names: names$1,
+  };
+
+  /**
+   * Copyright 2018 Bernie Jenny, Monash University, Melbourne, Australia.
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   * http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   *
+   * Equal Earth is a projection inspired by the Robinson projection, but unlike
+   * the Robinson projection retains the relative size of areas. The projection
+   * was designed in 2018 by Bojan Savric, Tom Patterson and Bernhard Jenny.
+   *
+   * Publication:
+   * Bojan Savric, Tom Patterson & Bernhard Jenny (2018). The Equal Earth map
+   * projection, International Journal of Geographical Information Science,
+   * DOI: 10.1080/13658816.2018.1504949
+   *
+   * Code released August 2018
+   * Ported to JavaScript and adapted for mapshaper-proj by Matthew Bloch August 2018
+   * Modified for proj4js by Andreas Hocevar by Andreas Hocevar March 2024
+   */
+
+
+  var A1 = 1.340264,
+      A2 = -0.081106,
+      A3 = 0.000893,
+      A4 = 0.003796,
+      M = Math.sqrt(3) / 2.0;
+
+  function init() {
+    this.es = 0;
+    this.long0 = this.long0 !== undefined ? this.long0 : 0;
+  }
+
+  function forward(p) {
+    var lam = adjust_lon(p.x - this.long0);
+    var phi = p.y;
+    var paramLat = Math.asin(M * Math.sin(phi)),
+    paramLatSq = paramLat * paramLat,
+    paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
+    p.x = lam * Math.cos(paramLat) /
+    (M * (A1 + 3 * A2 * paramLatSq + paramLatPow6 * (7 * A3 + 9 * A4 * paramLatSq)));
+    p.y = paramLat * (A1 + A2 * paramLatSq + paramLatPow6 * (A3 + A4 * paramLatSq));
+
+    p.x = this.a * p.x + this.x0;
+    p.y = this.a * p.y + this.y0;
+    return p;
+  }
+
+  function inverse(p) {
+    p.x = (p.x - this.x0) / this.a;
+    p.y = (p.y - this.y0) / this.a;
+
+    var EPS = 1e-9,
+        NITER = 12,
+        paramLat = p.y,
+        paramLatSq, paramLatPow6, fy, fpy, dlat, i;
+
+    for (i = 0; i < NITER; ++i) {
+      paramLatSq = paramLat * paramLat;
+      paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
+      fy = paramLat * (A1 + A2 * paramLatSq + paramLatPow6 * (A3 + A4 * paramLatSq)) - p.y;
+      fpy = A1 + 3 * A2 * paramLatSq + paramLatPow6 * (7 * A3 + 9 * A4 * paramLatSq);
+      paramLat -= dlat = fy / fpy;
+      if (Math.abs(dlat) < EPS) {
+          break;
+      }
+    }
+    paramLatSq = paramLat * paramLat;
+    paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
+    p.x = M * p.x * (A1 + 3 * A2 * paramLatSq + paramLatPow6 * (7 * A3 + 9 * A4 * paramLatSq)) /
+            Math.cos(paramLat);
+    p.y = Math.asin(Math.sin(paramLat) / M);
+
+    p.x = adjust_lon(p.x + this.long0);
+    return p;
+  }
+
+  var names = ["eqearth", "Equal Earth", "Equal_Earth"];
+  var eqearth = {
+    init: init,
+    forward: forward,
+    inverse: inverse,
+    names: names
   };
 
   function includedProjections(proj4){
@@ -74373,6 +74626,7 @@
     proj4.Proj.projections.add(geocent);
     proj4.Proj.projections.add(tpers);
     proj4.Proj.projections.add(geos);
+    proj4.Proj.projections.add(eqearth);
   }
 
   proj4.defaultDatum = 'WGS84'; //default datum
@@ -75501,8 +75755,8 @@
         args = [];
 
       for (let s = 0; s < selections.length; s++) // For each selected input checkbox
-        selections[s].split('+').forEach(sel => // Multiple choices separated by +
-          args.push(          'nwr' + sel + bbox  ));  // Ask for node, way & relation in the bbox
+        selections[s].split('+') // Multiple choices separated by "+"
+        .forEach(sel => args.push('nwr' + sel + bbox)); // Ask for node, way & relation in the bbox
 
       return {
         _path: '/api/interpreter',
@@ -75631,7 +75885,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 07/05/2024 16:08:59',
+    VERSION: '1.1.2.dev 16/05/2024 16:10:38',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

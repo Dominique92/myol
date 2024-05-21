@@ -3,6 +3,8 @@
  * Various acces to geoJson services
  */
 
+//TODO BUG Camptocamp http://localhost:5173/examples/vite.html?vectorLayer
+
 import ol from '../ol';
 import MyVectorLayer from './MyVectorLayer';
 

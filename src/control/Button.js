@@ -3,6 +3,8 @@
  * Add some usefull controls with buttons
  */
 
+//BEST click sur in/out file / ...
+
 import ol from '../ol';
 import './button.css';
 

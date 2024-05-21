@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 16/05/2024 16:10:38 using npm run build from the src/... sources
+ * Built 21/05/2024 15:10:15 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -994,7 +994,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '9.2.0';
+  const VERSION = '9.2.2';
 
   /**
    * @module ol/Object
@@ -32110,13 +32110,13 @@
    */
 
   /***
-   * @template {import("../Feature.js").FeatureLike} T
-   * @typedef {T extends import("../render/Feature.js").default ? typeof import("../render/Feature.js").default : typeof import("../Feature.js").default} FeatureToFeatureClass<T>
+   * @template {Feature|RenderFeature} T
+   * @typedef {T extends RenderFeature ? typeof RenderFeature : typeof Feature} FeatureToFeatureClass
    */
 
   /***
    * @template {import("../Feature.js").FeatureClass} T
-   * @typedef {T[keyof T] extends import("../render/Feature.js").default ? import("../render/Feature.js").default : import("../Feature.js").default} FeatureClassToFeature<T>
+   * @typedef {T[keyof T] extends RenderFeature ? RenderFeature : Feature} FeatureClassToFeature
    */
 
   /**
@@ -32148,9 +32148,9 @@
 
       /**
        * @protected
-       * @type {import("../Feature.js").FeatureClass}
+       * @type {T}
        */
-      this.featureClass = Feature;
+      this.featureClass = /** @type {T} */ (Feature);
 
       /**
        * A list media types supported by the format in descending order of preference.
@@ -32266,7 +32266,7 @@
      * Encode a feature in this format.
      *
      * @abstract
-     * @param {import("../Feature.js").default} feature Feature.
+     * @param {Feature} feature Feature.
      * @param {WriteOptions} [options] Write options.
      * @return {string|ArrayBuffer} Result.
      */
@@ -32278,7 +32278,7 @@
      * Encode an array of features in this format.
      *
      * @abstract
-     * @param {Array<import("../Feature.js").default>} features Features.
+     * @param {Array<Feature>} features Features.
      * @param {WriteOptions} [options] Write options.
      * @return {string|ArrayBuffer} Result.
      */
@@ -50356,6 +50356,56 @@
    */
 
   /**
+   * @template {import('../Feature.js').FeatureLike} FeatureType
+   * @typedef {Object} Options
+   * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
+   * @property {number} [opacity=1] Opacity (0, 1).
+   * @property {boolean} [visible=true] Visibility.
+   * @property {import("../extent.js").Extent} [extent] The bounding extent for layer rendering.  The layer will not be
+   * rendered outside of this extent.
+   * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
+   * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
+   * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
+   * method was used.
+   * @property {number} [minResolution] The minimum resolution (inclusive) at which this layer will be
+   * visible.
+   * @property {number} [maxResolution] The maximum resolution (exclusive) below which this layer will
+   * be visible.
+   * @property {number} [minZoom] The minimum view zoom level (exclusive) above which this layer will be
+   * visible.
+   * @property {number} [maxZoom] The maximum view zoom level (inclusive) at which this layer will
+   * be visible.
+   * @property {import("../render.js").OrderFunction} [renderOrder] Render order. Function to be used when sorting
+   * features before rendering. By default features are drawn in the order that they are created. Use
+   * `null` to avoid the sort, but get an undefined draw order.
+   * @property {number} [renderBuffer=100] The buffer in pixels around the viewport extent used by the
+   * renderer when getting features from the vector source for the rendering or hit-detection.
+   * Recommended value: the size of the largest symbol, line width or label.
+   * @property {import("../source/Vector.js").default<FeatureType>} [source] Source.
+   * @property {import("../Map.js").default} [map] Sets the layer as overlay on a map. The map will not manage
+   * this layer in its layers collection, and the layer will be rendered on top. This is useful for
+   * temporary layers. The standard way to add a layer to a map and have it managed by the map is to
+   * use [map.addLayer()]{@link import("../Map.js").default#addLayer}.
+   * @property {boolean|string|number} [declutter=false] Declutter images and text. Any truthy value will enable
+   * decluttering. Within a layer, a feature rendered before another has higher priority. All layers with the
+   * same `declutter` value will be decluttered together. The priority is determined by the drawing order of the
+   * layers with the same `declutter` value. Higher in the layer stack means higher priority. To declutter distinct
+   * layers or groups of layers separately, use different truthy values for `declutter`.
+   * @property {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike|null} [style] Layer style. When set to `null`, only
+   * features that have their own style will be rendered. See {@link module:ol/style/Style~Style} for the default style
+   * which will be used if this is not set.
+   * @property {import("./Base.js").BackgroundColor} [background] Background color for the layer. If not specified, no background
+   * will be rendered.
+   * @property {boolean} [updateWhileAnimating=false] When set to `true`, feature batches will
+   * be recreated during animations. This means that no vectors will be shown clipped, but the
+   * setting will have a performance impact for large amounts of vector data. When set to `false`,
+   * batches will be recreated when no animation is active.
+   * @property {boolean} [updateWhileInteracting=false] When set to `true`, feature batches will
+   * be recreated during interactions. See also `updateWhileAnimating`.
+   * @property {Object<string, *>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
+   */
+
+  /**
    * @classdesc
    * Vector data is rendered client-side, as vectors. This layer type provides most accurate rendering
    * even during animations. Points and labels stay upright on rotated views. For very large
@@ -50366,13 +50416,13 @@
    * property on the layer object; for example, setting `title: 'My Title'` in the
    * options means that `title` is observable, and has get/set accessors.
    *
-   * @template {import("../source/Vector.js").default<import('../Feature.js').FeatureLike>} VectorSourceType
-   * @extends {BaseVectorLayer<VectorSourceType, CanvasVectorLayerRenderer>}
+   * @template {import('../Feature.js').FeatureLike} FeatureType
+   * @extends {BaseVectorLayer<import("../source/Vector.js").default<FeatureType>, CanvasVectorLayerRenderer>}
    * @api
    */
   class VectorLayer extends BaseVectorLayer {
     /**
-     * @param {import("./BaseVector.js").Options<VectorSourceType>} [options] Options.
+     * @param {Options<FeatureType>} [options] Options.
      */
     constructor(options) {
       super(options);
@@ -51035,7 +51085,7 @@
   /**
    * @template {import("./Feature.js").FeatureLike} [FeatureType=import("./Feature.js").FeatureLike]
    * @param {string|FeatureUrlFunction} url Feature URL service.
-   * @param {import("./format/Feature.js").default} format Feature format.
+   * @param {import("./format/Feature.js").default<import('./format/Feature.js').FeatureToFeatureClass<FeatureType>>} format Feature format.
    * @param {import("./extent.js").Extent} extent Extent.
    * @param {number} resolution Resolution.
    * @param {import("./proj/Projection.js").default} projection Projection.
@@ -51376,10 +51426,7 @@
       } else if (this.url_ !== undefined) {
         assert$1(this.format_, '`format` must be set when `url` is set');
         // create a XHR feature loader for "url" and "format"
-        this.loader_ = xhr(
-          this.url_,
-          /** @type {import("../format/Feature.js").default} */ (this.format_),
-        );
+        this.loader_ = xhr(this.url_, this.format_);
       }
 
       /**
@@ -62269,6 +62316,7 @@
 
 
   /**
+   * @template {import("../Feature.js").FeatureLike} FeatureType
    * @typedef {Object} Options
    * @property {import("./Source.js").AttributionLike} [attributions] Attributions.
    * @property {number} [distance=20] Distance in pixels within which features will
@@ -62278,7 +62326,7 @@
    * By default no minimum distance is guaranteed. This config can be used to avoid
    * overlapping icons. As a tradoff, the cluster feature's position will no longer be
    * the center of all its features.
-   * @property {function(Feature):Point} [geometryFunction]
+   * @property {function(FeatureType):(Point)} [geometryFunction]
    * Function that takes an {@link module:ol/Feature~Feature} as argument and returns an
    * {@link module:ol/geom/Point~Point} as cluster calculation point for the feature. When a
    * feature should not be considered for clustering, the function should return
@@ -62291,7 +62339,7 @@
    * ```
    * See {@link module:ol/geom/Polygon~Polygon#getInteriorPoint} for a way to get a cluster
    * calculation point for polygons.
-   * @property {function(Point, Array<Feature>):Feature} [createCluster]
+   * @property {function(Point, Array<FeatureType>):Feature} [createCluster]
    * Function that takes the cluster's center {@link module:ol/geom/Point~Point} and an array
    * of {@link module:ol/Feature~Feature} included in this cluster. Must return a
    * {@link module:ol/Feature~Feature} that will be used to render. Default implementation is:
@@ -62303,7 +62351,7 @@
    *   });
    * }
    * ```
-   * @property {VectorSource} [source=null] Source.
+   * @property {VectorSource<FeatureType>} [source=null] Source.
    * @property {boolean} [wrapX=true] Whether to wrap the world horizontally.
    */
 
@@ -62317,12 +62365,15 @@
    * source `setSource(null)` has to be called to remove the listener reference
    * from the wrapped source.
    * @api
+   * @template {import('../Feature.js').FeatureLike} FeatureType
+   * @extends {VectorSource<Feature<import("../geom/Geometry.js").default>>}
    */
   class Cluster extends VectorSource {
     /**
-     * @param {Options} options Cluster options.
+     * @param {Options<FeatureType>} [options] Cluster options.
      */
     constructor(options) {
+      options = options || {};
       super({
         attributions: options.attributions,
         wrapX: options.wrapX,
@@ -62359,7 +62410,7 @@
       this.features = [];
 
       /**
-       * @param {Feature} feature Feature.
+       * @param {FeatureType} feature Feature.
        * @return {Point} Cluster calculation point.
        * @protected
        */
@@ -62375,13 +62426,13 @@
         };
 
       /**
-       * @type {function(Point, Array<Feature>):Feature}
+       * @type {function(Point, Array<FeatureType>):Feature}
        * @private
        */
       this.createCustomCluster_ = options.createCluster;
 
       /**
-       * @type {VectorSource|null}
+       * @type {VectorSource<FeatureType>|null}
        * @protected
        */
       this.source = null;
@@ -62416,7 +62467,7 @@
 
     /**
      * Get a reference to the wrapped source.
-     * @return {VectorSource|null} Source.
+     * @return {VectorSource<FeatureType>|null} Source.
      * @api
      */
     getSource() {
@@ -62429,7 +62480,7 @@
      * @param {import("../proj/Projection.js").default} projection Projection.
      */
     loadFeatures(extent, resolution, projection) {
-      this.source.loadFeatures(extent, resolution, projection);
+      this.source?.loadFeatures(extent, resolution, projection);
       if (resolution !== this.resolution) {
         this.resolution = resolution;
         this.refresh();
@@ -62466,7 +62517,7 @@
 
     /**
      * Replace the wrapped source.
-     * @param {VectorSource|null} source The new source for this instance.
+     * @param {VectorSource<FeatureType>|null} source The new source for this instance.
      * @api
      */
     setSource(source) {
@@ -62547,7 +62598,7 @@
     }
 
     /**
-     * @param {Array<Feature>} features Features
+     * @param {Array<FeatureType>} features Features
      * @param {import("../extent.js").Extent} extent The searched extent for these features.
      * @return {Feature} The cluster feature.
      * @protected
@@ -75885,7 +75936,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 16/05/2024 16:10:38',
+    VERSION: '1.1.2.dev 21/05/2024 15:10:15',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

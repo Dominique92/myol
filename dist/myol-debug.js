@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 21/05/2024 15:10:15 using npm run build from the src/... sources
+ * Built 23/05/2024 08:21:36 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -994,7 +994,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '9.2.2';
+  const VERSION = '9.2.3';
 
   /**
    * @module ol/Object
@@ -18973,6 +18973,7 @@
   const StringType = 1 << numTypes++;
   const ColorType = 1 << numTypes++;
   const NumberArrayType = 1 << numTypes++;
+  const SizeType = 1 << numTypes++;
   const AnyType = Math.pow(2, numTypes) - 1;
 
   const typeNames = {
@@ -18981,6 +18982,7 @@
     [StringType]: 'string',
     [ColorType]: 'color',
     [NumberArrayType]: 'number[]',
+    [SizeType]: 'size',
   };
 
   const namedTypes = Object.keys(typeNames).map(Number).sort(ascending);
@@ -19124,7 +19126,10 @@
         return new LiteralExpression(BooleanType, encoded);
       }
       case 'number': {
-        return new LiteralExpression(NumberType, encoded);
+        return new LiteralExpression(
+          typeHint === SizeType ? SizeType : NumberType,
+          encoded,
+        );
       }
       case 'string': {
         let type = StringType;
@@ -19158,7 +19163,9 @@
     }
 
     let type = NumberArrayType;
-    if (encoded.length === 3 || encoded.length === 4) {
+    if (encoded.length === 2) {
+      type |= SizeType;
+    } else if (encoded.length === 3 || encoded.length === 4) {
       type |= ColorType;
     }
     if (typeHint) {
@@ -19458,9 +19465,11 @@
     ),
     [Ops.Array]: createParser(
       (parsedArgs) => {
-        return parsedArgs.length === 3 || parsedArgs.length === 4
-          ? NumberArrayType | ColorType
-          : NumberArrayType;
+        return parsedArgs.length === 2
+          ? NumberArrayType | SizeType
+          : parsedArgs.length === 3 || parsedArgs.length === 4
+            ? NumberArrayType | ColorType
+            : NumberArrayType;
       },
       withArgsCount(1, Infinity),
       parseArgsOfType(NumberType),
@@ -75037,7 +75046,7 @@
 
       return {
         text: new ol.style.Text({
-          text: elLabel.innerHTML,
+          text: elLabel.innerHTML.replace('&amp;', '&'), // Specific tratement for &
           overflow: properties.overflow, // Display label even if not contained in polygon
           textBaseline: featureArea ? 'middle' : 'bottom',
           offsetY: featureArea ? 0 : -13, // Above the icon
@@ -75936,7 +75945,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 21/05/2024 15:10:15',
+    VERSION: '1.1.2.dev 23/05/2024 08:21:36',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

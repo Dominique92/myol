@@ -1003,20 +1003,20 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 
 /* Inspect */
 .myol-button-inspect button::after {
-  content: "\2221";
+  content: "\1F4CF";
 }
 
 .map-edit-0 {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\2221</text></svg>') 10 24, help;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\1F4CF</text></svg>') 20 20, help;
 }
 
 /* Modify */
 .myol-button-modify button::after {
-  content: "\1F90F";
+  content: "\2702";
 }
 
 .map-edit-1 {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\1F90F</text></svg>') 2 17, grabbing;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\2702</text></svg>') 20 21, grabbing;
 }
 
 /* Draw line */

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 24/05/2024 21:52:21 using npm run build from the src/... sources
+ * Built 24/05/2024 22:06:05 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -66612,12 +66612,12 @@
   const helpModif_fr = {
       inspect: '\
 <p><b><u>EDITEUR</u>: Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2221 puis survoler l\'objet avec le curseur pour:</p>\
+<p>Cliquer sur le bouton &#x1F4CF puis survoler l\'objet avec le curseur pour:</p>\
 <p>Distinguer une ligne ou un polygone des autres</p>\
 <p>Calculer la longueur d\'une ligne ou un polygone</p>',
       line: '\
 <p><b><u>EDITEUR</u>: Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x1F90F; puis</p>\
+<p>Cliquer sur le bouton &#x2702; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66627,7 +66627,7 @@
 <p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
       poly: '\
 <p><b><u>EDITEUR</u>: Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x1F90F; puis </p>\
+<p>Cliquer sur le bouton &#x2702; puis </p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66637,7 +66637,7 @@
 <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
       both: '\
 <p><b><u>EDITEUR</u>: Modifier une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x1F90F; puis</p>\
+<p>Cliquer sur le bouton &#x2702; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -75936,7 +75936,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 24/05/2024 21:52:21',
+    VERSION: '1.1.2.dev 24/05/2024 22:06:05',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

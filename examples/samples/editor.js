@@ -17,7 +17,11 @@ const snaplayer = new ol.layer.Vector({
   map = new ol.Map({
     target: 'map',
 
-    controls: myol.control.collection(),
+    controls: myol.control.collection({
+      load: {
+        receivingLayer: editorLayer,
+      },
+    }),
 
     layers: [
       new ol.layer.Tile({

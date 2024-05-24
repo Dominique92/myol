@@ -7,7 +7,6 @@ import ol from '../ol';
 import Button from '../control/Button';
 import './editor.css';
 
-//TODO le controle ne charge pas le fichier dans la zone édition
 //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
 
 // Default french text
@@ -302,11 +301,11 @@ export class Editor extends ol.layer.Vector {
       }
     });
 
-    this.map.addControl(this.buttons[1]); // 1 Modify
-    if (this.options.editOnly !== 'poly') {
+    if (this.options.editOnly !== 'poly')
       this.map.addControl(this.buttons[0]); // 0 Inspect
+    this.map.addControl(this.buttons[1]); // 1 Modify
+    if (this.options.editOnly !== 'poly')
       this.map.addControl(this.buttons[2]); // 2 Draw line
-    }
     if (this.options.editOnly !== 'line')
       this.map.addControl(this.buttons[3]); // 3 Draw poly
 

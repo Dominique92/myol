@@ -3,8 +3,8 @@
  */
 
 // Analyse url & args
-let urlParams = {},
-  sampleName = 'index';
+const urlParams = {};
+let sampleName = 'index';
 
 for (const p of new URLSearchParams(location.search))
   if (p[1])
@@ -13,7 +13,7 @@ for (const p of new URLSearchParams(location.search))
     sampleName = p[0];
 
 // Helper
-async function getText(fileName) {
+function getText(fileName) {
   return fetch(fileName)
     .then(response => response.text())
     .then(text => text
@@ -46,13 +46,12 @@ async function getText(fileName) {
     document.getElementById('sample-next').setAttribute('href', sampleEl.nextElementSibling.href);
   }
 
-  /* global myol */
   myol.trace();
 })();
 
 // Default keys for development only
 /* eslint-disable-next-line no-unused-vars */
-var mapKeys = {
+const mapKeys = {
   bing: 'AldBMbaKNyat-j6CBRKxxH05uaxP7dvQu1RnMWCQEGGC3z0gjBu-bLniE_8WZvcC',
   //https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
   ign: 'ry2ju17rbtmlujviy8njbv5i',

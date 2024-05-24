@@ -23,7 +23,7 @@ export class LayerSwitcher extends Button {
 
     // Filter null or hidden layers
     this.layers = {};
-    for (let name in options.layers)
+    for (const name in options.layers)
       if (options.layers[name] && !options.layers[name].getProperties().hidden)
         this.layers[name] = options.layers[name];
 
@@ -42,7 +42,7 @@ export class LayerSwitcher extends Button {
   setMap(map) {
     map.addLayer(new BackgroundLayer());
 
-    for (let name in this.layers) {
+    for (const name in this.layers) {
       // Build html layers selectors
       this.subMenuEl.insertAdjacentHTML('beforeend', '<label><input type="checkbox" name="baselayer" value="' + name + '">' + name + '</label>');
 

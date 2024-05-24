@@ -11,6 +11,68 @@ import './editor.css';
 //TODO le controle ne charge pas le fichier dans la zone édition
 //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
 
+// Default french text
+const helpModif_fr = {
+    inspect: '\
+<p><b>Inspecter une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton ? puis survoler pour l\'objet avec le curseur pour:</p>\
+<p>Distinguer une ligne ou un polygone des autres</p>\
+<p>Calculer la longueur d\'une ligne ou un polygone</p>',
+    line: '\
+<p><b>Modifier une ligne</b></p>\
+<p>Cliquer sur le bouton &#x2725; puis</p>\
+<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
+<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
+<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
+<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
+<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
+<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
+<p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
+    poly: '\
+<p><b>Modifier un polygone</b></p>\
+<p>Cliquer sur le bouton &#x2725; puis </p>\
+<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
+<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
+<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
+<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
+<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
+ de chaque polygone puis Alt+cliquer dessus</p>\
+<p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
+    both: '\
+<p><b>Modifier une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton &#x2725; puis</p>\
+<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
+<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
+<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
+<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
+<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
+<p><u>Transformer un polygone en ligne</u>: Alt+cliquer sur un côté</p>\
+<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
+<p><u>Transformer une ligne en polygone</u>: déplacer une extrémité pour rejoindre l\'autre</p>\
+<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
+<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
+ de chaque polygone puis Alt+cliquer dessus</p>\
+<p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
+  },
+
+  helpLine_fr = '\
+<p><b>Créer une ligne</b></p>\
+<p>Cliquer sur le bouton &#x1526;</p>\
+<p>Cliquer sur l\'emplacement du début</p>\
+<p>Puis sur chaque sommet</p>\
+<p>Double cliquer sur le dernier sommet pour terminer</p>\
+<hr>\
+<p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
+
+  helpPoly_fr = '\
+<p><b>Créer un polygone</b></p>\
+<p>Cliquer sur le bouton &#9186;</p>\
+<p>Cliquer sur l\'emplacement du premier sommet</p>\
+<p>Puis sur chaque sommet</p>\
+<p>Double cliquer sur le dernier sommet pour terminer</p>\
+<hr>\
+<p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
+
 // Editor
 export class Editor extends ol.layer.Vector {
   constructor(options) {
@@ -116,7 +178,7 @@ export class Editor extends ol.layer.Vector {
         className: 'myol-button-inspect myol-button-keepselect',
         subMenuId: 'myol-edit-help-inspect',
         subMenuHTML: '<p>Inspect</p>',
-        subMenuHTML_fr: helpModif_fr['inspect'],
+        subMenuHTML_fr: helpModif_fr.inspect,
         buttonAction: (evt, active) => this.changeInteraction(0, evt, active),
       }),
       new Button({ // 1
@@ -191,12 +253,10 @@ export class Editor extends ol.layer.Vector {
         const selectedFeatures = map.getFeaturesAtPixel(
           evt.mapBrowserEvent.pixel, {
             hitTolerance: 6, // Default is 0
-            layerFilter: l => {
-              return l.ol_uid == this.ol_uid;
-            }
+            layerFilter: l => l.ol_uid === this.ol_uid
           });
 
-        for (let f in selectedFeatures) // We delete the selected feature
+        for (const f in selectedFeatures) // We delete the selected feature
           this.source.removeFeature(selectedFeatures[f]);
       }
 
@@ -246,10 +306,10 @@ export class Editor extends ol.layer.Vector {
     this.map.addControl(this.buttons[0]);
     this.map.addControl(this.buttons[1]);
 
-    if (this.options.editOnly != 'poly')
+    if (this.options.editOnly !== 'poly')
       this.map.addControl(this.buttons[2]);
 
-    if (this.options.editOnly != 'line')
+    if (this.options.editOnly !== 'line')
       this.map.addControl(this.buttons[3]);
 
     super.setMapInternal(map);
@@ -266,7 +326,7 @@ export class Editor extends ol.layer.Vector {
         type: 'click',
       });
 
-    if (evt.type == 'click') {
+    if (evt.type === 'click') {
       this.interactions.forEach(inter => this.map.removeInteraction(inter));
       this.map.addInteraction(this.interactions[interaction]);
       this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
@@ -301,11 +361,11 @@ export class Editor extends ol.layer.Vector {
     this.source.clear();
 
     //BEST Multilinestring / Multipolygon
-    for (let l in coordinates.lines)
+    for (const l in coordinates.lines)
       this.source.addFeature(new ol.Feature({
         geometry: new ol.geom.LineString(coordinates.lines[l]),
       }));
-    for (let p in coordinates.polys)
+    for (const p in coordinates.polys)
       this.source.addFeature(new ol.Feature({
         geometry: new ol.geom.Polygon(coordinates.polys[p]),
       }));
@@ -324,10 +384,10 @@ export class Editor extends ol.layer.Vector {
       polys = [];
 
     // Get all edited features as array of coordinates
-    for (let f in features)
+    for (const f in features)
       this.flatFeatures(features[f].getGeometry(), points, lines, polys, selectedVertex, reverseLine);
 
-    for (let a in lines)
+    for (const a in lines)
       // Exclude 1 coordinate features (points)
       if (lines[a].length < 2)
         delete lines[a];
@@ -352,10 +412,10 @@ export class Editor extends ol.layer.Vector {
         }
 
     // Make polygons with looped lines
-    for (let a in lines)
-      if (this.options.editOnly != 'line' && lines[a]) {
+    for (const a in lines)
+      if (this.options.editOnly !== 'line' && lines[a]) {
         // Close open lines
-        if (this.options.editOnly == 'poly')
+        if (this.options.editOnly === 'poly')
           if (!this.compareCoords(lines[a]))
             lines[a].push(lines[a][0]);
 
@@ -364,12 +424,13 @@ export class Editor extends ol.layer.Vector {
           // Explore all summits combinaison
           for (let i1 = 0; i1 < lines[a].length - 1; i1++)
             for (let i2 = 0; i2 < i1; i2++)
-              if (lines[a][i1][0] == lines[a][i2][0] &&
-                lines[a][i1][1] == lines[a][i2][1]) { // Find 2 identical summits
-                let squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
+              if (lines[a][i1][0] === lines[a][i2][0] &&
+                lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
+                const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
                 squized.push(squized[0]); // Close the poly
                 polys.push([squized]); // Add the squized poly
-                i1 = i2 = lines[a].length; // End loop
+                i1 = lines[a].length; // End loop
+                i2 = lines[a].length;
               }
 
           // Convert closed lines into polygons
@@ -379,14 +440,14 @@ export class Editor extends ol.layer.Vector {
       }
 
     // Makes holes if a polygon is included in a biggest one
-    for (let p1 in polys) // Explore all Polygons combinaison
+    for (const p1 in polys) // Explore all Polygons combinaison
       if (this.options.withHoles && polys[p1]) {
         const fs = new ol.geom.Polygon(polys[p1]);
 
-        for (let p2 in polys)
-          if (polys[p2] && p1 != p2) {
+        for (const p2 in polys)
+          if (polys[p2] && p1 !== p2) {
             let intersects = true;
-            for (let c in polys[p2][0])
+            for (const c in polys[p2][0])
               if (!fs.intersectsCoordinate(polys[p2][0][c]))
                 intersects = false;
             if (intersects) { // If one intersects a bigger
@@ -405,10 +466,10 @@ export class Editor extends ol.layer.Vector {
 
   flatFeatures(geom, points, lines, polys, selectedVertex, reverseLine) {
     // Expand geometryCollection
-    if (geom.getType() == 'GeometryCollection') {
+    if (geom.getType() === 'GeometryCollection') {
       const geometries = geom.getGeometries();
 
-      for (let g in geometries)
+      for (const g in geometries)
         this.flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
     }
     // Point
@@ -424,14 +485,14 @@ export class Editor extends ol.layer.Vector {
   // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
   // at the same level & split if one point = selectedVertex
   flatCoord(lines, coords, selectedVertex, reverseLine) {
-    if (typeof coords[0][0] == 'object') {
+    if (typeof coords[0][0] === 'object') {
       // Multi*
-      for (let c1 in coords)
+      for (const c1 in coords)
         this.flatCoord(lines, coords[c1], selectedVertex, reverseLine);
     } else {
       // LineString
-      let begCoords = [], // Coords before the selectedVertex
-        selectedLine = false;
+      const begCoords = []; // Coords before the selectedVertex
+      let selectedLine = false;
 
       while (coords.length) {
         const c = coords.shift();
@@ -458,70 +519,8 @@ export class Editor extends ol.layer.Vector {
   compareCoords(a, b) {
     if (!a) return false;
     if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
-    return a[0] == b[0] && a[1] == b[1]; // 2 coordinates
+    return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
   }
 }
-
-// Default french text
-var helpModif_fr = {
-    inspect: '\
-<p><b>Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton ? puis survoler pour l\'objet avec le curseur pour:</p>\
-<p>Distinguer une ligne ou un polygone des autres</p>\
-<p>Calculer la longueur d\'une ligne ou un polygone</p>',
-    line: '\
-<p><b>Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
-<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
-<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
-<p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
-    poly: '\
-<p><b>Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis </p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
-<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
- de chaque polygone puis Alt+cliquer dessus</p>\
-<p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
-    both: '\
-<p><b>Modifier une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
-<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
-<p><u>Transformer un polygone en ligne</u>: Alt+cliquer sur un côté</p>\
-<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
-<p><u>Transformer une ligne en polygone</u>: déplacer une extrémité pour rejoindre l\'autre</p>\
-<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
-<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
- de chaque polygone puis Alt+cliquer dessus</p>\
-<p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
-  },
-
-  helpLine_fr = '\
-<p><b>Créer une ligne</b></p>\
-<p>Cliquer sur le bouton &#x1526;</p>\
-<p>Cliquer sur l\'emplacement du début</p>\
-<p>Puis sur chaque sommet</p>\
-<p>Double cliquer sur le dernier sommet pour terminer</p>\
-<hr>\
-<p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
-
-  helpPoly_fr = '\
-<p><b>Créer un polygone</b></p>\
-<p>Cliquer sur le bouton &#9186;</p>\
-<p>Cliquer sur l\'emplacement du premier sommet</p>\
-<p>Puis sur chaque sommet</p>\
-<p>Double cliquer sur le dernier sommet pour terminer</p>\
-<hr>\
-<p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
 export default Editor;

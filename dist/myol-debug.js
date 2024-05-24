@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 23/05/2024 08:21:36 using npm run build from the src/... sources
+ * Built 24/05/2024 11:13:54 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63751,18 +63751,18 @@
     }
 
     buttonListener(evt) {
-      if (evt.type == 'mouseover')
+      if (evt.type === 'mouseover')
         this.element.classList.add('myol-button-hover');
       else // mouseout | click
         this.element.classList.remove('myol-button-hover');
 
-      if (evt.type == 'click') // Mouse click & touch
+      if (evt.type === 'click') // Mouse click & touch
         this.element.classList.toggle('myol-button-selected');
 
       // Close other open buttons
-      for (let el of document.getElementsByClassName('myol-button'))
-        if (el != this.element &&
-          (!el.classList.contains('myol-button-keepselect') || evt.type == 'click'))
+      for (const el of document.getElementsByClassName('myol-button'))
+        if (el !== this.element &&
+          (!el.classList.contains('myol-button-keepselect') || evt.type === 'click'))
           el.classList.remove('myol-button-selected');
 
       // Trigger action on the selected button
@@ -63778,6 +63778,16 @@
    * File downloader control
    */
 
+
+  const subMenuHTML$3 = '\
+  <p><a mime="application/gpx+xml">GPX</a></p>\
+  <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
+  <p><a mime="application/json">GeoJSON</a></p>',
+
+    subMenuHTML_fr$3 = '\
+  <p>Cliquer sur un format ci-dessous pour obtenir\
+  un fichier contenant les éléments visibles dans la fenêtre:</p>' +
+    subMenuHTML$3;
 
   //BEST BUG incompatible with clusters
   class Download extends Button {
@@ -63825,14 +63835,14 @@
             );
         });
 
-      if (formatName == 'GPX')
+      if (formatName === 'GPX')
         // Transform *Polygons in linestrings
-        for (let f in featuresToSave) {
+        for (const f in featuresToSave) {
           const geometry = featuresToSave[f].getGeometry();
 
           if (geometry.getType().includes('Polygon')) {
             geometry.getCoordinates().forEach(coords => {
-              if (typeof coords[0][0] == 'number')
+              if (typeof coords[0][0] === 'number')
                 // Polygon
                 featuresToSave.push(new ol.Feature(new ol.geom.LineString(coords)));
               else
@@ -63872,16 +63882,6 @@
       this.element.classList.remove('myol-display-submenu');
     }
   }
-
-  var subMenuHTML$3 = '\
-  <p><a mime="application/gpx+xml">GPX</a></p>\
-  <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
-  <p><a mime="application/json">GeoJSON</a></p>';
-
-  var subMenuHTML_fr$3 = '\
-  <p>Cliquer sur un format ci-dessous pour obtenir\
-  un fichier contenant les éléments visibles dans la fenêtre:</p>' +
-    subMenuHTML$3;
 
   /**
    * TileLayerCollection.js
@@ -63981,7 +63981,7 @@
   class Kompass extends OpenStreetMap { // Austria
     constructor(options = {}) {
       super({
-        hidden: !options.key && options.subLayer != 'osm', // For LayerSwitcher
+        hidden: !options.key && options.subLayer !== 'osm', // For LayerSwitcher
         url: options.key ?
           'https://map{1-4}.kompass.de/{z}/{x}/{y}/kompass_' + options.subLayer + '?key=' + options.key : // Specific
           'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
@@ -64017,11 +64017,11 @@
    */
   class IGN extends ol.layer.Tile {
     constructor(options = {}) {
-      let IGNresolutions = [],
+      const IGNresolutions = [],
         IGNmatrixIds = [];
 
       for (let i = 0; i < 18; i++) {
-        IGNresolutions[i] = ol.extent.getWidth(ol.proj.get('EPSG:3857').getExtent()) / 256 / Math.pow(2, i);
+        IGNresolutions[i] = ol.extent.getWidth(ol.proj.get('EPSG:3857').getExtent()) / 256 / (2 ** i);
         IGNmatrixIds[i] = i.toString();
       }
 
@@ -64054,15 +64054,15 @@
    * API : https://api3.geo.admin.ch/services/sdiservices.html#wmts
    */
   class SwissTopo extends ol.layer.Tile {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         host: 'https://wmts2{0-4}.geo.admin.ch/1.0.0/',
         subLayer: 'ch.swisstopo.pixelkarte-farbe',
         maxResolution: 2000, // Resolution limit above which we switch to a more global service
         extent: [640000, 5730000, 1200000, 6100000],
         attributions: '&copy <a href="https://map.geo.admin.ch/">SwissTopo</a>',
 
-        ...options,
+        ...opt,
       };
 
       const projectionExtent = ol.proj.get('EPSG:3857').getExtent(),
@@ -64070,7 +64070,7 @@
         matrixIds = [];
 
       for (let r = 0; r < 18; ++r) {
-        resolutions[r] = ol.extent.getWidth(projectionExtent) / 256 / Math.pow(2, r);
+        resolutions[r] = ol.extent.getWidth(projectionExtent) / 256 / (2 ** r);
         matrixIds[r] = r;
       }
 
@@ -64097,14 +64097,15 @@
    * API : https://api-maps.ign.es/
    */
   class IgnES extends XYZ {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         host: 'https://www.ign.es/wmts/',
         server: 'mapa-raster',
         subLayer: 'MTN',
         maxZoom: 20,
         attributions: '&copy; <a href="https://www.ign.es/">IGN España</a>',
-        ...options,
+
+        ...opt,
       };
 
       super({
@@ -64147,12 +64148,12 @@
 
     updateResolution(view) {
       const mapResolution = view.getResolutionForZoom(view.getZoom()),
-        layerResolution = mapResolution < 10 ? 25000 : mapResolution < 30 ? 100000 : 250000;
+        layerResolution = mapResolution < 10 ? 25000 : (mapResolution < 30 ? 100000 : 250000);
 
       this.getSource().updateParams({
         type: 'png',
         map: '/ms_ogc/WMS_v1.3/raster/IGM_' + layerResolution + '.map',
-        layers: (layerResolution == 100000 ? 'MB.IGM' : 'CB.IGM') + layerResolution,
+        layers: (layerResolution === 100000 ? 'MB.IGM' : 'CB.IGM') + layerResolution,
       });
     }
   }
@@ -64162,16 +64163,16 @@
    * API & key : https://osdatahub.os.uk/
    */
   class OS extends XYZ {
-    constructor(options = {}) {
-      options = {
-        hidden: !options.key, // For LayerSwitcher
+    constructor(opt) {
+      const options = {
+        hidden: !opt.key, // For LayerSwitcher
         subLayer: 'Outdoor_3857',
         minZoom: 7,
         maxZoom: 16,
         extent: [-1198263, 6365000, 213000, 8702260],
         attributions: '&copy <a href="https://explore.osmaps.com/">UK Ordnancesurvey maps</a>',
 
-        ...options,
+        ...opt,
       };
 
       super({
@@ -64191,13 +64192,14 @@
    * No key
    */
   class ArcGIS extends XYZ {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
         subLayer: 'World_Imagery',
         maxZoom: 19,
         attributions: '&copy; <a href="https://www.arcgis.com/">ArcGIS (Esri)</a>',
-        ...options,
+
+        ...opt,
       };
 
       super({
@@ -64226,12 +64228,13 @@
    * Google
    */
   class Google extends XYZ {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         subLayers: 'p', // Terrain
         maxZoom: 22,
         attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
-        ...options,
+
+        ...opt,
       };
 
       super({
@@ -64567,7 +64570,7 @@
 
       map.getLayers().forEach(l => {
         if (l.getUseInterimTilesOnError && // Is a tile layer
-          l != this && l != this.lowResLayer && // Not one of the background layers
+          l !== this && l !== this.lowResLayer && // Not one of the background layers
           l.isVisible() && // Is visible
           ol.extent.containsExtent(l.getExtent() || mapExtent, mapExtent))
           needed = false;
@@ -64600,7 +64603,7 @@
 
       // Filter null or hidden layers
       this.layers = {};
-      for (let name in options.layers)
+      for (const name in options.layers)
         if (options.layers[name] && !options.layers[name].getProperties().hidden)
           this.layers[name] = options.layers[name];
 
@@ -64619,7 +64622,7 @@
     setMap(map) {
       map.addLayer(new BackgroundLayer());
 
-      for (let name in this.layers) {
+      for (const name in this.layers) {
         // Build html layers selectors
         this.subMenuEl.insertAdjacentHTML('beforeend', '<label><input type="checkbox" name="baselayer" value="' + name + '">' + name + '</label>');
 
@@ -64731,10 +64734,10 @@
     //BEST calculate distance to the ends
     calculateLength(feature) {
       if (feature) {
-        let geometry = feature.getGeometry(),
+        const geometry = feature.getGeometry(),
           length = ol.sphere.getLength(geometry),
-          fcs = this.getFlatCoordinates(geometry),
-          denivPos = 0,
+          fcs = this.getFlatCoordinates(geometry);
+        let denivPos = 0,
           denivNeg = 0;
 
         // Height difference calculation
@@ -64767,11 +64770,11 @@
     getFlatCoordinates(geometry) {
       let fcs = [];
 
-      if (geometry.stride == 3)
+      if (geometry.stride === 3)
         fcs = geometry.flatCoordinates;
 
-      if (geometry.getType() == 'GeometryCollection')
-        for (let g of geometry.getGeometries())
+      if (geometry.getType() === 'GeometryCollection')
+        for (const g of geometry.getGeometries())
           fcs.push(...this.getFlatCoordinates(g));
 
       return fcs;
@@ -64782,6 +64785,9 @@
    * GPX file loader control
    */
 
+
+  const subMenuHTML$2 = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
+    subMenuHTML_fr$2 = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML$2;
 
   class Load extends Button {
     constructor(options) {
@@ -64803,7 +64809,7 @@
     subMenuAction(evt) {
       const blob = evt.target.files[0];
 
-      if (evt.type == 'change' && evt.target.files)
+      if (evt.type === 'change' && evt.target.files)
         this.reader.readAsText(blob);
 
       this.reader.onload = () => this.loadText(this.reader.result, blob.name);
@@ -64880,9 +64886,6 @@
       this.element.classList.remove('myol-display-submenu');
     }
   }
-
-  var subMenuHTML$2 = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
-    subMenuHTML_fr$2 = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML$2;
 
   var containerId = "gcd-container";
   var buttonControlId = "gcd-button-control";
@@ -66100,7 +66103,7 @@
 
       // Close other opened buttons when hover with a mouse
       this.element.addEventListener('pointerover', () => {
-        for (let el of document.getElementsByClassName('myol-button-selected'))
+        for (const el of document.getElementsByClassName('myol-button-selected'))
           if (!el.classList.contains('myol-button-keepselect')) //BEST colorer en bleu le bouton quand sélectionné
             el.classList.remove('myol-button-selected');
       });
@@ -66110,7 +66113,7 @@
         const hoveredEl = document.elementFromPoint(evt.x, evt.y),
           controlEl = this.element.firstElementChild;
 
-        if (hoveredEl && hoveredEl.tagName == 'BUTTON')
+        if (hoveredEl && hoveredEl.tagName === 'BUTTON')
           controlEl.classList.remove('gcd-gl-expanded');
       });
     }
@@ -66121,6 +66124,40 @@
    * Display status, altitude & speed
    */
 
+
+  const subMenuHTML$1 = '<p>\
+  <input type="radio" name="myol-gps-source" value="0" checked="checked">None &nbsp;\
+  <input type="radio" name="myol-gps-source" value="1">Outdoor &nbsp;\
+  <input type="radio" name="myol-gps-source" value="2">Indoor &nbsp;\
+  </p><hr><p>\
+  <input type="radio" name="myol-gps-display" value="0" checked="checked">Free map&nbsp;\
+  <input type="radio" name="myol-gps-display" value="1">Center &nbsp;\
+  <input type="radio" name="myol-gps-display" value="2">Center & orient &nbsp;\
+  </p>',
+
+    subMenuHTML_fr$1 = '\
+  <p>Localisation GPS:</p>\
+  <label>\
+    <input type="radio" name="myol-gps-source" value="0" checked="checked">\
+    Inactif</label><label>\
+    <input type="radio" name="myol-gps-source" value="1">\
+    Position GPS <span>(1) extérieur</span></label><label>\
+    <input type="radio" name="myol-gps-source" value="2">\
+    Position GPS ou IP <span>(2) intérieur</span></label>\
+  <hr><label>\
+    <input type="radio" name="myol-gps-display" value="0" checked="checked">\
+    Graticule, carte libre</label><label>\
+    <input type="radio" name="myol-gps-display" value="1">\
+    Centre la carte, nord en haut</label><label>\
+    <input type="radio" name="myol-gps-display" value="2">\
+    Centre et oriente la carte <span>(3)</span></label>\
+  <hr>\
+  <p>(1) plus précis en extérieur mais plus lent à initialiser,\
+    nécessite un capteur et une réception GPS.</p>\
+  <p>(2) plus précis et rapide en intérieur ou en zone urbaine\
+    mais peut être très erroné en extérieur à l\'initialisation.\
+    Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>\
+  <p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>';
 
   class MyGeolocation extends Button {
     constructor(options) {
@@ -66209,7 +66246,7 @@
     buttonAction(evt, active) {
       const sourceEls = document.getElementsByName('myol-gps-source');
 
-      if (evt.type == 'click' && active && sourceEls[0].checked)
+      if (evt.type === 'click' && active && sourceEls[0].checked)
         sourceEls[1].click();
     }
 
@@ -66223,12 +66260,12 @@
         view = map ? map.getView() : null;
 
       // Tune the tracking level
-      if (evt.target.name == 'myol-gps-source') {
+      if (evt.target.name === 'myol-gps-source') {
         this.geolocation.setTracking(sourceLevel > 0);
         this.graticuleLayer.setVisible(false);
         if (!sourceLevel)
           displayEls[0].checked = true;
-        if (sourceLevel && displayLevel == 0)
+        if (sourceLevel && displayLevel === 0)
           displayEls[2].checked = true;
       }
 
@@ -66241,8 +66278,8 @@
       });
 
       // State 1 only takes positions from the GPS which have an altitude
-      if (sourceLevel == 0 ||
-        (sourceLevel == 1 && !this.altitude))
+      if (sourceLevel === 0 ||
+        (sourceLevel === 1 && !this.altitude))
         this.position = null;
 
       // Aware all who needs
@@ -66292,9 +66329,9 @@
           view.setCenter(p);
 
         // Orientation
-        if (!sourceLevel || displayLevel == 1)
+        if (!sourceLevel || displayLevel === 1)
           view.setRotation(0);
-        else if (this.heading && displayLevel == 2)
+        else if (this.heading && displayLevel === 2)
           view.setRotation(
             Math.PI / 180 * (this.heading - screen.orientation.angle) // Delivered ° reverse clockwize
           );
@@ -66328,40 +66365,6 @@
     } // End subMenuAction
   }
 
-  var subMenuHTML$1 = '<p>\
-  <input type="radio" name="myol-gps-source" value="0" checked="checked">None &nbsp;\
-  <input type="radio" name="myol-gps-source" value="1">Outdoor &nbsp;\
-  <input type="radio" name="myol-gps-source" value="2">Indoor &nbsp;\
-  </p><hr><p>\
-  <input type="radio" name="myol-gps-display" value="0" checked="checked">Free map&nbsp;\
-  <input type="radio" name="myol-gps-display" value="1">Center &nbsp;\
-  <input type="radio" name="myol-gps-display" value="2">Center & orient &nbsp;\
-  </p>';
-
-  var subMenuHTML_fr$1 = '\
-  <p>Localisation GPS:</p>\
-  <label>\
-    <input type="radio" name="myol-gps-source" value="0" checked="checked">\
-    Inactif</label><label>\
-    <input type="radio" name="myol-gps-source" value="1">\
-    Position GPS <span>(1) extérieur</span></label><label>\
-    <input type="radio" name="myol-gps-source" value="2">\
-    Position GPS ou IP <span>(2) intérieur</span></label>\
-  <hr><label>\
-    <input type="radio" name="myol-gps-display" value="0" checked="checked">\
-    Graticule, carte libre</label><label>\
-    <input type="radio" name="myol-gps-display" value="1">\
-    Centre la carte, nord en haut</label><label>\
-    <input type="radio" name="myol-gps-display" value="2">\
-    Centre et oriente la carte <span>(3)</span></label>\
-  <hr>\
-  <p>(1) plus précis en extérieur mais plus lent à initialiser,\
-    nécessite un capteur et une réception GPS.</p>\
-  <p>(2) plus précis et rapide en intérieur ou en zone urbaine\
-    mais peut être très erroné en extérieur à l\'initialisation.\
-    Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>\
-  <p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>';
-
   /**
    * Control to display the mouse position
    */
@@ -66394,8 +66397,8 @@
         return distance < 1000 ?
           (Math.round(distance)) + ' m' :
           (Math.round(distance / 10) / 100) + ' km';
-      } else
-        return ol.coordinate.createStringXY(4)(coordinates);
+      }
+      return ol.coordinate.createStringXY(4)(coordinates);
     }
   }
 
@@ -66407,15 +66410,15 @@
 
 
   class Permalink extends ol.control.Control {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         // display: false, // {false | true} Display permalink link the map.
         // init: false, // {undefined | false | true | [<zoom>, <lon>, <lat>]} use url hash or localStorage to position the map.
         default: [6, 2, 47], // France
         // setUrl: false, // {false | true} Change url hash when moving the map.
         hash: '?', // {?, #} the permalink delimiter after the url
 
-        ...options,
+        ...opt,
       };
 
       super({
@@ -66438,7 +66441,7 @@
     render(evt) {
       const view = evt.map.getView(),
         //BEST init with res=<resolution> or extent (not zoom, lon, lat)
-        urlMod = (typeof this.options.init == 'object' ? // init: [<zoom>, <lon>, <lat>]
+        urlMod = (typeof this.options.init === 'object' ? // init: [<zoom>, <lon>, <lat>]
           'zoom=' + this.options.init[0] + '&lon=' + this.options.init[1] + '&lat=' + this.options.init[2] + ',' :
           '') +
         location.href.replace( // Get value from params with priority url / ? / #
@@ -66489,6 +66492,18 @@
    */
 
 
+  const subMenuHTML = '\
+  <label><input type="radio" name="myol-print-orientation" value="0">Portrait</label>\
+  <label><input type="radio" name="myol-print-orientation" value="1">Landscape</label>\
+  <p><a id="myol-print">Print</a></p>',
+
+    subMenuHTML_fr = '\
+  <p style="float:right" title="Cancel"><a onclick="location.reload()">&#10006;</a></p>\
+  <p style="width:175px">Choisir le format et recadrer</p>' +
+    subMenuHTML
+    .replace('Landscape', 'Paysage')
+    .replace('Print', 'Imprimer');
+
   class Print extends Button {
     constructor(options) {
       super({
@@ -66503,7 +66518,7 @@
 
       // To return without print
       document.addEventListener('keydown', evt => {
-        if (evt.key == 'Escape')
+        if (evt.key === 'Escape')
           setTimeout(() => { // Delay reload for FF & Opera
             location.reload();
           });
@@ -66514,7 +66529,7 @@
       const map = this.getMap(),
         mapEl = map.getTargetElement(),
         poEl = this.element.querySelector('input:checked'), // Selected orientation inputs
-        orientation = poEl && poEl.value == '1' ? 'landscape' : 'portrait';
+        orientation = poEl && poEl.value === '1' ? 'landscape' : 'portrait';
 
       // Fix resolution to an available tiles resolution
       map.getView().setConstrainResolution(true);
@@ -66529,7 +66544,7 @@
       mapEl.className = 'myol-print-' + orientation;
 
       // Finally print if required
-      if (evt.target.id == 'myol-print') {
+      if (evt.target.id === 'myol-print') {
         if (poEl) { // If a format is set, the full page is already loaded
           window.print();
           location.reload();
@@ -66541,18 +66556,6 @@
       }
     }
   }
-
-  var subMenuHTML = '\
-  <label><input type="radio" name="myol-print-orientation" value="0">Portrait</label>\
-  <label><input type="radio" name="myol-print-orientation" value="1">Landscape</label>\
-  <p><a id="myol-print">Print</a></p>',
-
-    subMenuHTML_fr = '\
-  <p style="float:right" title="Cancel"><a onclick="location.reload()">&#10006;</a></p>\
-  <p style="width:175px">Choisir le format et recadrer</p>' +
-    subMenuHTML
-    .replace('Landscape', 'Paysage')
-    .replace('Print', 'Imprimer');
 
   /**
    * This file defines the myol.control exports
@@ -66606,6 +66609,68 @@
   //TODO pointeur reste aux graphiques sur les sous-menus des autres controles
   //TODO le controle ne charge pas le fichier dans la zone édition
   //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
+
+  // Default french text
+  const helpModif_fr = {
+      inspect: '\
+<p><b>Inspecter une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton ? puis survoler pour l\'objet avec le curseur pour:</p>\
+<p>Distinguer une ligne ou un polygone des autres</p>\
+<p>Calculer la longueur d\'une ligne ou un polygone</p>',
+      line: '\
+<p><b>Modifier une ligne</b></p>\
+<p>Cliquer sur le bouton &#x2725; puis</p>\
+<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
+<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
+<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
+<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
+<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
+<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
+<p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
+      poly: '\
+<p><b>Modifier un polygone</b></p>\
+<p>Cliquer sur le bouton &#x2725; puis </p>\
+<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
+<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
+<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
+<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
+<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
+ de chaque polygone puis Alt+cliquer dessus</p>\
+<p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
+      both: '\
+<p><b>Modifier une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton &#x2725; puis</p>\
+<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
+<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
+<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
+<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
+<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
+<p><u>Transformer un polygone en ligne</u>: Alt+cliquer sur un côté</p>\
+<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
+<p><u>Transformer une ligne en polygone</u>: déplacer une extrémité pour rejoindre l\'autre</p>\
+<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
+<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
+ de chaque polygone puis Alt+cliquer dessus</p>\
+<p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
+    },
+
+    helpLine_fr = '\
+<p><b>Créer une ligne</b></p>\
+<p>Cliquer sur le bouton &#x1526;</p>\
+<p>Cliquer sur l\'emplacement du début</p>\
+<p>Puis sur chaque sommet</p>\
+<p>Double cliquer sur le dernier sommet pour terminer</p>\
+<hr>\
+<p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
+
+    helpPoly_fr = '\
+<p><b>Créer un polygone</b></p>\
+<p>Cliquer sur le bouton &#9186;</p>\
+<p>Cliquer sur l\'emplacement du premier sommet</p>\
+<p>Puis sur chaque sommet</p>\
+<p>Double cliquer sur le dernier sommet pour terminer</p>\
+<hr>\
+<p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
   // Editor
   class Editor extends ol.layer.Vector {
@@ -66712,7 +66777,7 @@
           className: 'myol-button-inspect myol-button-keepselect',
           subMenuId: 'myol-edit-help-inspect',
           subMenuHTML: '<p>Inspect</p>',
-          subMenuHTML_fr: helpModif_fr['inspect'],
+          subMenuHTML_fr: helpModif_fr.inspect,
           buttonAction: (evt, active) => this.changeInteraction(0, evt, active),
         }),
         new Button({ // 1
@@ -66787,12 +66852,10 @@
           const selectedFeatures = map.getFeaturesAtPixel(
             evt.mapBrowserEvent.pixel, {
               hitTolerance: 6, // Default is 0
-              layerFilter: l => {
-                return l.ol_uid == this.ol_uid;
-              }
+              layerFilter: l => l.ol_uid === this.ol_uid
             });
 
-          for (let f in selectedFeatures) // We delete the selected feature
+          for (const f in selectedFeatures) // We delete the selected feature
             this.source.removeFeature(selectedFeatures[f]);
         }
 
@@ -66842,10 +66905,10 @@
       this.map.addControl(this.buttons[0]);
       this.map.addControl(this.buttons[1]);
 
-      if (this.options.editOnly != 'poly')
+      if (this.options.editOnly !== 'poly')
         this.map.addControl(this.buttons[2]);
 
-      if (this.options.editOnly != 'line')
+      if (this.options.editOnly !== 'line')
         this.map.addControl(this.buttons[3]);
 
       super.setMapInternal(map);
@@ -66862,7 +66925,7 @@
           type: 'click',
         });
 
-      if (evt.type == 'click') {
+      if (evt.type === 'click') {
         this.interactions.forEach(inter => this.map.removeInteraction(inter));
         this.map.addInteraction(this.interactions[interaction]);
         this.map.addInteraction(this.interactions[4]); // Snap must be added after the others
@@ -66897,11 +66960,11 @@
       this.source.clear();
 
       //BEST Multilinestring / Multipolygon
-      for (let l in coordinates.lines)
+      for (const l in coordinates.lines)
         this.source.addFeature(new ol.Feature({
           geometry: new ol.geom.LineString(coordinates.lines[l]),
         }));
-      for (let p in coordinates.polys)
+      for (const p in coordinates.polys)
         this.source.addFeature(new ol.Feature({
           geometry: new ol.geom.Polygon(coordinates.polys[p]),
         }));
@@ -66920,10 +66983,10 @@
         polys = [];
 
       // Get all edited features as array of coordinates
-      for (let f in features)
+      for (const f in features)
         this.flatFeatures(features[f].getGeometry(), points, lines, polys, selectedVertex, reverseLine);
 
-      for (let a in lines)
+      for (const a in lines)
         // Exclude 1 coordinate features (points)
         if (lines[a].length < 2)
           delete lines[a];
@@ -66948,10 +67011,10 @@
           }
 
       // Make polygons with looped lines
-      for (let a in lines)
-        if (this.options.editOnly != 'line' && lines[a]) {
+      for (const a in lines)
+        if (this.options.editOnly !== 'line' && lines[a]) {
           // Close open lines
-          if (this.options.editOnly == 'poly')
+          if (this.options.editOnly === 'poly')
             if (!this.compareCoords(lines[a]))
               lines[a].push(lines[a][0]);
 
@@ -66960,12 +67023,13 @@
             // Explore all summits combinaison
             for (let i1 = 0; i1 < lines[a].length - 1; i1++)
               for (let i2 = 0; i2 < i1; i2++)
-                if (lines[a][i1][0] == lines[a][i2][0] &&
-                  lines[a][i1][1] == lines[a][i2][1]) { // Find 2 identical summits
-                  let squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
+                if (lines[a][i1][0] === lines[a][i2][0] &&
+                  lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
+                  const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
                   squized.push(squized[0]); // Close the poly
                   polys.push([squized]); // Add the squized poly
-                  i1 = i2 = lines[a].length; // End loop
+                  i1 = lines[a].length; // End loop
+                  i2 = lines[a].length;
                 }
 
             // Convert closed lines into polygons
@@ -66975,14 +67039,14 @@
         }
 
       // Makes holes if a polygon is included in a biggest one
-      for (let p1 in polys) // Explore all Polygons combinaison
+      for (const p1 in polys) // Explore all Polygons combinaison
         if (this.options.withHoles && polys[p1]) {
           const fs = new ol.geom.Polygon(polys[p1]);
 
-          for (let p2 in polys)
-            if (polys[p2] && p1 != p2) {
+          for (const p2 in polys)
+            if (polys[p2] && p1 !== p2) {
               let intersects = true;
-              for (let c in polys[p2][0])
+              for (const c in polys[p2][0])
                 if (!fs.intersectsCoordinate(polys[p2][0][c]))
                   intersects = false;
               if (intersects) { // If one intersects a bigger
@@ -67001,10 +67065,10 @@
 
     flatFeatures(geom, points, lines, polys, selectedVertex, reverseLine) {
       // Expand geometryCollection
-      if (geom.getType() == 'GeometryCollection') {
+      if (geom.getType() === 'GeometryCollection') {
         const geometries = geom.getGeometries();
 
-        for (let g in geometries)
+        for (const g in geometries)
           this.flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
       }
       // Point
@@ -67020,14 +67084,14 @@
     // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
     // at the same level & split if one point = selectedVertex
     flatCoord(lines, coords, selectedVertex, reverseLine) {
-      if (typeof coords[0][0] == 'object') {
+      if (typeof coords[0][0] === 'object') {
         // Multi*
-        for (let c1 in coords)
+        for (const c1 in coords)
           this.flatCoord(lines, coords[c1], selectedVertex, reverseLine);
       } else {
         // LineString
-        let begCoords = [], // Coords before the selectedVertex
-          selectedLine = false;
+        const begCoords = []; // Coords before the selectedVertex
+        let selectedLine = false;
 
         while (coords.length) {
           const c = coords.shift();
@@ -67054,71 +67118,9 @@
     compareCoords(a, b) {
       if (!a) return false;
       if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
-      return a[0] == b[0] && a[1] == b[1]; // 2 coordinates
+      return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
     }
   }
-
-  // Default french text
-  var helpModif_fr = {
-      inspect: '\
-<p><b>Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton ? puis survoler pour l\'objet avec le curseur pour:</p>\
-<p>Distinguer une ligne ou un polygone des autres</p>\
-<p>Calculer la longueur d\'une ligne ou un polygone</p>',
-      line: '\
-<p><b>Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
-<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
-<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
-<p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
-      poly: '\
-<p><b>Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis </p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
-<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
- de chaque polygone puis Alt+cliquer dessus</p>\
-<p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
-      both: '\
-<p><b>Modifier une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
-<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
-<p><u>Transformer un polygone en ligne</u>: Alt+cliquer sur un côté</p>\
-<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
-<p><u>Transformer une ligne en polygone</u>: déplacer une extrémité pour rejoindre l\'autre</p>\
-<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
-<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
- de chaque polygone puis Alt+cliquer dessus</p>\
-<p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
-    },
-
-    helpLine_fr = '\
-<p><b>Créer une ligne</b></p>\
-<p>Cliquer sur le bouton &#x1526;</p>\
-<p>Cliquer sur l\'emplacement du début</p>\
-<p>Puis sur chaque sommet</p>\
-<p>Double cliquer sur le dernier sommet pour terminer</p>\
-<hr>\
-<p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
-
-    helpPoly_fr = '\
-<p><b>Créer un polygone</b></p>\
-<p>Cliquer sur le bouton &#9186;</p>\
-<p>Cliquer sur l\'emplacement du premier sommet</p>\
-<p>Puis sur chaque sommet</p>\
-<p>Double cliquer sur le dernier sommet pour terminer</p>\
-<hr>\
-<p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
   /**
    * Hover & click management
@@ -67167,12 +67169,12 @@
         source = this.getSource();
 
       // Find the first hovered feature & layer
-      let hoveredLayer = null,
-        hoveredFeature = map.forEachFeatureAtPixel(
+      let hoveredLayer = null;
+      const hoveredFeature = map.forEachFeatureAtPixel(
           map.getEventPixel(evt.originalEvent),
           (f, l) => {
             if ((l && l.options && l.options.hoverStylesOptions) ||
-              l == this) {
+              l === this) {
               hoveredLayer = l;
               return f; // Return feature & stop the search
             }
@@ -67187,7 +67189,7 @@
           hoveredSubProperties = hoveredSubFeature.getProperties();
 
         // Click
-        if (evt.type == 'click' &&
+        if (evt.type === 'click' &&
           !(hoveredLayer.options && hoveredLayer.options.noClick)) {
           // Click cluster
           if (hoveredSubProperties.cluster) {
@@ -67212,7 +67214,7 @@
           }
         }
         // Hover
-        else if (hoveredSubFeature != map.lastHoveredSubFeature &&
+        else if (hoveredSubFeature !== map.lastHoveredSubFeature &&
           !(hoveredLayer.options && hoveredLayer.options.noHover)) {
           const f = hoveredSubFeature.clone();
 
@@ -74707,8 +74709,8 @@
 
 
   class Marker extends ol.layer.Vector {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         // src: 'imageUrl', // url of marker image
         defaultPosition: [localStorage.myol_lon || 2, localStorage.myol_lat || 47], // Initial position of the marker
         // dragable: false, // Can draw the marker to edit position
@@ -74723,7 +74725,7 @@
         // marker-select, marker-string, select // display coords format
         //BEST split in 4 options
 
-        ...options,
+        ...opt,
       };
 
       const point = new ol.geom.Point(
@@ -74753,7 +74755,7 @@
       this.point = point;
 
       // Initialise specific projection
-      if (typeof proj4 == 'function') {
+      if (typeof proj4 === 'function') {
         // Swiss
         proj4.defs('EPSG:21781',
           '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 ' +
@@ -74792,7 +74794,7 @@
         const hoverDragable = map.getFeaturesAtPixel(evt.pixel, {
           layerFilter: l => {
             if (this.options.dragable)
-              return l.ol_uid == this.ol_uid;
+              return l.ol_uid === this.ol_uid;
           }
         });
 
@@ -74802,13 +74804,9 @@
       // Drag the marker
       if (this.options.dragable) {
         map.addInteraction(new ol.interaction.Pointer({
-          handleDownEvent: evt => {
-            return map.getFeaturesAtPixel(evt.pixel, {
-              layerFilter: l => {
-                return l.ol_uid == this.ol_uid;
-              }
-            }).length;
-          },
+          handleDownEvent: evt => map.getFeaturesAtPixel(evt.pixel, {
+            layerFilter: l => l.ol_uid === this.ol_uid
+          }).length,
           handleDragEvent: evt => {
             this.changeLL(evt.coordinate, 'EPSG:3857');
           },
@@ -74872,7 +74870,7 @@
       const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857');
 
       const inEPSG21781 =
-        typeof proj4 == 'function' &&
+        typeof proj4 === 'function' &&
         ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
 
       // Move the marker
@@ -74910,7 +74908,7 @@
         strings.swiss = 'X=' + this.els.x.value + ', Y=' + this.els.y.value + ' (CH1903)';
       }
       // When not on the CH1903 extend, hide the choice
-      else if (this.els.select.value == 'swiss')
+      else if (this.els.select.value === 'swiss')
         this.els.select.value = 'dec';
 
       // Hide Swiss coordinates when out of extent
@@ -74949,7 +74947,7 @@
           el.checked =
             this.init.includes(el.value) ||
             this.init.includes('all') ||
-            this.init.join(',') == el.value;
+            this.init.join(',') === el.value;
         });
         this.action(); // Init with "all"
       }
@@ -74958,18 +74956,18 @@
 
     action(evt) {
       // Test the "all" box & set other boxes
-      if (evt && evt.target.value == 'all')
+      if (evt && evt.target.value === 'all')
         this.selectEls
         .forEach(el => el.checked = evt.target.checked);
 
       // Test if all values are checked
       const allChecked = this.selectEls
-        .filter(el => !el.checked && el.value != 'all');
+        .filter(el => !el.checked && el.value !== 'all');
 
       // Set the "all" box
       this.selectEls
         .forEach(el => {
-          if (el.value == 'all')
+          if (el.value === 'all')
             el.checked = !allChecked.length;
         });
 
@@ -74988,7 +74986,7 @@
     getSelection() {
       if (this.selectEls)
         return this.selectEls
-          .filter(el => el.checked && el.value != 'all')
+          .filter(el => el.checked && el.value !== 'all')
           .map(el => el.value);
 
       return [null];
@@ -75003,36 +75001,6 @@
    *   layer : that owns the feature
    */
 
-
-  // Basic style to display a geo vector layer based on standard properties
-  function basic(feature, resolution, layer) {
-    const properties = feature.getProperties();
-
-    return [{
-      // Point
-      image: properties.icon ? new ol.style.Icon({
-        anchor: resolution < layer.options.minResolution ? [
-          feature.getId() / 5 % 1 / 2 + 0.25, // 32 px width frame
-          feature.getId() / 9 % 1, // 44 px hight frame
-        ] : [0.5, 0.5],
-        src: properties.icon, // 24 * 24 icons
-      }) : null,
-
-      // Lines
-      stroke: new ol.style.Stroke({
-        color: 'blue',
-        width: 2,
-      }),
-
-      // Polygons
-      fill: new ol.style.Fill({
-        color: 'rgba(0,0,256,0.3)',
-      }),
-      // properties.label if any
-      //BEST appliquer gigue anchor au label
-      ...label(...arguments),
-    }];
-  }
 
   // Display a label with properties.label
   function label(feature) {
@@ -75067,6 +75035,37 @@
     }
   }
 
+  // Basic style to display a geo vector layer based on standard properties
+  function basic(feature, resolution, layer) {
+    const properties = feature.getProperties();
+
+    return [{
+      // Point
+      image: properties.icon ?
+        new ol.style.Icon({
+          anchor: resolution < layer.options.minResolution ? [
+            feature.getId() / 5 % 1 / 2 + 0.25, // 32 px width frame
+            feature.getId() / 9 % 1, // 44 px hight frame
+          ] : [0.5, 0.5],
+          src: properties.icon, // 24 * 24 icons
+        }) : null,
+
+      // Lines
+      stroke: new ol.style.Stroke({
+        color: 'blue',
+        width: 2,
+      }),
+
+      // Polygons
+      fill: new ol.style.Fill({
+        color: 'rgba(0,0,256,0.3)',
+      }),
+      // properties.label if any
+      //BEST appliquer gigue anchor au label
+      ...label(...arguments),
+    }];
+  }
+
   // Display a circle with the number of features on the cluster
   function cluster(feature) {
     return [{
@@ -75088,6 +75087,15 @@
   }
 
   // Display the detailed information of a cluster based on standard properties
+  // Simplify & aggregate an array of lines
+  function agregateText(lines, glue) {
+    return lines
+      .filter(Boolean) // Avoid empty lines
+      .map(l => l.toString().replace('_', ' ').trim())
+      .map(l => l[0].toUpperCase() + l.substring(1))
+      .join(glue || '\n');
+  }
+
   function details(feature, resolution, layer) {
     const properties = feature.getProperties();
 
@@ -75117,15 +75125,6 @@
         width: 2,
       }),
     };
-  }
-
-  // Simplify & aggregate an array of lines
-  function agregateText(lines, glue) {
-    return lines
-      .filter(Boolean) // Avoid empty lines
-      .map(l => l.toString().replace('_', ' ').trim())
-      .map(l => l[0].toUpperCase() + l.substring(1))
-      .join(glue || '\n');
   }
 
   var stylesOptions = /*#__PURE__*/Object.freeze({
@@ -75161,16 +75160,16 @@
       this.on(['featuresloadstart', 'featuresloadend', 'error', 'featuresloaderror'], evt => {
         // Display loading satus
         if (this.statusEl) this.statusEl.innerHTML =
-          evt.type == 'featuresloadstart' ? '&#8987;' :
-          evt.type == 'featuresloadend' ? '' :
+          evt.type === 'featuresloadstart' ? '&#8987;' :
+          evt.type === 'featuresloadend' ? '' :
           '&#9888;'; // Error symbol
       });
 
       // Compute properties when the layer is loaded & before the cluster layer is computed
       this.on('change', () =>
         this.getFeatures().forEach(f => {
-          if (!f._yetAdded) {
-            f._yetAdded = true;
+          if (!f.yetAdded) {
+            f.yetAdded = true;
             f.setProperties(
               options.addProperties(f.getProperties()),
               true, // Silent : add the feature without refresh the layer
@@ -75193,12 +75192,9 @@
    */
   class MyClusterSource extends ol.source.Cluster {
     constructor(options) {
-      options = {
-        // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-
-        // Any MyVectorSource options
-        ...options,
-      };
+      // options:
+      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+      // Any MyVectorSource options
 
       // Source to handle the features
       const initialSource = new MyVectorSource(options);
@@ -75247,7 +75243,7 @@
       });
 
       // Single feature : display it
-      if (nbMaxClusters == 1)
+      if (nbMaxClusters === 1)
         return features[0];
 
       if (includeCluster || lines.length > 5)
@@ -75398,8 +75394,8 @@
    * Layer & features selector
    */
   class MyVectorLayer extends MyServerClusterVectorLayer {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         // host: '',
         strategy: ol.loadingstrategy.bbox,
         dataProjection: 'EPSG:4326',
@@ -75418,7 +75414,7 @@
         hoverStylesOptions: hover, // (feature, resolution, layer)
         // selectName: '', // Name of checkbox inputs to tune the url parameters
         // initSelect: string|true|false, // If defined, force the selector
-        selector: new Selector(options.selectName, options.initSelect), // Tune the url parameters
+        selector: new Selector(opt.selectName, opt.initSelect), // Tune the url parameters
         zIndex: 100, // Above tiles layers
 
         // Any ol.source.Vector options
@@ -75430,7 +75426,7 @@
         // bbox (extent, resolution, mapProjection) => {}
         // addProperties (properties) => {}, // Add properties to each received features
 
-        ...options,
+        ...opt,
       };
       options.format ||= new ol.format.GeoJSON(options); //BEST treat & display JSON errors
 
@@ -75462,7 +75458,7 @@
       const args = this.query(...arguments, this.options),
         url = this.host + args._path; // Mem _path
 
-      if (this.strategy == ol.loadingstrategy.bbox)
+      if (this.strategy === ol.loadingstrategy.bbox)
         args.bbox = this.bbox(...arguments);
 
       // Add a pseudo parameter if any marker or edit has been done
@@ -75471,7 +75467,7 @@
 
       // Clean null & not relative parameters
       Object.keys(args).forEach(k => {
-        if (k == '_path' || args[k] == 'on' || !args[k] || !args[k].toString())
+        if (k === '_path' || args[k] === 'on' || !args[k] || !args[k].toString())
           delete args[k];
       });
 
@@ -75527,6 +75523,14 @@
         (icons.length > 1 ? '_' + icons[1] : '') + // Limit to 2 type names & ' ' -> '_'
         '.svg';
     }
+  }
+
+  function addTag(doc, node, k, v) {
+    const newTag = doc.createElement('tag');
+
+    newTag.setAttribute('k', k);
+    newTag.setAttribute('v', v);
+    node.appendChild(newTag);
   }
 
   class GeoBB extends MyVectorLayer {
@@ -75675,7 +75679,7 @@
       this.format.readFeatures = json => {
         const features = [];
 
-        for (let p in json.documents) {
+        for (const p in json.documents) {
           const properties = json.documents[p];
 
           features.push({
@@ -75736,12 +75740,12 @@
       // List of acceptable tags in the request return
       let tags = '';
 
-      for (let e in selectEls)
+      for (const e in selectEls)
         if (selectEls[e].value)
           tags += selectEls[e].value.replace('private', '');
 
       // Extract features from data when received
-      this.format.readFeatures = function(doc, options) {
+      this.format.readFeatures = function(doc, opt) {
         const newNodes = [];
 
         for (let node = doc.documentElement.firstElementChild; node; node = node.nextSibling) {
@@ -75750,20 +75754,20 @@
             if (tag.attributes) {
               if (tags.indexOf(tag.getAttribute('k')) !== -1 &&
                 tags.indexOf(tag.getAttribute('v')) !== -1 &&
-                tag.getAttribute('k') != 'type') {
-                addTag(node, 'type', tag.getAttribute('v'));
-                addTag(node, 'icon', chemIconUrl(tag.getAttribute('v')));
+                tag.getAttribute('k') !== 'type') {
+                addTag(doc, node, 'type', tag.getAttribute('v'));
+                addTag(doc, node, 'icon', chemIconUrl(tag.getAttribute('v')));
 
                 // Only once for a node
-                addTag(node, 'link', 'https://www.openstreetmap.org/' + node.nodeName + '/' + node.id);
+                addTag(doc, node, 'link', 'https://www.openstreetmap.org/' + node.nodeName + '/' + node.id);
               }
 
               if (tag.getAttribute('k') && tag.getAttribute('k').includes('capacity:'))
-                addTag(node, 'capacity', tag.getAttribute('v'));
+                addTag(doc, node, 'capacity', tag.getAttribute('v'));
             }
 
           // Transform an area to a node (picto) at the center of this area
-          if (node.nodeName == 'way') {
+          if (node.nodeName === 'way') {
             const newNode = doc.createElement('node');
 
             newNode.id = node.id;
@@ -75784,27 +75788,19 @@
                   newNode.appendChild(subTagNode.cloneNode());
 
                   // Add a tag to mem what node type it was (for link build)
-                  addTag(newNode, 'nodetype', node.nodeName);
+                  addTag(doc, newNode, 'nodetype', node.nodeName);
               }
           }
 
           // Status 200 / error message
-          if (node.nodeName == 'remark' && statusEl)
+          if (node.nodeName === 'remark' && statusEl)
             statusEl.textContent = node.textContent;
         }
 
         // Add new nodes to the document
         newNodes.forEach(n => doc.documentElement.appendChild(n));
 
-        return ol.format.OSMXML.prototype.readFeatures.call(this, doc, options);
-
-        function addTag(node, k, v) {
-          const newTag = doc.createElement('tag');
-
-          newTag.setAttribute('k', k);
-          newTag.setAttribute('v', v);
-          node.appendChild(newTag);
-        }
+        return ol.format.OSMXML.prototype.readFeatures.call(this, doc, opt);
       };
     }
 
@@ -75871,8 +75867,6 @@
    * Display misc values
    */
 
-  /* global myol */
-
   async function trace() {
     const data = [
       'Ol v' + ol.util.VERSION,
@@ -75896,19 +75890,19 @@
         if (registrations.length) {
           data.push('service-workers:');
 
-          for (let registration of registrations)
+          for (const registration of registrations)
             if (registration.active)
               data.push('  ' + registration.active.scriptURL);
         }
       });
 
     // Registered caches in the scope
-    if (typeof caches == 'object')
-      await caches.keys().then(function(names) {
+    if (typeof caches === 'object')
+      await caches.keys().then(names => {
         if (names.length) {
           data.push('caches:');
 
-          for (let name of names)
+          for (const name of names)
             data.push('  ' + name);
         }
       });
@@ -75919,20 +75913,20 @@
 
   // Zoom & resolution
   /* global map */
-  window.addEventListener('load', () => { // Wait for document load
-    if (typeof map == 'object' && map.once)
-      map.once('precompose', () => { // Wait for view load
-        traceZoom();
-        map.getView().on('change:resolution', traceZoom);
-      });
-  });
-
   function traceZoom() {
     console.log(
       'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
       'res ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
     );
   }
+
+  window.addEventListener('load', () => { // Wait for document load
+    if (typeof map === 'object' && map.once)
+      map.once('precompose', () => { // Wait for view load
+        traceZoom();
+        map.getView().on('change:resolution', traceZoom);
+      });
+  });
 
   /**
    * This file defines the myol exports
@@ -75945,7 +75939,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 23/05/2024 08:21:36',
+    VERSION: '1.1.2.dev 24/05/2024 11:13:54',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

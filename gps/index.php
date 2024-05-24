@@ -87,7 +87,7 @@ Based on https://openlayers.org
 
   <script src="<?=$myol_rep?>myol.js"></script>
   <script>
-    var jsVars = <?=$js_vars?>;
+    const jsVars = <?=$js_vars?>;
 
     <?php foreach ($js_include as $js)
       echo file_get_contents($js).PHP_EOL;

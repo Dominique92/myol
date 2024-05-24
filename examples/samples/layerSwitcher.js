@@ -1,7 +1,5 @@
-/* global ol, myol */
-
 /* eslint-disable no-unused-vars */
-var baseLayers = {
+const baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),
     }),

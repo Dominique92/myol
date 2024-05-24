@@ -1,6 +1,4 @@
-/* global ol, myol */
-
-var snaplayer = new ol.layer.Vector({
+const snaplayer = new ol.layer.Vector({
     background: 'transparent',
     source: new ol.source.Vector({
       url: 'images/switzerland.geojson',

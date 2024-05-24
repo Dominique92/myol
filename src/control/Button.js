@@ -77,18 +77,18 @@ export class Button extends ol.control.Control {
   }
 
   buttonListener(evt) {
-    if (evt.type == 'mouseover')
+    if (evt.type === 'mouseover')
       this.element.classList.add('myol-button-hover');
     else // mouseout | click
       this.element.classList.remove('myol-button-hover');
 
-    if (evt.type == 'click') // Mouse click & touch
+    if (evt.type === 'click') // Mouse click & touch
       this.element.classList.toggle('myol-button-selected');
 
     // Close other open buttons
-    for (let el of document.getElementsByClassName('myol-button'))
-      if (el != this.element &&
-        (!el.classList.contains('myol-button-keepselect') || evt.type == 'click'))
+    for (const el of document.getElementsByClassName('myol-button'))
+      if (el !== this.element &&
+        (!el.classList.contains('myol-button-keepselect') || evt.type === 'click'))
         el.classList.remove('myol-button-selected');
 
     // Trigger action on the selected button

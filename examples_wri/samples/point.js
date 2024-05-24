@@ -1,4 +1,4 @@
-/* global myol, mapPoint, mapKeys */
+/* global mapPoint */
 
 const scriptEl = document.createElement('script');
 

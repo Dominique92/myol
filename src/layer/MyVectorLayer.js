@@ -25,16 +25,16 @@ class MyVectorSource extends ol.source.Vector {
     this.on(['featuresloadstart', 'featuresloadend', 'error', 'featuresloaderror'], evt => {
       // Display loading satus
       if (this.statusEl) this.statusEl.innerHTML =
-        evt.type == 'featuresloadstart' ? '&#8987;' :
-        evt.type == 'featuresloadend' ? '' :
+        evt.type === 'featuresloadstart' ? '&#8987;' :
+        evt.type === 'featuresloadend' ? '' :
         '&#9888;'; // Error symbol
     });
 
     // Compute properties when the layer is loaded & before the cluster layer is computed
     this.on('change', () =>
       this.getFeatures().forEach(f => {
-        if (!f._yetAdded) {
-          f._yetAdded = true;
+        if (!f.yetAdded) {
+          f.yetAdded = true;
           f.setProperties(
             options.addProperties(f.getProperties()),
             true, // Silent : add the feature without refresh the layer
@@ -57,12 +57,9 @@ class MyVectorSource extends ol.source.Vector {
  */
 class MyClusterSource extends ol.source.Cluster {
   constructor(options) {
-    options = {
-      // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
-
-      // Any MyVectorSource options
-      ...options,
-    };
+    // options:
+    // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
+    // Any MyVectorSource options
 
     // Source to handle the features
     const initialSource = new MyVectorSource(options);
@@ -111,7 +108,7 @@ class MyClusterSource extends ol.source.Cluster {
     });
 
     // Single feature : display it
-    if (nbMaxClusters == 1)
+    if (nbMaxClusters === 1)
       return features[0];
 
     if (includeCluster || lines.length > 5)
@@ -262,8 +259,8 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
  * Layer & features selector
  */
 export class MyVectorLayer extends MyServerClusterVectorLayer {
-  constructor(options) {
-    options = {
+  constructor(opt) {
+    const options = {
       // host: '',
       strategy: ol.loadingstrategy.bbox,
       dataProjection: 'EPSG:4326',
@@ -282,7 +279,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
       hoverStylesOptions: stylesOptions.hover, // (feature, resolution, layer)
       // selectName: '', // Name of checkbox inputs to tune the url parameters
       // initSelect: string|true|false, // If defined, force the selector
-      selector: new Selector(options.selectName, options.initSelect), // Tune the url parameters
+      selector: new Selector(opt.selectName, opt.initSelect), // Tune the url parameters
       zIndex: 100, // Above tiles layers
 
       // Any ol.source.Vector options
@@ -294,7 +291,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
       // bbox (extent, resolution, mapProjection) => {}
       // addProperties (properties) => {}, // Add properties to each received features
 
-      ...options,
+      ...opt,
     };
     options.format ||= new ol.format.GeoJSON(options); //BEST treat & display JSON errors
 
@@ -326,7 +323,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
     const args = this.query(...arguments, this.options),
       url = this.host + args._path; // Mem _path
 
-    if (this.strategy == ol.loadingstrategy.bbox)
+    if (this.strategy === ol.loadingstrategy.bbox)
       args.bbox = this.bbox(...arguments);
 
     // Add a pseudo parameter if any marker or edit has been done
@@ -335,7 +332,7 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
 
     // Clean null & not relative parameters
     Object.keys(args).forEach(k => {
-      if (k == '_path' || args[k] == 'on' || !args[k] || !args[k].toString())
+      if (k === '_path' || args[k] === 'on' || !args[k] || !args[k].toString())
         delete args[k];
     });
 

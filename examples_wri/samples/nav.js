@@ -1,4 +1,4 @@
-/* global mapNav, mapKeys, urlParams */
+/* global mapNav, urlParams */
 
 const selectMassifEl = document.getElementById('select-massif');
 

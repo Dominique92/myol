@@ -5,6 +5,9 @@
 import ol from '../ol';
 import Button from './Button.js';
 
+const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
+  subMenuHTML_fr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
+
 export class Load extends Button {
   constructor(options) {
     super({
@@ -25,7 +28,7 @@ export class Load extends Button {
   subMenuAction(evt) {
     const blob = evt.target.files[0];
 
-    if (evt.type == 'change' && evt.target.files)
+    if (evt.type === 'change' && evt.target.files)
       this.reader.readAsText(blob);
 
     this.reader.onload = () => this.loadText(this.reader.result, blob.name);
@@ -102,8 +105,5 @@ export class Load extends Button {
     this.element.classList.remove('myol-display-submenu');
   }
 }
-
-var subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
-  subMenuHTML_fr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
 
 export default Load;

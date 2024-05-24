@@ -6,8 +6,8 @@ import ol from '../ol';
 import proj4Lib from 'proj4/lib/index';
 
 export class Marker extends ol.layer.Vector {
-  constructor(options) {
-    options = {
+  constructor(opt) {
+    const options = {
       // src: 'imageUrl', // url of marker image
       defaultPosition: [localStorage.myol_lon || 2, localStorage.myol_lat || 47], // Initial position of the marker
       // dragable: false, // Can draw the marker to edit position
@@ -22,7 +22,7 @@ export class Marker extends ol.layer.Vector {
       // marker-select, marker-string, select // display coords format
       //BEST split in 4 options
 
-      ...options,
+      ...opt,
     };
 
     const point = new ol.geom.Point(
@@ -52,7 +52,7 @@ export class Marker extends ol.layer.Vector {
     this.point = point;
 
     // Initialise specific projection
-    if (typeof proj4Lib == 'function') {
+    if (typeof proj4Lib === 'function') {
       // Swiss
       proj4Lib.defs('EPSG:21781',
         '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 ' +
@@ -91,7 +91,7 @@ export class Marker extends ol.layer.Vector {
       const hoverDragable = map.getFeaturesAtPixel(evt.pixel, {
         layerFilter: l => {
           if (this.options.dragable)
-            return l.ol_uid == this.ol_uid;
+            return l.ol_uid === this.ol_uid;
         }
       });
 
@@ -101,13 +101,9 @@ export class Marker extends ol.layer.Vector {
     // Drag the marker
     if (this.options.dragable) {
       map.addInteraction(new ol.interaction.Pointer({
-        handleDownEvent: evt => {
-          return map.getFeaturesAtPixel(evt.pixel, {
-            layerFilter: l => {
-              return l.ol_uid == this.ol_uid;
-            }
-          }).length;
-        },
+        handleDownEvent: evt => map.getFeaturesAtPixel(evt.pixel, {
+          layerFilter: l => l.ol_uid === this.ol_uid
+        }).length,
         handleDragEvent: evt => {
           this.changeLL(evt.coordinate, 'EPSG:3857');
         },
@@ -171,7 +167,7 @@ export class Marker extends ol.layer.Vector {
     const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857');
 
     const inEPSG21781 =
-      typeof proj4Lib == 'function' &&
+      typeof proj4Lib === 'function' &&
       ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
 
     // Move the marker
@@ -209,7 +205,7 @@ export class Marker extends ol.layer.Vector {
       strings.swiss = 'X=' + this.els.x.value + ', Y=' + this.els.y.value + ' (CH1903)';
     }
     // When not on the CH1903 extend, hide the choice
-    else if (this.els.select.value == 'swiss')
+    else if (this.els.select.value === 'swiss')
       this.els.select.value = 'dec';
 
     // Hide Swiss coordinates when out of extent

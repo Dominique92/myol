@@ -1,4 +1,4 @@
-/* global navEdit, mapKeys, urlParams */
+/* global navEdit, urlParams */
 
 const scriptEl = document.createElement('script');
 

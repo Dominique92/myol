@@ -4,8 +4,6 @@
 
 import ol from './ol';
 import Geocoder from '@myol/geocoder/src/base'; //TODO BUG to be replaced by ol-geocoder when /src published in npm
-/* global myol */
-
 export async function trace() {
   const data = [
     'Ol v' + ol.util.VERSION,
@@ -29,19 +27,19 @@ export async function trace() {
       if (registrations.length) {
         data.push('service-workers:');
 
-        for (let registration of registrations)
+        for (const registration of registrations)
           if (registration.active)
             data.push('  ' + registration.active.scriptURL);
       }
     });
 
   // Registered caches in the scope
-  if (typeof caches == 'object')
-    await caches.keys().then(function(names) {
+  if (typeof caches === 'object')
+    await caches.keys().then(names => {
       if (names.length) {
         data.push('caches:');
 
-        for (let name of names)
+        for (const name of names)
           data.push('  ' + name);
       }
     });
@@ -52,19 +50,19 @@ export async function trace() {
 
 // Zoom & resolution
 /* global map */
-window.addEventListener('load', () => { // Wait for document load
-  if (typeof map == 'object' && map.once)
-    map.once('precompose', () => { // Wait for view load
-      traceZoom();
-      map.getView().on('change:resolution', traceZoom);
-    });
-});
-
 function traceZoom() {
   console.log(
     'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
     'res ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
   );
 }
+
+window.addEventListener('load', () => { // Wait for document load
+  if (typeof map === 'object' && map.once)
+    map.once('precompose', () => { // Wait for view load
+      traceZoom();
+      map.getView().on('change:resolution', traceZoom);
+    });
+});
 
 export default trace;

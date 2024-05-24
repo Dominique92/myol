@@ -31,8 +31,8 @@ export class MyMousePosition extends ol.control.MousePosition {
       return distance < 1000 ?
         (Math.round(distance)) + ' m' :
         (Math.round(distance / 10) / 100) + ' km';
-    } else
-      return ol.coordinate.createStringXY(4)(coordinates);
+    }
+    return ol.coordinate.createStringXY(4)(coordinates);
   }
 }
 

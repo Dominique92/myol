@@ -7,6 +7,16 @@
 import ol from '../ol';
 import Button from './Button.js';
 
+const subMenuHTML = '\
+  <p><a mime="application/gpx+xml">GPX</a></p>\
+  <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
+  <p><a mime="application/json">GeoJSON</a></p>',
+
+  subMenuHTML_fr = '\
+  <p>Cliquer sur un format ci-dessous pour obtenir\
+  un fichier contenant les éléments visibles dans la fenêtre:</p>' +
+  subMenuHTML;
+
 //BEST BUG incompatible with clusters
 export class Download extends Button {
   constructor(options) {
@@ -53,14 +63,14 @@ export class Download extends Button {
           );
       });
 
-    if (formatName == 'GPX')
+    if (formatName === 'GPX')
       // Transform *Polygons in linestrings
-      for (let f in featuresToSave) {
+      for (const f in featuresToSave) {
         const geometry = featuresToSave[f].getGeometry();
 
         if (geometry.getType().includes('Polygon')) {
           geometry.getCoordinates().forEach(coords => {
-            if (typeof coords[0][0] == 'number')
+            if (typeof coords[0][0] === 'number')
               // Polygon
               featuresToSave.push(new ol.Feature(new ol.geom.LineString(coords)));
             else
@@ -100,15 +110,5 @@ export class Download extends Button {
     this.element.classList.remove('myol-display-submenu');
   }
 }
-
-var subMenuHTML = '\
-  <p><a mime="application/gpx+xml">GPX</a></p>\
-  <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
-  <p><a mime="application/json">GeoJSON</a></p>';
-
-var subMenuHTML_fr = '\
-  <p>Cliquer sur un format ci-dessous pour obtenir\
-  un fichier contenant les éléments visibles dans la fenêtre:</p>' +
-  subMenuHTML;
 
 export default Download;

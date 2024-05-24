@@ -1,5 +1,4 @@
 // Contient les fonctions gérant les cartes
-/* global ol, myol */
 
 // Fabrique le texte de l'étiquette à partir des propriétés reçues du serveur
 function etiquetteComplette(properties) {
@@ -54,19 +53,19 @@ function couchePointsWRI(options) {
       link: properties.lien, // Lien sur lequel cliquer
     }),
 
-    hoverStylesOptions: (feature, layer) => {
+    hoverStylesOptions: (f, l) => {
       // Construction de l'étiquette détaillée
-      const properties = feature.getProperties();
+      const properties = f.getProperties();
 
       // Si c'est un cluster, on affiche comme d'habitude
       if (properties.cluster)
-        return myol.stylesOptions.hover(feature, layer);
+        return myol.stylesOptions.hover(f, l);
 
-      feature.setProperties({
+      f.setProperties({
         label: etiquetteComplette(properties),
       }, true);
 
-      return myol.stylesOptions.label(feature, layer);
+      return myol.stylesOptions.label(f, l);
     },
   });
 
@@ -133,16 +132,17 @@ function coucheMassifsColores(options) {
 }
 
 // Affiche le contour d'un massif pour la page nav
-function coucheContourMassif(options) {
+function coucheContourMassif(option) {
   return new myol.layer.MyVectorLayer({
     // Construction de l'url
-    query: (extent, resolution, projection, options) => ({
+    query: (extent, resolution, projection, opt) => ({
       _path: 'api/polygones',
       type_polygon: 1, // Massifs
-      massif: options.selector.getSelection(),
+      massif: opt.selector.getSelection(),
     }),
     strategy: ol.loadingstrategy.all, // Pas de bbox
-    ...options,
+
+    ...option,
 
     // Affichage de base
     basicStylesOptions: () => [{
@@ -225,14 +225,14 @@ function basicControls() {
 }
 
 function basicMapOptions(options) {
-  return [
+  return {
     target: options.target,
 
     view: new ol.View({
       enableRotation: false,
       constrainResolution: true, // Force le zoom sur la définition des dalles disponibles
     }),
-  ];
+  };
 }
 
 // Carte de la page d'accueil
@@ -452,7 +452,7 @@ function navEdit(options) {
 
     controls: [
       ...basicControls(),
-      savedLayer: editorlayer,
+      //TODO not array item ! savedLayer: editorlayer,
       new myol.control.LayerSwitcher({
         layers: fondsCarte('edit', options.mapKeys),
       }),

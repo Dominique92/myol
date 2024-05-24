@@ -1,4 +1,4 @@
-/* global urlParams, mapModif, mapKeys */
+/* global urlParams, mapModif */
 
 // Simule la position du point donnée à la page de modification
 const markerJson = document.getElementById('marker-json');
@@ -15,6 +15,6 @@ scriptEl.addEventListener('load', () =>
     target: 'carte-modif',
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
-    idPoint: urlParams['id_point'], // <?=intval($vue->point->id_point)?>,
+    idPoint: urlParams.id_point, // <?=intval($vue->point->id_point)?>,
   })
 );

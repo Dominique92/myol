@@ -1,10 +1,10 @@
-/* global ol, myol, host, fondsCarte, coucheContourMassif, mapKeys */
+/* global host, fondsCarte, coucheContourMassif */
 //TODO DELETE THIS FILE
 
-/*var host = '<?=$config_wri["sous_dossier_installation"]?>',
+/*const host = '<?=$config_wri["sous_dossier_installation"]?>',
   mapKeys = <?=json_encode($config_wri['mapKeys'])?>,
 */
-var editorlayer = new myol.layer.Editor({
+const editorlayer = new myol.layer.Editor({
     geoJsonId: 'edit-json',
     editOnly: 'poly',
 

@@ -20,7 +20,7 @@ export function label(feature) {
 
     return {
       text: new ol.style.Text({
-        text: elLabel.innerHTML.replace('&amp;', '&'), // Specific tratement for &
+        text: elLabel.innerText,
         overflow: properties.overflow, // Display label even if not contained in polygon
         textBaseline: featureArea ? 'middle' : 'bottom',
         offsetY: featureArea ? 0 : -13, // Above the icon

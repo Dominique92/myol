@@ -1003,11 +1003,11 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 
 /* Inspect */
 .myol-button-inspect button::after {
-  content: "?";
+  content: "\2221";
 }
 
 .map-edit-0 {
-  cursor: help;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><text style="font-size: 34px" y="34">\2221</text></svg>') 10 24, help;
 }
 
 /* Modify */
@@ -1021,7 +1021,7 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 
 /* Draw line */
 .myol-button-draw-line button::after {
-  content: "\1526";
+  content: "\1F589";
 }
 
 .map-edit-2 {
@@ -1030,7 +1030,7 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 
 /* Draw poly */
 .myol-button-draw-poly button::after {
-  content: "\23E2";
+  content: "\1F58C";
 }
 
 .map-edit-3 {

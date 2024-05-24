@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 24/05/2024 11:13:54 using npm run build from the src/... sources
+ * Built 24/05/2024 18:32:47 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -66606,20 +66606,19 @@
    */
 
 
-  //TODO pointeur reste aux graphiques sur les sous-menus des autres controles
   //TODO le controle ne charge pas le fichier dans la zone édition
   //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
 
   // Default french text
   const helpModif_fr = {
       inspect: '\
-<p><b>Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton ? puis survoler pour l\'objet avec le curseur pour:</p>\
+<p><b><u>EDITEUR</u>: Inspecter une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton &#x2221 puis survoler l\'objet avec le curseur pour:</p>\
 <p>Distinguer une ligne ou un polygone des autres</p>\
 <p>Calculer la longueur d\'une ligne ou un polygone</p>',
       line: '\
-<p><b>Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis</p>\
+<p><b><u>EDITEUR</u>: Modifier une ligne</b></p>\
+<p>Cliquer sur le bouton &#x1F90F; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66628,8 +66627,8 @@
 <p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
 <p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
       poly: '\
-<p><b>Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis </p>\
+<p><b><u>EDITEUR</u>: Modifier un polygone</b></p>\
+<p>Cliquer sur le bouton &#x1F90F; puis </p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66638,8 +66637,8 @@
  de chaque polygone puis Alt+cliquer dessus</p>\
 <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
       both: '\
-<p><b>Modifier une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; puis</p>\
+<p><b><u>EDITEUR</u>: Modifier une ligne ou un polygone</b></p>\
+<p>Cliquer sur le bouton &#x1F90F; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66655,8 +66654,8 @@
     },
 
     helpLine_fr = '\
-<p><b>Créer une ligne</b></p>\
-<p>Cliquer sur le bouton &#x1526;</p>\
+<p><b><u>EDITEUR</u>: Créer une ligne</b></p>\
+<p>Cliquer sur le bouton &#x1F589;</p>\
 <p>Cliquer sur l\'emplacement du début</p>\
 <p>Puis sur chaque sommet</p>\
 <p>Double cliquer sur le dernier sommet pour terminer</p>\
@@ -66664,8 +66663,8 @@
 <p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
 
     helpPoly_fr = '\
-<p><b>Créer un polygone</b></p>\
-<p>Cliquer sur le bouton &#9186;</p>\
+<p><b><u>EDITEUR</u>: Créer un polygone</b></p>\
+<p>Cliquer sur le bouton &#x1F58C;</p>\
 <p>Cliquer sur l\'emplacement du premier sommet</p>\
 <p>Puis sur chaque sommet</p>\
 <p>Double cliquer sur le dernier sommet pour terminer</p>\
@@ -66902,14 +66901,13 @@
         }
       });
 
-      this.map.addControl(this.buttons[0]);
-      this.map.addControl(this.buttons[1]);
-
-      if (this.options.editOnly !== 'poly')
-        this.map.addControl(this.buttons[2]);
-
+      this.map.addControl(this.buttons[1]); // 1 Modify
+      if (this.options.editOnly !== 'poly') {
+        this.map.addControl(this.buttons[0]); // 0 Inspect
+        this.map.addControl(this.buttons[2]); // 2 Draw line
+      }
       if (this.options.editOnly !== 'line')
-        this.map.addControl(this.buttons[3]);
+        this.map.addControl(this.buttons[3]); // 3 Draw poly
 
       super.setMapInternal(map);
 
@@ -75014,7 +75012,7 @@
 
       return {
         text: new ol.style.Text({
-          text: elLabel.innerHTML.replace('&amp;', '&'), // Specific tratement for &
+          text: elLabel.innerText,
           overflow: properties.overflow, // Display label even if not contained in polygon
           textBaseline: featureArea ? 'middle' : 'bottom',
           offsetY: featureArea ? 0 : -13, // Above the icon
@@ -75939,7 +75937,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 24/05/2024 11:13:54',
+    VERSION: '1.1.2.dev 24/05/2024 18:32:47',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

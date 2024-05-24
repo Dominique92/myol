@@ -361,7 +361,6 @@ function mapNav(options) {
   });
 
   const pointsWRI = couchePointsWRI({
-    zIndex: 10000,
     host: options.host,
     selectName: 'select-wri',
     initSelect: 'all',

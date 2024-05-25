@@ -333,7 +333,6 @@ function mapModif(options) {
         browserClusterMinResolution: null, // Pour ne pas générer de gigue
         noClick: true,
         page: 'modif',
-        ...options.layerOptions, // Options à ajouter depuis config_privee.php
       }),
 
       // Le viseur jaune pour modifier la position du point
@@ -366,7 +365,6 @@ function mapNav(options) {
     initSelect: 'all',
     selectMassif: contourMassif.options.selector,
     page: 'nav',
-    ...options.layerOptions, // Options à ajouter depuis config_privee.php
   });
 
   const externLayers = [

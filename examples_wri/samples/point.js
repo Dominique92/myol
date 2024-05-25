@@ -9,7 +9,6 @@ scriptEl.addEventListener('load', () => {
     target: 'carte-point',
     host: 'https://www.refuges.info/', // '<?=$config_wri["sous_dossier_installation"]?>',
     mapKeys: mapKeys, //<?=json_encode($config_wri['mapKeys'])?>,
-    //layerOptions: <?=json_encode($config_wri['layerOptions'])?>,
   });
 
   myol.trace(map);

@@ -17,7 +17,6 @@ scriptEl.addEventListener('load', () =>
     // id_polygone: <?=isset($vue->polygone)?$vue->polygone->id_polygone:0?>,
     // id_polygone_type: <?=isset($vue->polygone)?$vue->polygone->id_polygone_type:0?>,
     // extent: <?=json_encode($vue->polygone->extent)?>,
-    //layerOptions: <?=json_encode($config_wri['layerOptions'])?>,
     ...urlParams, // For test
     initSelect: true,
   })

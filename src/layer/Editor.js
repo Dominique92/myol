@@ -18,7 +18,7 @@ const helpModif_fr = {
 <p>Calculer la longueur d\'une ligne ou un polygone</p>',
     line: '\
 <p><b><u>EDITEUR</u>: Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2702; puis</p>\
+<p>Cliquer sur le bouton &#x1F90F; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -28,7 +28,7 @@ const helpModif_fr = {
 <p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
     poly: '\
 <p><b><u>EDITEUR</u>: Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2702; puis </p>\
+<p>Cliquer sur le bouton &#x1F90F; puis </p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -38,7 +38,7 @@ const helpModif_fr = {
 <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
     both: '\
 <p><b><u>EDITEUR</u>: Modifier une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2702; puis</p>\
+<p>Cliquer sur le bouton &#x1F90F; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\

@@ -2,8 +2,6 @@
  * File downloader control
  */
 
-//TODO BUG  out gpx / kml http://localhost:5173/examples/vite.html?controls
-
 import ol from '../ol';
 import Button from './Button.js';
 

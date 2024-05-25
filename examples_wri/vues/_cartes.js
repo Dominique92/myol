@@ -202,14 +202,14 @@ function fondsCarte(page, mapKeys) {
   };
 }
 
-function basicControls() {
+function basicControls(options = {}) {
   return [
     // Haut gauche
     new ol.control.Zoom(),
     new ol.control.FullScreen(),
     new myol.control.MyGeocoder(),
     new myol.control.MyGeolocation(),
-    new myol.control.Load(),
+    new myol.control.Load(options.load),
     new myol.control.Download(),
     new myol.control.Print(),
 
@@ -437,7 +437,7 @@ function mapNav(options) {
 // Carte de la page de création ou d'édion de massif ou de zone
 /* eslint-disable-next-line no-unused-vars */
 function navEdit(options) {
-  const editorlayer = new myol.layer.Editor({
+  const editorLayer = new myol.layer.Editor({
     geoJsonId: 'edit-json',
     editOnly: 'poly',
 
@@ -454,8 +454,11 @@ function navEdit(options) {
     ...basicMapOptions(options),
 
     controls: [
-      ...basicControls(),
-      //TODO not array item ! savedLayer: editorlayer,
+      ...basicControls({
+        load: {
+          receivingLayer: editorLayer,
+        },
+      }),
       new myol.control.LayerSwitcher({
         layers: fondsCarte('edit', options.mapKeys),
       }),
@@ -465,7 +468,7 @@ function navEdit(options) {
       coucheContourMassif({
         host: options.host,
       }),
-      editorlayer,
+      editorLayer,
     ],
   });
 }

@@ -48,7 +48,7 @@ export class Print extends Button {
     map.getView().setConstrainResolution(true);
 
     // Set or replace the page style
-    if (document.head.lastChild.textContent.match(/^@page{size:/))
+    if (document.head.lastChild.textContent.match(/^@page\{size:/u))
       document.head.lastChild.remove();
     document.head.insertAdjacentHTML('beforeend', '<style>@page{size: A4 ' + orientation + '}</style>');
 

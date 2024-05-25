@@ -13,8 +13,8 @@ import './button.css';
  * Abstract class to be used by other control buttons definitions
  */
 export class Button extends ol.control.Control {
-  constructor(options) {
-    options = {
+  constructor(opt) {
+    const options = {
       label: ' ', // An ascii or unicode character to decorate the button (OR : css button::after)
       className: '', // To be added to the control.element
 
@@ -28,12 +28,11 @@ export class Button extends ol.control.Control {
 
       // All ol.control.Control options
 
-      ...options,
+      ...opt,
     };
 
     super({
       element: document.createElement('div'),
-
       ...options,
     });
 
@@ -49,11 +48,11 @@ export class Button extends ol.control.Control {
 
     // Add submenu below the button
     this.subMenuEl =
-      document.getElementById(options.subMenuId + '-' + navigator.language.match(/[a-z]+/)) ||
+      document.getElementById(options.subMenuId + '-' + navigator.language.match(/[a-z]+/u)) ||
       document.getElementById(options.subMenuId) ||
       document.createElement('div');
     this.subMenuEl.innerHTML ||=
-      options['subMenuHTML_' + navigator.language.match(/[a-z]+/)] ||
+      options['subMenuHTML_' + navigator.language.match(/[a-z]+/u)] ||
       options.subMenuHTML;
 
     // Populate the control

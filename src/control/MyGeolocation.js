@@ -43,7 +43,7 @@ const subMenuHTML = '<p>\
 export class MyGeolocation extends Button {
   constructor(options) {
     super(
-      location.href.match(/(https|localhost)/) ? {
+      location.href.match(/(https|localhost)/u) ? {
         // Button options
         className: 'myol-button-geolocation',
         subMenuId: 'myol-button-geolocation',

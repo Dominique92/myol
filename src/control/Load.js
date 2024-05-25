@@ -47,7 +47,7 @@ export class Load extends Button {
     const map = this.getMap(),
       formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
       loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
-      receivedLat = text.match(/lat="-?([0-9]+)/); // Received projection depending on the first value
+      receivedLat = text.match(/lat="-?([0-9]+)/u); // Received projection depending on the first value
 
     const receivedProjection =
       receivedLat &&

@@ -17,9 +17,9 @@ function getText(fileName) {
   return fetch(fileName)
     .then(response => response.text())
     .then(text => text
-      .replace(/<script.*vite.*script>/, '') // Remove vite scripts tags
-      .replace(/\/\*.*\*\//g, '') // Remove /* comments */
-      .replace(/\/\/#.*/, '') // Remove //# sourceMappingURL
+      .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
+      .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
+      .replace(/\/\/#.*/u, '') // Remove //# sourceMappingURL
       .trim()
     );
 }

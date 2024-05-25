@@ -122,12 +122,12 @@ export class Marker extends ol.layer.Vector {
   // Read new values
   action(el) {
     // Find changed input type from tne input id
-    const idMatch = el.id.match(/-([a-z]+)/);
+    const idMatch = el.id.match(/-([a-z]+)/u);
 
     if (idMatch)
       switch (idMatch[1]) {
         case 'json': // Init the field
-          this.changeLL([...this.els.json.value.matchAll(/-?[0-9.]+/g)], 'EPSG:4326', true);
+          this.changeLL([...this.els.json.value.matchAll(/-?[0-9.]+/gu)], 'EPSG:4326', true);
           break;
         case 'lon': // Change lon / lat
         case 'lat':
@@ -143,23 +143,26 @@ export class Marker extends ol.layer.Vector {
   }
 
   // Display values
-  changeLL(pos, projection, focus) {
+  changeLL(pos, prj, focus) {
+    let position = pos,
+      projection = prj || 'EPSG:3857';
+
     sessionStorage.myol_lastchange = Date.now(); // Mem the last change date
 
     // If no position is given, use the marker's (dragged)
-    if (!pos || pos.length < 2) {
-      pos = this.point.getCoordinates();
+    if (!position || position.length < 2) {
+      position = this.point.getCoordinates();
       projection = 'EPSG:3857';
     }
 
     // Don't change if none entry
-    if (!pos[0] && !pos[1])
+    if (!position[0] && !position[1])
       return;
 
     const ll4326 = ol.proj.transform([
       // Protection against non-digital entries / transform , into .
-      parseFloat(pos[0].toString().replace(/[^-0-9]+/, '.')),
-      parseFloat(pos[1].toString().replace(/[^-0-9]+/, '.'))
+      parseFloat(position[0].toString().replace(/[^-0-9]+/u, '.')),
+      parseFloat(position[1].toString().replace(/[^-0-9]+/u, '.'))
     ], projection, 'EPSG:4326');
 
     ll4326[0] -= Math.round(ll4326[0] / 360) * 360; // Wrap +-180°
@@ -209,9 +212,9 @@ export class Marker extends ol.layer.Vector {
       this.els.select.value = 'dec';
 
     // Hide Swiss coordinates when out of extent
-    document.querySelectorAll('.xy').forEach(el =>
-      el.style.display = inEPSG21781 ? '' : 'none'
-    );
+    document.querySelectorAll('.xy').forEach(el => {
+      el.style.display = inEPSG21781 ? '' : 'none';
+    });
 
     // Display selected format
     this.els.string.textContent = strings[this.els.select.value || 'dec'];

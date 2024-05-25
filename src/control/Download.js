@@ -17,8 +17,8 @@ const subMenuHTML = '\
 
 //BEST BUG incompatible with clusters
 export class Download extends Button {
-  constructor(options) {
-    options = {
+  constructor(opt) {
+    const options = {
       // Button options
       className: 'myol-button-download',
       subMenuId: 'myol-button-download',
@@ -28,7 +28,7 @@ export class Download extends Button {
       fileName: document.title || 'openlayers', // Name of the file to be downloaded //BEST name from feature
       // savedLayer: layer, // Layer to download
 
-      ...options,
+      ...opt,
     };
 
     super(options);
@@ -86,15 +86,15 @@ export class Download extends Button {
         decimals: 5,
       })
       // Beautify the output
-      .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/g, '')
-      .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
-      .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/g, '')
-      .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
-      .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
-      .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
-      .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
-      .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
-      .replace(/ ([cvx])/g, '\n\t$1');
+      .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/gu, '')
+      .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/gu, '')
+      .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/gu, '')
+      .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/gu, '\n$1')
+      .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|\})/gu, '\n$1')
+      .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/gu, '\n\t$1')
+      .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/gu, '\n\t\t$1')
+      .replace(/(<[a-z]+BoundaryIs)/gu, '\n\t\t\t$1')
+      .replace(/ ([cvx])/gu, '\n\t$1');
 
     const file = new Blob([data], {
       type: mime,

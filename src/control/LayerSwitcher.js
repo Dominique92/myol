@@ -28,7 +28,7 @@ export class LayerSwitcher extends Button {
         this.layers[name] = options.layers[name];
 
     // Get baselayer from url hash (#baselayer=...) if any
-    const bl = location.href.match(/baselayer=([^&]+)/);
+    const bl = location.href.match(/baselayer=([^&]+)/u);
 
     if (bl)
       localStorage.myol_baselayer = decodeURI(bl[1]);
@@ -86,7 +86,9 @@ export class LayerSwitcher extends Button {
   action(evt) {
     // Clean checks
     if (evt && !evt.ctrlKey) {
-      this.selectorEls.forEach(el => el.checked = false);
+      this.selectorEls.forEach(el => {
+        el.checked = false;
+      });
       evt.target.checked = true;
     }
     if (!this.element.querySelector('input[name="baselayer"]:checked'))

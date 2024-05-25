@@ -73,8 +73,8 @@ const helpModif_fr = {
 
 // Editor
 export class Editor extends ol.layer.Vector {
-  constructor(options) {
-    options = {
+  constructor(opt) {
+    const options = {
       background: 'transparent',
 
       geoJsonId: 'geojson',
@@ -95,7 +95,7 @@ export class Editor extends ol.layer.Vector {
           decimals: 5,
         }),
 
-      ...options,
+      ...opt,
     };
 
     const geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
@@ -370,7 +370,7 @@ export class Editor extends ol.layer.Vector {
     // Save geometries in <EL> as geoJSON at every change
     if (this.geoJsonEl && view)
       this.geoJsonEl.value = this.featuresToSave(coordinates)
-      .replace(/,"properties":(\{[^}]*}|null)/, '');
+      .replace(/,"properties":(\{[^}]*\}|null)/u, '');
   }
 
   // Refurbish Lines & Polygons
@@ -470,7 +470,7 @@ export class Editor extends ol.layer.Vector {
         this.flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
     }
     // Point
-    else if (geom.getType().match(/point$/i))
+    else if (geom.getType().match(/point$/iu))
       points.push(geom.getCoordinates());
 
     // line & poly

@@ -96,7 +96,7 @@ function coucheMassifsColores(options) {
     basicStylesOptions: feature => {
       // Conversion de la couleur en rgb pour pouvoir y ajouter la transparence
       const rgb = feature.getProperties().couleur
-        .match(/([0-9a-f]{2})/ig)
+        .match(/([0-9a-f]{2})/igu)
         .map(c => parseInt(c, 16));
 
       return [{

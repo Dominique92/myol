@@ -13,9 +13,10 @@
 export class Selector {
   constructor(name, initSelect) {
     if (name) {
-      this.safeName = 'myol_' + name.replace(/[^a-z]/ig, '');
+      this.safeName = 'myol_' + name.replace(/[^a-z]/giu, '');
       this.init =
-        initSelect !== undefined ? initSelect.toString() :
+        typeof initSelect !== 'undefined' ?
+        initSelect.toString() :
         localStorage[this.safeName] || '';
       this.init = this.init.split(',');
       this.selectEls = [...document.getElementsByName(name)];
@@ -34,8 +35,9 @@ export class Selector {
   action(evt) {
     // Test the "all" box & set other boxes
     if (evt && evt.target.value === 'all')
-      this.selectEls
-      .forEach(el => el.checked = evt.target.checked);
+      this.selectEls.forEach(el => {
+        el.checked = evt.target.checked;
+      });
 
     // Test if all values are checked
     const allChecked = this.selectEls

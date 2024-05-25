@@ -319,24 +319,24 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
     this.reload();
   }
 
-  url() {
-    const args = this.query(...arguments, this.options),
-      url = this.host + args._path; // Mem _path
+  url(...args) {
+    const urlArgs = this.query(...args, this.options),
+      url = this.host + urlArgs._path; // Mem _path
 
     if (this.strategy === ol.loadingstrategy.bbox)
-      args.bbox = this.bbox(...arguments);
+      urlArgs.bbox = this.bbox(...args);
 
     // Add a pseudo parameter if any marker or edit has been done
     const version = sessionStorage.myol_lastchange ?
       '&' + Math.round(sessionStorage.myol_lastchange / 2500 % 46600).toString(36) : '';
 
     // Clean null & not relative parameters
-    Object.keys(args).forEach(k => {
-      if (k === '_path' || args[k] === 'on' || !args[k] || !args[k].toString())
-        delete args[k];
+    Object.keys(urlArgs).forEach(k => {
+      if (k === '_path' || urlArgs[k] === 'on' || !urlArgs[k] || !urlArgs[k].toString())
+        delete urlArgs[k];
     });
 
-    return url + '?' + new URLSearchParams(args).toString() + version;
+    return url + '?' + new URLSearchParams(urlArgs).toString() + version;
   }
 
   bbox(extent, resolution, mapProjection) {
@@ -350,12 +350,12 @@ export class MyVectorLayer extends MyServerClusterVectorLayer {
   addProperties() {}
 
   // Function returning an array of styles options
-  style(feature) {
+  style(feature, ...args) {
     const sof = feature.getProperties().cluster ?
       stylesOptions.cluster :
       this.options.basicStylesOptions;
 
-    return sof(...arguments) // Call the styleOptions function
+    return sof(feature, ...args) // Call the styleOptions function
       .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
   }
 

@@ -122,9 +122,9 @@ export function details(feature, resolution, layer) {
 }
 
 // Display the basic hovered features
-export function hover() {
+export function hover(...args) {
   return {
-    ...details(...arguments),
+    ...details(...args),
 
     stroke: new ol.style.Stroke({
       color: 'red',

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 25/05/2024 10:09:06 using npm run build from the src/... sources
+ * Built 25/05/2024 22:08:00 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63687,8 +63687,8 @@
    * Abstract class to be used by other control buttons definitions
    */
   class Button extends ol.control.Control {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         label: ' ', // An ascii or unicode character to decorate the button (OR : css button::after)
         className: '', // To be added to the control.element
 
@@ -63702,12 +63702,11 @@
 
         // All ol.control.Control options
 
-        ...options,
+        ...opt,
       };
 
       super({
         element: document.createElement('div'),
-
         ...options,
       });
 
@@ -63723,11 +63722,11 @@
 
       // Add submenu below the button
       this.subMenuEl =
-        document.getElementById(options.subMenuId + '-' + navigator.language.match(/[a-z]+/)) ||
+        document.getElementById(options.subMenuId + '-' + navigator.language.match(/[a-z]+/u)) ||
         document.getElementById(options.subMenuId) ||
         document.createElement('div');
       this.subMenuEl.innerHTML ||=
-        options['subMenuHTML_' + navigator.language.match(/[a-z]+/)] ||
+        options['subMenuHTML_' + navigator.language.match(/[a-z]+/u)] ||
         options.subMenuHTML;
 
       // Populate the control
@@ -63791,8 +63790,8 @@
 
   //BEST BUG incompatible with clusters
   class Download extends Button {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         // Button options
         className: 'myol-button-download',
         subMenuId: 'myol-button-download',
@@ -63802,7 +63801,7 @@
         fileName: document.title || 'openlayers', // Name of the file to be downloaded //BEST name from feature
         // savedLayer: layer, // Layer to download
 
-        ...options,
+        ...opt,
       };
 
       super(options);
@@ -63860,15 +63859,15 @@
           decimals: 5,
         })
         // Beautify the output
-        .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/g, '')
-        .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/g, '')
-        .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/g, '')
-        .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/g, '\n$1')
-        .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|})/g, '\n$1')
-        .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/g, '\n\t$1')
-        .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/g, '\n\t\t$1')
-        .replace(/(<[a-z]+BoundaryIs)/g, '\n\t\t\t$1')
-        .replace(/ ([cvx])/g, '\n\t$1');
+        .replace(/<[a-z]*>(0|null|[[object Object]|[NTZa:-]*)<\/[a-z]*>/gu, '')
+        .replace(/<Data name="[a-z_]*"\/>|<Data name="[a-z_]*"><\/Data>|,"[a-z_]*":""/gu, '')
+        .replace(/<Data name="copy"><value>[a-z_.]*<\/value><\/Data>|,"copy":"[a-z_.]*"/gu, '')
+        .replace(/(<\/gpx|<\/?wpt|<\/?trk>|<\/?rte>|<\/kml|<\/?Document)/gu, '\n$1')
+        .replace(/(<\/?Placemark|POINT|LINESTRING|POLYGON|<Point|"[a-z_]*":|\})/gu, '\n$1')
+        .replace(/(<name|<ele|<sym|<link|<type|<rtept|<\/?trkseg|<\/?ExtendedData)/gu, '\n\t$1')
+        .replace(/(<trkpt|<Data|<LineString|<\/?Polygon|<Style)/gu, '\n\t\t$1')
+        .replace(/(<[a-z]+BoundaryIs)/gu, '\n\t\t\t$1')
+        .replace(/ ([cvx])/gu, '\n\t$1');
 
       const file = new Blob([data], {
         type: mime,
@@ -64608,7 +64607,7 @@
           this.layers[name] = options.layers[name];
 
       // Get baselayer from url hash (#baselayer=...) if any
-      const bl = location.href.match(/baselayer=([^&]+)/);
+      const bl = location.href.match(/baselayer=([^&]+)/u);
 
       if (bl)
         localStorage.myol_baselayer = decodeURI(bl[1]);
@@ -64666,7 +64665,9 @@
     action(evt) {
       // Clean checks
       if (evt && !evt.ctrlKey) {
-        this.selectorEls.forEach(el => el.checked = false);
+        this.selectorEls.forEach(el => {
+          el.checked = false;
+        });
         evt.target.checked = true;
       }
       if (!this.element.querySelector('input[name="baselayer"]:checked'))
@@ -64828,7 +64829,7 @@
       const map = this.getMap(),
         formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
         loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
-        receivedLat = text.match(/lat="-?([0-9]+)/); // Received projection depending on the first value
+        receivedLat = text.match(/lat="-?([0-9]+)/u); // Received projection depending on the first value
 
       const receivedProjection =
         receivedLat &&
@@ -66162,7 +66163,7 @@
   class MyGeolocation extends Button {
     constructor(options) {
       super(
-        location.href.match(/(https|localhost)/) ? {
+        location.href.match(/(https|localhost)/u) ? {
           // Button options
           className: 'myol-button-geolocation',
           subMenuId: 'myol-button-geolocation',
@@ -66384,7 +66385,9 @@
     }
 
     setMap(map) {
-      map.on('myol:gpspositionchanged', evt => this.position = evt.position);
+      map.on('myol:gpspositionchanged', evt => {
+        this.position = evt.position;
+      });
 
       return super.setMap(map);
     }
@@ -66445,7 +66448,7 @@
           'zoom=' + this.options.init[0] + '&lon=' + this.options.init[1] + '&lat=' + this.options.init[2] + ',' :
           '') +
         location.href.replace( // Get value from params with priority url / ? / #
-          /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/, // map=<zoom>/<lon>/<lat>
+          /map=([0-9.]+)\/(-?[0-9.]+)\/(-?[0-9.]+)/u, // map=<zoom>/<lon>/<lat>
           'zoom=$1&lon=$2&lat=$3' // zoom=<zoom>&lon=<lon>&lat=<lat>
         ) + ',' +
         // Last values
@@ -66459,11 +66462,11 @@
       if (this.options.init) {
         this.options.init = false; // Only once
 
-        view.setZoom(urlMod.match(/zoom=([0-9.]+)/)[1]);
+        view.setZoom(urlMod.match(/zoom=([0-9.]+)/u)[1]);
 
         view.setCenter(ol.proj.transform([
-          urlMod.match(/lon=(-?[0-9.]+)/)[1],
-          urlMod.match(/lat=(-?[0-9.]+)/)[1],
+          urlMod.match(/lon=(-?[0-9.]+)/u)[1],
+          urlMod.match(/lat=(-?[0-9.]+)/u)[1],
         ], 'EPSG:4326', 'EPSG:3857'));
       }
 
@@ -66535,7 +66538,7 @@
       map.getView().setConstrainResolution(true);
 
       // Set or replace the page style
-      if (document.head.lastChild.textContent.match(/^@page{size:/))
+      if (document.head.lastChild.textContent.match(/^@page\{size:/u))
         document.head.lastChild.remove();
       document.head.insertAdjacentHTML('beforeend', '<style>@page{size: A4 ' + orientation + '}</style>');
 
@@ -66617,7 +66620,7 @@
 <p>Calculer la longueur d\'une ligne ou un polygone</p>',
       line: '\
 <p><b><u>EDITEUR</u>: Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2702; puis</p>\
+<p>Cliquer sur le bouton &#x1F90F; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66627,7 +66630,7 @@
 <p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
       poly: '\
 <p><b><u>EDITEUR</u>: Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2702; puis </p>\
+<p>Cliquer sur le bouton &#x1F90F; puis </p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66637,7 +66640,7 @@
 <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
       both: '\
 <p><b><u>EDITEUR</u>: Modifier une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2702; puis</p>\
+<p>Cliquer sur le bouton &#x1F90F; puis</p>\
 <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
 <p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
 <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
@@ -66672,8 +66675,8 @@
 
   // Editor
   class Editor extends ol.layer.Vector {
-    constructor(options) {
-      options = {
+    constructor(opt) {
+      const options = {
         background: 'transparent',
 
         geoJsonId: 'geojson',
@@ -66694,7 +66697,7 @@
             decimals: 5,
           }),
 
-        ...options,
+        ...opt,
       };
 
       const geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
@@ -66969,7 +66972,7 @@
       // Save geometries in <EL> as geoJSON at every change
       if (this.geoJsonEl && view)
         this.geoJsonEl.value = this.featuresToSave(coordinates)
-        .replace(/,"properties":(\{[^}]*}|null)/, '');
+        .replace(/,"properties":(\{[^}]*\}|null)/u, '');
     }
 
     // Refurbish Lines & Polygons
@@ -67069,7 +67072,7 @@
           this.flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
       }
       // Point
-      else if (geom.getType().match(/point$/i))
+      else if (geom.getType().match(/point$/iu))
         points.push(geom.getCoordinates());
 
       // line & poly
@@ -74822,12 +74825,12 @@
     // Read new values
     action(el) {
       // Find changed input type from tne input id
-      const idMatch = el.id.match(/-([a-z]+)/);
+      const idMatch = el.id.match(/-([a-z]+)/u);
 
       if (idMatch)
         switch (idMatch[1]) {
           case 'json': // Init the field
-            this.changeLL([...this.els.json.value.matchAll(/-?[0-9.]+/g)], 'EPSG:4326', true);
+            this.changeLL([...this.els.json.value.matchAll(/-?[0-9.]+/gu)], 'EPSG:4326', true);
             break;
           case 'lon': // Change lon / lat
           case 'lat':
@@ -74843,23 +74846,26 @@
     }
 
     // Display values
-    changeLL(pos, projection, focus) {
+    changeLL(pos, prj, focus) {
+      let position = pos,
+        projection = prj || 'EPSG:3857';
+
       sessionStorage.myol_lastchange = Date.now(); // Mem the last change date
 
       // If no position is given, use the marker's (dragged)
-      if (!pos || pos.length < 2) {
-        pos = this.point.getCoordinates();
+      if (!position || position.length < 2) {
+        position = this.point.getCoordinates();
         projection = 'EPSG:3857';
       }
 
       // Don't change if none entry
-      if (!pos[0] && !pos[1])
+      if (!position[0] && !position[1])
         return;
 
       const ll4326 = ol.proj.transform([
         // Protection against non-digital entries / transform , into .
-        parseFloat(pos[0].toString().replace(/[^-0-9]+/, '.')),
-        parseFloat(pos[1].toString().replace(/[^-0-9]+/, '.'))
+        parseFloat(position[0].toString().replace(/[^-0-9]+/u, '.')),
+        parseFloat(position[1].toString().replace(/[^-0-9]+/u, '.'))
       ], projection, 'EPSG:4326');
 
       ll4326[0] -= Math.round(ll4326[0] / 360) * 360; // Wrap +-180°
@@ -74909,9 +74915,9 @@
         this.els.select.value = 'dec';
 
       // Hide Swiss coordinates when out of extent
-      document.querySelectorAll('.xy').forEach(el =>
-        el.style.display = inEPSG21781 ? '' : 'none'
-      );
+      document.querySelectorAll('.xy').forEach(el => {
+        el.style.display = inEPSG21781 ? '' : 'none';
+      });
 
       // Display selected format
       this.els.string.textContent = strings[this.els.select.value || 'dec'];
@@ -74933,9 +74939,10 @@
   class Selector {
     constructor(name, initSelect) {
       if (name) {
-        this.safeName = 'myol_' + name.replace(/[^a-z]/ig, '');
+        this.safeName = 'myol_' + name.replace(/[^a-z]/giu, '');
         this.init =
-          initSelect !== undefined ? initSelect.toString() :
+          typeof initSelect !== 'undefined' ?
+          initSelect.toString() :
           localStorage[this.safeName] || '';
         this.init = this.init.split(',');
         this.selectEls = [...document.getElementsByName(name)];
@@ -74954,8 +74961,9 @@
     action(evt) {
       // Test the "all" box & set other boxes
       if (evt && evt.target.value === 'all')
-        this.selectEls
-        .forEach(el => el.checked = evt.target.checked);
+        this.selectEls.forEach(el => {
+          el.checked = evt.target.checked;
+        });
 
       // Test if all values are checked
       const allChecked = this.selectEls
@@ -75113,9 +75121,9 @@
   }
 
   // Display the basic hovered features
-  function hover() {
+  function hover(...args) {
     return {
-      ...details(...arguments),
+      ...details(...args),
 
       stroke: new ol.style.Stroke({
         color: 'red',
@@ -75451,24 +75459,24 @@
       this.reload();
     }
 
-    url() {
-      const args = this.query(...arguments, this.options),
-        url = this.host + args._path; // Mem _path
+    url(...args) {
+      const urlArgs = this.query(...args, this.options),
+        url = this.host + urlArgs._path; // Mem _path
 
       if (this.strategy === ol.loadingstrategy.bbox)
-        args.bbox = this.bbox(...arguments);
+        urlArgs.bbox = this.bbox(...args);
 
       // Add a pseudo parameter if any marker or edit has been done
       const version = sessionStorage.myol_lastchange ?
         '&' + Math.round(sessionStorage.myol_lastchange / 2500 % 46600).toString(36) : '';
 
       // Clean null & not relative parameters
-      Object.keys(args).forEach(k => {
-        if (k === '_path' || args[k] === 'on' || !args[k] || !args[k].toString())
-          delete args[k];
+      Object.keys(urlArgs).forEach(k => {
+        if (k === '_path' || urlArgs[k] === 'on' || !urlArgs[k] || !urlArgs[k].toString())
+          delete urlArgs[k];
       });
 
-      return url + '?' + new URLSearchParams(args).toString() + version;
+      return url + '?' + new URLSearchParams(urlArgs).toString() + version;
     }
 
     bbox(extent, resolution, mapProjection) {
@@ -75482,12 +75490,12 @@
     addProperties() {}
 
     // Function returning an array of styles options
-    style(feature) {
+    style(feature, ...args) {
       const sof = feature.getProperties().cluster ?
         cluster :
         this.options.basicStylesOptions;
 
-      return sof(...arguments) // Call the styleOptions function
+      return sof(feature, ...args) // Call the styleOptions function
         .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
     }
 
@@ -75688,7 +75696,8 @@
               ele: properties.elevation,
               link: 'https://www.camptocamp.org/waypoints/' + properties.document_id,
             },
-          }));
+          })
+        );
 
         return this.format.readFeaturesFromObject({
           type: 'FeatureCollection',
@@ -75933,7 +75942,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 25/05/2024 10:09:06',
+    VERSION: '1.1.2.dev 25/05/2024 22:08:00',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

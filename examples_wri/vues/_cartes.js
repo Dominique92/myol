@@ -288,7 +288,6 @@ function mapPoint(options) {
         host: options.host,
         browserClusterMinResolution: 4, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
         page: 'point',
-        ...options, // Options à ajouter depuis config_privee.php
       }),
 
       // Le cadre rouge autour du point de la fiche

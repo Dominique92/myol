@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 24/05/2024 22:06:05 using npm run build from the src/... sources
+ * Built 25/05/2024 10:09:06 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -75676,9 +75676,7 @@
       this.format.readFeatures = json => {
         const features = [];
 
-        for (const p in json.documents) {
-          const properties = json.documents[p];
-
+        JSON.parse(json).documents.forEach(properties =>
           features.push({
             id: properties.document_id,
             type: 'Feature',
@@ -75690,8 +75688,7 @@
               ele: properties.elevation,
               link: 'https://www.camptocamp.org/waypoints/' + properties.document_id,
             },
-          });
-        }
+          }));
 
         return this.format.readFeaturesFromObject({
           type: 'FeatureCollection',
@@ -75936,7 +75933,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 24/05/2024 22:06:05',
+    VERSION: '1.1.2.dev 25/05/2024 10:09:06',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

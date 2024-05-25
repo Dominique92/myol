@@ -3,8 +3,6 @@
  * Various acces to geoJson services
  */
 
-//TODO BUG Camptocamp http://localhost:5173/examples/vite.html?vectorLayer
-
 import ol from '../ol';
 import MyVectorLayer from './MyVectorLayer';
 
@@ -175,9 +173,7 @@ export class C2C extends MyVectorLayer {
     this.format.readFeatures = json => {
       const features = [];
 
-      for (const p in json.documents) {
-        const properties = json.documents[p];
-
+      JSON.parse(json).documents.forEach(properties =>
         features.push({
           id: properties.document_id,
           type: 'Feature',
@@ -189,8 +185,8 @@ export class C2C extends MyVectorLayer {
             ele: properties.elevation,
             link: 'https://www.camptocamp.org/waypoints/' + properties.document_id,
           },
-        });
-      }
+        })
+      );
 
       return this.format.readFeaturesFromObject({
         type: 'FeatureCollection',

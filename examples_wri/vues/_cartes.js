@@ -83,6 +83,7 @@ function coucheMassifsColores(options) {
     query: () => ({
       _path: 'api/polygones',
       type_polygon: 1, // Massifs
+      intersection: options.intersection,
     }),
     ...options,
 
@@ -132,7 +133,7 @@ function coucheMassifsColores(options) {
 }
 
 // Affiche le contour d'un massif pour la page nav
-function coucheContourMassif(option) {
+function coucheContourMassif(options) {
   return new myol.layer.MyVectorLayer({
     // Construction de l'url
     query: (extent, resolution, projection, opt) => ({
@@ -142,7 +143,7 @@ function coucheContourMassif(option) {
     }),
     strategy: ol.loadingstrategy.all, // Pas de bbox
 
-    ...option,
+    ...options,
 
     // Affichage de base
     basicStylesOptions: () => [{
@@ -410,8 +411,8 @@ function mapNav(options) {
     layers: [
       coucheMassifsColores({
         host: options.host,
-        selectName: 'select-massifs',
         initSelect: '',
+        intersection: options.id_polygone_type === 11 ? options.id_polygone : -1,
       }),
       ...externLayers,
       contourMassif,

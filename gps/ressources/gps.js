@@ -1,5 +1,3 @@
-/* global jsVars */
-
 console.log('MyGPS version ' + jsVars.lastChangeDate);
 
 // Force uri to be compliant with PWA

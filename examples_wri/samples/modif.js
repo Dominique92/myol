@@ -1,5 +1,3 @@
-/* global urlParams, mapModif */
-
 // Simule la position du point donnée à la page de modification
 const markerJson = document.getElementById('marker-json');
 

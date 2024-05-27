@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),
@@ -20,28 +19,29 @@ const baseLayers = {
       format: new ol.format.GeoJSON(),
     }),
     zIndex: 2, // Above the base layer
+  });
+
+/* eslint-disable-next-line no-unused-vars */
+const map = new ol.Map({
+  target: 'map',
+
+  view: new ol.View({
+    center: ol.proj.transform([4, 47], 'EPSG:4326', 'EPSG:3857'), // France + Swiss
+    zoom: 5,
   }),
 
-  map = new ol.Map({
-    target: 'map',
-
-    view: new ol.View({
-      center: ol.proj.transform([4, 47], 'EPSG:4326', 'EPSG:3857'), // France + Swiss
-      zoom: 5,
+  controls: [
+    new myol.control.LayerSwitcher({
+      layers: baseLayers,
+      selectExtId: 'select-ext',
     }),
+    new ol.control.Attribution({
+      collapsed: false,
+    }),
+  ],
 
-    controls: [
-      new myol.control.LayerSwitcher({
-        layers: baseLayers,
-        selectExtId: 'select-ext',
-      }),
-      new ol.control.Attribution({
-        collapsed: false,
-      }),
-    ],
-
-    layers: [countries],
-  });
+  layers: [countries],
+});
 
 document.getElementById('toggle-countries')
   .addEventListener('click', evt =>

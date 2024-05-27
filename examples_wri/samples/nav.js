@@ -1,5 +1,3 @@
-/* global mapNav, urlParams */
-
 const selectMassifEl = document.getElementById('select-massif');
 
 if (!urlParams.id_polygone || urlParams.id_polygone_type)

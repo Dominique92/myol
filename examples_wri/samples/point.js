@@ -1,5 +1,3 @@
-/* global mapPoint */
-
 const scriptEl = document.createElement('script');
 
 document.body.appendChild(scriptEl);

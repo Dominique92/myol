@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/05/2024 16:41:02 using npm run build from the src/... sources
+ * Built 27/05/2024 21:00:43 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -75924,7 +75924,6 @@
   }
 
   // Zoom & resolution
-  /* global map */
   function traceZoom() {
     console.log(
       'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
@@ -75951,7 +75950,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 27/05/2024 16:41:02',
+    VERSION: '1.1.2.dev 27/05/2024 21:00:43',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

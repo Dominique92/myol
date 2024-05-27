@@ -362,12 +362,12 @@ J'intègre également les class des liens du forum
 en gros je veux tout de la même couleur
 */
 
-A,A.mainmenu,A.nav,A.forumlink,A.cattitle,A.topictitle,A.postlink,A.gen,A.genmed,A.gensmall {
+body:not(#phpbb) A,A.mainmenu,A.nav,A.forumlink,A.cattitle,A.topictitle,A.postlink,A.gen,A.genmed,A.gensmall {
   color : #<?=$couleur_lien?>; /* en accord avec le thème du forum, et moins agressif */
   text-decoration: none;
 }
 
-A:visited {
+body:not(#phpbb) A:visited {
   color : #<?=$couleur_lien_visite?>;
 }
 
@@ -523,7 +523,7 @@ A.infobulle:hover SPAN { /* qd on passe dessus, ca affiche */
 }
 
 /* On met tout sur une même ligne pour les très grandes fenêtres */
-@media screen and (min-width:1200px) {
+@media screen and (min-width: 1200px) {
 	.menu-haut {
 		clear: none;
 		padding: 7.5px;
@@ -546,14 +546,14 @@ A.infobulle:hover SPAN { /* qd on passe dessus, ca affiche */
 }
 
 /* On enlève les icones pour les fenêtres moyenes */
-@media screen and (min-width:500px) and (max-width:650px) {
+@media screen and (min-width: 500px) and (max-width: 650px) {
 	.menu-bouton SPAN:first-child {
 		display: none;
 	}
 }
 
 /* On enlève le bandeau pour les fenêtres de faible hauteur */
-@media screen and (max-height: 600px) and (min-width:500px) {
+@media screen and (max-height: 600px) and (min-width: 500px) {
 	.bandeau-haut {
 		background-image: none;
 	}
@@ -563,7 +563,7 @@ A.infobulle:hover SPAN { /* qd on passe dessus, ca affiche */
 		display: none;
 	}
 }
-@media screen and (max-height: 600px) and (min-width:500px) and (max-width:700px) {
+@media screen and (max-height: 600px) and (min-width: 500px) and (max-width: 700px) {
 	.menu-bouton SPAN {
 		line-height: 1.5em;
 	}

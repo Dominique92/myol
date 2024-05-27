@@ -1,5 +1,3 @@
-/* global mapIndex */
-
 const scriptEl = document.createElement('script');
 
 document.body.appendChild(scriptEl);

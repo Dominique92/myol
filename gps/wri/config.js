@@ -1,5 +1,3 @@
-/* global jsVars, fondsCarte, couchePointsWRI */
-
 const refugeslayer = couchePointsWRI({
     host: 'https://www.refuges.info/',
     selectName: 'select-wri',

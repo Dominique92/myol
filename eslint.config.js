@@ -225,7 +225,20 @@ export default [{
       myol: "readonly",
       ol: "readonly",
       // Examples
+      map: "readonly",
       mapKeys: "readonly",
+      // Cartes WRI
+      mapIndex: "readonly",
+      mapPoint: "readonly",
+      mapModif: "readonly",
+      mapNav: "readonly",
+      mapEdit: "readonly",
+      host: "readonly",
+      jsVars: "readonly",
+      urlParams: "readonly",
+      fondsCarte: "readonly",
+      coucheContourMassif: "readonly",
+      couchePointsWRI: "readonly",
     },
   },
 }];

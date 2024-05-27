@@ -434,7 +434,7 @@ function mapNav(options) {
 
 // Carte de la page de création ou d'édion de massif ou de zone
 /* eslint-disable-next-line no-unused-vars */
-function navEdit(options) {
+function mapEdit(options) {
   const editorLayer = new myol.layer.Editor({
     geoJsonId: 'edit-json',
     editOnly: 'poly',

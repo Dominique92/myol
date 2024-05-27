@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/05/2024 21:21:07 using npm run build from the src/... sources
+ * Built 27/05/2024 21:46:53 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -994,7 +994,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '9.2.3';
+  const VERSION = '9.2.4';
 
   /**
    * @module ol/Object
@@ -19811,7 +19811,7 @@
    * @type ArgValidator
    */
   function parseCaseArgs(encoded, context, parsedArgs, typeHint) {
-    const fallback = parse$2(encoded[encoded.length - 1], context);
+    const fallback = parse$2(encoded[encoded.length - 1], context, typeHint);
     let outputType =
       typeHint !== undefined ? typeHint & fallback.type : fallback.type;
 
@@ -19819,7 +19819,7 @@
     const args = new Array(encoded.length - 1);
     for (let i = 0; i < args.length - 1; i += 2) {
       const condition = parse$2(encoded[i + 1], context);
-      const output = parse$2(encoded[i + 2], context);
+      const output = parse$2(encoded[i + 2], context, typeHint);
       if (!overlapsType(BooleanType, condition.type)) {
         throw new Error(
           `Expected all conditions in the case operation to be of type boolean` +
@@ -75953,7 +75953,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 27/05/2024 21:21:07',
+    VERSION: '1.1.2.dev 27/05/2024 21:46:53',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

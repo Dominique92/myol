@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/05/2024 21:46:53 using npm run build from the src/... sources
+ * Built 03/06/2024 14:03:09 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -63736,10 +63736,12 @@
     }
 
     setMap(map) {
+      // Add listeners to the buttons
       this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
       this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
       this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
 
+      // Add listeners in the menus
       this.subMenuEl.querySelectorAll('a, input')
         .forEach(el => ['click', 'change'].forEach(type =>
           el.addEventListener(type, evt =>
@@ -75953,7 +75955,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 27/05/2024 21:46:53',
+    VERSION: '1.1.2.dev 03/06/2024 14:03:09',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

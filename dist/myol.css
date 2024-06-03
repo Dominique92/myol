@@ -465,12 +465,8 @@
   cursor: pointer;
 }
 
-.myol-button>div {
-  max-height: calc(100% - 38px);
-  opacity: 0.8;
-  transition: max-height 0.3s ease-in, opacity 0.3s ease-out;
-  overflow: auto;
-  z-index: 30;
+.ol-control button:hover {
+  box-shadow: 1px 1px 10px black;
 }
 
 /* Button labels */
@@ -494,23 +490,27 @@
   display: none;
 }
 
+/* Submenu */
+.myol-button>div {
+  max-height: calc(100% - 38px);
+  opacity: 0.8;
+  transition: max-height 0.3s ease-in, opacity 0.3s ease-out;
+  overflow: auto;
+  z-index: 30;
+}
+
+.myol-button:not(.myol-button-hover, .myol-button-selected)>div,
+.myol-button>*:empty {
+  max-height: 0;
+  /* For the beauty of the transition */
+  opacity: 0;
+}
+
 @media screen and (max-width: 400px) {
   .myol-button:not(.myol-button-switcher)>div {
     width: 100%;
     left: 0;
   }
-}
-
-.ol-control button:hover {
-  box-shadow: 1px 1px 10px black;
-}
-
-/* Submenu */
-.myol-button:not(.myol-button-hover):not(.myol-button-selected)>div,
-.myol-button>*:empty {
-  max-height: 0;
-  /* For the beauty of the transition */
-  opacity: 0;
 }
 
 .myol-button>*:not(button) {
@@ -966,8 +966,8 @@
 body:has(.myol-print-portrait)>*:not(.myol-print-portrait),
 body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 /* Hide useless controls */
-.myol-print-portrait .ol-control:not(.ol-zoom):not(.ol-attribution):not(.myol-button-print):not(.myol-button-switcher),
-.myol-print-landscape .ol-control:not(.ol-zoom):not(.ol-attribution):not(.myol-button-print):not(.myol-button-switcher) {
+.myol-print-portrait .ol-control:not(.ol-zoom, .ol-attribution, .myol-button-print, .myol-button-switcher),
+.myol-print-landscape .ol-control:not(.ol-zoom, .ol-attribution, .myol-button-print, .myol-button-switcher) {
   display: none;
 }
 
@@ -1035,10 +1035,4 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
 
 .map-edit-3 {
   cursor: copy;
-}
-
-/* Submenu */
-.myol-button:not(.myol-button-hover)>div {
-  max-height: 0;
-  opacity: 0;
 }

@@ -22,6 +22,14 @@
   margin: 10px;
 }
 
+.samples-shortcuts {
+  text-align: center;
+}
+
+.samples-shortcuts span {
+  display: none;
+}
+
 #github,
 #sample-next {
   float: right;

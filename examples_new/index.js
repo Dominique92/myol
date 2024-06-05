@@ -30,7 +30,7 @@ document.body.querySelectorAll('*[w3-include]').forEach(el => {
   }
 });
 
-    myol.trace();
+myol.trace();
 
 
 

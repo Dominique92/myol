@@ -6,29 +6,36 @@
 const sampleName = new URLSearchParams(window.location.search).get('sample') || 'index',
   scriptEl = document.createElement('script');
 
-document.body.querySelectorAll('*[w3-include]').forEach(el => {
-  const fileName = el.getAttribute('w3-include')
-    .replace('SAMPLE', sampleName);
+function replaceInclude() {
+  document.body.querySelectorAll('*[w3-include]').forEach(el => {
+    const fileName = el.getAttribute('w3-include')
+      .replace('SAMPLE', sampleName);
 
-  if (el.tagName === 'SCRIPT') {
-    scriptEl.type = 'text/javascript';
-    scriptEl.src = fileName;
-    document.head.appendChild(scriptEl);
-  } else {
-    fetch(fileName)
-      .then(response => response.text())
-      .then(text => {
-        if (el.tagName === 'LINK')
-          el.outerHTML = text; // Just replace tag
-        else
-          el.innerHTML = text
-          .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
-          .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
-          .replace(/\/\/#.*/u, '') // Remove //# sourceMappingURL
-          .trim();
-      });
-  }
-});
+    el.removeAttribute('w3-include'); // Remove attribute to do not do it several time
+
+    if (el.tagName === 'SCRIPT') {
+      scriptEl.type = 'text/javascript';
+      scriptEl.src = fileName;
+      document.head.appendChild(scriptEl);
+    } else {
+      fetch(fileName)
+        .then(response => response.text())
+        .then(text => {
+          if (el.tagName === 'LINK')
+            el.outerHTML = text; // Just replace the tag
+          else
+            el.innerHTML = text
+            .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
+            .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
+            .replace(/\/\/#.*/u, '') // Remove //# sourceMappingURL
+            .trim();
+
+          replaceInclude(); // Iterate recursively if any tag w3-include has been included
+        });
+    }
+  });
+};
+replaceInclude(); // Do it first time
 
 myol.trace();
 

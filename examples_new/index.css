@@ -30,6 +30,10 @@
   display: none;
 }
 
+.example-list a {
+  display: block;
+}
+
 #github,
 #sample-next {
   float: right;

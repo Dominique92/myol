@@ -523,7 +523,7 @@ export function collection(options = {}) {
       extent: [-580000, 506000, 1070000, 6637000],
       minZoom: 6,
     }),
-    /* //TODO
+    /* //BEST Cassini ? clé
 	'IGN Cassini': new IGN({
       ...options.ign,
       layer: 'GEOGRAPHICALGRIDSYSTEMS.CASSINI',

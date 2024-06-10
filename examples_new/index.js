@@ -7,7 +7,7 @@ const sampleName = new URLSearchParams(window.location.search).get('sample') || 
   scriptEl = document.createElement('script');
 
 function replaceInclude() {
-  document.body.querySelectorAll('*[w3-include]').forEach(el => {
+  document.body.querySelectorAll('[w3-include]').forEach(el => {
     const fileName = el.getAttribute('w3-include')
       .replace('SAMPLE', sampleName);
 
@@ -35,12 +35,15 @@ function replaceInclude() {
     }
   });
 };
-replaceInclude(); // Do it first time
+replaceInclude(); // Do it the first time
 
 myol.trace();
 
+///////////////////////////////////////////////////////
 
-
+const tt = '[href*="'+window.location.search.substring(1)+'"]';
+const ell = document.body.querySelectorAll(tt);
+/*DCMM*/{var _r=tt+' = ',_v=ell.length;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
 
 if (0) { /////////////////////////
 

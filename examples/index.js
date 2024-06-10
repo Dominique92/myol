@@ -2,52 +2,59 @@
  * MyOpenlayers example & test helper
  */
 
-// Analyse url & args
-const urlParams = {};
-let sampleName = 'index';
+// Include specific w3-include html & script
+const sampleName = new URLSearchParams(window.location.search).get('sample') || 'index',
+  scriptEl = document.createElement('script');
 
-for (const p of new URLSearchParams(location.search))
-  if (p[1])
-    urlParams[p[0]] = JSON.parse(p[1]);
-  else
-    sampleName = p[0];
+async function replaceIncludes() {
+  const includeEls = document.body.querySelectorAll('[w3-include]');
 
-// Helper
-function getText(fileName) {
-  return fetch(fileName)
-    .then(response => response.text())
-    .then(text => text
-      .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
-      .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
-      .replace(/\/\/#.*/u, '') // Remove //# sourceMappingURL
-      .trim()
-    );
+  // Load files in parallel
+  await Promise.all(Array.from(includeEls).map(async el => {
+    const fileName = el.getAttribute('w3-include')
+      .replace('SAMPLE', sampleName);
+
+    el.removeAttribute('w3-include'); // Remove attribute to do not do it several time
+
+    if (el.tagName === 'SCRIPT') {
+      scriptEl.type = 'text/javascript';
+      scriptEl.src = fileName;
+      document.head.appendChild(scriptEl);
+    } else {
+      await fetch(fileName)
+        .then(response => response.text())
+        .then(text => {
+          if (el.tagName === 'LINK')
+            el.outerHTML = text; // Just replace the tag
+          else
+            el.innerHTML = text
+            .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
+            .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
+            .replace(/\/\/#.*/u, '') // Remove //# sourceMappingURL
+            .trim();
+        });
+
+      await replaceIncludes() // Iterate recursively if any tag w3-include has been included
+    }
+  }));
 }
 
-// Populate the body
+// Launch actions serially
 (async function() {
-  document.body.insertAdjacentHTML('afterbegin', await getText('samples/' + sampleName + '.html'));
-  document.body.insertAdjacentHTML('afterbegin', await getText('header.html'));
+  // Launch recursion of tag w3-include load
+  await replaceIncludes();
 
-  const sampleCodeEl = document.getElementById('sample-code');
-  sampleCodeEl.insertAdjacentHTML('afterbegin', await getText('samples/' + sampleName + '.js'));
-
-  // Load & run the sample script
-  const script = document.createElement('script');
-  script.src = 'samples/' + sampleName + '.js';
-  document.head.appendChild(script);
-
-  // Search the sample data in the header.html & populate the tags
-  const sampleEl = document.querySelector('a[href="' + (location.search || '.') + '"]');
-  if (sampleEl) {
-    sampleEl.style.border = '1px solid black';
-
-    document.getElementById('sample-title').innerHTML = sampleEl.title;
-    document.getElementById('sample-next').setAttribute('href', sampleEl.nextElementSibling.href);
+  // Populate the sample data in the header.html 
+  const menuItemEls = document.body.querySelectorAll('[href*="' + sampleName + '"]');
+  if (menuItemEls.length) {
+    document.getElementById('sample-title').innerHTML = menuItemEls[0].title;
+    document.getElementById('sample-next').href = menuItemEls[0].nextElementSibling.href;
   }
-
-  myol.trace();
 })();
+
+// Traces
+myol.trace();
+
 
 // Default keys for development only
 /* eslint-disable-next-line no-unused-vars */

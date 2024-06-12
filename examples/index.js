@@ -45,14 +45,24 @@ async function replaceIncludes() {
   await replaceIncludes();
 
   // Populate the sample data in the header.html 
-  const menuItemEls = document.body.querySelectorAll('[href*="' + sampleName + '"]');
-  if (menuItemEls.length) {
-    document.getElementById('sample-title').innerHTML = menuItemEls[0].title;
-    document.getElementById('sample-next').href = menuItemEls[0].nextElementSibling.href;
+  const menuItemEl = document.body.querySelector('[href*="' + sampleName + '"]'),
+    titleEl = document.getElementById('sample-title'),
+    nextEl = document.getElementById('sample-next'),
+    listEls = document.body.querySelectorAll('.sample-list');
+
+
+
+  if (menuItemEl) {
+    menuItemEl.classList.add('menu-selected');
+    if (titleEl)
+      titleEl.innerHTML = menuItemEl.title;
+    if (nextEl)
+      nextEl.href = menuItemEl.nextElementSibling.href;
   }
+  if (listEls.length === 2)
+    listEls[1].innerHTML = listEls[0].innerHTML;
 })();
 
-// Traces
 myol.trace();
 
 

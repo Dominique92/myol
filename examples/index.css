@@ -22,16 +22,20 @@
   margin: 10px;
 }
 
-.samples-shortcuts {
+.sample-inline {
   text-align: center;
 }
 
-.samples-shortcuts span {
+.sample-inline span {
   display: none;
 }
 
-.example-list a {
+.sample-block a {
   display: block;
+}
+
+.sample-inline .menu-selected {
+  border: solid black 1px;
 }
 
 #github,

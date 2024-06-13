@@ -43,11 +43,12 @@
   float: right;
 }
 
-#sampleList {
+#sample-list,
+.sample-wri {
   text-align: center;
 }
 
-#sampleList a {
+#sample-list a {
   text-decoration: none;
 }
 

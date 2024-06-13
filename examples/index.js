@@ -3,8 +3,7 @@
  */
 
 // Include specific w3-include html & script
-const sampleName = new URLSearchParams(window.location.search).get('sample') || 'index',
-  scriptEl = document.createElement('script');
+const sampleName = new URLSearchParams(window.location.search).get('sample') || 'index';
 
 async function replaceIncludes() {
   const includeEls = document.body.querySelectorAll('[w3-include]');
@@ -14,12 +13,15 @@ async function replaceIncludes() {
     const fileName = el.getAttribute('w3-include')
       .replace('SAMPLE', sampleName);
 
-    el.removeAttribute('w3-include'); // Remove attribute to do not do it several time
+    // Remove attribute to do not do it several time
+    el.removeAttribute('w3-include');
 
     if (el.tagName === 'SCRIPT') {
-      scriptEl.type = 'text/javascript';
+      const scriptEl = document.createElement('script');
+
       scriptEl.src = fileName;
       document.head.appendChild(scriptEl);
+      //TODO wait for script load
     } else {
       await fetch(fileName)
         .then(response => response.text())
@@ -45,18 +47,16 @@ async function replaceIncludes() {
   await replaceIncludes();
 
   // Populate the sample data in the header.html 
-  const menuItemEl = document.body.querySelector('[href*="' + sampleName + '"]'),
+  const menuItemEl = document.body.querySelector('[href="' + window.location.search + '"]'),
     titleEl = document.getElementById('sample-title'),
     nextEl = document.getElementById('sample-next'),
     listEls = document.body.querySelectorAll('.sample-list');
-
-
 
   if (menuItemEl) {
     menuItemEl.classList.add('menu-selected');
     if (titleEl)
       titleEl.innerHTML = menuItemEl.title;
-    if (nextEl)
+    if (nextEl && menuItemEl.nextElementSibling)
       nextEl.href = menuItemEl.nextElementSibling.href;
   }
   if (listEls.length === 2)

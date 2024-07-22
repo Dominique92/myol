@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 05/06/2024 18:05:32 using npm run build from the src/... sources
+ * Built 22/07/2024 17:57:32 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -67089,7 +67089,7 @@
     // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
     // at the same level & split if one point = selectedVertex
     flatCoord(lines, coords, selectedVertex, reverseLine) {
-      if (typeof coords[0][0] === 'object') {
+      if (coords.length && typeof coords[0][0] === 'object') {
         // Multi*
         for (const c1 in coords)
           this.flatCoord(lines, coords[c1], selectedVertex, reverseLine);
@@ -75924,6 +75924,7 @@
     console.info(data.join('\n'));
   }
 
+  //TODO BUG d'où vient map ?
   // Zoom & resolution
   function traceZoom() {
     console.log(
@@ -75951,7 +75952,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 05/06/2024 18:05:32',
+    VERSION: '1.1.2.dev 22/07/2024 17:57:32',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

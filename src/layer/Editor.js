@@ -486,7 +486,7 @@ export class Editor extends ol.layer.Vector {
   // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
   // at the same level & split if one point = selectedVertex
   flatCoord(lines, coords, selectedVertex, reverseLine) {
-    if (typeof coords[0][0] === 'object') {
+    if (coords.length && typeof coords[0][0] === 'object') {
       // Multi*
       for (const c1 in coords)
         this.flatCoord(lines, coords[c1], selectedVertex, reverseLine);

@@ -27,6 +27,18 @@
   box-shadow: 1px 1px 10px black;
 }
 
+/* Full screen */
+.ol-full-screen-false {
+  text-indent: -1em;
+  color: transparent !important;
+}
+
+.ol-full-screen-false::after {
+  font-style: italic;
+  color: black !important;
+  content: "\21F3";
+}
+
 /* Button labels */
 .myol-button-download button::after {
   content: "\21e9";

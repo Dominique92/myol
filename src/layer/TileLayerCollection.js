@@ -451,9 +451,9 @@ export function collection(options = {}) {
     'Refuges.info': new MRI(),
 
     'IGN TOP25': new IGN({
-      key: 'ign_scan_ws', //TODO specific key : options.ign,
-      ...options.ign, // Include key
       layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
+      key: options.ign, // Include key
+      ...options.ign, // Include key
     }),
     'IGN V2': new IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',

@@ -67,7 +67,7 @@ export class Button extends ol.control.Control {
     this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
     this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
 
-    // Add listeners in the menus
+    // Add listeners in the sub-menus
     this.subMenuEl.querySelectorAll('a, input')
       .forEach(el => ['click', 'change'].forEach(type =>
         el.addEventListener(type, evt =>
@@ -88,8 +88,7 @@ export class Button extends ol.control.Control {
 
     // Close other open buttons
     for (const el of document.getElementsByClassName('myol-button'))
-      if (el !== this.element &&
-        (!el.classList.contains('myol-button-keepselect') || evt.type === 'click'))
+      if (el !== this.element && evt.type === 'click')
         el.classList.remove('myol-button-selected');
 
     // Trigger action on the selected button

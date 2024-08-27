@@ -1,3 +1,13 @@
+//TODO clean wri examples / paramètre carte inactif
+//TODO clean wri examples / supprimer examples_wri
+
+//TODO 251:21  warning  'selectIndexLayer' was used before it was defined  no-use-before-define
+//TODO 257:21  warning  'selectIndexLayer' was used before it was defined  no-use-before-define
+//TODO 269:11  warning  Unexpected 'this'                                  no-invalid-this
+
+//TODO Créer un massif à partir d'un tracé existant
+//TODO Lecture nombre de commentaires d'un user avant destruction
+
 /* eslint-disable-next-line no-unused-vars */
 const map = new ol.Map({
   target: 'map',

@@ -64,6 +64,7 @@ export class Chemineur extends GeoBB {
 }
 
 // alpages.info
+//TODO error in alpages.info
 export class Alpages extends MyVectorLayer {
   constructor(options) {
     super({

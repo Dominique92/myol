@@ -49,7 +49,7 @@ async function replaceIncludes() {
   // Populate the sample data in the header.html 
   const menuItemEl = document.body.querySelector('[href="' + window.location.search + '"]'),
     titleEl = document.getElementById('sample-title'),
-    nextEl = document.getElementById('sample-next'),
+    nextEl = document.getElementById('sample-next'), //TODO first vite next link don't work
     listEls = document.body.querySelectorAll('.sample-list');
 
   if (menuItemEl) {

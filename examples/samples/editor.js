@@ -31,3 +31,25 @@ const snaplayer = new ol.layer.Vector({
       editorLayer,
     ],
   });
+
+/*//TODO new editor
+https://openlayers.org/en/latest/examples/draw-and-modify-features.html
+https://openlayers.org/en/latest/examples/tracing.html
+
+https://openlayers.org/en/latest/examples/measure-style.html
+	Reverse if modify one end ?
+https://openlayers.org/en/latest/examples/line-arrows.html
+
+https://github.com/openlayers/openlayers/issues/11608
+https://openlayers.org/en/latest/examples/modify-features.html
+Move 1 vertex from double (line / polygons, …
+	Dédouble / colle line
+	Défait / colle polygone
+Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
+
+Marquer les extrémités des lignes
+
+Inverser un eligne
+
+Delete selected feature
+*/

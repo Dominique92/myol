@@ -1,37 +1,50 @@
-//TODO clean wri examples / paramètre carte inactif
-//TODO clean wri examples / supprimer examples_wri
-
-//TODO 251:21  warning  'selectIndexLayer' was used before it was defined  no-use-before-define
-//TODO 257:21  warning  'selectIndexLayer' was used before it was defined  no-use-before-define
-//TODO 269:11  warning  Unexpected 'this'                                  no-invalid-this
-
-//TODO Créer un massif à partir d'un tracé existant
-//TODO Lecture nombre de commentaires d'un user avant destruction
-
-/* eslint-disable-next-line no-unused-vars */
-const map = new ol.Map({
-  target: 'map',
-
-  controls: [
-    ...myol.control.collection(),
-    new myol.control.LayerSwitcher({
-      layers: myol.layer.tile.examples(mapKeys),
-    }),
-    new myol.control.Permalink({
-      display: true,
-      init: true,
-    }),
-  ],
-
-  layers: [
-    new myol.layer.vector.Chemineur({
-      selectName: 'select-chem',
-    }),
-  ],
-});
+//TODO warnings lint
 
 const params = new URLSearchParams(document.location.search),
-  carte = params.get('carte');
+  mapFunction = 'map' + params.get('map'),
+  options = {
+    target: 'map',
+    host: 'https://www.refuges.info/',
+    mapKeys: mapKeys,
+    extent: [4, 43.5, 8.5, 47],
+  },
+  scriptSampleEl = document.getElementById('script-sample'),
+  htmlSampleEl = document.getElementById('html-sample');
 
-if (!carte)
-  window.location.href = '?sample=wri&carte=index';
+for (const k of params.keys())
+  options[k] = params.get(k);
+
+if (scriptSampleEl)
+  scriptSampleEl.addEventListener('load', () => {
+    //TODO ne charge pas toujours la carte => Revoir ordre de chargement des fichiers
+    const scriptCartesEl = document.getElementById('script-cartes');
+
+    if (scriptCartesEl)
+      scriptCartesEl.addEventListener('load', () => {
+        console.log(mapFunction);
+        window[mapFunction](options);
+      });
+
+    if (htmlSampleEl)
+      htmlSampleEl.addEventListener('load', () => {
+        const champsEl = document.getElementById('champs-wri');
+
+        if (champsEl)
+          //TODO ne démasque pas les champs
+          champsEl.style.display = 'block';
+      });
+  });
+
+const args = window.location.search || '?sample=wri&map=Index',
+  miEls = document.body.querySelectorAll('[href="' + args + '"]'),
+  menuItemEl = miEls ? miEls[miEls.length - 1] : null,
+  titleEl = document.getElementById('sample-title'),
+  nextEl = document.getElementById('sample-next');
+
+if (menuItemEl) {
+  menuItemEl.classList.add('menu-selected');
+  if (titleEl)
+    titleEl.innerHTML = menuItemEl.title;
+  if (nextEl && menuItemEl.nextElementSibling)
+    nextEl.href = menuItemEl.nextElementSibling.href;
+}

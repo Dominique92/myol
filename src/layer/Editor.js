@@ -265,7 +265,7 @@ export class Editor extends ol.layer.Vector {
 
       // Alt+click on segment : delete the segment & split the line
       //TODO Snap : register again the full list of features as addFeature manages already registered
-      //TODO Le faire aussi à l’init vers edit 
+      //TODO Le faire aussi à l’init vers edit
       const tmpFeature = this.interactions[4].snapTo(
         evt.mapBrowserEvent.pixel,
         evt.mapBrowserEvent.coordinate,

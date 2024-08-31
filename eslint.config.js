@@ -209,6 +209,7 @@ export default [{
       caches: "readonly",
       console: "readonly",
       document: "readonly",
+      Event: "readonly",
       fetch: "readonly",
       FileReader: "readonly",
       localStorage: "readonly",

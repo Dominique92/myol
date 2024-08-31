@@ -21,7 +21,11 @@ async function replaceIncludes() {
 
       scriptEl.src = fileName;
       document.head.appendChild(scriptEl);
-      //TODO wait for script load
+
+      // Wait for script load	 
+      scriptEl.addEventListener('load', () => {
+        el.dispatchEvent(new Event('load'));
+      });
     } else {
       await fetch(fileName)
         .then(response => response.text())
@@ -29,6 +33,7 @@ async function replaceIncludes() {
           if (el.tagName === 'LINK')
             el.outerHTML = text; // Just replace the tag
           else
+            // Display js code
             el.innerHTML = text
             .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
             .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
@@ -46,11 +51,11 @@ async function replaceIncludes() {
   // Launch recursion of tag w3-include load
   await replaceIncludes();
 
-  // Populate the sample data in the header.html 
-  const menuItemEl = document.body.querySelector('[href="' + window.location.search + '"]'),
+  // Populate the sample data in the header.html
+  const args = window.location.search || '?sample=index',
+    menuItemEl = document.body.querySelector('[href="' + args + '"]'),
     titleEl = document.getElementById('sample-title'),
-    nextEl = document.getElementById('sample-next'), //TODO first vite next link don't work
-    listEls = document.body.querySelectorAll('.sample-list');
+    nextEl = document.getElementById('sample-next');
 
   if (menuItemEl) {
     menuItemEl.classList.add('menu-selected');
@@ -59,8 +64,6 @@ async function replaceIncludes() {
     if (nextEl && menuItemEl.nextElementSibling)
       nextEl.href = menuItemEl.nextElementSibling.href;
   }
-  if (listEls.length === 2)
-    listEls[1].innerHTML = listEls[0].innerHTML;
 })();
 
 myol.trace();
@@ -84,6 +87,7 @@ const mapKeys = {
 
   // https://geoservices.ign.fr/
   //TODO private key when available at // https://geoservices.ign.fr/actualites/2023-11-20-acces-donnesnonlibres-gpf
+  //TODO new keys at : https://cartes.gouv.fr
   ign: 'ign_scan_ws',
 
   // SwissTopo : register your domain at

@@ -415,7 +415,7 @@ export class MapboxElevation extends Maxbox {
  * elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1
  * Key : https://cloud.maptiler.com/account/keys/
  */
-/*// Backup of Maxbox elevation 
+/*// Backup of Maxbox elevation
 export class MapTilerElevation extends XYZ {
   constructor(options = {}) {
     super({

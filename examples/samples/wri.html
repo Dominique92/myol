@@ -1,28 +1,157 @@
-<script w3-include="vues/_cartes.js"></script>
+<style>
+  body>h2,
+  body>pre,
+  div.champs-wri {
+    display: none;
+  }
+</style>
+
+<script id="script-cartes" w3-include="vues/_cartes.js"></script>
 
 <div class="sample-wri sample-inline"> Refuges.info:
-  <a id="sh-index" title="Index" href="?sample=wri&carte=index">I</a>
-  <a id="sh-point" title="Point" href="?sample=wri&carte=point">P</a>
-  <a id="sh-modif" title="Modif point" href="?sample=wri&carte=modif&id_point=1234">Mp</a>
-  <a id="sh-pointcree" title="Crée point" href="?sample=wri&carte=modif&id_point_type=7">Cp</a>
+  <a id="sh-index" title="Index" href="?sample=wri&map=Index">In</a>
+  <a id="sh-point" title="Point" href="?sample=wri&map=Point">P</a>
+  <a id="sh-modif" title="Modif point" href="?sample=wri&map=Modif&id_point=1234">Mp</a>
+  <a id="sh-pointcree" title="Crée point" href="?sample=wri&map=Modif&id_point_type=7">Cp</a>
 
   <!-- /nav -->
-  <a id="sh-nav" title="NAV tous les points" href="?sample=wri&carte=nav">N</a>
+  <a id="sh-nav" title="NAV tous les points" href="?sample=wri&map=Nav">N</a>
   <!-- /nav/4 -->
-  <a id="sh-massif" title="NAV points contenus dans le Vercors" href="?sample=wri&carte=nav&id_polygone=4&extent=[5,44.7,5.7,45.3]">Nm</a>
+  <a id="sh-massif" title="NAV points dans un massif" href="?sample=wri&map=Nav&id_polygone=4&extent=[5,44.7,5.7,45.3]">Nm</a>
   <!--/nav/50?id_polygone_type=1  -->
-  <a id="sh-polygone" title="NAV massifs contenus dans le Massif Central" href="?sample=wri&carte=nav&id_polygone=50&id_polygone_type=1&extent=[1,43,5,47]">Nmp</a>
+  <a id="sh-polygone" title="NAV massifs contenus dans le Massif Central" href="?sample=wri&map=Nav&id_polygone=50&id_polygone_type=1&extent=[1,43,5,47]">Nmp</a>
   <!-- /nav/?id_polygone_type=1 -->
-  <a id="sh-massifs" title="NAV tous les massifs" href="?sample=wri&carte=nav&id_polygone_type=1">Nms</a>
+  <a id="sh-massifs" title="NAV tous les massifs" href="?sample=wri&map=Nav&id_polygone_type=1">Nms</a>
   <!-- /nav/?id_polygone_type=11 -->
-  <a id="sh-zones" title="NAV toutes les zones" href="?sample=wri&carte=nav&id_polygone_type=11">Nzs</a>
+  <a id="sh-zones" title="NAV toutes les zones" href="?sample=wri&map=Nav&id_polygone_type=11">Nzs</a>
 
   <!-- /edit -->
-  <a id="sh-creemassif" title="crée massif" href="?sample=wri&carte=edit">Cm</a>
+  <a id="sh-creemassif" title="crée massif" href="?sample=wri&map=Edit">Cm</a>
   <!-- /edit/4 -->
-  <a id="sh-editmassif" title="Edit massif Vercors" href="?sample=wri&carte=edit&id_polygone=4">Em</a>
+  <a id="sh-editmassif" title="Edit massif Vercors" href="?sample=wri&map=Edit&id_polygone=4">Em</a>
   <!-- /edit/50 -->
-  <a id="sh-editzone" title="Edit zone Massif Central" href="?sample=wri&carte=edit&id_polygone=50">Ez</a>
+  <a id="sh-editzone" title="Edit zone Massif Central" href="?sample=wri&map=Edit&id_polygone=50">Ez</a>
   <!-- /edit?id_polygone_type=11 -->
-  <a id="sh-creezone" title="Crée zone" href="?sample=wri&carte=edit&id_polygone_type=11">Cz</a>
+  <a id="sh-creezone" title="Crée zone" href="?sample=wri&map=Edit&id_polygone_type=11">Cz</a>
+</div>
+
+<div id="champs-modif" class="champs-wri">
+  <input type="hidden" id="cadre-json" name="geojson" value='{"type":"Point","coordinates":[5.88496,44.79095]}' />
+  <span id="cadre-string"></span>
+  <select id="cadre-select">
+    <option value="dec" selected="selected">Degrés décimaux</option>
+    <option value="dms">Deg Min Sec</option>
+    <option class="xy" value="swiss">Suisse</option>
+    <option value="utm">UTM</option>
+  </select>
+</div>
+
+<div id="champs-point" class="champs-wri">
+  <input type="hidden" id="marker-json" name="geojson" />
+  <p id="marker-string"></p>
+  <input type="text" id="marker-lon" name="lon" size="12">
+  <input type="text" id="marker-lat" name="lat" size="12">
+</div>
+
+<div id="champs-nav" class="champs-wri">
+  <ul>
+    <li>
+      <input type="checkbox" id="select-massif" name="select-massif" value="4" />
+      <label for="select-massif">Vercors uniquement</label>
+    </li>
+    <li>
+      <label>Tout</label>
+      <input type="checkbox" name="select-wri" value="all">
+      <span id="select-wri-status"></span>
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="7">
+      <img id="icone_7" src="https://www.refuges.info//images/icones/cabane.svg">
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="10">
+      <img id="icone_10" src="https://www.refuges.info//images/icones/cabane_red.svg">
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="9">
+      <img id="icone_9" src="https://www.refuges.info//images/icones/cabane_green.svg">
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="23">
+      <img id="icone_23" src="https://www.refuges.info//images/icones/pointdeau.svg">
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="6">
+      <img id="icone_6" src="https://www.refuges.info//images/icones/sommet.svg">
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="3">
+      <img id="icone_3" src="https://www.refuges.info//images/icones/triangle_a33.10.svg">
+    </li>
+    <li>
+      <input type="checkbox" name="select-wri" value="28">
+      <img id="icone_28" src="https://www.refuges.info//images/icones/cabane_white_black_a63.svg">
+    </li>
+  </ul>
+
+  <div>
+    <input type="checkbox" name="select-massifs">
+    <label>massifs</label>
+    <span id="select-massifs-status"></span>
+  </div>
+
+  <ul>OSM
+    <li>
+      <label>Tout</label>
+      <input type="checkbox" name="select-osm" value="all">
+      <span id="select-osm-status"></span>
+    </li>
+    <li>
+      <input type="checkbox" name="select-osm" id="City Hall" value='["tourism"~"hotel|guest_house|chalet|hostel|apartment"]'>
+      <label>hôtel</label>
+    </li>
+    <li>
+      <input type="checkbox" name="select-osm" id="Campground" value='["tourism"="camp_site"]'>
+      <label>camping</label>
+    </li>
+    <li>
+      <input type="checkbox" name="select-osm" id="Drinking Water" value='["natural"="spring"]+["amenity"="drinking_water|watering_place|fountain"]+["waterway"="water_point"]+["man_made"="water_well"]'>
+      <label for="Drinking Water">point d'eau</label>
+    </li>
+    <li>
+      <input type="checkbox" name="select-osm" id="Shopping Center" value='["shop"~"supermarket|convenience"]'>
+      <label for="Shopping Center">alimentation</label>
+    </li>
+    <li>
+      <input type="checkbox" name="select-osm" id="Parking Area" value='["amenity"="parking"]["access"!="private"]'>
+      <label for="Parking Area">parking</label>
+    </li>
+    <li>
+      <input type="checkbox" name="select-osm" id="Ground Transportation" value='["highway"="bus_stop"]'>
+      <label for="Ground Transportation">bus</label>
+    </li>
+  </ul>
+
+  <div>
+    <input type="checkbox" name="select-chemineur" id="select-chemineur" value="3,8,20,23">
+    <label for="select-chemineur">chemineur.fr</label>
+    <span id="select-chemineur-status"></span>
+  </div><br>
+  <div>
+    <input type="checkbox" name="select-alpages" id="select-alpages" value="4,5">
+    <label for="select-alpages">alpages.info</label>
+    <span id="select-alpages-status"></span>
+  </div><br>
+  <div>
+    <input type="checkbox" name="select-prc" id="select-prc">
+    <label for="select-prc">pyrenees-refuges.com</label>
+    <span id="select-prc-status"></span>
+  </div><br>
+  <div>
+    Camptocamp.org
+    <label><input type="checkbox" name="select-c2c" value="hut,shelter,gite,cave,bivouac,camp_site">logement</label>
+    <label><input type="checkbox" name="select-c2c" value="waterpoint,waterfall">point d'eau</label>
+    (seuls 100 points sont affichés)
+    <span id="select-c2c-status"></span>
+  </div>
 </div>

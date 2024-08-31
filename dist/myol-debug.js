@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/08/2024 20:17:13 using npm run build from the src/... sources
+ * Built 31/08/2024 21:03:50 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -65375,7 +65375,7 @@
    * elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1
    * Key : https://cloud.maptiler.com/account/keys/
    */
-  /*// Backup of Maxbox elevation 
+  /*// Backup of Maxbox elevation
   export class MapTilerElevation extends XYZ {
     constructor(options = {}) {
       super({
@@ -67942,7 +67942,7 @@
 
         // Alt+click on segment : delete the segment & split the line
         //TODO Snap : register again the full list of features as addFeature manages already registered
-        //TODO Le faire aussi à l’init vers edit 
+        //TODO Le faire aussi à l’init vers edit
         const tmpFeature = this.interactions[4].snapTo(
           evt.mapBrowserEvent.pixel,
           evt.mapBrowserEvent.coordinate,
@@ -77146,7 +77146,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 27/08/2024 20:17:13',
+    VERSION: '1.1.2.dev 31/08/2024 21:03:50',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

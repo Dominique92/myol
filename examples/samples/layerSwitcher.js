@@ -1,3 +1,5 @@
+/* global ol, myol */
+
 const baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),

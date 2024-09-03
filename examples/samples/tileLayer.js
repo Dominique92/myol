@@ -1,3 +1,5 @@
+/* global ol, myol, mapKeys */
+
 /* eslint-disable-next-line no-unused-vars */
 const map = new ol.Map({
   target: 'map',

@@ -1,5 +1,7 @@
 // Contient les fonctions gérant les cartes
 
+/* global ol, myol */
+
 // Fabrique le texte de l'étiquette à partir des propriétés reçues du serveur
 function etiquetteComplette(properties) {
   const caracteristiques = [],
@@ -284,7 +286,11 @@ function mapIndex(options) {
   selectIndexLayer(); // On appelle une fois au chargement de la page
 
   const map = new ol.Map({
-    ...basicMapOptions(options),
+    target: options.target,
+
+    view: new ol.View({
+      enableRotation: false,
+    }),
 
     controls: [
       new ol.control.Zoom(),

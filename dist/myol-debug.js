@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 31/08/2024 21:03:50 using npm run build from the src/... sources
+ * Built 03/09/2024 20:34:06 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -76579,7 +76579,7 @@
     }
 
     // Propagate the setVisible to the serverClusterLayer
-    //TODO check why reload doesn't do the job
+    //BEST check why reload doesn't do the job
     setVisible(visible) {
       if (this.serverClusterLayer)
         this.serverClusterLayer.setVisible(visible);
@@ -77078,7 +77078,7 @@
     const data = [
       'Ol v' + ol.util.VERSION,
       'Geocoder ' + Base.prototype.getVersion(),
-      'MyOl ' + myol.VERSION,
+      'MyOl ' + myol.VERSION, //TODO import myol from '???;
       'language ' + navigator.language,
     ];
 
@@ -77118,7 +77118,7 @@
     console.info(data.join('\n'));
   }
 
-  //TODO BUG d'où vient map ?
+  /* global map */
   // Zoom & resolution
   function traceZoom() {
     console.log(
@@ -77146,7 +77146,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 31/08/2024 21:03:50',
+    VERSION: '1.1.2.dev 03/09/2024 20:34:06',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

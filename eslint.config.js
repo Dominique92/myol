@@ -203,7 +203,6 @@ export default [{
   },
   languageOptions: {
     globals: {
-      // JavaScript
       alert: "readonly",
       Blob: "readonly",
       caches: "readonly",
@@ -222,24 +221,6 @@ export default [{
       URL: "readonly",
       URLSearchParams: "readonly",
       window: "readonly",
-      // MyOl
-      myol: "readonly",
-      ol: "readonly",
-      // Examples
-      map: "readonly",
-      mapKeys: "readonly",
-      // Cartes WRI
-      mapIndex: "readonly",
-      mapPoint: "readonly",
-      mapModif: "readonly",
-      mapNav: "readonly",
-      mapEdit: "readonly",
-      host: "readonly",
-      jsVars: "readonly",
-      urlParams: "readonly",
-      fondsCarte: "readonly",
-      coucheContourMassif: "readonly",
-      couchePointsWRI: "readonly",
     },
   },
 }];

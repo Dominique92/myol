@@ -1,3 +1,5 @@
+/* global ol, myol */
+
 const snaplayer = new ol.layer.Vector({
     background: 'transparent',
     source: new ol.source.Vector({

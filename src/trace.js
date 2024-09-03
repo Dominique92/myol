@@ -8,7 +8,7 @@ export async function trace() {
   const data = [
     'Ol v' + ol.util.VERSION,
     'Geocoder ' + Geocoder.prototype.getVersion(),
-    'MyOl ' + myol.VERSION,
+    'MyOl ' + myol.VERSION, //TODO import myol from '???;
     'language ' + navigator.language,
   ];
 
@@ -48,7 +48,7 @@ export async function trace() {
   console.info(data.join('\n'));
 }
 
-//TODO BUG d'où vient map ?
+/* global map */
 // Zoom & resolution
 function traceZoom() {
   console.log(

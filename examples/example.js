@@ -3,69 +3,70 @@
  */
 
 // Include specific w3-include html & script
-const sampleName = new URLSearchParams(window.location.search).get('sample') || 'index';
-
 async function replaceIncludes() {
-  const includeEls = document.body.querySelectorAll('[w3-include]');
+  // Process the tags one after the other
+  const firstIncludeEl = document.body.querySelector('[w3-include]');
 
-  // Load files in parallel
-  await Promise.all(Array.from(includeEls).map(async el => {
-    const fileName = el.getAttribute('w3-include')
-      .replace('SAMPLE', sampleName);
+  if (firstIncludeEl) {
+    const firstIncludeName = firstIncludeEl.getAttribute('w3-include')
+      .replace('SAMPLE',
+        new URLSearchParams(window.location.search).get('sample') || 'index'
+      );
 
     // Remove attribute to do not do it several time
-    el.removeAttribute('w3-include');
+    firstIncludeEl.removeAttribute('w3-include');
 
-    if (el.tagName === 'SCRIPT') {
+    if (firstIncludeEl.tagName === 'SCRIPT') {
       const scriptEl = document.createElement('script');
 
-      scriptEl.src = fileName;
-      document.head.appendChild(scriptEl);
-
       // Wait for script load	 
-      scriptEl.addEventListener('load', () => {
-        el.dispatchEvent(new Event('load'));
+      scriptEl.addEventListener('load', async () => {
+        await replaceIncludes(); // Iterate recursively if any tag w3-include has been included
       });
+      scriptEl.src = firstIncludeName;
+      document.head.appendChild(scriptEl);
     } else {
-      await fetch(fileName)
+      await fetch(firstIncludeName)
         .then(response => response.text())
-        .then(text => {
-          if (el.tagName === 'LINK')
-            el.outerHTML = text; // Just replace the tag
+        .then(async (text) => {
+          if (firstIncludeEl.tagName === 'LINK')
+            firstIncludeEl.outerHTML = text; // Just replace the tag
           else
             // Display js code
-            el.innerHTML = text
+            firstIncludeEl.innerHTML = text
             .replace(/<script.*vite.*script>/u, '') // Remove vite scripts tags
             .replace(/\/\*.*\*\//gu, '') // Remove /* comments */
             .replace(/\/\/#.*/u, '') // Remove //# sourceMappingURL
             .trim();
-        });
 
-      await replaceIncludes() // Iterate recursively if any tag w3-include has been included
+          await replaceIncludes(); // Iterate recursively if any tag w3-include has been included
+        });
     }
-  }));
+  }
 }
 
 // Launch actions serially
-(async function() {
-  // Launch recursion of tag w3-include load
-  await replaceIncludes();
+(async function actionsTest() {
+  await replaceIncludes()
+    .then(() => {
+      // Populate the sample data in the header.html
+      //TODO don't work for 1st index WRI
+      const args = window.location.search || '?sample=index',
+        menuItemEl = document.body.querySelector('[href="' + args + '"]'),
+        titleEl = document.getElementById('sample-title'),
+        nextEl = document.getElementById('sample-next');
 
-  // Populate the sample data in the header.html
-  const args = window.location.search || '?sample=index',
-    menuItemEl = document.body.querySelector('[href="' + args + '"]'),
-    titleEl = document.getElementById('sample-title'),
-    nextEl = document.getElementById('sample-next');
-
-  if (menuItemEl) {
-    menuItemEl.classList.add('menu-selected');
-    if (titleEl)
-      titleEl.innerHTML = menuItemEl.title;
-    if (nextEl && menuItemEl.nextElementSibling)
-      nextEl.href = menuItemEl.nextElementSibling.href;
-  }
+      if (menuItemEl) {
+        menuItemEl.classList.add('menu-selected');
+        if (titleEl)
+          titleEl.innerHTML = menuItemEl.title;
+        if (nextEl && menuItemEl.nextElementSibling)
+          nextEl.href = menuItemEl.nextElementSibling.href;
+      }
+    });
 })();
 
+/* global myol */
 myol.trace();
 
 

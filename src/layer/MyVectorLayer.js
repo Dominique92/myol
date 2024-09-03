@@ -252,7 +252,7 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
   }
 
   // Propagate the setVisible to the serverClusterLayer
-  //TODO check why reload doesn't do the job
+  //BEST check why reload doesn't do the job
   setVisible(visible) {
     if (this.serverClusterLayer)
       this.serverClusterLayer.setVisible(visible);

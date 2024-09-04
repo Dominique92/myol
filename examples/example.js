@@ -50,13 +50,14 @@ async function replaceIncludes() {
   await replaceIncludes()
     .then(() => {
       // Populate the sample data in the header.html
-      //TODO don't work for 1st index WRI
       const args = window.location.search || '?sample=index',
-        menuItemEl = document.body.querySelector('[href="' + args + '"]'),
+        menuItemEls = document.body.querySelectorAll('[href="' + args + '"]'),
         titleEl = document.getElementById('sample-title'),
         nextEl = document.getElementById('sample-next');
 
-      if (menuItemEl) {
+      if (menuItemEls.length) {
+        const menuItemEl = menuItemEls[menuItemEls.length - 1];
+
         menuItemEl.classList.add('menu-selected');
         if (titleEl)
           titleEl.innerHTML = menuItemEl.title;

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>test of new editor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+  <link rel="icon" href="https://openlayers.org/favicon.ico">
+
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.1.0/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.1.0/ol.css">
+  <script type="module" src="./samples/edit.js"></script>
+
+  <style>
+    #map {
+      width: calc(100% - 20px);
+      height: 400px;
+      margin: 10px;
+      background: grey;
+    }
+  </style>
+</head>
+
+<body>
+  <p>NEW openlayer editor.</p>
+
+  <div id="map"></div>
+
+  <textarea id="geojson" rows="5" cols="50">
+    {
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [2.5, 48],
+            [4.5, 47.2],
+            [6.5, 48]
+          ]
+        }
+      }, {
+        "type": "Feature",
+        "geometry": {
+          "type": "GeometryCollection",
+          "geometries": [{
+            "type": "LineString",
+            "coordinates": [
+              [1, 47],
+              [2.2, 47],
+              [2.2, 48]
+            ]
+          }, {
+            "type": "LineString",
+            "coordinates": [
+              [3, 48],
+              [3.5, 48.3]
+            ]
+          }, {
+            "type": "LineString",
+            "coordinates": [
+              [4, 48.3],
+              [3.6, 48]
+            ]
+          }, {
+            "type": "LineString",
+            "coordinates": [
+              [4.6, 48.3],
+              [4.6, 48]
+            ]
+          }, {
+            "type": "LineString",
+            "coordinates": [
+              [5, 48],
+              [5, 48.3]
+            ]
+          }]
+        }
+      }, {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [5.5, 47.2],
+            [8, 44.5]
+          ]
+        }
+      }, {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [4.5, 47.2],
+              [7, 44.5],
+              [2, 44.5],
+              [4.5, 47.2]
+            ],
+            [
+              [4.5, 44.7],
+              [3.5, 45.8],
+              [5.5, 45.8],
+              [4.5, 44.7]
+            ]
+          ]
+        }
+      }]
+    }
+</textarea>
+</body>
+
+</html>

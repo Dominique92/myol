@@ -72,6 +72,25 @@ const helpModifFr = {
 <hr>\
 <p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
+class Button extends ol.control.Control {
+  constructor(opt) {
+    const options = {
+        label: 'X',
+        ...opt,
+      },
+      button = document.createElement('button'),
+      element = document.createElement('div');
+
+    button.innerHTML = options.label;
+    element.className = 'editor-button ol-unselectable ol-control';
+    element.appendChild(button);
+
+    super({
+      element: element,
+    });
+  }
+}
+
 // Editor
 export class Edit extends ol.layer.Vector {
   constructor(opt) {
@@ -123,14 +142,27 @@ export class Edit extends ol.layer.Vector {
 
       ...options,
     });
+
+    this.b1 = new Button({
+      label: '1',
+    });
+    this.b2 = new Button({
+      label: '2',
+    });
+    this.b3 = new Button({
+      label: '3',
+    });
+
   } // End constructor
 
   setMapInternal(map) {
+    super.setMapInternal(map);
     this.map = map;
 
-    super.setMapInternal(map);
+    map.addControl(this.b1);
+    map.addControl(this.b2);
+    map.addControl(this.b3);
   } // End setMapInternal
-
 }
 
 export default Edit;

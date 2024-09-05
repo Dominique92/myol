@@ -6,7 +6,7 @@ const params = new URLSearchParams(document.location.search),
     target: 'map',
     host: 'https://www.refuges.info/',
     mapKeys: mapKeys,
-    extent: [4, 43.5, 8.5, 47],
+    extent: [4, 43, 8, 47],
   };
 
 // Populate map options with URI arguments

@@ -1,5 +1,4 @@
 /* global ol, myol, jsVars */
-//TODO test GPS
 
 console.log('MyGPS version ' + jsVars.lastChangeDate);
 

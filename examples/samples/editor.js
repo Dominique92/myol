@@ -51,7 +51,7 @@ Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
 
 Marquer les extrémités des lignes
 
-Inverser un eligne
+Inverser une ligne
 
 Delete selected feature
 */

@@ -1,9 +1,5 @@
-/* global ol */
 import ol from '../../src/ol'; // Part of Openlayers functions used in myol
-//import myol from '../../src'; // Map management pecific functions
 import Edit from '../../src/layer/Edit.js';
-//import Editor from '../../src/layer/Editor.js';
-//import {Control, defaults as defaultControls} from 'ol/control.js';
 
 const snaplayer = new ol.layer.Vector({
     background: 'transparent',

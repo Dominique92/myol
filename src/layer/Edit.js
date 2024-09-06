@@ -6,91 +6,6 @@
 import ol from '../ol';
 import './edit.css';
 
-// Default french text
-const helpModifFr = {
-    inspect: '\
-<p><b><u>EDITEUR</u>: Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2048 (qui bleuit) puis</p>\
-<p>Survoler l\'objet avec le curseur pour:</p>\
-<p>Distinguer une ligne ou un polygone des autres</p>\
-<p>Calculer la longueur d\'une ligne ou un polygone</p>',
-    line: '\
-<p><b><u>EDITEUR</u>: Modifier une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2725; (qui bleuit) puis</p>\
-<p>Pointer le curseur sur une ligne</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
-<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
-<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
-<p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>',
-    poly: '\
-<p><b><u>EDITEUR</u>: Modifier un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2725; (qui bleuit) puis </p>\
-<p>Pointer le curseur sur un bord de polygone</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
-<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
- de chaque polygone puis Alt+cliquer dessus</p>\
-<p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
-    both: '\
-<p><b><u>EDITEUR</u>: Modifier une ligne ou un polygone</b></p>\
-<p>Pointer le curseur sur une ligne ou un bord de polygone</p>\
-<p>Cliquer sur le bouton &#x2725; (qui bleuit) puis</p>\
-<p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>\
-<p><u>Ajouter un sommet au milieu d\'un segment</u>: cliquer le long du segment puis déplacer</p>\
-<p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>\
-<p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>\
-<p><u>Inverser la direction d\'une ligne</u>: Shift+cliquer sur le segment à inverser</p>\
-<p><u>Transformer un polygone en ligne</u>: Alt+cliquer sur un côté</p>\
-<p><u>Fusionner deux lignes</u>: déplacer l\'extrémité d\'une ligne pour rejoindre l\'autre</p>\
-<p><u>Transformer une ligne en polygone</u>: déplacer une extrémité pour rejoindre l\'autre</p>\
-<p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>\
-<p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)\
- de chaque polygone puis Alt+cliquer dessus</p>\
-<p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>',
-  },
-
-  helpLineFr = '\
-<p><b><u>EDITEUR</u>: Créer une ligne</b></p>\
-<p>Cliquer sur le bouton &#x2608; (qui bleuit) puis</p>\
-<p>Cliquer sur l\'emplacement du début</p>\
-<p>Puis sur chaque sommet</p>\
-<p>Double cliquer sur le dernier sommet pour terminer</p>\
-<hr>\
-<p>Cliquer sur une extrémité d\'une ligne existante pour l\'étendre</p>',
-
-  helpPolyFr = '\
-<p><b><u>EDITEUR</u>: Créer un polygone</b></p>\
-<p>Cliquer sur le bouton &#x23E2; (qui bleuit) puis</p>\
-<p>Cliquer sur l\'emplacement du premier sommet</p>\
-<p>Puis sur chaque sommet</p>\
-<p>Double cliquer sur le dernier sommet pour terminer</p>\
-<hr>\
-<p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
-
-class Button extends ol.control.Control {
-  constructor(opt) {
-    const options = {
-        label: 'X',
-        ...opt,
-      },
-      button = document.createElement('button'),
-      element = document.createElement('div');
-
-    button.innerHTML = options.label;
-    element.className = 'editor-button ol-unselectable ol-control';
-    element.appendChild(button);
-
-    super({
-      element: element,
-    });
-  }
-}
-
 // Editor
 export class Edit extends ol.layer.Vector {
   constructor(opt) {
@@ -143,26 +58,98 @@ export class Edit extends ol.layer.Vector {
       ...options,
     });
 
-    this.b1 = new Button({
-      label: '1',
-    });
-    this.b2 = new Button({
-      label: '2',
-    });
-    this.b3 = new Button({
-      label: '3',
-    });
+    this.interactions = [
+      new ol.interaction.Modify({ // 0 Modify
+        source: source,
+        pixelTolerance: 16, // Default is 10
+        style: style,
+      }),
+      new ol.interaction.Select({ // 1 Inspect
+        condition: ol.events.condition.pointerMove,
+        style: () => new ol.style.Style({
+          // Lines or polygons border
+          stroke: new ol.style.Stroke({
+            color: 'red',
+            width: 3,
+          }),
+          // Polygons
+          fill: new ol.style.Fill({
+            color: 'rgba(0,0,255,0.5)',
+          }),
+        }),
+      }),
+      new ol.interaction.Draw({ // 2 Draw line
+        source: source,
+        type: 'LineString',
+        style: style,
+        stopClick: true, // Avoid zoom when you finish drawing by doubleclick
+      }),
+      new ol.interaction.Draw({ // 3 Draw poly
+        source: source,
+        type: 'Polygon',
+        style: style,
+        stopClick: true, // Avoid zoom when you finish drawing by doubleclick
+      }),
+    ];
 
+    this.interactionSnap = new ol.interaction.Snap({
+      source: source,
+      pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
+    });
   } // End constructor
 
   setMapInternal(map) {
     super.setMapInternal(map);
     this.map = map;
 
-    map.addControl(this.b1);
-    map.addControl(this.b2);
-    map.addControl(this.b3);
+    // Draw buttons
+    this.interactions.forEach((interaction, noInteraction) => {
+      const buttonEl = document.createElement('button'),
+        element = document.createElement('div');
+
+      element.className = 'ol-unselectable ol-control ed-button ed-button-' + noInteraction;
+      element.appendChild(buttonEl);
+
+      // Add listeners to the buttons
+      //    this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
+      //    this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
+      buttonEl.addEventListener('click', evt => this.buttonAction(evt, noInteraction));
+      //TODO help on hover / click mobile
+
+      map.addControl(new ol.control.Control({
+        element: element,
+      }));
+    });
+
+    map.once('postrender', () => { //HACK when everything is ready
+      this.buttonAction({ // Init interaction & button to modify
+        type: 'click',
+      }, 0);
+    });
   } // End setMapInternal
+
+  buttonAction(evt, noInteraction) {
+    this.interactions[noInteraction].on('drawend', () => {
+      this.buttonAction(evt, 0); // Reset interaction & button to modify
+      //TODO optimize & update geoJsonEl
+    })
+
+    if (evt.type === 'click') {
+      this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
+
+      this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
+      this.map.addInteraction(this.interactions[noInteraction]);
+      this.map.addInteraction(this.interactionSnap); // Must be added after the others
+
+      // For snap : register again the full list of features as addFeature manages already registered
+      this.map.getLayers().forEach(layer => {
+        if (layer.getSource() && layer.getSource().getFeatures) // Vector layers only
+          layer.getSource().getFeatures().forEach(f =>
+            this.interactionSnap.addFeature(f)
+          );
+      });
+    }
+  }
 }
 
 export default Edit;

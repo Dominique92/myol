@@ -10,6 +10,14 @@
   margin: 2px;
 }
 
+.ed-button button div {
+  display: none;
+}
+
+.ed-button button:hover div {
+  display: block;
+}
+
 /* Modify */
 .ed-button-0 button::after {
   content: "\2725";

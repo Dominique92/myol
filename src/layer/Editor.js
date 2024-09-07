@@ -13,7 +13,7 @@ import './editor.css';
 const helpModifFr = {
     inspect: '\
 <p><b><u>EDITEUR</u>: Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2048 (qui bleuit) puis</p>\
+<p>Cliquer sur le bouton &#x2048; (qui bleuit) puis</p>\
 <p>Survoler l\'objet avec le curseur pour:</p>\
 <p>Distinguer une ligne ou un polygone des autres</p>\
 <p>Calculer la longueur d\'une ligne ou un polygone</p>',

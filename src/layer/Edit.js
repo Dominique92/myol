@@ -64,7 +64,7 @@ export class Edit extends ol.layer.Vector {
         pixelTolerance: 16, // Default is 10
         style: style,
       }),
-      new ol.interaction.Select({ // 1 Inspect
+      new ol.interaction.Select({ // 1 Select
         condition: ol.events.condition.pointerMove,
         style: () => new ol.style.Style({
           // Lines or polygons border
@@ -109,6 +109,11 @@ export class Edit extends ol.layer.Vector {
 
       element.className = 'ol-unselectable ol-control ed-button ed-button-' + noInteraction;
       element.appendChild(buttonEl);
+
+      //TODO help format
+      const helpEl = document.getElementById('ed-help' + noInteraction);
+      if (helpEl)
+        buttonEl.appendChild(helpEl);
 
       // Add listeners to the buttons
       //    this.element.addEventListener('mouseover', evt => this.buttonListener(evt));

@@ -110,16 +110,12 @@ export class Edit extends ol.layer.Vector {
       element.className = 'ol-unselectable ol-control ed-button ed-button-' + noInteraction;
       element.appendChild(buttonEl);
 
-      //TODO help format
       const helpEl = document.getElementById('ed-help' + noInteraction);
       if (helpEl)
-        buttonEl.appendChild(helpEl);
+        element.appendChild(helpEl);
 
       // Add listeners to the buttons
-      //    this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
-      //    this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
       buttonEl.addEventListener('click', evt => this.buttonAction(evt, noInteraction));
-      //TODO help on hover / click mobile
 
       map.addControl(new ol.control.Control({
         element: element,

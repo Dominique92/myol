@@ -28,7 +28,7 @@ const snaplayer = new ol.layer.Vector({
       editorLayer,
     ],
 
-    view: new ol.View({ //TODO DELETE
+    view: new ol.View({ //TODO REPLACE BY ?
       center: ol.proj.fromLonLat([5, 46.5]),
       zoom: 6.4,
     }),

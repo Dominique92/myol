@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 03/09/2024 20:34:06 using npm run build from the src/... sources
+ * Built 09/09/2024 10:22:20 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -67690,7 +67690,7 @@
   const helpModifFr = {
       inspect: '\
 <p><b><u>EDITEUR</u>: Inspecter une ligne ou un polygone</b></p>\
-<p>Cliquer sur le bouton &#x2048 (qui bleuit) puis</p>\
+<p>Cliquer sur le bouton &#x2048; (qui bleuit) puis</p>\
 <p>Survoler l\'objet avec le curseur pour:</p>\
 <p>Distinguer une ligne ou un polygone des autres</p>\
 <p>Calculer la longueur d\'une ligne ou un polygone</p>',
@@ -77060,11 +77060,11 @@
 
 
   var layer = {
-    ...myVectorLayer,
     BackgroundLayer: BackgroundLayer,
     Editor: Editor,
     Hover: Hover,
     Marker: Marker,
+    ...myVectorLayer,
     Selector: Selector,
     tile: tileLayercollection,
     vector: vectorLayerCollection,
@@ -77074,11 +77074,12 @@
    * Display misc values
    */
 
+
   async function trace() {
     const data = [
       'Ol v' + ol.util.VERSION,
       'Geocoder ' + Base.prototype.getVersion(),
-      'MyOl ' + myol.VERSION, //TODO import myol from '???;
+      'MyOl ' + myol.VERSION,
       'language ' + navigator.language,
     ];
 
@@ -77146,7 +77147,7 @@
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 03/09/2024 20:34:06',
+    VERSION: '1.1.2.dev 09/09/2024 10:22:20',
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries

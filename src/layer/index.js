@@ -3,7 +3,6 @@
  */
 
 import BackgroundLayer from './BackgroundLayer';
-import Edit from './Edit';
 import Editor from './Editor';
 import Hover from './Hover';
 import Marker from './Marker';
@@ -14,7 +13,6 @@ import * as vectorLayerCollection from './VectorLayerCollection';
 
 export default {
   BackgroundLayer: BackgroundLayer,
-  Edit: Edit,
   Editor: Editor,
   Hover: Hover,
   Marker: Marker,

@@ -60,6 +60,52 @@ export class Edit extends ol.layer.Vector {
       ...options,
     });
 
+    // Style to color selected (hoveres) features with begin & end points
+    const selectStyle = function(feature) {
+      const geometry = feature.getGeometry(),
+        featureStyle = [
+          new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'red',
+              width: 3,
+            }),
+          }),
+        ],
+        summits = [];
+
+      if (geometry.forEachSegment) {
+        geometry.forEachSegment(function(start, end) {
+          summits.push(start);
+          summits[1] = end;
+        });
+        featureStyle.push(
+          new ol.style.Style({
+            geometry: new ol.geom.Point(summits[0]),
+            image: new ol.style.Circle({
+              stroke: new ol.style.Stroke({
+                color: 'red',
+                width: 1,
+              }),
+              radius: 5,
+            }),
+          }),
+        );
+        featureStyle.push(
+          new ol.style.Style({
+            geometry: new ol.geom.Point(summits[1]),
+            image: new ol.style.Circle({
+              fill: new ol.style.Fill({
+                color: 'red',
+                width: 2,
+              }),
+              radius: 5,
+            }),
+          }),
+        );
+      }
+      return featureStyle;
+    };
+
     this.interactions = [
       new ol.interaction.Modify({ // 0 Modify
         source: source,
@@ -68,17 +114,7 @@ export class Edit extends ol.layer.Vector {
       }),
       new ol.interaction.Select({ // 1 Select
         condition: ol.events.condition.pointerMove,
-        style: () => new ol.style.Style({
-          // Lines or polygons border
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 3,
-          }),
-          // Polygons
-          fill: new ol.style.Fill({
-            color: 'rgba(0,0,255,0.5)',
-          }),
-        }),
+        style: selectStyle,
       }),
       new ol.interaction.Draw({ // 2 Draw line
         type: 'LineString',
@@ -166,9 +202,8 @@ export class Edit extends ol.layer.Vector {
 export default Edit;
 
 /*//TODO new editor
-https://openlayers.org/en/latest/examples/measure-style.html
-	Reverse if modify one end ?
-https://openlayers.org/en/latest/examples/line-arrows.html
+Inverser une ligne
+Mesurer la longueur
 
 https://github.com/openlayers/openlayers/issues/11608
 https://openlayers.org/en/latest/examples/modify-features.html
@@ -176,10 +211,6 @@ Move 1 vertex from double (line / polygons, …
 	Dédouble / colle line
 	Défait / colle polygone
 Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
-
-Marquer les extrémités des lignes
-
-Inverser une ligne
 
 Delete selected feature
 */

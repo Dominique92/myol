@@ -28,6 +28,8 @@ export class Edit extends ol.layer.Vector {
       ...options,
     });
 
+    const traceSource = new ol.source.Vector({});
+
     const style = new ol.style.Style({
       // Marker
       image: new ol.style.Circle({
@@ -79,14 +81,18 @@ export class Edit extends ol.layer.Vector {
         }),
       }),
       new ol.interaction.Draw({ // 2 Draw line
-        source: source,
         type: 'LineString',
+        source: source,
+        traceSource: traceSource,
+        trace: true,
         style: style,
         stopClick: true, // Avoid zoom when you finish drawing by doubleclick
       }),
       new ol.interaction.Draw({ // 3 Draw poly
-        source: source,
         type: 'Polygon',
+        source: source,
+        traceSource: traceSource,
+        trace: true,
         style: style,
         stopClick: true, // Avoid zoom when you finish drawing by doubleclick
       }),
@@ -96,6 +102,8 @@ export class Edit extends ol.layer.Vector {
       source: source,
       pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
     });
+
+    this.traceSource = traceSource;
   } // End constructor
 
   setMapInternal(map) {
@@ -142,12 +150,14 @@ export class Edit extends ol.layer.Vector {
       this.map.addInteraction(this.interactions[noInteraction]);
       this.map.addInteraction(this.interactionSnap); // Must be added after the others
 
-      // For snap : register again the full list of features as addFeature manages already registered
+      // For snap & traceSource : register again the full list of features as addFeature manages already registered
+      this.traceSource.clear();
       this.map.getLayers().forEach(layer => {
         if (layer.getSource() && layer.getSource().getFeatures) // Vector layers only
-          layer.getSource().getFeatures().forEach(f =>
-            this.interactionSnap.addFeature(f)
-          );
+          layer.getSource().getFeatures().forEach(f => {
+            this.interactionSnap.addFeature(f);
+            this.traceSource.addFeature(f);
+          });
       });
     }
   }
@@ -156,9 +166,6 @@ export class Edit extends ol.layer.Vector {
 export default Edit;
 
 /*//TODO new editor
-https://openlayers.org/en/latest/examples/draw-and-modify-features.html
-https://openlayers.org/en/latest/examples/tracing.html
-
 https://openlayers.org/en/latest/examples/measure-style.html
 	Reverse if modify one end ?
 https://openlayers.org/en/latest/examples/line-arrows.html

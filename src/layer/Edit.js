@@ -30,6 +30,7 @@ export class Edit extends ol.layer.Vector {
 
     const traceSource = new ol.source.Vector({});
 
+    // Style of edited features display
     const style = new ol.style.Style({
       // Marker
       image: new ol.style.Circle({
@@ -52,21 +53,13 @@ export class Edit extends ol.layer.Vector {
       ...options.styleOptions,
     });
 
-    super({
-      source: source,
-      style: style,
-      zIndex: 400, // Editor & cursor : above the features
-
-      ...options,
-    });
-
     // Style to color selected (hoveres) features with begin & end points
     const selectStyle = function(feature) {
       const geometry = feature.getGeometry(),
         featureStyle = [
           new ol.style.Style({
             stroke: new ol.style.Stroke({
-              color: 'red',
+              color: '#ff0000',
               width: 3,
             }),
           }),
@@ -82,11 +75,11 @@ export class Edit extends ol.layer.Vector {
           new ol.style.Style({
             geometry: new ol.geom.Point(summits[0]),
             image: new ol.style.Circle({
+              radius: 5,
               stroke: new ol.style.Stroke({
                 color: 'red',
-                width: 1,
+                width: 2,
               }),
-              radius: 5,
             }),
           }),
         );
@@ -94,17 +87,24 @@ export class Edit extends ol.layer.Vector {
           new ol.style.Style({
             geometry: new ol.geom.Point(summits[1]),
             image: new ol.style.Circle({
+              radius: 4,
               fill: new ol.style.Fill({
-                color: 'red',
-                width: 2,
+                color: '#ff8000',
               }),
-              radius: 5,
             }),
           }),
         );
       }
       return featureStyle;
     };
+
+    super({
+      source: source,
+      style: style,
+      zIndex: 400, // Editor & cursor : above the features
+
+      ...options,
+    });
 
     this.interactions = [
       new ol.interaction.Modify({ // 0 Modify
@@ -138,6 +138,75 @@ export class Edit extends ol.layer.Vector {
       source: source,
       pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
     });
+
+    this.interactions[1].on('select', evt => {
+      console.log('select');
+    });
+    this.interactions[1].on('change', evt => {
+      console.log('change');
+    });
+    this.interactions[1].on('propertychange', evt => {
+      console.log('propertychange');
+    });
+
+
+    // End of one modify interaction
+    this.interactions[0].on('modifyend', evt => {
+      console.log('modifyend');
+
+      // Ctrl+Alt+click on segment : delete the line or poly
+      if (evt.mapBrowserEvent.originalEvent.ctrlKey &&
+        evt.mapBrowserEvent.originalEvent.altKey) {
+        const selectedFeatures = this.map.getFeaturesAtPixel(
+          evt.mapBrowserEvent.pixel, {
+            hitTolerance: 6, // Default is 0
+            layerFilter: l => l.ol_uid === this.ol_uid
+          });
+
+        for (const f in selectedFeatures) // We delete the selected feature
+          source.removeFeature(selectedFeatures[f]);
+      }
+
+      /*
+      //TODO BUG edit polygone : ne peut pas supprimer un côté
+      //BEST move only one summit when dragging
+      //BEST Ctrl+Alt+click on summit : delete the line or poly
+
+      // Alt+click on segment : delete the segment & split the line
+      //TODO Snap : register again the full list of features as addFeature manages already registered
+      //TODO Le faire aussi à l’init vers edit
+      const tmpFeature = this.interactions[4].snapTo(
+        evt.mapBrowserEvent.pixel,
+        evt.mapBrowserEvent.coordinate,
+        map
+      );
+
+      if (tmpFeature && evt.mapBrowserEvent.originalEvent.altKey)
+        this.optimiseEdited(tmpFeature.vertex);
+
+      else if (tmpFeature && evt.mapBrowserEvent.originalEvent.shiftKey)
+        this.optimiseEdited(tmpFeature.vertex, true);
+      else
+        this.optimiseEdited();
+
+      this.hoveredFeature = null;
+	  */
+    });
+
+    // End of line & poly drawing
+    [2, 3].forEach(i => this.interactions[i].on('drawend', () => {
+      console.log('drawend');
+      /*
+      // Warn source 'on change' to save the feature
+      // Don't do it now as it's not yet added to the source
+      this.source.modified = true;
+
+      // Reset interaction & button to modify
+      this.buttons[1].buttonListener({
+        type: 'click',
+      });
+	  */
+    }));
 
     this.traceSource = traceSource;
   } // End constructor

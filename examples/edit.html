@@ -23,6 +23,13 @@
       color: black;
       background: grey;
     }
+
+    .myol-length-line {
+      position: relative;
+      right: 0;
+      padding: 2px;
+      background: yellow !important;
+    }
   </style>
 </head>
 
@@ -114,47 +121,24 @@
   </textarea>
 
   <div id="ed-help0">
-    <p><b><u>EDITEUR</u>: Modifier le tracé d'une ligne ou d'un polygone</b></p>
-    <p>Cliquer sur le bouton &#x2048; (qui bleuit) puis</p>
-    <p>Survoler l'objet avec le curseur pour:</p>
-    <p>Distinguer une ligne ou un polygone des autres</p>
-    <p>Calculer la longueur d'une ligne ou un polygone</p>
-  </div>
-
-  <div id="ed-help-modify-line" style="display:none">
-    <p><b><u>EDITEUR</u>: Modifier les segments d'une ligne ou d'un polygone</b></p>
+    <p><b><u>EDITEUR</u>: Modifier les sommets d'une ligne ou d'un polygone</b></p>
     <p>Cliquer sur le bouton &#x2725; (qui bleuit) puis</p>
-    <p>Pointer le curseur sur une ligne</p>
     <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>
     <p><u>Ajouter un sommet au milieu d'un segment</u>: cliquer le long du segment puis déplacer</p>
     <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>
-    <p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>
-    <p><u>Inverser la direction d'une ligne</u>: Shift+cliquer sur le segment à inverser</p>
-    <p><u>Fusionner deux lignes</u>: déplacer l'extrémité d'une ligne pour rejoindre l'autre</p>
-    <p><u>Supprimer une ligne</u>: Ctrl+Alt+cliquer sur un segment</p>
-  </div>
-
-  <div id="ed-help-modify-polygone" style="display:none">
-    <b></b>
-    <p><b><u>EDITEUR</u>: Modifier un polygone</b></p>
-    <p>Cliquer sur le bouton &#x2725; (qui bleuit) puis </p>
-    <p>Pointer le curseur sur un bord de polygone</p>
-    <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>
-    <p><u>Ajouter un sommet au milieu d'un segment</u>: cliquer le long du segment puis déplacer</p>
-    <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>
-    <p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>
-    <p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)
-      de chaque polygone puis Alt+cliquer dessus</p>
-    <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>
+    <p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>
+    <p>Survoler une ligne ou un polygone pour <u>calculer sa longueur</u></p>
   </div>
 
   <div id="ed-help1">
     <p><b><u>EDITEUR</u>: Modifier une ligne ou un polygone</b></p>
+    <p>Cliquer sur le bouton &#x2702; (qui bleuit) puis</p>
     <p>Pointer le curseur sur une ligne ou un bord de polygone</p>
-    <p>Cliquer sur le bouton &#x2725; (qui bleuit) puis</p>
-    <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>
-    <p><u>Ajouter un sommet au milieu d'un segment</u>: cliquer le long du segment puis déplacer</p>
-    <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>
+    <p>Survoler une ligne ou un polygone pour :</p>
+    <p>- Calculer sa longueur</p>
+    <p>- Déterminer son début (cercle rouge) et sa fin (rond orange)</p>
+
+    <p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>
     <p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>
     <p><u>Inverser la direction d'une ligne</u>: Shift+cliquer sur le segment à inverser</p>
     <p><u>Transformer un polygone en ligne</u>: Alt+cliquer sur un côté</p>
@@ -163,7 +147,6 @@
     <p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>
     <p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)
       de chaque polygone puis Alt+cliquer dessus</p>
-    <p><u>Supprimer une ligne ou un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>
   </div>
 
   <div id="ed-help2">
@@ -184,6 +167,31 @@
     <p>Double cliquer sur le dernier sommet pour terminer</p>
     <hr>
     <p>Un polygone entièrement compris dans un autre crée un "trou"</p>
+  </div>
+
+  <div style="display:none">
+    <p><b><u>EDITEUR</u>: Modifier les segments d'une ligne ou d'un polygone</b></p>
+    <p>Cliquer sur le bouton &#x2725; (qui bleuit) puis</p>
+    <p>Pointer le curseur sur une ligne</p>
+    <p><u>Couper une ligne en deux</u>: Alt+cliquer sur le segment à supprimer</p>
+    <p><u>Inverser la direction d'une ligne</u>: Shift+cliquer sur le segment à inverser</p>
+    <p><u>Fusionner deux lignes</u>: déplacer l'extrémité d'une ligne pour rejoindre l'autre</p>
+    <p>Survoler l'objet avec le curseur pour:</p>
+    <p>Distinguer une ligne ou un polygone des autres</p>
+  </div>
+
+  <div style="display:none">
+    <b></b>
+    <p><b><u>EDITEUR</u>: Modifier un polygone</b></p>
+    <p>Cliquer sur le bouton &#x2725; (qui bleuit) puis </p>
+    <p>Pointer le curseur sur un bord de polygone</p>
+    <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>
+    <p><u>Ajouter un sommet au milieu d'un segment</u>: cliquer le long du segment puis déplacer</p>
+    <p><u>Supprimer un sommet</u>: Alt+cliquer sur le sommet</p>
+    <p><u>Scinder un polygone</u>: joindre 2 sommets du polygone puis Alt+cliquer sur le sommet commun</p>
+    <p><u>Fusionner 2 polygones</u>: superposer un côté (entre 2 sommets consécutifs)
+      de chaque polygone puis Alt+cliquer dessus</p>
+    <p><u>Supprimer un polygone</u>: Ctrl+Alt+cliquer sur un segment</p>
   </div>
 </body>
 

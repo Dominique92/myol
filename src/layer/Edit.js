@@ -6,26 +6,27 @@
 import ol from '../ol';
 import './edit.css';
 
+function strokeFill(deep) {
+  return {
+    stroke: new ol.style.Stroke({
+      color: 'red',
+      width: deep,
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(0,0,255,0.' + deep + ')',
+    }),
+  };
+}
+
 // Style of edited features display
 function displayStyle() {
   return new ol.style.Style({
     // Marker
     image: new ol.style.Circle({
       radius: 4,
-      stroke: new ol.style.Stroke({
-        color: 'red',
-        width: 2,
-      }),
+      ...strokeFill(2),
     }),
-    // Lines or polygons border
-    stroke: new ol.style.Stroke({
-      color: 'red',
-      width: 2,
-    }),
-    // Polygons
-    fill: new ol.style.Fill({
-      color: 'rgba(0,0,255,0.2)',
-    }),
+    ...strokeFill(2),
   });
 }
 
@@ -33,12 +34,7 @@ function displayStyle() {
 function selectStyles(feature) {
   const geometry = feature.getGeometry(),
     featureStyles = [
-      new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: '#ff0000',
-          width: 3,
-        }),
-      }),
+      new ol.style.Style(strokeFill(3)),
     ],
     summits = [];
 
@@ -52,10 +48,7 @@ function selectStyles(feature) {
         geometry: new ol.geom.Point(summits[0]),
         image: new ol.style.Circle({
           radius: 5,
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 2,
-          }),
+          ...strokeFill(2),
         }),
       }),
     );
@@ -177,46 +170,13 @@ export class Edit extends ol.layer.Vector {
           this.editedSource.removeFeature(selectedFeatures[f]);
       }
 
-      /*
-      //TODO BUG edit polygone : ne peut pas supprimer un côté
-      //BEST move only one summit when dragging
-      //BEST Ctrl+Alt+click on summit : delete the line or poly
-
-      // Alt+click on segment : delete the segment & split the line
-      //TODO Snap : register again the full list of features as addFeature manages already registered
-      //TODO Le faire aussi à l’init vers edit
-      const tmpFeature = this.interactions[4].snapTo(
-        evt.mapBrowserEvent.pixel,
-        evt.mapBrowserEvent.coordinate,
-        map
-      );
-
-      if (tmpFeature && evt.mapBrowserEvent.originalEvent.altKey)
-        this.optimiseEdited(tmpFeature.vertex);
-
-      else if (tmpFeature && evt.mapBrowserEvent.originalEvent.shiftKey)
-        this.optimiseEdited(tmpFeature.vertex, true);
-      else
-        this.optimiseEdited();
-
-      this.hoveredFeature = null;
-	  */
       this.finish();
     });
 
     // End of line & poly drawing
     [2, 3].forEach(i => this.interactions[i].on('drawend', () => {
       console.log('drawend');
-      /*
-      // Warn source 'on change' to save the feature
-      // Don't do it now as it's not yet added to the source
-      this.source.modified = true;
 
-      // Reset interaction & button to modify
-      this.buttons[1].buttonListener({
-        type: 'click',
-      });
-	  */
       this.finish();
     }));
 
@@ -273,6 +233,10 @@ export class Edit extends ol.layer.Vector {
 export default Edit;
 
 /*//TODO new editor
+//TODO BUG edit polygone : ne peut pas supprimer un côté
+//TODO move only one summit when dragging
+//TODO Ctrl+Alt+click on summit : delete the line or poly
+//TODO Alt+click on segment : delete the segment & split the line
 Inverser une ligne
 
 https://github.com/openlayers/openlayers/issues/11608

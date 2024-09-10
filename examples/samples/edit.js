@@ -1,5 +1,6 @@
 import ol from '../../src/ol';
 import Load from '../../src/control/Load';
+import LengthLine from '../../src/control/LengthLine';
 import Edit from '../../src/layer/Edit.js';
 
 const snaplayer = new ol.layer.Vector({
@@ -16,6 +17,7 @@ const snaplayer = new ol.layer.Vector({
     target: 'map',
 
     controls: [
+      new LengthLine(),
       new Load(),
     ],
 

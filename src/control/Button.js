@@ -3,6 +3,7 @@
  * Add some usefull controls with buttons
  */
 
+//BEST refund button hover & touch
 //BEST click sur in/out file / ...
 
 import ol from '../ol';

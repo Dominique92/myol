@@ -7,6 +7,9 @@
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
   <link rel="icon" href="https://openlayers.org/favicon.ico">
 
+  <!-- Openlayers & MyOl package -->
+  <link href="../dist/myol.css" type="text/css" rel="stylesheet">
+  <script src="../dist/myol-debug.js"></script>
   <script type="module" src="./samples/edit.js"></script>
 
   <style>
@@ -113,7 +116,7 @@
   </textarea>
 
   <div id="ed-help0">
-    <p><b><u>EDITEUR</u>: Inspecter une ligne ou un polygone</b></p>
+    <p><b><u>EDITEUR</u>: Modifier le tracé d'une ligne ou d'un polygone</b></p>
     <p>Cliquer sur le bouton &#x2048; (qui bleuit) puis</p>
     <p>Survoler l'objet avec le curseur pour:</p>
     <p>Distinguer une ligne ou un polygone des autres</p>
@@ -121,7 +124,7 @@
   </div>
 
   <div id="ed-help-modify-line" style="display:none">
-    <p><b><u>EDITEUR</u>: Modifier une ligne</b></p>
+    <p><b><u>EDITEUR</u>: Modifier les segments d'une ligne ou d'un polygone</b></p>
     <p>Cliquer sur le bouton &#x2725; (qui bleuit) puis</p>
     <p>Pointer le curseur sur une ligne</p>
     <p><u>Déplacer un sommet</u>: Cliquer sur le sommet et le déplacer</p>

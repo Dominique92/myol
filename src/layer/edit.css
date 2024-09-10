@@ -20,9 +20,9 @@
   cursor: default;
 }
 
-/* Inspect */
+/* Select */
 .ed-button-1 button::after {
-  content: "\2048";
+  content: "\2702";
 }
 
 .ed-view-1 {

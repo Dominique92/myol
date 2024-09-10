@@ -1,3 +1,5 @@
+/* global myol */
+
 import ol from '../../src/ol'; // Part of Openlayers functions used in myol
 import Edit from '../../src/layer/Edit.js';
 
@@ -19,6 +21,8 @@ const snaplayer = new ol.layer.Vector({
   /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({
     target: 'map',
+
+    controls: myol.control.collection(),
 
     layers: [
       new ol.layer.Tile({

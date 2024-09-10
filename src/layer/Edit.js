@@ -245,9 +245,11 @@ export class Edit extends ol.layer.Vector {
   } // End setMapInternal
 
   restartInteractions(noInteraction) {
+    console.log('restartInteractions');
     this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
 
     this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
+
     this.map.addInteraction(this.interactions[noInteraction]);
     this.map.addInteraction(this.interactionSnap); // Must be added after the others
 
@@ -255,9 +257,9 @@ export class Edit extends ol.layer.Vector {
     this.snapSource.clear();
     this.map.getLayers().forEach(layer => {
       if (layer.getSource() && layer.getSource().getFeatures) // Vector layers only
-        layer.getSource().getFeatures().forEach(f => {
-          this.interactionSnap.addFeature(f);
-          this.snapSource.addFeature(f);
+        layer.getSource().getFeatures().forEach(feature => {
+          this.interactionSnap.addFeature(feature);
+          this.snapSource.addFeature(feature);
         });
     });
   }
@@ -272,7 +274,6 @@ export default Edit;
 
 /*//TODO new editor
 Inverser une ligne
-Mesurer la longueur
 
 https://github.com/openlayers/openlayers/issues/11608
 https://openlayers.org/en/latest/examples/modify-features.html

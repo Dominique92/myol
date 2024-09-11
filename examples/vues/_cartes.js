@@ -1,5 +1,4 @@
 // Contient les fonctions gérant les cartes
-
 /* global ol, myol */
 
 // Fabrique le texte de l'étiquette à partir des propriétés reçues du serveur
@@ -250,13 +249,11 @@ function mapIndex(options) {
   const boutonSelectPoints = new myol.control.Button({
       className: 'accueil-switcher',
       label: '&#127968;',
-      buttonAction: selectIndexLayer,
       title: 'Afficher les points',
     }),
     boutonSelectMassifs = new myol.control.Button({
       className: 'accueil-switcher',
       label: '&#127760;',
-      buttonAction: selectIndexLayer,
       title: 'Afficher les massifs',
     });
 
@@ -268,7 +265,7 @@ function mapIndex(options) {
 
   function selectIndexLayer(evt) {
     if (evt && evt.type === 'click') {
-      if (this === boutonSelectPoints) {
+      if (evt.target === boutonSelectPoints.buttonEl) {
         boutonSelectPoints.element.classList.add('myol-button-selected');
         boutonSelectMassifs.element.classList.remove('myol-button-selected');
       } else {
@@ -283,6 +280,8 @@ function mapIndex(options) {
     massifsLayer.setVisible(!pointsSelected);
     localStorage.wriaccueilmassifs = !pointsSelected;
   }
+  boutonSelectPoints.buttonAction = selectIndexLayer;
+  boutonSelectMassifs.buttonAction = selectIndexLayer;
   selectIndexLayer(); // On appelle une fois au chargement de la page
 
   const map = new ol.Map({
@@ -428,18 +427,22 @@ function mapNav(options) {
     new myol.layer.vector.Alpages({
       selectName: 'select-alpages',
       initSelect: '',
+      hostIcons: options.host + 'images/icones/',
     }),
     new myol.layer.vector.PRC({
       selectName: 'select-prc',
       initSelect: '',
+      hostIcons: options.host + 'images/icones/',
     }),
     new myol.layer.vector.C2C({
       selectName: 'select-c2c',
       initSelect: '',
+      hostIcons: options.host + 'images/icones/',
     }),
     new myol.layer.vector.Overpass({
       selectName: 'select-osm',
       initSelect: '',
+      hostIcons: options.host + 'images/icones/',
     }),
   ];
 

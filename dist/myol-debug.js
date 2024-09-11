@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 09/09/2024 20:43:31 using npm run build from the src/... sources
+ * Built 11/09/2024 20:26:03 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -998,7 +998,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION = '10.1.0';
+  const VERSION$1 = '10.1.0';
 
   /**
    * @module ol/Object
@@ -64745,7 +64745,7 @@
       WMTS: WMTSTileGrid,
     },
     util: {
-      VERSION: VERSION,
+      VERSION: VERSION$1,
     },
     View: View,
   };
@@ -65946,7 +65946,7 @@
       if (ol.extent.isEmpty(fileExtent))
         alert(url + ' ne comporte pas de point ni de trace.');
       else {
-        if (this.options.receivingLayer)
+        if (this.options.receivingLayer) //TODO replace it by map.on('loadend') when new editor will be published
           this.options.receivingLayer.getSource().addFeatures(features);
         else
           map.addLayer(gpxLayer);
@@ -76721,12 +76721,11 @@
 
 
   // Get icon from chemineur.fr
-  function chemIconUrl(type, host) {
+  function genericIconUrl(type, hostIcons) {
     if (type) {
       const icons = type.split(' ');
 
-      return ('https://chemineur.fr/') +
-        'ext/Dominique92/GeoBB/icones/' +
+      return (hostIcons || 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/') +
         icons[0] +
         (icons.length > 1 ? '_' + icons[1] : '') + // Limit to 2 type names & ' ' -> '_'
         '.svg';
@@ -76778,7 +76777,6 @@
   }
 
   // alpages.info
-  //TODO error in alpages.info
   class Alpages extends MyVectorLayer {
     constructor(options) {
       super({
@@ -76801,7 +76799,7 @@
 
     addProperties(properties) {
       return {
-        icon: chemIconUrl(properties.type), // Replace the alpages icon
+        icon: genericIconUrl(properties.type, this.options.hostIcons), // Replace the alpages icon
         link: this.host + 'viewtopic.php?t=' + properties.id,
       };
     }
@@ -76864,7 +76862,7 @@
     addProperties(properties) {
       return {
         type: properties.type_hebergement,
-        icon: chemIconUrl(properties.type_hebergement),
+        icon: genericIconUrl(properties.type_hebergement, this.options.hostIcons),
         ele: properties.altitude,
         capacity: properties.cap_ete,
         link: properties.url,
@@ -76896,7 +76894,7 @@
             properties: {
               name: properties.locales[0].title,
               type: properties.waypoint_type,
-              icon: chemIconUrl(properties.waypoint_type),
+              icon: genericIconUrl(properties.waypoint_type, options.hostIcons),
               ele: properties.elevation,
               link: 'https://www.camptocamp.org/waypoints/' + properties.document_id,
             },
@@ -76959,18 +76957,21 @@
           // Translate attributes to standard myol
           for (let tag = node.firstElementChild; tag; tag = tag.nextSibling)
             if (tag.attributes) {
+              const tagv = tag.getAttribute('v');
               if (tags.indexOf(tag.getAttribute('k')) !== -1 &&
-                tags.indexOf(tag.getAttribute('v')) !== -1 &&
+                tags.indexOf(tagv) !== -1 &&
                 tag.getAttribute('k') !== 'type') {
-                addTag(doc, node, 'type', tag.getAttribute('v'));
-                addTag(doc, node, 'icon', chemIconUrl(tag.getAttribute('v')));
+                addTag(doc, node, 'type', tagv);
+                addTag(doc, node, 'icon',
+                  genericIconUrl(tagv, options.hostIcons)
+                );
 
                 // Only once for a node
                 addTag(doc, node, 'link', 'https://www.openstreetmap.org/' + node.nodeName + '/' + node.id);
               }
 
               if (tag.getAttribute('k') && tag.getAttribute('k').includes('capacity:'))
-                addTag(doc, node, 'capacity', tag.getAttribute('v'));
+                addTag(doc, node, 'capacity', tagv);
             }
 
           // Transform an area to a node (picto) at the center of this area
@@ -77075,11 +77076,13 @@
    */
 
 
+  const VERSION = '1.1.2.dev 11/09/2024 20:26:03';
+
   async function trace() {
     const data = [
       'Ol v' + ol.util.VERSION,
       'Geocoder ' + Base.prototype.getVersion(),
-      'MyOl ' + myol.VERSION,
+      'MyOl ' + VERSION,
       'language ' + navigator.language,
     ];
 
@@ -77141,13 +77144,13 @@
    */
 
 
-  var myol$1 = {
+  var myol = {
     control: control,
     layer: layer,
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
     trace: trace,
-    VERSION: '1.1.2.dev 09/09/2024 20:43:31',
+    VERSION: VERSION,
   };
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries
@@ -77155,12 +77158,12 @@
 
 
   // Add ol as member of myol
-  myol$1.ol = ol;
+  myol.ol = ol;
 
   // Export ol & myol as globals if not already defined
   window.ol ||= ol;
-  window.myol ||= myol$1;
+  window.myol ||= myol;
 
-  return myol$1;
+  return myol;
 
 }));

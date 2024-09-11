@@ -3,14 +3,15 @@
  */
 
 import ol from './ol';
-//import myol from './src'; //TODO import myol from ??? // Build KO
 import Geocoder from '@myol/geocoder/src/base'; //TODO BUG to be replaced by ol-geocoder when /src published in npm
+
+export const VERSION = '__myolBuildVersion__ __myolBuildDate__';
 
 export async function trace() {
   const data = [
     'Ol v' + ol.util.VERSION,
     'Geocoder ' + Geocoder.prototype.getVersion(),
-    'MyOl ' + myol.VERSION,
+    'MyOl ' + VERSION,
     'language ' + navigator.language,
   ];
 

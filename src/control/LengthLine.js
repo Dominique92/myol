@@ -5,7 +5,7 @@
 
 import ol from '../ol';
 
-export class LengthLine extends ol.control.Control {
+class LengthLine extends ol.control.Control {
   constructor() {
     super({
       element: document.createElement('div'), //HACK button not visible

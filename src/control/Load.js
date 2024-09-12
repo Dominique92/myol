@@ -8,7 +8,7 @@ import Button from './Button.js';
 const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
   subMenuHTMLfr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
 
-export class Load extends Button {
+class Load extends Button {
   constructor(options) {
     super({
       // Button options

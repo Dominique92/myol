@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 11/09/2024 20:26:03 using npm run build from the src/... sources
+ * Built 12/09/2024 21:36:48 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -64694,7 +64694,7 @@
   // Will be used both in the sources & the build
 
 
-  var ol = {
+  const ol = {
     control: control$1,
     coordinate: coordinate,
     events: {
@@ -64749,6 +64749,9 @@
     },
     View: View,
   };
+
+  // Export as globals if not already defined
+  window.ol ||= ol;
 
   /**
    * Button.js
@@ -76710,7 +76713,6 @@
 
   var myVectorLayer = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    MyVectorLayer: MyVectorLayer,
     default: MyVectorLayer
   });
 
@@ -77076,7 +77078,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 11/09/2024 20:26:03';
+  const VERSION = '1.1.2.dev 12/09/2024 21:36:48';
 
   async function trace() {
     const data = [
@@ -77155,14 +77157,6 @@
 
   // This file defines the contents of the dist/myol.css & dist/myol libraries
   // It contains all what is necessary for refuges.info & chemineur.fr websites
-
-
-  // Add ol as member of myol
-  myol.ol = ol;
-
-  // Export ol & myol as globals if not already defined
-  window.ol ||= ol;
-  window.myol ||= myol;
 
   return myol;
 

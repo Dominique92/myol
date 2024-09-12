@@ -17,7 +17,7 @@ const subMenuHTML = '\
   .replace('Landscape', 'Paysage')
   .replace('Print', 'Imprimer');
 
-export class Print extends Button {
+class Print extends Button {
   constructor(options) {
     super({
       // Button options

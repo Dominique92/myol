@@ -5,7 +5,7 @@
 import ol from '../ol';
 import proj4Lib from 'proj4/lib/index';
 
-export class Marker extends ol.layer.Vector {
+class Marker extends ol.layer.Vector {
   constructor(opt) {
     const options = {
       // src: 'imageUrl', // url of marker image

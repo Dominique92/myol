@@ -76,7 +76,7 @@ const helpModifFr = {
 <p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
 // Editor
-export class Editor extends ol.layer.Vector {
+class Editor extends ol.layer.Vector {
   constructor(opt) {
     const options = {
       background: 'transparent',

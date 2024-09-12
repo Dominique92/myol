@@ -25,7 +25,7 @@ import * as sphere from 'ol/sphere';
 import * as style from 'ol/style';
 import * as util from 'ol/util';
 
-export default {
+const ol = {
   control: control,
   coordinate: coordinate,
   events: {
@@ -80,3 +80,8 @@ export default {
   },
   View: View,
 };
+
+// Export as globals if not already defined
+window.ol ||= ol;
+
+export default ol;

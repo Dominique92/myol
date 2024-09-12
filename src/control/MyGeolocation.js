@@ -40,7 +40,7 @@ const subMenuHTML = '<p>\
     Utilise les position des points WiFi proches en plus du GPS dont il peut se passer.</p>\
   <p>(3) nécessite un capteur magnétique et un explorateur le supportant.</p>';
 
-export class MyGeolocation extends Button {
+class MyGeolocation extends Button {
   constructor(options) {
     super(
       location.href.match(/(https|localhost)/u) ? {

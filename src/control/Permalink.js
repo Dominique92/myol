@@ -6,7 +6,7 @@
 
 import ol from '../ol';
 
-export class Permalink extends ol.control.Control {
+class Permalink extends ol.control.Control {
   constructor(opt) {
     const options = {
       // display: false, // {false | true} Display permalink link the map.

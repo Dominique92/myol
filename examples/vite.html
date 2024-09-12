@@ -8,8 +8,10 @@
   <link rel="icon" href="https://openlayers.org/favicon.ico">
 
   <!-- Openlayers & MyOl modules -->
-  <!-- Also include CSS -->
-  <script type="module" src="../build/index.js"></script>
+  <script type="module">
+    import myol from '../src'; // Also includes CSS
+    window.myol = myol;
+  </script>
 
   <!-- Test environment -->
   <link href="example.css" type="text/css" rel="stylesheet">

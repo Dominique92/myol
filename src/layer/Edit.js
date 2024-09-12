@@ -68,7 +68,7 @@ function selectStyles(feature) {
 };
 
 // Editor
-export class Edit extends ol.layer.Vector {
+class Edit extends ol.layer.Vector {
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',

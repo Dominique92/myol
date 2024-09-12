@@ -13,7 +13,7 @@ import './button.css';
  * Control button
  * Abstract class to be used by other control buttons definitions
  */
-export class Button extends ol.control.Control {
+class Button extends ol.control.Control {
   constructor(opt) {
     const options = {
       label: ' ', // An ascii or unicode character to decorate the button (OR : css button::after)

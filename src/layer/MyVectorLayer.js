@@ -274,7 +274,7 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
  * Style features
  * Layer & features selector
  */
-export class MyVectorLayer extends MyServerClusterVectorLayer {
+class MyVectorLayer extends MyServerClusterVectorLayer {
   constructor(opt) {
     const options = {
       // host: '',

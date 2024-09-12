@@ -13,7 +13,7 @@ import Geocoder from '@myol/geocoder/src/base'; //TODO BUG to be replaced by ol-
 // Import after ol-geocoder.css
 import './myGeocoder.css';
 
-export class MyGeocoder extends Geocoder {
+class MyGeocoder extends Geocoder {
   constructor(options) {
     super('nominatim', {
       // See https://github.com/kirtan-desai/ol-geocoder#user-content-api

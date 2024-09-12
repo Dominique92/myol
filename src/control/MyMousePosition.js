@@ -4,7 +4,7 @@
 
 import ol from '../ol';
 
-export class MyMousePosition extends ol.control.MousePosition {
+class MyMousePosition extends ol.control.MousePosition {
   constructor(options) {
     super({
       // From MousePosition options

@@ -7,7 +7,7 @@
 import ol from '../ol';
 import * as layerTile from './TileLayerCollection';
 
-export class BackgroundLayer extends layerTile.Positron {
+class BackgroundLayer extends layerTile.Positron {
   constructor(options) {
     // High resolution background layer
     super({

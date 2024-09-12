@@ -16,7 +16,7 @@ const subMenuHTML = '\
   subMenuHTML;
 
 //BEST BUG incompatible with clusters
-export class Download extends Button {
+class Download extends Button {
   constructor(opt) {
     const options = {
       // Button options

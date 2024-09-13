@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 13/09/2024 17:42:12 using npm run build from the src/... sources
+ * Built 13/09/2024 21:00:14 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -1268,506 +1268,1904 @@
   }
 
   /**
-   * @module ol/asserts
+   * @module ol/MapEventType
    */
 
   /**
-   * @param {*} assertion Assertion we expected to be truthy.
-   * @param {string} errorMessage Error message.
+   * @enum {string}
    */
-  function assert$1(assertion, errorMessage) {
-    if (!assertion) {
-      throw new Error(errorMessage);
-    }
-  }
+  var MapEventType = {
+    /**
+     * Triggered after a map frame is rendered.
+     * @event module:ol/MapEvent~MapEvent#postrender
+     * @api
+     */
+    POSTRENDER: 'postrender',
 
-  /**
-   * @module ol/Feature
-   */
+    /**
+     * Triggered when the map starts moving.
+     * @event module:ol/MapEvent~MapEvent#movestart
+     * @api
+     */
+    MOVESTART: 'movestart',
 
-  /**
-   * @typedef {typeof Feature|typeof import("./render/Feature.js").default} FeatureClass
-   */
+    /**
+     * Triggered after the map is moved.
+     * @event module:ol/MapEvent~MapEvent#moveend
+     * @api
+     */
+    MOVEEND: 'moveend',
 
-  /**
-   * @typedef {Feature|import("./render/Feature.js").default} FeatureLike
-   */
+    /**
+     * Triggered when loading of additional map data (tiles, images, features) starts.
+     * @event module:ol/MapEvent~MapEvent#loadstart
+     * @api
+     */
+    LOADSTART: 'loadstart',
+
+    /**
+     * Triggered when loading of additional map data has completed.
+     * @event module:ol/MapEvent~MapEvent#loadend
+     * @api
+     */
+    LOADEND: 'loadend',
+  };
 
   /***
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *   import("./Observable").OnSignature<import("./ObjectEventType").Types|'change:geometry', import("./Object").ObjectEvent, Return> &
-   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types
-   *     |'change:geometry', Return>} FeatureOnSignature
+   * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
    */
 
-  /***
-   * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
-   * @typedef {Object<string, *> & { geometry?: Geometry }} ObjectWithGeometry
+  /**
+   * @module ol/control/Control
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {HTMLElement} [element] The element is the control's
+   * container element. This only needs to be specified if you're developing
+   * a custom control.
+   * @property {function(import("../MapEvent.js").default):void} [render] Function called when
+   * the control should be re-rendered. This is called in a `requestAnimationFrame`
+   * callback.
+   * @property {HTMLElement|string} [target] Specify a target if you want
+   * the control to be rendered outside of the map's viewport.
    */
 
   /**
    * @classdesc
-   * A vector object for geographic features with a geometry and other
-   * attribute properties, similar to the features in vector file formats like
-   * GeoJSON.
+   * A control is a visible widget with a DOM element in a fixed position on the
+   * screen. They can involve user input (buttons), or be informational only;
+   * the position is determined using CSS. By default these are placed in the
+   * container with CSS class name `ol-overlaycontainer-stopevent`, but can use
+   * any outside DOM element.
    *
-   * Features can be styled individually with `setStyle`; otherwise they use the
-   * style of their vector layer.
-   *
-   * Note that attribute properties are set as {@link module:ol/Object~BaseObject} properties on
-   * the feature object, so they are observable, and have get/set accessors.
-   *
-   * Typically, a feature has a single geometry property. You can set the
-   * geometry using the `setGeometry` method and get it with `getGeometry`.
-   * It is possible to store more than one geometry on a feature using attribute
-   * properties. By default, the geometry used for rendering is identified by
-   * the property name `geometry`. If you want to use another geometry property
-   * for rendering, use the `setGeometryName` method to change the attribute
-   * property associated with the geometry for the feature.  For example:
-   *
+   * This is the base class for controls. You can use it for simple custom
+   * controls by creating the element with listeners, creating an instance:
    * ```js
-   *
-   * import Feature from 'ol/Feature.js';
-   * import Polygon from 'ol/geom/Polygon.js';
-   * import Point from 'ol/geom/Point.js';
-   *
-   * const feature = new Feature({
-   *   geometry: new Polygon(polyCoords),
-   *   labelPoint: new Point(labelCoords),
-   *   name: 'My Polygon',
-   * });
-   *
-   * // get the polygon geometry
-   * const poly = feature.getGeometry();
-   *
-   * // Render the feature as a point using the coordinates from labelPoint
-   * feature.setGeometryName('labelPoint');
-   *
-   * // get the point geometry
-   * const point = feature.getGeometry();
+   * const myControl = new Control({element: myElement});
    * ```
+   * and then adding this to the map.
+   *
+   * The main advantage of having this as a control rather than a simple separate
+   * DOM element is that preventing propagation is handled for you. Controls
+   * will also be objects in a {@link module:ol/Collection~Collection}, so you can use their methods.
+   *
+   * You can also extend this base for your own control class. See
+   * examples/custom-controls for an example of how to do this.
    *
    * @api
-   * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
    */
-  class Feature extends BaseObject {
+  class Control extends BaseObject {
     /**
-     * @param {Geometry|ObjectWithGeometry<Geometry>} [geometryOrProperties]
-     *     You may pass a Geometry object directly, or an object literal containing
-     *     properties. If you pass an object literal, you may include a Geometry
-     *     associated with a `geometry` key.
+     * @param {Options} options Control options.
      */
-    constructor(geometryOrProperties) {
+    constructor(options) {
       super();
 
+      const element = options.element;
+      if (element && !options.target && !element.style.pointerEvents) {
+        element.style.pointerEvents = 'auto';
+      }
+
+      /**
+       * @protected
+       * @type {HTMLElement}
+       */
+      this.element = element ? element : null;
+
+      /**
+       * @private
+       * @type {HTMLElement}
+       */
+      this.target_ = null;
+
+      /**
+       * @private
+       * @type {import("../Map.js").default|null}
+       */
+      this.map_ = null;
+
+      /**
+       * @protected
+       * @type {!Array<import("../events.js").EventsKey>}
+       */
+      this.listenerKeys = [];
+
+      if (options.render) {
+        this.render = options.render;
+      }
+
+      if (options.target) {
+        this.setTarget(options.target);
+      }
+    }
+
+    /**
+     * Clean up.
+     * @override
+     */
+    disposeInternal() {
+      this.element?.remove();
+      super.disposeInternal();
+    }
+
+    /**
+     * Get the map associated with this control.
+     * @return {import("../Map.js").default|null} Map.
+     * @api
+     */
+    getMap() {
+      return this.map_;
+    }
+
+    /**
+     * Remove the control from its current map and attach it to the new map.
+     * Pass `null` to just remove the control from the current map.
+     * Subclasses may set up event handlers to get notified about changes to
+     * the map here.
+     * @param {import("../Map.js").default|null} map Map.
+     * @api
+     */
+    setMap(map) {
+      if (this.map_) {
+        this.element?.remove();
+      }
+      for (let i = 0, ii = this.listenerKeys.length; i < ii; ++i) {
+        unlistenByKey(this.listenerKeys[i]);
+      }
+      this.listenerKeys.length = 0;
+      this.map_ = map;
+      if (map) {
+        const target = this.target_ ?? map.getOverlayContainerStopEvent();
+        target.appendChild(this.element);
+        if (this.render !== VOID) {
+          this.listenerKeys.push(
+            listen(map, MapEventType.POSTRENDER, this.render, this),
+          );
+        }
+        map.render();
+      }
+    }
+
+    /**
+     * Renders the control.
+     * @param {import("../MapEvent.js").default} mapEvent Map event.
+     * @api
+     */
+    render(mapEvent) {}
+
+    /**
+     * This function is used to set a target element for the control. It has no
+     * effect if it is called after the control has been added to the map (i.e.
+     * after `setMap` is called on the control). If no `target` is set in the
+     * options passed to the control constructor and if `setTarget` is not called
+     * then the control is added to the map's overlay container.
+     * @param {HTMLElement|string} target Target.
+     * @api
+     */
+    setTarget(target) {
+      this.target_ =
+        typeof target === 'string' ? document.getElementById(target) : target;
+    }
+  }
+
+  /**
+   * @module ol/css
+   */
+
+  /**
+   * @typedef {Object} FontParameters
+   * @property {string} style Style.
+   * @property {string} variant Variant.
+   * @property {string} weight Weight.
+   * @property {string} size Size.
+   * @property {string} lineHeight LineHeight.
+   * @property {string} family Family.
+   * @property {Array<string>} families Families.
+   */
+
+  /**
+   * The CSS class for hidden feature.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_HIDDEN = 'ol-hidden';
+
+  /**
+   * The CSS class that we'll give the DOM elements to have them selectable.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_SELECTABLE = 'ol-selectable';
+
+  /**
+   * The CSS class that we'll give the DOM elements to have them unselectable.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_UNSELECTABLE = 'ol-unselectable';
+
+  /**
+   * The CSS class for unsupported feature.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_UNSUPPORTED = 'ol-unsupported';
+
+  /**
+   * The CSS class for controls.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_CONTROL = 'ol-control';
+
+  /**
+   * The CSS class that we'll give the DOM elements that are collapsed, i.e.
+   * to those elements which usually can be expanded.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_COLLAPSED = 'ol-collapsed';
+
+  /**
+   * From https://stackoverflow.com/questions/10135697/regex-to-parse-any-css-font
+   * @type {RegExp}
+   */
+  const fontRegEx = new RegExp(
+    [
+      '^\\s*(?=(?:(?:[-a-z]+\\s*){0,2}(italic|oblique))?)',
+      '(?=(?:(?:[-a-z]+\\s*){0,2}(small-caps))?)',
+      '(?=(?:(?:[-a-z]+\\s*){0,2}(bold(?:er)?|lighter|[1-9]00 ))?)',
+      '(?:(?:normal|\\1|\\2|\\3)\\s*){0,3}((?:xx?-)?',
+      '(?:small|large)|medium|smaller|larger|[\\.\\d]+(?:\\%|in|[cem]m|ex|p[ctx]))',
+      '(?:\\s*\\/\\s*(normal|[\\.\\d]+(?:\\%|in|[cem]m|ex|p[ctx])?))',
+      '?\\s*([-,\\"\\\'\\sa-z]+?)\\s*$',
+    ].join(''),
+    'i',
+  );
+  /** @type {Array<'style'|'variant'|'weight'|'size'|'lineHeight'|'family'>} */
+  const fontRegExMatchIndex = [
+    'style',
+    'variant',
+    'weight',
+    'size',
+    'lineHeight',
+    'family',
+  ];
+
+  /**
+   * Get the list of font families from a font spec.  Note that this doesn't work
+   * for font families that have commas in them.
+   * @param {string} fontSpec The CSS font property.
+   * @return {FontParameters|null} The font parameters (or null if the input spec is invalid).
+   */
+  const getFontParameters = function (fontSpec) {
+    const match = fontSpec.match(fontRegEx);
+    if (!match) {
+      return null;
+    }
+    const style = /** @type {FontParameters} */ ({
+      lineHeight: 'normal',
+      size: '1.2em',
+      style: 'normal',
+      weight: 'normal',
+      variant: 'normal',
+    });
+    for (let i = 0, ii = fontRegExMatchIndex.length; i < ii; ++i) {
+      const value = match[i + 1];
+      if (value !== undefined) {
+        style[fontRegExMatchIndex[i]] = value;
+      }
+    }
+    style.families = style.family.split(/,\s?/);
+    return style;
+  };
+
+  /**
+   * @module ol/has
+   */
+
+  const ua =
+    typeof navigator !== 'undefined' && typeof navigator.userAgent !== 'undefined'
+      ? navigator.userAgent.toLowerCase()
+      : '';
+
+  /**
+   * User agent string says we are dealing with Firefox as browser.
+   * @type {boolean}
+   */
+  const FIREFOX = ua.includes('firefox');
+
+  /**
+   * User agent string says we are dealing with Safari as browser.
+   * @type {boolean}
+   */
+  const SAFARI = ua.includes('safari') && !ua.includes('chrom');
+
+  /**
+   * https://bugs.webkit.org/show_bug.cgi?id=237906
+   * @type {boolean}
+   */
+  SAFARI &&
+    (ua.includes('version/15.4') ||
+      /cpu (os|iphone os) 15_4 like mac os x/.test(ua));
+
+  /**
+   * User agent string says we are dealing with a WebKit engine.
+   * @type {boolean}
+   */
+  const WEBKIT = ua.includes('webkit') && !ua.includes('edge');
+
+  /**
+   * User agent string says we are dealing with a Mac as platform.
+   * @type {boolean}
+   */
+  const MAC = ua.includes('macintosh');
+
+  /**
+   * The ratio between physical pixels and device-independent pixels
+   * (dips) on the device (`window.devicePixelRatio`).
+   * @const
+   * @type {number}
+   * @api
+   */
+  const DEVICE_PIXEL_RATIO =
+    typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1;
+
+  /**
+   * The execution context is a worker with OffscreenCanvas available.
+   * @const
+   * @type {boolean}
+   */
+  const WORKER_OFFSCREEN_CANVAS =
+    typeof WorkerGlobalScope !== 'undefined' &&
+    typeof OffscreenCanvas !== 'undefined' &&
+    self instanceof WorkerGlobalScope; //eslint-disable-line
+
+  /**
+   * Image.prototype.decode() is supported.
+   * @type {boolean}
+   */
+  const IMAGE_DECODE =
+    typeof Image !== 'undefined' && Image.prototype.decode;
+
+  /**
+   * @type {boolean}
+   */
+  const PASSIVE_EVENT_LISTENERS = (function () {
+    let passive = false;
+    try {
+      const options = Object.defineProperty({}, 'passive', {
+        get: function () {
+          passive = true;
+        },
+      });
+
+      // @ts-ignore Ignore invalid event type '_'
+      window.addEventListener('_', null, options);
+      // @ts-ignore Ignore invalid event type '_'
+      window.removeEventListener('_', null, options);
+    } catch (error) {
+      // passive not supported
+    }
+    return passive;
+  })();
+
+  /**
+   * @module ol/dom
+   */
+
+  //FIXME Move this function to the canvas module
+  /**
+   * Create an html canvas element and returns its 2d context.
+   * @param {number} [width] Canvas width.
+   * @param {number} [height] Canvas height.
+   * @param {Array<HTMLCanvasElement>} [canvasPool] Canvas pool to take existing canvas from.
+   * @param {CanvasRenderingContext2DSettings} [settings] CanvasRenderingContext2DSettings
+   * @return {CanvasRenderingContext2D} The context.
+   */
+  function createCanvasContext2D(width, height, canvasPool, settings) {
+    /** @type {HTMLCanvasElement|OffscreenCanvas} */
+    let canvas;
+    if (canvasPool && canvasPool.length) {
+      canvas = /** @type {HTMLCanvasElement} */ (canvasPool.shift());
+    } else if (WORKER_OFFSCREEN_CANVAS) {
+      canvas = new OffscreenCanvas(width || 300, height || 300);
+    } else {
+      canvas = document.createElement('canvas');
+    }
+    if (width) {
+      canvas.width = width;
+    }
+    if (height) {
+      canvas.height = height;
+    }
+    //FIXME Allow OffscreenCanvasRenderingContext2D as return type
+    return /** @type {CanvasRenderingContext2D} */ (
+      canvas.getContext('2d', settings)
+    );
+  }
+
+  /** @type {CanvasRenderingContext2D} */
+  let sharedCanvasContext;
+
+  /**
+   * @return {CanvasRenderingContext2D} Shared canvas context.
+   */
+  function getSharedCanvasContext2D() {
+    if (!sharedCanvasContext) {
+      sharedCanvasContext = createCanvasContext2D(1, 1);
+    }
+    return sharedCanvasContext;
+  }
+
+  /**
+   * Releases canvas memory to avoid exceeding memory limits in Safari.
+   * See https://pqina.nl/blog/total-canvas-memory-use-exceeds-the-maximum-limit/
+   * @param {CanvasRenderingContext2D} context Context.
+   */
+  function releaseCanvas(context) {
+    const canvas = context.canvas;
+    canvas.width = 1;
+    canvas.height = 1;
+    context.clearRect(0, 0, 1, 1);
+  }
+
+  /**
+   * Get the current computed width for the given element including margin,
+   * padding and border.
+   * Equivalent to jQuery's `$(el).outerWidth(true)`.
+   * @param {!HTMLElement} element Element.
+   * @return {number} The width.
+   */
+  function outerWidth(element) {
+    let width = element.offsetWidth;
+    const style = getComputedStyle(element);
+    width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
+
+    return width;
+  }
+
+  /**
+   * Get the current computed height for the given element including margin,
+   * padding and border.
+   * Equivalent to jQuery's `$(el).outerHeight(true)`.
+   * @param {!HTMLElement} element Element.
+   * @return {number} The height.
+   */
+  function outerHeight(element) {
+    let height = element.offsetHeight;
+    const style = getComputedStyle(element);
+    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
+
+    return height;
+  }
+
+  /**
+   * @param {Node} newNode Node to replace old node
+   * @param {Node} oldNode The node to be replaced
+   */
+  function replaceNode(newNode, oldNode) {
+    const parent = oldNode.parentNode;
+    if (parent) {
+      parent.replaceChild(newNode, oldNode);
+    }
+  }
+
+  /**
+   * @param {Node} node The node to remove the children from.
+   */
+  function removeChildren(node) {
+    while (node.lastChild) {
+      node.lastChild.remove();
+    }
+  }
+
+  /**
+   * Transform the children of a parent node so they match the
+   * provided list of children.  This function aims to efficiently
+   * remove, add, and reorder child nodes while maintaining a simple
+   * implementation (it is not guaranteed to minimize DOM operations).
+   * @param {Node} node The parent node whose children need reworking.
+   * @param {Array<Node>} children The desired children.
+   */
+  function replaceChildren(node, children) {
+    const oldChildren = node.childNodes;
+
+    for (let i = 0; true; ++i) {
+      const oldChild = oldChildren[i];
+      const newChild = children[i];
+
+      // check if our work is done
+      if (!oldChild && !newChild) {
+        break;
+      }
+
+      // check if children match
+      if (oldChild === newChild) {
+        continue;
+      }
+
+      // check if a new child needs to be added
+      if (!oldChild) {
+        node.appendChild(newChild);
+        continue;
+      }
+
+      // check if an old child needs to be removed
+      if (!newChild) {
+        node.removeChild(oldChild);
+        --i;
+        continue;
+      }
+
+      // reorder
+      node.insertBefore(newChild, oldChild);
+    }
+  }
+
+  /**
+   * @module ol/control/Attribution
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {string} [className='ol-attribution'] CSS class name.
+   * @property {HTMLElement|string} [target] Specify a target if you
+   * want the control to be rendered outside of the map's
+   * viewport.
+   * @property {boolean} [collapsible] Specify if attributions can
+   * be collapsed. If not specified, sources control this behavior with their
+   * `attributionsCollapsible` setting.
+   * @property {boolean} [collapsed=true] Specify if attributions should
+   * be collapsed at startup.
+   * @property {string} [tipLabel='Attributions'] Text label to use for the button tip.
+   * @property {string|HTMLElement} [label='i'] Text label to use for the
+   * collapsed attributions button.
+   * Instead of text, also an element (e.g. a `span` element) can be used.
+   * @property {string} [expandClassName=className + '-expand'] CSS class name for the
+   * collapsed attributions button.
+   * @property {string|HTMLElement} [collapseLabel='›'] Text label to use
+   * for the expanded attributions button.
+   * Instead of text, also an element (e.g. a `span` element) can be used.
+   * @property {string} [collapseClassName=className + '-collapse'] CSS class name for the
+   * expanded attributions button.
+   * @property {function(import("../MapEvent.js").default):void} [render] Function called when
+   * the control should be re-rendered. This is called in a `requestAnimationFrame`
+   * callback.
+   * @property {string|Array<string>|undefined} [attributions] Optional attribution(s) that will always be
+   * displayed regardless of the layers rendered
+   */
+
+  /**
+   * @classdesc
+   * Control to show all the attributions associated with the layer sources
+   * in the map. This control is one of the default controls included in maps.
+   * By default it will show in the bottom right portion of the map, but this can
+   * be changed by using a css selector for `.ol-attribution`.
+   *
+   * @api
+   */
+  class Attribution extends Control {
+    /**
+     * @param {Options} [options] Attribution options.
+     */
+    constructor(options) {
+      options = options ? options : {};
+
+      super({
+        element: document.createElement('div'),
+        render: options.render,
+        target: options.target,
+      });
+
+      /**
+       * @private
+       * @type {HTMLElement}
+       */
+      this.ulElement_ = document.createElement('ul');
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.collapsed_ =
+        options.collapsed !== undefined ? options.collapsed : true;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.userCollapsed_ = this.collapsed_;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.overrideCollapsible_ = options.collapsible !== undefined;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.collapsible_ =
+        options.collapsible !== undefined ? options.collapsible : true;
+
+      if (!this.collapsible_) {
+        this.collapsed_ = false;
+      }
+
+      /**
+       * @private
+       * @type {string | Array<string> | undefined}
+       */
+      this.attributions_ = options.attributions;
+
+      const className =
+        options.className !== undefined ? options.className : 'ol-attribution';
+
+      const tipLabel =
+        options.tipLabel !== undefined ? options.tipLabel : 'Attributions';
+
+      const expandClassName =
+        options.expandClassName !== undefined
+          ? options.expandClassName
+          : className + '-expand';
+
+      const collapseLabel =
+        options.collapseLabel !== undefined ? options.collapseLabel : '\u203A';
+
+      const collapseClassName =
+        options.collapseClassName !== undefined
+          ? options.collapseClassName
+          : className + '-collapse';
+
+      if (typeof collapseLabel === 'string') {
+        /**
+         * @private
+         * @type {HTMLElement}
+         */
+        this.collapseLabel_ = document.createElement('span');
+        this.collapseLabel_.textContent = collapseLabel;
+        this.collapseLabel_.className = collapseClassName;
+      } else {
+        this.collapseLabel_ = collapseLabel;
+      }
+
+      const label = options.label !== undefined ? options.label : 'i';
+
+      if (typeof label === 'string') {
+        /**
+         * @private
+         * @type {HTMLElement}
+         */
+        this.label_ = document.createElement('span');
+        this.label_.textContent = label;
+        this.label_.className = expandClassName;
+      } else {
+        this.label_ = label;
+      }
+
+      const activeLabel =
+        this.collapsible_ && !this.collapsed_ ? this.collapseLabel_ : this.label_;
+
+      /**
+       * @private
+       * @type {HTMLElement}
+       */
+      this.toggleButton_ = document.createElement('button');
+      this.toggleButton_.setAttribute('type', 'button');
+      this.toggleButton_.setAttribute('aria-expanded', String(!this.collapsed_));
+      this.toggleButton_.title = tipLabel;
+      this.toggleButton_.appendChild(activeLabel);
+
+      this.toggleButton_.addEventListener(
+        EventType.CLICK,
+        this.handleClick_.bind(this),
+        false,
+      );
+
+      const cssClasses =
+        className +
+        ' ' +
+        CLASS_UNSELECTABLE +
+        ' ' +
+        CLASS_CONTROL +
+        (this.collapsed_ && this.collapsible_ ? ' ' + CLASS_COLLAPSED : '') +
+        (this.collapsible_ ? '' : ' ol-uncollapsible');
+      const element = this.element;
+      element.className = cssClasses;
+      element.appendChild(this.toggleButton_);
+      element.appendChild(this.ulElement_);
+
+      /**
+       * A list of currently rendered resolutions.
+       * @type {Array<string>}
+       * @private
+       */
+      this.renderedAttributions_ = [];
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.renderedVisible_ = true;
+    }
+
+    /**
+     * Collect a list of visible attributions and set the collapsible state.
+     * @param {import("../Map.js").FrameState} frameState Frame state.
+     * @return {Array<string>} Attributions.
+     * @private
+     */
+    collectSourceAttributions_(frameState) {
+      const layers = this.getMap().getAllLayers();
+      const visibleAttributions = new Set(
+        layers.flatMap((layer) => layer.getAttributions(frameState)),
+      );
+      if (this.attributions_ !== undefined) {
+        Array.isArray(this.attributions_)
+          ? this.attributions_.forEach((item) => visibleAttributions.add(item))
+          : visibleAttributions.add(this.attributions_);
+      }
+
+      if (!this.overrideCollapsible_) {
+        const collapsible = !layers.some(
+          (layer) => layer.getSource()?.getAttributionsCollapsible() === false,
+        );
+        this.setCollapsible(collapsible);
+      }
+      return Array.from(visibleAttributions);
+    }
+
+    /**
+     * @private
+     * @param {?import("../Map.js").FrameState} frameState Frame state.
+     */
+    async updateElement_(frameState) {
+      if (!frameState) {
+        if (this.renderedVisible_) {
+          this.element.style.display = 'none';
+          this.renderedVisible_ = false;
+        }
+        return;
+      }
+
+      const attributions = await Promise.all(
+        this.collectSourceAttributions_(frameState).map((attribution) =>
+          toPromise(() => attribution),
+        ),
+      );
+
+      const visible = attributions.length > 0;
+      if (this.renderedVisible_ != visible) {
+        this.element.style.display = visible ? '' : 'none';
+        this.renderedVisible_ = visible;
+      }
+
+      if (equals$2(attributions, this.renderedAttributions_)) {
+        return;
+      }
+
+      removeChildren(this.ulElement_);
+
+      // append the attributions
+      for (let i = 0, ii = attributions.length; i < ii; ++i) {
+        const element = document.createElement('li');
+        element.innerHTML = attributions[i];
+        this.ulElement_.appendChild(element);
+      }
+
+      this.renderedAttributions_ = attributions;
+    }
+
+    /**
+     * @param {MouseEvent} event The event to handle
+     * @private
+     */
+    handleClick_(event) {
+      event.preventDefault();
+      this.handleToggle_();
+      this.userCollapsed_ = this.collapsed_;
+    }
+
+    /**
+     * @private
+     */
+    handleToggle_() {
+      this.element.classList.toggle(CLASS_COLLAPSED);
+      if (this.collapsed_) {
+        replaceNode(this.collapseLabel_, this.label_);
+      } else {
+        replaceNode(this.label_, this.collapseLabel_);
+      }
+      this.collapsed_ = !this.collapsed_;
+      this.toggleButton_.setAttribute('aria-expanded', String(!this.collapsed_));
+    }
+
+    /**
+     * Return `true` if the attribution is collapsible, `false` otherwise.
+     * @return {boolean} True if the widget is collapsible.
+     * @api
+     */
+    getCollapsible() {
+      return this.collapsible_;
+    }
+
+    /**
+     * Set whether the attribution should be collapsible.
+     * @param {boolean} collapsible True if the widget is collapsible.
+     * @api
+     */
+    setCollapsible(collapsible) {
+      if (this.collapsible_ === collapsible) {
+        return;
+      }
+      this.collapsible_ = collapsible;
+      this.element.classList.toggle('ol-uncollapsible');
+      if (this.userCollapsed_) {
+        this.handleToggle_();
+      }
+    }
+
+    /**
+     * Collapse or expand the attribution according to the passed parameter. Will
+     * not do anything if the attribution isn't collapsible or if the current
+     * collapsed state is already the one requested.
+     * @param {boolean} collapsed True if the widget is collapsed.
+     * @api
+     */
+    setCollapsed(collapsed) {
+      this.userCollapsed_ = collapsed;
+      if (!this.collapsible_ || this.collapsed_ === collapsed) {
+        return;
+      }
+      this.handleToggle_();
+    }
+
+    /**
+     * Return `true` when the attribution is currently collapsed or `false`
+     * otherwise.
+     * @return {boolean} True if the widget is collapsed.
+     * @api
+     */
+    getCollapsed() {
+      return this.collapsed_;
+    }
+
+    /**
+     * Update the attribution element.
+     * @param {import("../MapEvent.js").default} mapEvent Map event.
+     * @override
+     */
+    render(mapEvent) {
+      this.updateElement_(mapEvent.frameState);
+    }
+  }
+
+  var Attribution$1 = Attribution;
+
+  /**
+   * @module ol/MapProperty
+   */
+
+  /**
+   * @enum {string}
+   */
+  var MapProperty = {
+    LAYERGROUP: 'layergroup',
+    SIZE: 'size',
+    TARGET: 'target',
+    VIEW: 'view',
+  };
+
+  /**
+   * @module ol/control/FullScreen
+   */
+
+  const events = [
+    'fullscreenchange',
+    'webkitfullscreenchange',
+    'MSFullscreenChange',
+  ];
+
+  /**
+   * @enum {string}
+   */
+  const FullScreenEventType = {
+    /**
+     * Triggered after the map entered fullscreen.
+     * @event FullScreenEventType#enterfullscreen
+     * @api
+     */
+    ENTERFULLSCREEN: 'enterfullscreen',
+
+    /**
+     * Triggered after the map leave fullscreen.
+     * @event FullScreenEventType#leavefullscreen
+     * @api
+     */
+    LEAVEFULLSCREEN: 'leavefullscreen',
+  };
+
+  /***
+   * @template Return
+   * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes|
+   *     'enterfullscreen'|'leavefullscreen', import("../events/Event.js").default, Return> &
+   *   import("../Observable").OnSignature<import("../ObjectEventType").Types, import("../Object").ObjectEvent, Return> &
+   *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|
+   *     'enterfullscreen'|'leavefullscreen'|import("../ObjectEventType").Types, Return>} FullScreenOnSignature
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {string} [className='ol-full-screen'] CSS class name.
+   * @property {string|Text|HTMLElement} [label='\u2922'] Text label to use for the button.
+   * Instead of text, also an element (e.g. a `span` element) can be used.
+   * @property {string|Text|HTMLElement} [labelActive='\u00d7'] Text label to use for the
+   * button when full-screen is active.
+   * Instead of text, also an element (e.g. a `span` element) can be used.
+   * @property {string} [activeClassName=className + '-true'] CSS class name for the button
+   * when full-screen is active.
+   * @property {string} [inactiveClassName=className + '-false'] CSS class name for the button
+   * when full-screen is inactive.
+   * @property {string} [tipLabel='Toggle full-screen'] Text label to use for the button tip.
+   * @property {boolean} [keys=false] Full keyboard access.
+   * @property {HTMLElement|string} [target] Specify a target if you want the
+   * control to be rendered outside of the map's viewport.
+   * @property {HTMLElement|string} [source] The element to be displayed
+   * fullscreen. When not provided, the element containing the map viewport will
+   * be displayed fullscreen.
+   */
+
+  /**
+   * @classdesc
+   * Provides a button that when clicked fills up the full screen with the map.
+   * The full screen source element is by default the element containing the map viewport unless
+   * overridden by providing the `source` option. In which case, the dom
+   * element introduced using this parameter will be displayed in full screen.
+   *
+   * When in full screen mode, a close button is shown to exit full screen mode.
+   * The [Fullscreen API](https://www.w3.org/TR/fullscreen/) is used to
+   * toggle the map in full screen mode.
+   *
+   * @fires FullScreenEventType#enterfullscreen
+   * @fires FullScreenEventType#leavefullscreen
+   * @api
+   */
+  class FullScreen extends Control {
+    /**
+     * @param {Options} [options] Options.
+     */
+    constructor(options) {
+      options = options ? options : {};
+
+      super({
+        element: document.createElement('div'),
+        target: options.target,
+      });
+
       /***
-       * @type {FeatureOnSignature<import("./events").EventsKey>}
+       * @type {FullScreenOnSignature<import("../events").EventsKey>}
        */
       this.on;
 
       /***
-       * @type {FeatureOnSignature<import("./events").EventsKey>}
+       * @type {FullScreenOnSignature<import("../events").EventsKey>}
        */
       this.once;
 
       /***
-       * @type {FeatureOnSignature<void>}
+       * @type {FullScreenOnSignature<void>}
        */
       this.un;
 
       /**
        * @private
-       * @type {number|string|undefined}
+       * @type {boolean}
        */
-      this.id_ = undefined;
+      this.keys_ = options.keys !== undefined ? options.keys : false;
 
       /**
+       * @private
+       * @type {HTMLElement|string|undefined}
+       */
+      this.source_ = options.source;
+
+      /**
+       * @type {boolean}
+       * @private
+       */
+      this.isInFullscreen_ = false;
+
+      /**
+       * @private
+       */
+      this.boundHandleMapTargetChange_ = this.handleMapTargetChange_.bind(this);
+
+      /**
+       * @private
        * @type {string}
-       * @private
        */
-      this.geometryName_ = 'geometry';
-
-      /**
-       * User provided style.
-       * @private
-       * @type {import("./style/Style.js").StyleLike}
-       */
-      this.style_ = null;
+      this.cssClassName_ =
+        options.className !== undefined ? options.className : 'ol-full-screen';
 
       /**
        * @private
-       * @type {import("./style/Style.js").StyleFunction|undefined}
+       * @type {Array<import("../events.js").EventsKey>}
        */
-      this.styleFunction_ = undefined;
+      this.documentListeners_ = [];
 
       /**
        * @private
-       * @type {?import("./events.js").EventsKey}
+       * @type {Array<string>}
        */
-      this.geometryChangeKey_ = null;
+      this.activeClassName_ =
+        options.activeClassName !== undefined
+          ? options.activeClassName.split(' ')
+          : [this.cssClassName_ + '-true'];
 
-      this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
+      /**
+       * @private
+       * @type {Array<string>}
+       */
+      this.inactiveClassName_ =
+        options.inactiveClassName !== undefined
+          ? options.inactiveClassName.split(' ')
+          : [this.cssClassName_ + '-false'];
 
-      if (geometryOrProperties) {
-        if (
-          typeof (
-            /** @type {?} */ (geometryOrProperties).getSimplifiedGeometry
-          ) === 'function'
-        ) {
-          const geometry = /** @type {Geometry} */ (geometryOrProperties);
-          this.setGeometry(geometry);
+      const label = options.label !== undefined ? options.label : '\u2922';
+
+      /**
+       * @private
+       * @type {Text|HTMLElement}
+       */
+      this.labelNode_ =
+        typeof label === 'string' ? document.createTextNode(label) : label;
+
+      const labelActive =
+        options.labelActive !== undefined ? options.labelActive : '\u00d7';
+
+      /**
+       * @private
+       * @type {Text|HTMLElement}
+       */
+      this.labelActiveNode_ =
+        typeof labelActive === 'string'
+          ? document.createTextNode(labelActive)
+          : labelActive;
+
+      const tipLabel = options.tipLabel ? options.tipLabel : 'Toggle full-screen';
+
+      /**
+       * @private
+       * @type {HTMLElement}
+       */
+      this.button_ = document.createElement('button');
+      this.button_.title = tipLabel;
+      this.button_.setAttribute('type', 'button');
+      this.button_.appendChild(this.labelNode_);
+      this.button_.addEventListener(
+        EventType.CLICK,
+        this.handleClick_.bind(this),
+        false,
+      );
+      this.setClassName_(this.button_, this.isInFullscreen_);
+
+      this.element.className = `${this.cssClassName_} ${CLASS_UNSELECTABLE} ${CLASS_CONTROL}`;
+      this.element.appendChild(this.button_);
+    }
+
+    /**
+     * @param {MouseEvent} event The event to handle
+     * @private
+     */
+    handleClick_(event) {
+      event.preventDefault();
+      this.handleFullScreen_();
+    }
+
+    /**
+     * @private
+     */
+    handleFullScreen_() {
+      const map = this.getMap();
+      if (!map) {
+        return;
+      }
+      const doc = map.getOwnerDocument();
+      if (!isFullScreenSupported(doc)) {
+        return;
+      }
+      if (isFullScreen(doc)) {
+        exitFullScreen(doc);
+      } else {
+        let element;
+        if (this.source_) {
+          element =
+            typeof this.source_ === 'string'
+              ? doc.getElementById(this.source_)
+              : this.source_;
         } else {
-          /** @type {Object<string, *>} */
-          const properties = geometryOrProperties;
-          this.setProperties(properties);
+          element = map.getTargetElement();
+        }
+        if (this.keys_) {
+          requestFullScreenWithKeys(element);
+        } else {
+          requestFullScreen(element);
         }
       }
     }
 
     /**
-     * Clone this feature. If the original feature has a geometry it
-     * is also cloned. The feature id is not set in the clone.
-     * @return {Feature<Geometry>} The clone.
-     * @api
-     */
-    clone() {
-      const clone = /** @type {Feature<Geometry>} */ (
-        new Feature(this.hasProperties() ? this.getProperties() : null)
-      );
-      clone.setGeometryName(this.getGeometryName());
-      const geometry = this.getGeometry();
-      if (geometry) {
-        clone.setGeometry(/** @type {Geometry} */ (geometry.clone()));
-      }
-      const style = this.getStyle();
-      if (style) {
-        clone.setStyle(style);
-      }
-      return clone;
-    }
-
-    /**
-     * Get the feature's default geometry.  A feature may have any number of named
-     * geometries.  The "default" geometry (the one that is rendered by default) is
-     * set when calling {@link module:ol/Feature~Feature#setGeometry}.
-     * @return {Geometry|undefined} The default geometry for the feature.
-     * @api
-     * @observable
-     */
-    getGeometry() {
-      return /** @type {Geometry|undefined} */ (this.get(this.geometryName_));
-    }
-
-    /**
-     * Get the feature identifier.  This is a stable identifier for the feature and
-     * is either set when reading data from a remote source or set explicitly by
-     * calling {@link module:ol/Feature~Feature#setId}.
-     * @return {number|string|undefined} Id.
-     * @api
-     */
-    getId() {
-      return this.id_;
-    }
-
-    /**
-     * Get the name of the feature's default geometry.  By default, the default
-     * geometry is named `geometry`.
-     * @return {string} Get the property name associated with the default geometry
-     *     for this feature.
-     * @api
-     */
-    getGeometryName() {
-      return this.geometryName_;
-    }
-
-    /**
-     * Get the feature's style. Will return what was provided to the
-     * {@link module:ol/Feature~Feature#setStyle} method.
-     * @return {import("./style/Style.js").StyleLike|undefined} The feature style.
-     * @api
-     */
-    getStyle() {
-      return this.style_;
-    }
-
-    /**
-     * Get the feature's style function.
-     * @return {import("./style/Style.js").StyleFunction|undefined} Return a function
-     * representing the current style of this feature.
-     * @api
-     */
-    getStyleFunction() {
-      return this.styleFunction_;
-    }
-
-    /**
      * @private
      */
-    handleGeometryChange_() {
-      this.changed();
+    handleFullScreenChange_() {
+      const map = this.getMap();
+      if (!map) {
+        return;
+      }
+      const wasInFullscreen = this.isInFullscreen_;
+      this.isInFullscreen_ = isFullScreen(map.getOwnerDocument());
+      if (wasInFullscreen !== this.isInFullscreen_) {
+        this.setClassName_(this.button_, this.isInFullscreen_);
+        if (this.isInFullscreen_) {
+          replaceNode(this.labelActiveNode_, this.labelNode_);
+          this.dispatchEvent(FullScreenEventType.ENTERFULLSCREEN);
+        } else {
+          replaceNode(this.labelNode_, this.labelActiveNode_);
+          this.dispatchEvent(FullScreenEventType.LEAVEFULLSCREEN);
+        }
+        map.updateSize();
+      }
     }
 
     /**
+     * @param {HTMLElement} element Target element
+     * @param {boolean} fullscreen True if fullscreen class name should be active
      * @private
      */
-    handleGeometryChanged_() {
-      if (this.geometryChangeKey_) {
-        unlistenByKey(this.geometryChangeKey_);
-        this.geometryChangeKey_ = null;
+    setClassName_(element, fullscreen) {
+      if (fullscreen) {
+        element.classList.remove(...this.inactiveClassName_);
+        element.classList.add(...this.activeClassName_);
+      } else {
+        element.classList.remove(...this.activeClassName_);
+        element.classList.add(...this.inactiveClassName_);
       }
-      const geometry = this.getGeometry();
-      if (geometry) {
-        this.geometryChangeKey_ = listen(
-          geometry,
-          EventType.CHANGE,
-          this.handleGeometryChange_,
-          this,
+    }
+
+    /**
+     * Remove the control from its current map and attach it to the new map.
+     * Pass `null` to just remove the control from the current map.
+     * Subclasses may set up event handlers to get notified about changes to
+     * the map here.
+     * @param {import("../Map.js").default|null} map Map.
+     * @api
+     * @override
+     */
+    setMap(map) {
+      const oldMap = this.getMap();
+      if (oldMap) {
+        oldMap.removeChangeListener(
+          MapProperty.TARGET,
+          this.boundHandleMapTargetChange_,
         );
       }
-      this.changed();
+
+      super.setMap(map);
+
+      this.handleMapTargetChange_();
+      if (map) {
+        map.addChangeListener(
+          MapProperty.TARGET,
+          this.boundHandleMapTargetChange_,
+        );
+      }
     }
 
     /**
-     * Set the default geometry for the feature.  This will update the property
-     * with the name returned by {@link module:ol/Feature~Feature#getGeometryName}.
-     * @param {Geometry|undefined} geometry The new geometry.
-     * @api
-     * @observable
+     * @private
      */
-    setGeometry(geometry) {
-      this.set(this.geometryName_, geometry);
-    }
+    handleMapTargetChange_() {
+      const listeners = this.documentListeners_;
+      for (let i = 0, ii = listeners.length; i < ii; ++i) {
+        unlistenByKey(listeners[i]);
+      }
+      listeners.length = 0;
 
-    /**
-     * Set the style for the feature to override the layer style.  This can be a
-     * single style object, an array of styles, or a function that takes a
-     * resolution and returns an array of styles. To unset the feature style, call
-     * `setStyle()` without arguments or a falsey value.
-     * @param {import("./style/Style.js").StyleLike} [style] Style for this feature.
-     * @api
-     * @fires module:ol/events/Event~BaseEvent#event:change
-     */
-    setStyle(style) {
-      this.style_ = style;
-      this.styleFunction_ = !style ? undefined : createStyleFunction(style);
-      this.changed();
-    }
+      const map = this.getMap();
+      if (map) {
+        const doc = map.getOwnerDocument();
+        if (isFullScreenSupported(doc)) {
+          this.element.classList.remove(CLASS_UNSUPPORTED);
+        } else {
+          this.element.classList.add(CLASS_UNSUPPORTED);
+        }
 
-    /**
-     * Set the feature id.  The feature id is considered stable and may be used when
-     * requesting features or comparing identifiers returned from a remote source.
-     * The feature id can be used with the
-     * {@link module:ol/source/Vector~VectorSource#getFeatureById} method.
-     * @param {number|string|undefined} id The feature id.
-     * @api
-     * @fires module:ol/events/Event~BaseEvent#event:change
-     */
-    setId(id) {
-      this.id_ = id;
-      this.changed();
-    }
-
-    /**
-     * Set the property name to be used when getting the feature's default geometry.
-     * When calling {@link module:ol/Feature~Feature#getGeometry}, the value of the property with
-     * this name will be returned.
-     * @param {string} name The property name of the default geometry.
-     * @api
-     */
-    setGeometryName(name) {
-      this.removeChangeListener(this.geometryName_, this.handleGeometryChanged_);
-      this.geometryName_ = name;
-      this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
-      this.handleGeometryChanged_();
+        for (let i = 0, ii = events.length; i < ii; ++i) {
+          listeners.push(
+            listen(doc, events[i], this.handleFullScreenChange_, this),
+          );
+        }
+        this.handleFullScreenChange_();
+      }
     }
   }
 
   /**
-   * Convert the provided object into a feature style function.  Functions passed
-   * through unchanged.  Arrays of Style or single style objects wrapped
-   * in a new feature style function.
-   * @param {!import("./style/Style.js").StyleFunction|!Array<import("./style/Style.js").default>|!import("./style/Style.js").default} obj
-   *     A feature style function, a single style, or an array of styles.
-   * @return {import("./style/Style.js").StyleFunction} A style function.
+   * @param {Document} doc The root document to check.
+   * @return {boolean} Fullscreen is supported by the current platform.
    */
-  function createStyleFunction(obj) {
-    if (typeof obj === 'function') {
-      return obj;
+  function isFullScreenSupported(doc) {
+    const body = doc.body;
+    return !!(
+      body['webkitRequestFullscreen'] ||
+      (body.requestFullscreen && doc.fullscreenEnabled)
+    );
+  }
+
+  /**
+   * @param {Document} doc The root document to check.
+   * @return {boolean} Element is currently in fullscreen.
+   */
+  function isFullScreen(doc) {
+    return !!(doc['webkitIsFullScreen'] || doc.fullscreenElement);
+  }
+
+  /**
+   * Request to fullscreen an element.
+   * @param {HTMLElement} element Element to request fullscreen
+   */
+  function requestFullScreen(element) {
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element['webkitRequestFullscreen']) {
+      element['webkitRequestFullscreen']();
     }
-    /**
-     * @type {Array<import("./style/Style.js").default>}
-     */
-    let styles;
-    if (Array.isArray(obj)) {
-      styles = obj;
+  }
+
+  /**
+   * Request to fullscreen an element with keyboard input.
+   * @param {HTMLElement} element Element to request fullscreen
+   */
+  function requestFullScreenWithKeys(element) {
+    if (element['webkitRequestFullscreen']) {
+      element['webkitRequestFullscreen']();
     } else {
-      assert$1(
-        typeof (/** @type {?} */ (obj).getZIndex) === 'function',
-        'Expected an `ol/style/Style` or an array of `ol/style/Style.js`',
-      );
-      const style = /** @type {import("./style/Style.js").default} */ (obj);
-      styles = [style];
+      requestFullScreen(element);
     }
-    return function () {
-      return styles;
-    };
   }
 
   /**
-   * @module ol/transform
+   * Exit fullscreen.
+   * @param {Document} doc The document to exit fullscren from
+   */
+  function exitFullScreen(doc) {
+    if (doc.exitFullscreen) {
+      doc.exitFullscreen();
+    } else if (doc['webkitExitFullscreen']) {
+      doc['webkitExitFullscreen']();
+    }
+  }
+
+  var FullScreen$1 = FullScreen;
+
+  /**
+   * @module ol/proj/Units
+   */
+
+
+  /**
+   * @typedef {Object} MetersPerUnitLookup
+   * @property {number} radians Radians
+   * @property {number} degrees Degrees
+   * @property {number} ft  Feet
+   * @property {number} m Meters
+   * @property {number} us-ft US feet
    */
 
   /**
-   * An array representing an affine 2d transformation for use with
-   * {@link module:ol/transform} functions. The array has 6 elements.
-   * @typedef {!Array<number>} Transform
+   * Meters per unit lookup table.
+   * @const
+   * @type {MetersPerUnitLookup}
    * @api
    */
+  const METERS_PER_UNIT$1 = {
+    // use the radius of the Normal sphere
+    'radians': 6370997 / (2 * Math.PI),
+    'degrees': (2 * Math.PI * 6370997) / 360,
+    'ft': 0.3048,
+    'm': 1,
+    'us-ft': 1200 / 3937,
+  };
 
   /**
-   * Collection of affine 2d transformation functions. The functions work on an
-   * array of 6 elements. The element order is compatible with the [SVGMatrix
-   * interface](https://developer.mozilla.org/en-US/docs/Web/API/SVGMatrix) and is
-   * a subset (elements a to f) of a 3×3 matrix:
-   * ```
-   * [ a c e ]
-   * [ b d f ]
-   * [ 0 0 1 ]
-   * ```
+   * @module ol/proj/Projection
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {string} code The SRS identifier code, e.g. `EPSG:4326`.
+   * @property {import("./Units.js").Units} [units] Units. Required unless a
+   * proj4 projection is defined for `code`.
+   * @property {import("../extent.js").Extent} [extent] The validity extent for the SRS.
+   * @property {string} [axisOrientation='enu'] The axis orientation as specified in Proj4.
+   * @property {boolean} [global=false] Whether the projection is valid for the whole globe.
+   * @property {number} [metersPerUnit] The meters per unit for the SRS.
+   * If not provided, the `units` are used to get the meters per unit from the {@link METERS_PER_UNIT}
+   * lookup table.
+   * @property {import("../extent.js").Extent} [worldExtent] The world extent for the SRS.
+   * @property {function(number, import("../coordinate.js").Coordinate):number} [getPointResolution]
+   * Function to determine resolution at a point. The function is called with a
+   * `number` view resolution and a {@link module:ol/coordinate~Coordinate} as arguments, and returns
+   * the `number` resolution in projection units at the passed coordinate. If this is `undefined`,
+   * the default {@link module:ol/proj.getPointResolution} function will be used.
+   */
+
+  /**
+   * @classdesc
+   * Projection definition class. One of these is created for each projection
+   * supported in the application and stored in the {@link module:ol/proj} namespace.
+   * You can use these in applications, but this is not required, as API params
+   * and options use {@link module:ol/proj~ProjectionLike} which means the simple string
+   * code will suffice.
+   *
+   * You can use {@link module:ol/proj.get} to retrieve the object for a particular
+   * projection.
+   *
+   * The library includes definitions for `EPSG:4326` and `EPSG:3857`, together
+   * with the following aliases:
+   * * `EPSG:4326`: CRS:84, urn:ogc:def:crs:EPSG:6.6:4326,
+   *     urn:ogc:def:crs:OGC:1.3:CRS84, urn:ogc:def:crs:OGC:2:84,
+   *     http://www.opengis.net/gml/srs/epsg.xml#4326,
+   *     urn:x-ogc:def:crs:EPSG:4326
+   * * `EPSG:3857`: EPSG:102100, EPSG:102113, EPSG:900913,
+   *     urn:ogc:def:crs:EPSG:6.18:3:3857,
+   *     http://www.opengis.net/gml/srs/epsg.xml#3857
+   *
+   * If you use [proj4js](https://github.com/proj4js/proj4js), aliases can
+   * be added using `proj4.defs()`. After all required projection definitions are
+   * added, call the {@link module:ol/proj/proj4.register} function.
+   *
+   * @api
+   */
+  let Projection$1 = class Projection {
+    /**
+     * @param {Options} options Projection options.
+     */
+    constructor(options) {
+      /**
+       * @private
+       * @type {string}
+       */
+      this.code_ = options.code;
+
+      /**
+       * Units of projected coordinates. When set to `TILE_PIXELS`, a
+       * `this.extent_` and `this.worldExtent_` must be configured properly for each
+       * tile.
+       * @private
+       * @type {import("./Units.js").Units}
+       */
+      this.units_ = /** @type {import("./Units.js").Units} */ (options.units);
+
+      /**
+       * Validity extent of the projection in projected coordinates. For projections
+       * with `TILE_PIXELS` units, this is the extent of the tile in
+       * tile pixel space.
+       * @private
+       * @type {import("../extent.js").Extent}
+       */
+      this.extent_ = options.extent !== undefined ? options.extent : null;
+
+      /**
+       * Extent of the world in EPSG:4326. For projections with
+       * `TILE_PIXELS` units, this is the extent of the tile in
+       * projected coordinate space.
+       * @private
+       * @type {import("../extent.js").Extent}
+       */
+      this.worldExtent_ =
+        options.worldExtent !== undefined ? options.worldExtent : null;
+
+      /**
+       * @private
+       * @type {string}
+       */
+      this.axisOrientation_ =
+        options.axisOrientation !== undefined ? options.axisOrientation : 'enu';
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.global_ = options.global !== undefined ? options.global : false;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.canWrapX_ = !!(this.global_ && this.extent_);
+
+      /**
+       * @private
+       * @type {function(number, import("../coordinate.js").Coordinate):number|undefined}
+       */
+      this.getPointResolutionFunc_ = options.getPointResolution;
+
+      /**
+       * @private
+       * @type {import("../tilegrid/TileGrid.js").default}
+       */
+      this.defaultTileGrid_ = null;
+
+      /**
+       * @private
+       * @type {number|undefined}
+       */
+      this.metersPerUnit_ = options.metersPerUnit;
+    }
+
+    /**
+     * @return {boolean} The projection is suitable for wrapping the x-axis
+     */
+    canWrapX() {
+      return this.canWrapX_;
+    }
+
+    /**
+     * Get the code for this projection, e.g. 'EPSG:4326'.
+     * @return {string} Code.
+     * @api
+     */
+    getCode() {
+      return this.code_;
+    }
+
+    /**
+     * Get the validity extent for this projection.
+     * @return {import("../extent.js").Extent} Extent.
+     * @api
+     */
+    getExtent() {
+      return this.extent_;
+    }
+
+    /**
+     * Get the units of this projection.
+     * @return {import("./Units.js").Units} Units.
+     * @api
+     */
+    getUnits() {
+      return this.units_;
+    }
+
+    /**
+     * Get the amount of meters per unit of this projection.  If the projection is
+     * not configured with `metersPerUnit` or a units identifier, the return is
+     * `undefined`.
+     * @return {number|undefined} Meters.
+     * @api
+     */
+    getMetersPerUnit() {
+      return this.metersPerUnit_ || METERS_PER_UNIT$1[this.units_];
+    }
+
+    /**
+     * Get the world extent for this projection.
+     * @return {import("../extent.js").Extent} Extent.
+     * @api
+     */
+    getWorldExtent() {
+      return this.worldExtent_;
+    }
+
+    /**
+     * Get the axis orientation of this projection.
+     * Example values are:
+     * enu - the default easting, northing, elevation.
+     * neu - northing, easting, up - useful for "lat/long" geographic coordinates,
+     *     or south orientated transverse mercator.
+     * wnu - westing, northing, up - some planetary coordinate systems have
+     *     "west positive" coordinate systems
+     * @return {string} Axis orientation.
+     * @api
+     */
+    getAxisOrientation() {
+      return this.axisOrientation_;
+    }
+
+    /**
+     * Is this projection a global projection which spans the whole world?
+     * @return {boolean} Whether the projection is global.
+     * @api
+     */
+    isGlobal() {
+      return this.global_;
+    }
+
+    /**
+     * Set if the projection is a global projection which spans the whole world
+     * @param {boolean} global Whether the projection is global.
+     * @api
+     */
+    setGlobal(global) {
+      this.global_ = global;
+      this.canWrapX_ = !!(global && this.extent_);
+    }
+
+    /**
+     * @return {import("../tilegrid/TileGrid.js").default} The default tile grid.
+     */
+    getDefaultTileGrid() {
+      return this.defaultTileGrid_;
+    }
+
+    /**
+     * @param {import("../tilegrid/TileGrid.js").default} tileGrid The default tile grid.
+     */
+    setDefaultTileGrid(tileGrid) {
+      this.defaultTileGrid_ = tileGrid;
+    }
+
+    /**
+     * Set the validity extent for this projection.
+     * @param {import("../extent.js").Extent} extent Extent.
+     * @api
+     */
+    setExtent(extent) {
+      this.extent_ = extent;
+      this.canWrapX_ = !!(this.global_ && extent);
+    }
+
+    /**
+     * Set the world extent for this projection.
+     * @param {import("../extent.js").Extent} worldExtent World extent
+     *     [minlon, minlat, maxlon, maxlat].
+     * @api
+     */
+    setWorldExtent(worldExtent) {
+      this.worldExtent_ = worldExtent;
+    }
+
+    /**
+     * Set the getPointResolution function (see {@link module:ol/proj.getPointResolution}
+     * for this projection.
+     * @param {function(number, import("../coordinate.js").Coordinate):number} func Function
+     * @api
+     */
+    setGetPointResolution(func) {
+      this.getPointResolutionFunc_ = func;
+    }
+
+    /**
+     * Get the custom point resolution function for this projection (if set).
+     * @return {function(number, import("../coordinate.js").Coordinate):number|undefined} The custom point
+     * resolution function (if set).
+     */
+    getPointResolutionFunc() {
+      return this.getPointResolutionFunc_;
+    }
+  };
+
+  var Projection$2 = Projection$1;
+
+  /**
+   * @module ol/proj/epsg3857
+   */
+
+  /**
+   * Radius of WGS84 sphere
+   *
+   * @const
+   * @type {number}
+   */
+  const RADIUS$1 = 6378137;
+
+  /**
+   * @const
+   * @type {number}
+   */
+  const HALF_SIZE = Math.PI * RADIUS$1;
+
+  /**
+   * @const
+   * @type {import("../extent.js").Extent}
+   */
+  const EXTENT$1 = [-HALF_SIZE, -HALF_SIZE, HALF_SIZE, HALF_SIZE];
+
+  /**
+   * @const
+   * @type {import("../extent.js").Extent}
+   */
+  const WORLD_EXTENT = [-180, -85, 180, 85];
+
+  /**
+   * Maximum safe value in y direction
+   * @const
+   * @type {number}
+   */
+  const MAX_SAFE_Y = RADIUS$1 * Math.log(Math.tan(Math.PI / 2));
+
+  /**
+   * @classdesc
+   * Projection object for web/spherical Mercator (EPSG:3857).
+   */
+  class EPSG3857Projection extends Projection$2 {
+    /**
+     * @param {string} code Code.
+     */
+    constructor(code) {
+      super({
+        code: code,
+        units: 'm',
+        extent: EXTENT$1,
+        global: true,
+        worldExtent: WORLD_EXTENT,
+        getPointResolution: function (resolution, point) {
+          return resolution / Math.cosh(point[1] / RADIUS$1);
+        },
+      });
+    }
+  }
+
+  /**
+   * Projections equal to EPSG:3857.
+   *
+   * @const
+   * @type {Array<import("./Projection.js").default>}
+   */
+  const PROJECTIONS$1 = [
+    new EPSG3857Projection('EPSG:3857'),
+    new EPSG3857Projection('EPSG:102100'),
+    new EPSG3857Projection('EPSG:102113'),
+    new EPSG3857Projection('EPSG:900913'),
+    new EPSG3857Projection('http://www.opengis.net/def/crs/EPSG/0/3857'),
+    new EPSG3857Projection('http://www.opengis.net/gml/srs/epsg.xml#3857'),
+  ];
+
+  /**
+   * Transformation from EPSG:4326 to EPSG:3857.
+   *
+   * @param {Array<number>} input Input array of coordinate values.
+   * @param {Array<number>} [output] Output array of coordinate values.
+   * @param {number} [dimension] Dimension (default is `2`).
+   * @param {number} [stride] Stride (default is `dimension`).
+   * @return {Array<number>} Output array of coordinate values.
+   */
+  function fromEPSG4326(input, output, dimension, stride) {
+    const length = input.length;
+    dimension = dimension > 1 ? dimension : 2;
+    stride = stride ?? dimension;
+    if (output === undefined) {
+      if (dimension > 2) {
+        // preserve values beyond second dimension
+        output = input.slice();
+      } else {
+        output = new Array(length);
+      }
+    }
+    for (let i = 0; i < length; i += stride) {
+      output[i] = (HALF_SIZE * input[i]) / 180;
+      let y = RADIUS$1 * Math.log(Math.tan((Math.PI * (+input[i + 1] + 90)) / 360));
+      if (y > MAX_SAFE_Y) {
+        y = MAX_SAFE_Y;
+      } else if (y < -MAX_SAFE_Y) {
+        y = -MAX_SAFE_Y;
+      }
+      output[i + 1] = y;
+    }
+    return output;
+  }
+
+  /**
+   * Transformation from EPSG:3857 to EPSG:4326.
+   *
+   * @param {Array<number>} input Input array of coordinate values.
+   * @param {Array<number>} [output] Output array of coordinate values.
+   * @param {number} [dimension] Dimension (default is `2`).
+   * @param {number} [stride] Stride (default is `dimension`).
+   * @return {Array<number>} Output array of coordinate values.
+   */
+  function toEPSG4326(input, output, dimension, stride) {
+    const length = input.length;
+    dimension = dimension > 1 ? dimension : 2;
+    stride = stride ?? dimension;
+    if (output === undefined) {
+      if (dimension > 2) {
+        // preserve values beyond second dimension
+        output = input.slice();
+      } else {
+        output = new Array(length);
+      }
+    }
+    for (let i = 0; i < length; i += stride) {
+      output[i] = (180 * input[i]) / HALF_SIZE;
+      output[i + 1] =
+        (360 * Math.atan(Math.exp(input[i + 1] / RADIUS$1))) / Math.PI - 90;
+    }
+    return output;
+  }
+
+  /**
+   * @module ol/proj/epsg4326
+   */
+
+  /**
+   * Semi-major radius of the WGS84 ellipsoid.
+   *
+   * @const
+   * @type {number}
+   */
+  const RADIUS = 6378137;
+
+  /**
+   * Extent of the EPSG:4326 projection which is the whole world.
+   *
+   * @const
+   * @type {import("../extent.js").Extent}
+   */
+  const EXTENT = [-180, -90, 180, 90];
+
+  /**
+   * @const
+   * @type {number}
+   */
+  const METERS_PER_UNIT = (Math.PI * RADIUS) / 180;
+
+  /**
+   * @classdesc
+   * Projection object for WGS84 geographic coordinates (EPSG:4326).
+   *
+   * Note that OpenLayers does not strictly comply with the EPSG definition.
+   * The EPSG registry defines 4326 as a CRS for Latitude,Longitude (y,x).
+   * OpenLayers treats EPSG:4326 as a pseudo-projection, with x,y coordinates.
+   */
+  class EPSG4326Projection extends Projection$2 {
+    /**
+     * @param {string} code Code.
+     * @param {string} [axisOrientation] Axis orientation.
+     */
+    constructor(code, axisOrientation) {
+      super({
+        code: code,
+        units: 'degrees',
+        extent: EXTENT,
+        axisOrientation: axisOrientation,
+        global: true,
+        metersPerUnit: METERS_PER_UNIT,
+        worldExtent: EXTENT,
+      });
+    }
+  }
+
+  /**
+   * Projections equal to EPSG:4326.
+   *
+   * @const
+   * @type {Array<import("./Projection.js").default>}
+   */
+  const PROJECTIONS = [
+    new EPSG4326Projection('CRS:84'),
+    new EPSG4326Projection('EPSG:4326', 'neu'),
+    new EPSG4326Projection('urn:ogc:def:crs:OGC:1.3:CRS84'),
+    new EPSG4326Projection('urn:ogc:def:crs:OGC:2:84'),
+    new EPSG4326Projection('http://www.opengis.net/def/crs/OGC/1.3/CRS84'),
+    new EPSG4326Projection('http://www.opengis.net/gml/srs/epsg.xml#4326', 'neu'),
+    new EPSG4326Projection('http://www.opengis.net/def/crs/EPSG/0/4326', 'neu'),
+  ];
+
+  /**
+   * @module ol/proj/projections
+   */
+
+  /**
+   * @type {Object<string, import("./Projection.js").default>}
+   */
+  let cache$1 = {};
+
+  /**
+   * Clear the projections cache.
+   */
+  function clear$1() {
+    cache$1 = {};
+  }
+
+  /**
+   * Get a cached projection by code.
+   * @param {string} code The code for the projection.
+   * @return {import("./Projection.js").default} The projection (if cached).
+   */
+  function get$4(code) {
+    return (
+      cache$1[code] ||
+      cache$1[code.replace(/urn:(x-)?ogc:def:crs:EPSG:(.*:)?(\w+)$/, 'EPSG:$3')] ||
+      null
+    );
+  }
+
+  /**
+   * Add a projection to the cache.
+   * @param {string} code The projection code.
+   * @param {import("./Projection.js").default} projection The projection to cache.
+   */
+  function add$3(code, projection) {
+    cache$1[code] = projection;
+  }
+
+  /**
+   * @module ol/proj/transforms
    */
 
   /**
    * @private
-   * @type {Transform}
+   * @type {!Object<string, Object<string, import("../proj.js").TransformFunction>>}
    */
-  new Array(6);
+  let transforms = {};
 
   /**
-   * Create an identity transform.
-   * @return {!Transform} Identity transform.
+   * Clear the transform cache.
    */
-  function create() {
-    return [1, 0, 0, 1, 0, 0];
+  function clear() {
+    transforms = {};
   }
 
   /**
-   * Set transform on one matrix from another matrix.
-   * @param {!Transform} transform1 Matrix to set transform to.
-   * @param {!Transform} transform2 Matrix to set transform from.
-   * @return {!Transform} transform1 with transform from transform2 applied.
-   */
-  function setFromArray(transform1, transform2) {
-    transform1[0] = transform2[0];
-    transform1[1] = transform2[1];
-    transform1[2] = transform2[2];
-    transform1[3] = transform2[3];
-    transform1[4] = transform2[4];
-    transform1[5] = transform2[5];
-    return transform1;
-  }
-
-  /**
-   * Transforms the given coordinate with the given transform returning the
-   * resulting, transformed coordinate. The coordinate will be modified in-place.
+   * Registers a conversion function to convert coordinates from the source
+   * projection to the destination projection.
    *
-   * @param {Transform} transform The transformation.
-   * @param {import("./coordinate.js").Coordinate|import("./pixel.js").Pixel} coordinate The coordinate to transform.
-   * @return {import("./coordinate.js").Coordinate|import("./pixel.js").Pixel} return coordinate so that operations can be
-   *     chained together.
+   * @param {import("./Projection.js").default} source Source.
+   * @param {import("./Projection.js").default} destination Destination.
+   * @param {import("../proj.js").TransformFunction} transformFn Transform.
    */
-  function apply(transform, coordinate) {
-    const x = coordinate[0];
-    const y = coordinate[1];
-    coordinate[0] = transform[0] * x + transform[2] * y + transform[4];
-    coordinate[1] = transform[1] * x + transform[3] * y + transform[5];
-    return coordinate;
+  function add$2(source, destination, transformFn) {
+    const sourceCode = source.getCode();
+    const destinationCode = destination.getCode();
+    if (!(sourceCode in transforms)) {
+      transforms[sourceCode] = {};
+    }
+    transforms[sourceCode][destinationCode] = transformFn;
   }
 
   /**
-   * Creates a composite transform given an initial translation, scale, rotation, and
-   * final translation (in that order only, not commutative).
-   * @param {!Transform} transform The transform (will be modified in place).
-   * @param {number} dx1 Initial translation x.
-   * @param {number} dy1 Initial translation y.
-   * @param {number} sx Scale factor x.
-   * @param {number} sy Scale factor y.
-   * @param {number} angle Rotation (in counter-clockwise radians).
-   * @param {number} dx2 Final translation x.
-   * @param {number} dy2 Final translation y.
-   * @return {!Transform} The composite transform.
+   * Get a transform given a source code and a destination code.
+   * @param {string} sourceCode The code for the source projection.
+   * @param {string} destinationCode The code for the destination projection.
+   * @return {import("../proj.js").TransformFunction|undefined} The transform function (if found).
    */
-  function compose(transform, dx1, dy1, sx, sy, angle, dx2, dy2) {
-    const sin = Math.sin(angle);
-    const cos = Math.cos(angle);
-    transform[0] = sx * cos;
-    transform[1] = sy * sin;
-    transform[2] = -sx * sin;
-    transform[3] = sy * cos;
-    transform[4] = dx2 * sx * cos - dy2 * sx * sin + dx1;
-    transform[5] = dx2 * sy * sin + dy2 * sy * cos + dy1;
+  function get$3(sourceCode, destinationCode) {
+    let transform;
+    if (sourceCode in transforms && destinationCode in transforms[sourceCode]) {
+      transform = transforms[sourceCode][destinationCode];
+    }
     return transform;
-  }
-
-  /**
-   * Invert the given transform.
-   * @param {!Transform} target Transform to be set as the inverse of
-   *     the source transform.
-   * @param {!Transform} source The source transform to invert.
-   * @return {!Transform} The inverted (target) transform.
-   */
-  function makeInverse(target, source) {
-    const det = determinant(source);
-    assert$1(det !== 0, 'Transformation matrix cannot be inverted');
-
-    const a = source[0];
-    const b = source[1];
-    const c = source[2];
-    const d = source[3];
-    const e = source[4];
-    const f = source[5];
-
-    target[0] = d / det;
-    target[1] = -b / det;
-    target[2] = -c / det;
-    target[3] = a / det;
-    target[4] = (c * f - d * e) / det;
-    target[5] = -(a * f - b * e) / det;
-
-    return target;
-  }
-
-  /**
-   * Returns the determinant of the given matrix.
-   * @param {!Transform} mat Matrix.
-   * @return {number} Determinant.
-   */
-  function determinant(mat) {
-    return mat[0] * mat[3] - mat[1] * mat[2];
-  }
-
-  /**
-   * @type {Array}
-   */
-  const matrixPrecision = [1e6, 1e6, 1e6, 1e6, 2, 2];
-
-  /**
-   * A rounded string version of the transform.  This can be used
-   * for CSS transforms.
-   * @param {!Transform} mat Matrix.
-   * @return {string} The transform as a string.
-   */
-  function toString$1(mat) {
-    const transformString =
-      'matrix(' +
-      mat
-        .map(
-          (value, i) =>
-            Math.round(value * matrixPrecision[i]) / matrixPrecision[i],
-        )
-        .join(', ') +
-      ')';
-    return transformString;
   }
 
   /**
@@ -2761,597 +4159,6 @@
     wrapAndSliceX: wrapAndSliceX,
     wrapX: wrapX$2
   });
-
-  /**
-   * @module ol/proj/Units
-   */
-
-
-  /**
-   * @typedef {Object} MetersPerUnitLookup
-   * @property {number} radians Radians
-   * @property {number} degrees Degrees
-   * @property {number} ft  Feet
-   * @property {number} m Meters
-   * @property {number} us-ft US feet
-   */
-
-  /**
-   * Meters per unit lookup table.
-   * @const
-   * @type {MetersPerUnitLookup}
-   * @api
-   */
-  const METERS_PER_UNIT$1 = {
-    // use the radius of the Normal sphere
-    'radians': 6370997 / (2 * Math.PI),
-    'degrees': (2 * Math.PI * 6370997) / 360,
-    'ft': 0.3048,
-    'm': 1,
-    'us-ft': 1200 / 3937,
-  };
-
-  /**
-   * @module ol/proj/Projection
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {string} code The SRS identifier code, e.g. `EPSG:4326`.
-   * @property {import("./Units.js").Units} [units] Units. Required unless a
-   * proj4 projection is defined for `code`.
-   * @property {import("../extent.js").Extent} [extent] The validity extent for the SRS.
-   * @property {string} [axisOrientation='enu'] The axis orientation as specified in Proj4.
-   * @property {boolean} [global=false] Whether the projection is valid for the whole globe.
-   * @property {number} [metersPerUnit] The meters per unit for the SRS.
-   * If not provided, the `units` are used to get the meters per unit from the {@link METERS_PER_UNIT}
-   * lookup table.
-   * @property {import("../extent.js").Extent} [worldExtent] The world extent for the SRS.
-   * @property {function(number, import("../coordinate.js").Coordinate):number} [getPointResolution]
-   * Function to determine resolution at a point. The function is called with a
-   * `number` view resolution and a {@link module:ol/coordinate~Coordinate} as arguments, and returns
-   * the `number` resolution in projection units at the passed coordinate. If this is `undefined`,
-   * the default {@link module:ol/proj.getPointResolution} function will be used.
-   */
-
-  /**
-   * @classdesc
-   * Projection definition class. One of these is created for each projection
-   * supported in the application and stored in the {@link module:ol/proj} namespace.
-   * You can use these in applications, but this is not required, as API params
-   * and options use {@link module:ol/proj~ProjectionLike} which means the simple string
-   * code will suffice.
-   *
-   * You can use {@link module:ol/proj.get} to retrieve the object for a particular
-   * projection.
-   *
-   * The library includes definitions for `EPSG:4326` and `EPSG:3857`, together
-   * with the following aliases:
-   * * `EPSG:4326`: CRS:84, urn:ogc:def:crs:EPSG:6.6:4326,
-   *     urn:ogc:def:crs:OGC:1.3:CRS84, urn:ogc:def:crs:OGC:2:84,
-   *     http://www.opengis.net/gml/srs/epsg.xml#4326,
-   *     urn:x-ogc:def:crs:EPSG:4326
-   * * `EPSG:3857`: EPSG:102100, EPSG:102113, EPSG:900913,
-   *     urn:ogc:def:crs:EPSG:6.18:3:3857,
-   *     http://www.opengis.net/gml/srs/epsg.xml#3857
-   *
-   * If you use [proj4js](https://github.com/proj4js/proj4js), aliases can
-   * be added using `proj4.defs()`. After all required projection definitions are
-   * added, call the {@link module:ol/proj/proj4.register} function.
-   *
-   * @api
-   */
-  let Projection$1 = class Projection {
-    /**
-     * @param {Options} options Projection options.
-     */
-    constructor(options) {
-      /**
-       * @private
-       * @type {string}
-       */
-      this.code_ = options.code;
-
-      /**
-       * Units of projected coordinates. When set to `TILE_PIXELS`, a
-       * `this.extent_` and `this.worldExtent_` must be configured properly for each
-       * tile.
-       * @private
-       * @type {import("./Units.js").Units}
-       */
-      this.units_ = /** @type {import("./Units.js").Units} */ (options.units);
-
-      /**
-       * Validity extent of the projection in projected coordinates. For projections
-       * with `TILE_PIXELS` units, this is the extent of the tile in
-       * tile pixel space.
-       * @private
-       * @type {import("../extent.js").Extent}
-       */
-      this.extent_ = options.extent !== undefined ? options.extent : null;
-
-      /**
-       * Extent of the world in EPSG:4326. For projections with
-       * `TILE_PIXELS` units, this is the extent of the tile in
-       * projected coordinate space.
-       * @private
-       * @type {import("../extent.js").Extent}
-       */
-      this.worldExtent_ =
-        options.worldExtent !== undefined ? options.worldExtent : null;
-
-      /**
-       * @private
-       * @type {string}
-       */
-      this.axisOrientation_ =
-        options.axisOrientation !== undefined ? options.axisOrientation : 'enu';
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.global_ = options.global !== undefined ? options.global : false;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.canWrapX_ = !!(this.global_ && this.extent_);
-
-      /**
-       * @private
-       * @type {function(number, import("../coordinate.js").Coordinate):number|undefined}
-       */
-      this.getPointResolutionFunc_ = options.getPointResolution;
-
-      /**
-       * @private
-       * @type {import("../tilegrid/TileGrid.js").default}
-       */
-      this.defaultTileGrid_ = null;
-
-      /**
-       * @private
-       * @type {number|undefined}
-       */
-      this.metersPerUnit_ = options.metersPerUnit;
-    }
-
-    /**
-     * @return {boolean} The projection is suitable for wrapping the x-axis
-     */
-    canWrapX() {
-      return this.canWrapX_;
-    }
-
-    /**
-     * Get the code for this projection, e.g. 'EPSG:4326'.
-     * @return {string} Code.
-     * @api
-     */
-    getCode() {
-      return this.code_;
-    }
-
-    /**
-     * Get the validity extent for this projection.
-     * @return {import("../extent.js").Extent} Extent.
-     * @api
-     */
-    getExtent() {
-      return this.extent_;
-    }
-
-    /**
-     * Get the units of this projection.
-     * @return {import("./Units.js").Units} Units.
-     * @api
-     */
-    getUnits() {
-      return this.units_;
-    }
-
-    /**
-     * Get the amount of meters per unit of this projection.  If the projection is
-     * not configured with `metersPerUnit` or a units identifier, the return is
-     * `undefined`.
-     * @return {number|undefined} Meters.
-     * @api
-     */
-    getMetersPerUnit() {
-      return this.metersPerUnit_ || METERS_PER_UNIT$1[this.units_];
-    }
-
-    /**
-     * Get the world extent for this projection.
-     * @return {import("../extent.js").Extent} Extent.
-     * @api
-     */
-    getWorldExtent() {
-      return this.worldExtent_;
-    }
-
-    /**
-     * Get the axis orientation of this projection.
-     * Example values are:
-     * enu - the default easting, northing, elevation.
-     * neu - northing, easting, up - useful for "lat/long" geographic coordinates,
-     *     or south orientated transverse mercator.
-     * wnu - westing, northing, up - some planetary coordinate systems have
-     *     "west positive" coordinate systems
-     * @return {string} Axis orientation.
-     * @api
-     */
-    getAxisOrientation() {
-      return this.axisOrientation_;
-    }
-
-    /**
-     * Is this projection a global projection which spans the whole world?
-     * @return {boolean} Whether the projection is global.
-     * @api
-     */
-    isGlobal() {
-      return this.global_;
-    }
-
-    /**
-     * Set if the projection is a global projection which spans the whole world
-     * @param {boolean} global Whether the projection is global.
-     * @api
-     */
-    setGlobal(global) {
-      this.global_ = global;
-      this.canWrapX_ = !!(global && this.extent_);
-    }
-
-    /**
-     * @return {import("../tilegrid/TileGrid.js").default} The default tile grid.
-     */
-    getDefaultTileGrid() {
-      return this.defaultTileGrid_;
-    }
-
-    /**
-     * @param {import("../tilegrid/TileGrid.js").default} tileGrid The default tile grid.
-     */
-    setDefaultTileGrid(tileGrid) {
-      this.defaultTileGrid_ = tileGrid;
-    }
-
-    /**
-     * Set the validity extent for this projection.
-     * @param {import("../extent.js").Extent} extent Extent.
-     * @api
-     */
-    setExtent(extent) {
-      this.extent_ = extent;
-      this.canWrapX_ = !!(this.global_ && extent);
-    }
-
-    /**
-     * Set the world extent for this projection.
-     * @param {import("../extent.js").Extent} worldExtent World extent
-     *     [minlon, minlat, maxlon, maxlat].
-     * @api
-     */
-    setWorldExtent(worldExtent) {
-      this.worldExtent_ = worldExtent;
-    }
-
-    /**
-     * Set the getPointResolution function (see {@link module:ol/proj.getPointResolution}
-     * for this projection.
-     * @param {function(number, import("../coordinate.js").Coordinate):number} func Function
-     * @api
-     */
-    setGetPointResolution(func) {
-      this.getPointResolutionFunc_ = func;
-    }
-
-    /**
-     * Get the custom point resolution function for this projection (if set).
-     * @return {function(number, import("../coordinate.js").Coordinate):number|undefined} The custom point
-     * resolution function (if set).
-     */
-    getPointResolutionFunc() {
-      return this.getPointResolutionFunc_;
-    }
-  };
-
-  var Projection$2 = Projection$1;
-
-  /**
-   * @module ol/proj/epsg3857
-   */
-
-  /**
-   * Radius of WGS84 sphere
-   *
-   * @const
-   * @type {number}
-   */
-  const RADIUS$1 = 6378137;
-
-  /**
-   * @const
-   * @type {number}
-   */
-  const HALF_SIZE = Math.PI * RADIUS$1;
-
-  /**
-   * @const
-   * @type {import("../extent.js").Extent}
-   */
-  const EXTENT$1 = [-HALF_SIZE, -HALF_SIZE, HALF_SIZE, HALF_SIZE];
-
-  /**
-   * @const
-   * @type {import("../extent.js").Extent}
-   */
-  const WORLD_EXTENT = [-180, -85, 180, 85];
-
-  /**
-   * Maximum safe value in y direction
-   * @const
-   * @type {number}
-   */
-  const MAX_SAFE_Y = RADIUS$1 * Math.log(Math.tan(Math.PI / 2));
-
-  /**
-   * @classdesc
-   * Projection object for web/spherical Mercator (EPSG:3857).
-   */
-  class EPSG3857Projection extends Projection$2 {
-    /**
-     * @param {string} code Code.
-     */
-    constructor(code) {
-      super({
-        code: code,
-        units: 'm',
-        extent: EXTENT$1,
-        global: true,
-        worldExtent: WORLD_EXTENT,
-        getPointResolution: function (resolution, point) {
-          return resolution / Math.cosh(point[1] / RADIUS$1);
-        },
-      });
-    }
-  }
-
-  /**
-   * Projections equal to EPSG:3857.
-   *
-   * @const
-   * @type {Array<import("./Projection.js").default>}
-   */
-  const PROJECTIONS$1 = [
-    new EPSG3857Projection('EPSG:3857'),
-    new EPSG3857Projection('EPSG:102100'),
-    new EPSG3857Projection('EPSG:102113'),
-    new EPSG3857Projection('EPSG:900913'),
-    new EPSG3857Projection('http://www.opengis.net/def/crs/EPSG/0/3857'),
-    new EPSG3857Projection('http://www.opengis.net/gml/srs/epsg.xml#3857'),
-  ];
-
-  /**
-   * Transformation from EPSG:4326 to EPSG:3857.
-   *
-   * @param {Array<number>} input Input array of coordinate values.
-   * @param {Array<number>} [output] Output array of coordinate values.
-   * @param {number} [dimension] Dimension (default is `2`).
-   * @param {number} [stride] Stride (default is `dimension`).
-   * @return {Array<number>} Output array of coordinate values.
-   */
-  function fromEPSG4326(input, output, dimension, stride) {
-    const length = input.length;
-    dimension = dimension > 1 ? dimension : 2;
-    stride = stride ?? dimension;
-    if (output === undefined) {
-      if (dimension > 2) {
-        // preserve values beyond second dimension
-        output = input.slice();
-      } else {
-        output = new Array(length);
-      }
-    }
-    for (let i = 0; i < length; i += stride) {
-      output[i] = (HALF_SIZE * input[i]) / 180;
-      let y = RADIUS$1 * Math.log(Math.tan((Math.PI * (+input[i + 1] + 90)) / 360));
-      if (y > MAX_SAFE_Y) {
-        y = MAX_SAFE_Y;
-      } else if (y < -MAX_SAFE_Y) {
-        y = -MAX_SAFE_Y;
-      }
-      output[i + 1] = y;
-    }
-    return output;
-  }
-
-  /**
-   * Transformation from EPSG:3857 to EPSG:4326.
-   *
-   * @param {Array<number>} input Input array of coordinate values.
-   * @param {Array<number>} [output] Output array of coordinate values.
-   * @param {number} [dimension] Dimension (default is `2`).
-   * @param {number} [stride] Stride (default is `dimension`).
-   * @return {Array<number>} Output array of coordinate values.
-   */
-  function toEPSG4326(input, output, dimension, stride) {
-    const length = input.length;
-    dimension = dimension > 1 ? dimension : 2;
-    stride = stride ?? dimension;
-    if (output === undefined) {
-      if (dimension > 2) {
-        // preserve values beyond second dimension
-        output = input.slice();
-      } else {
-        output = new Array(length);
-      }
-    }
-    for (let i = 0; i < length; i += stride) {
-      output[i] = (180 * input[i]) / HALF_SIZE;
-      output[i + 1] =
-        (360 * Math.atan(Math.exp(input[i + 1] / RADIUS$1))) / Math.PI - 90;
-    }
-    return output;
-  }
-
-  /**
-   * @module ol/proj/epsg4326
-   */
-
-  /**
-   * Semi-major radius of the WGS84 ellipsoid.
-   *
-   * @const
-   * @type {number}
-   */
-  const RADIUS = 6378137;
-
-  /**
-   * Extent of the EPSG:4326 projection which is the whole world.
-   *
-   * @const
-   * @type {import("../extent.js").Extent}
-   */
-  const EXTENT = [-180, -90, 180, 90];
-
-  /**
-   * @const
-   * @type {number}
-   */
-  const METERS_PER_UNIT = (Math.PI * RADIUS) / 180;
-
-  /**
-   * @classdesc
-   * Projection object for WGS84 geographic coordinates (EPSG:4326).
-   *
-   * Note that OpenLayers does not strictly comply with the EPSG definition.
-   * The EPSG registry defines 4326 as a CRS for Latitude,Longitude (y,x).
-   * OpenLayers treats EPSG:4326 as a pseudo-projection, with x,y coordinates.
-   */
-  class EPSG4326Projection extends Projection$2 {
-    /**
-     * @param {string} code Code.
-     * @param {string} [axisOrientation] Axis orientation.
-     */
-    constructor(code, axisOrientation) {
-      super({
-        code: code,
-        units: 'degrees',
-        extent: EXTENT,
-        axisOrientation: axisOrientation,
-        global: true,
-        metersPerUnit: METERS_PER_UNIT,
-        worldExtent: EXTENT,
-      });
-    }
-  }
-
-  /**
-   * Projections equal to EPSG:4326.
-   *
-   * @const
-   * @type {Array<import("./Projection.js").default>}
-   */
-  const PROJECTIONS = [
-    new EPSG4326Projection('CRS:84'),
-    new EPSG4326Projection('EPSG:4326', 'neu'),
-    new EPSG4326Projection('urn:ogc:def:crs:OGC:1.3:CRS84'),
-    new EPSG4326Projection('urn:ogc:def:crs:OGC:2:84'),
-    new EPSG4326Projection('http://www.opengis.net/def/crs/OGC/1.3/CRS84'),
-    new EPSG4326Projection('http://www.opengis.net/gml/srs/epsg.xml#4326', 'neu'),
-    new EPSG4326Projection('http://www.opengis.net/def/crs/EPSG/0/4326', 'neu'),
-  ];
-
-  /**
-   * @module ol/proj/projections
-   */
-
-  /**
-   * @type {Object<string, import("./Projection.js").default>}
-   */
-  let cache$1 = {};
-
-  /**
-   * Clear the projections cache.
-   */
-  function clear$1() {
-    cache$1 = {};
-  }
-
-  /**
-   * Get a cached projection by code.
-   * @param {string} code The code for the projection.
-   * @return {import("./Projection.js").default} The projection (if cached).
-   */
-  function get$4(code) {
-    return (
-      cache$1[code] ||
-      cache$1[code.replace(/urn:(x-)?ogc:def:crs:EPSG:(.*:)?(\w+)$/, 'EPSG:$3')] ||
-      null
-    );
-  }
-
-  /**
-   * Add a projection to the cache.
-   * @param {string} code The projection code.
-   * @param {import("./Projection.js").default} projection The projection to cache.
-   */
-  function add$3(code, projection) {
-    cache$1[code] = projection;
-  }
-
-  /**
-   * @module ol/proj/transforms
-   */
-
-  /**
-   * @private
-   * @type {!Object<string, Object<string, import("../proj.js").TransformFunction>>}
-   */
-  let transforms = {};
-
-  /**
-   * Clear the transform cache.
-   */
-  function clear() {
-    transforms = {};
-  }
-
-  /**
-   * Registers a conversion function to convert coordinates from the source
-   * projection to the destination projection.
-   *
-   * @param {import("./Projection.js").default} source Source.
-   * @param {import("./Projection.js").default} destination Destination.
-   * @param {import("../proj.js").TransformFunction} transformFn Transform.
-   */
-  function add$2(source, destination, transformFn) {
-    const sourceCode = source.getCode();
-    const destinationCode = destination.getCode();
-    if (!(sourceCode in transforms)) {
-      transforms[sourceCode] = {};
-    }
-    transforms[sourceCode][destinationCode] = transformFn;
-  }
-
-  /**
-   * Get a transform given a source code and a destination code.
-   * @param {string} sourceCode The code for the source projection.
-   * @param {string} destinationCode The code for the destination projection.
-   * @return {import("../proj.js").TransformFunction|undefined} The transform function (if found).
-   */
-  function get$3(sourceCode, destinationCode) {
-    let transform;
-    if (sourceCode in transforms && destinationCode in transforms[sourceCode]) {
-      transform = transforms[sourceCode][destinationCode];
-    }
-    return transform;
-  }
 
   /**
    * @module ol/math
@@ -5036,6 +5843,1195 @@
     transformWithProjections: transformWithProjections,
     useGeographic: useGeographic
   });
+
+  /**
+   * @module ol/control/ScaleLine
+   */
+
+  /**
+   * @type {string}
+   */
+  const UNITS_PROP = 'units';
+
+  /**
+   * @typedef {'degrees' | 'imperial' | 'nautical' | 'metric' | 'us'} Units
+   * Units for the scale line.
+   */
+
+  /**
+   * @const
+   * @type {Array<number>}
+   */
+  const LEADING_DIGITS = [1, 2, 5];
+
+  /**
+   * @const
+   * @type {number}
+   */
+  const DEFAULT_DPI = 25.4 / 0.28;
+
+  /***
+   * @template Return
+   * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes, import("../events/Event.js").default, Return> &
+   *   import("../Observable").OnSignature<import("../ObjectEventType").Types|
+   *     'change:units', import("../Object").ObjectEvent, Return> &
+   *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|import("../ObjectEventType").Types
+   *     |'change:units', Return>} ScaleLineOnSignature
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {string} [className] CSS class name. The default is `ol-scale-bar` when configured with
+   * `bar: true`. Otherwise the default is `ol-scale-line`.
+   * @property {number} [minWidth=64] Minimum width in pixels at the OGC default dpi. The width will be
+   * adjusted to match the dpi used.
+   * @property {number} [maxWidth] Maximum width in pixels at the OGC default dpi. The width will be
+   * adjusted to match the dpi used.
+   * @property {function(import("../MapEvent.js").default):void} [render] Function called when the control
+   * should be re-rendered. This is called in a `requestAnimationFrame` callback.
+   * @property {HTMLElement|string} [target] Specify a target if you want the control
+   * to be rendered outside of the map's viewport.
+   * @property {Units} [units='metric'] Units.
+   * @property {boolean} [bar=false] Render scalebars instead of a line.
+   * @property {number} [steps=4] Number of steps the scalebar should use. Use even numbers
+   * for best results. Only applies when `bar` is `true`.
+   * @property {boolean} [text=false] Render the text scale above of the scalebar. Only applies
+   * when `bar` is `true`.
+   * @property {number|undefined} [dpi=undefined] dpi of output device such as printer. Only applies
+   * when `bar` is `true`. If undefined the OGC default screen pixel size of 0.28mm will be assumed.
+   */
+
+  /**
+   * @classdesc
+   * A control displaying rough y-axis distances, calculated for the center of the
+   * viewport. For conformal projections (e.g. EPSG:3857, the default view
+   * projection in OpenLayers), the scale is valid for all directions.
+   * No scale line will be shown when the y-axis distance of a pixel at the
+   * viewport center cannot be calculated in the view projection.
+   * By default the scale line will show in the bottom left portion of the map,
+   * but this can be changed by using the css selector `.ol-scale-line`.
+   * When specifying `bar` as `true`, a scalebar will be rendered instead
+   * of a scaleline.
+   * For cartesian measurements of the scaleline, you need to set the
+   * `getPointResolution` method of your projection to simply return the input
+   * value, e.g. `projection.setGetPointResolution(r => r);`
+   *
+   * @api
+   */
+  class ScaleLine extends Control {
+    /**
+     * @param {Options} [options] Scale line options.
+     */
+    constructor(options) {
+      options = options ? options : {};
+
+      const element = document.createElement('div');
+      element.style.pointerEvents = 'none';
+
+      super({
+        element: element,
+        render: options.render,
+        target: options.target,
+      });
+
+      /***
+       * @type {ScaleLineOnSignature<import("../events").EventsKey>}
+       */
+      this.on;
+
+      /***
+       * @type {ScaleLineOnSignature<import("../events").EventsKey>}
+       */
+      this.once;
+
+      /***
+       * @type {ScaleLineOnSignature<void>}
+       */
+      this.un;
+
+      const className =
+        options.className !== undefined
+          ? options.className
+          : options.bar
+            ? 'ol-scale-bar'
+            : 'ol-scale-line';
+
+      /**
+       * @private
+       * @type {HTMLElement}
+       */
+      this.innerElement_ = document.createElement('div');
+      this.innerElement_.className = className + '-inner';
+
+      this.element.className = className + ' ' + CLASS_UNSELECTABLE;
+      this.element.appendChild(this.innerElement_);
+
+      /**
+       * @private
+       * @type {?import("../View.js").State}
+       */
+      this.viewState_ = null;
+
+      /**
+       * @private
+       * @type {number}
+       */
+      this.minWidth_ = options.minWidth !== undefined ? options.minWidth : 64;
+
+      /**
+       * @private
+       * @type {number|undefined}
+       */
+      this.maxWidth_ = options.maxWidth;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.renderedVisible_ = false;
+
+      /**
+       * @private
+       * @type {number|undefined}
+       */
+      this.renderedWidth_ = undefined;
+
+      /**
+       * @private
+       * @type {string}
+       */
+      this.renderedHTML_ = '';
+
+      this.addChangeListener(UNITS_PROP, this.handleUnitsChanged_);
+
+      this.setUnits(options.units || 'metric');
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.scaleBar_ = options.bar || false;
+
+      /**
+       * @private
+       * @type {number}
+       */
+      this.scaleBarSteps_ = options.steps || 4;
+
+      /**
+       * @private
+       * @type {boolean}
+       */
+      this.scaleBarText_ = options.text || false;
+
+      /**
+       * @private
+       * @type {number|undefined}
+       */
+      this.dpi_ = options.dpi || undefined;
+    }
+
+    /**
+     * Return the units to use in the scale line.
+     * @return {Units} The units
+     * to use in the scale line.
+     * @observable
+     * @api
+     */
+    getUnits() {
+      return this.get(UNITS_PROP);
+    }
+
+    /**
+     * @private
+     */
+    handleUnitsChanged_() {
+      this.updateElement_();
+    }
+
+    /**
+     * Set the units to use in the scale line.
+     * @param {Units} units The units to use in the scale line.
+     * @observable
+     * @api
+     */
+    setUnits(units) {
+      this.set(UNITS_PROP, units);
+    }
+
+    /**
+     * Specify the dpi of output device such as printer.
+     * @param {number|undefined} dpi The dpi of output device.
+     * @api
+     */
+    setDpi(dpi) {
+      this.dpi_ = dpi;
+    }
+
+    /**
+     * @private
+     */
+    updateElement_() {
+      const viewState = this.viewState_;
+
+      if (!viewState) {
+        if (this.renderedVisible_) {
+          this.element.style.display = 'none';
+          this.renderedVisible_ = false;
+        }
+        return;
+      }
+
+      const center = viewState.center;
+      const projection = viewState.projection;
+      const units = this.getUnits();
+      const pointResolutionUnits = units == 'degrees' ? 'degrees' : 'm';
+      let pointResolution = getPointResolution(
+        projection,
+        viewState.resolution,
+        center,
+        pointResolutionUnits,
+      );
+
+      const minWidth =
+        (this.minWidth_ * (this.dpi_ || DEFAULT_DPI)) / DEFAULT_DPI;
+
+      const maxWidth =
+        this.maxWidth_ !== undefined
+          ? (this.maxWidth_ * (this.dpi_ || DEFAULT_DPI)) / DEFAULT_DPI
+          : undefined;
+
+      let nominalCount = minWidth * pointResolution;
+      let suffix = '';
+      if (units == 'degrees') {
+        const metersPerDegree = METERS_PER_UNIT$1.degrees;
+        nominalCount *= metersPerDegree;
+        if (nominalCount < metersPerDegree / 60) {
+          suffix = '\u2033'; // seconds
+          pointResolution *= 3600;
+        } else if (nominalCount < metersPerDegree) {
+          suffix = '\u2032'; // minutes
+          pointResolution *= 60;
+        } else {
+          suffix = '\u00b0'; // degrees
+        }
+      } else if (units == 'imperial') {
+        if (nominalCount < 0.9144) {
+          suffix = 'in';
+          pointResolution /= 0.0254;
+        } else if (nominalCount < 1609.344) {
+          suffix = 'ft';
+          pointResolution /= 0.3048;
+        } else {
+          suffix = 'mi';
+          pointResolution /= 1609.344;
+        }
+      } else if (units == 'nautical') {
+        pointResolution /= 1852;
+        suffix = 'NM';
+      } else if (units == 'metric') {
+        if (nominalCount < 1e-6) {
+          suffix = 'nm';
+          pointResolution *= 1e9;
+        } else if (nominalCount < 0.001) {
+          suffix = 'μm';
+          pointResolution *= 1000000;
+        } else if (nominalCount < 1) {
+          suffix = 'mm';
+          pointResolution *= 1000;
+        } else if (nominalCount < 1000) {
+          suffix = 'm';
+        } else {
+          suffix = 'km';
+          pointResolution /= 1000;
+        }
+      } else if (units == 'us') {
+        if (nominalCount < 0.9144) {
+          suffix = 'in';
+          pointResolution *= 39.37;
+        } else if (nominalCount < 1609.344) {
+          suffix = 'ft';
+          pointResolution /= 0.30480061;
+        } else {
+          suffix = 'mi';
+          pointResolution /= 1609.3472;
+        }
+      } else {
+        throw new Error('Invalid units');
+      }
+
+      let i = 3 * Math.floor(Math.log(minWidth * pointResolution) / Math.log(10));
+      let count, width, decimalCount;
+      let previousCount, previousWidth, previousDecimalCount;
+      while (true) {
+        decimalCount = Math.floor(i / 3);
+        const decimal = Math.pow(10, decimalCount);
+        count = LEADING_DIGITS[((i % 3) + 3) % 3] * decimal;
+        width = Math.round(count / pointResolution);
+        if (isNaN(width)) {
+          this.element.style.display = 'none';
+          this.renderedVisible_ = false;
+          return;
+        }
+        if (maxWidth !== undefined && width >= maxWidth) {
+          count = previousCount;
+          width = previousWidth;
+          decimalCount = previousDecimalCount;
+          break;
+        } else if (width >= minWidth) {
+          break;
+        }
+        previousCount = count;
+        previousWidth = width;
+        previousDecimalCount = decimalCount;
+        ++i;
+      }
+      const html = this.scaleBar_
+        ? this.createScaleBar(width, count, suffix)
+        : count.toFixed(decimalCount < 0 ? -decimalCount : 0) + ' ' + suffix;
+
+      if (this.renderedHTML_ != html) {
+        this.innerElement_.innerHTML = html;
+        this.renderedHTML_ = html;
+      }
+
+      if (this.renderedWidth_ != width) {
+        this.innerElement_.style.width = width + 'px';
+        this.renderedWidth_ = width;
+      }
+
+      if (!this.renderedVisible_) {
+        this.element.style.display = '';
+        this.renderedVisible_ = true;
+      }
+    }
+
+    /**
+     * @private
+     * @param {number} width The current width of the scalebar.
+     * @param {number} scale The current scale.
+     * @param {string} suffix The suffix to append to the scale text.
+     * @return {string} The stringified HTML of the scalebar.
+     */
+    createScaleBar(width, scale, suffix) {
+      const resolutionScale = this.getScaleForResolution();
+      const mapScale =
+        resolutionScale < 1
+          ? Math.round(1 / resolutionScale).toLocaleString() + ' : 1'
+          : '1 : ' + Math.round(resolutionScale).toLocaleString();
+      const steps = this.scaleBarSteps_;
+      const stepWidth = width / steps;
+      const scaleSteps = [this.createMarker('absolute')];
+      for (let i = 0; i < steps; ++i) {
+        const cls =
+          i % 2 === 0 ? 'ol-scale-singlebar-odd' : 'ol-scale-singlebar-even';
+        scaleSteps.push(
+          '<div>' +
+            '<div ' +
+            `class="ol-scale-singlebar ${cls}" ` +
+            `style="width: ${stepWidth}px;"` +
+            '>' +
+            '</div>' +
+            this.createMarker('relative') +
+            // render text every second step, except when only 2 steps
+            (i % 2 === 0 || steps === 2
+              ? this.createStepText(i, width, false, scale, suffix)
+              : '') +
+            '</div>',
+        );
+      }
+      // render text at the end
+      scaleSteps.push(this.createStepText(steps, width, true, scale, suffix));
+
+      const scaleBarText = this.scaleBarText_
+        ? `<div class="ol-scale-text" style="width: ${width}px;">` +
+          mapScale +
+          '</div>'
+        : '';
+      return scaleBarText + scaleSteps.join('');
+    }
+
+    /**
+     * Creates a marker at given position
+     * @param {'absolute'|'relative'} position The position, absolute or relative
+     * @return {string} The stringified div containing the marker
+     */
+    createMarker(position) {
+      const top = position === 'absolute' ? 3 : -10;
+      return (
+        '<div ' +
+        'class="ol-scale-step-marker" ' +
+        `style="position: ${position}; top: ${top}px;"` +
+        '></div>'
+      );
+    }
+
+    /**
+     * Creates the label for a marker marker at given position
+     * @param {number} i The iterator
+     * @param {number} width The width the scalebar will currently use
+     * @param {boolean} isLast Flag indicating if we add the last step text
+     * @param {number} scale The current scale for the whole scalebar
+     * @param {string} suffix The suffix for the scale
+     * @return {string} The stringified div containing the step text
+     */
+    createStepText(i, width, isLast, scale, suffix) {
+      const length =
+        i === 0 ? 0 : Math.round((scale / this.scaleBarSteps_) * i * 100) / 100;
+      const lengthString = length + (i === 0 ? '' : ' ' + suffix);
+      const margin = i === 0 ? -3 : (width / this.scaleBarSteps_) * -1;
+      const minWidth = i === 0 ? 0 : (width / this.scaleBarSteps_) * 2;
+      return (
+        '<div ' +
+        'class="ol-scale-step-text" ' +
+        'style="' +
+        `margin-left: ${margin}px;` +
+        `text-align: ${i === 0 ? 'left' : 'center'};` +
+        `min-width: ${minWidth}px;` +
+        `left: ${isLast ? width + 'px' : 'unset'};` +
+        '">' +
+        lengthString +
+        '</div>'
+      );
+    }
+
+    /**
+     * Returns the appropriate scale for the given resolution and units.
+     * @return {number} The appropriate scale.
+     */
+    getScaleForResolution() {
+      const resolution = getPointResolution(
+        this.viewState_.projection,
+        this.viewState_.resolution,
+        this.viewState_.center,
+        'm',
+      );
+      const dpi = this.dpi_ || DEFAULT_DPI;
+      const inchesPerMeter = 1000 / 25.4;
+      return resolution * inchesPerMeter * dpi;
+    }
+
+    /**
+     * Update the scale line element.
+     * @param {import("../MapEvent.js").default} mapEvent Map event.
+     * @override
+     */
+    render(mapEvent) {
+      const frameState = mapEvent.frameState;
+      if (!frameState) {
+        this.viewState_ = null;
+      } else {
+        this.viewState_ = frameState.viewState;
+      }
+      this.updateElement_();
+    }
+  }
+
+  var ScaleLine$1 = ScaleLine;
+
+  /**
+   * @module ol/easing
+   */
+
+  /**
+   * Start slow and speed up.
+   * @param {number} t Input between 0 and 1.
+   * @return {number} Output between 0 and 1.
+   * @api
+   */
+  function easeIn(t) {
+    return Math.pow(t, 3);
+  }
+
+  /**
+   * Start fast and slow down.
+   * @param {number} t Input between 0 and 1.
+   * @return {number} Output between 0 and 1.
+   * @api
+   */
+  function easeOut(t) {
+    return 1 - easeIn(1 - t);
+  }
+
+  /**
+   * Start slow, speed up, and then slow down again.
+   * @param {number} t Input between 0 and 1.
+   * @return {number} Output between 0 and 1.
+   * @api
+   */
+  function inAndOut(t) {
+    return 3 * t * t - 2 * t * t * t;
+  }
+
+  /**
+   * Maintain a constant speed over time.
+   * @param {number} t Input between 0 and 1.
+   * @return {number} Output between 0 and 1.
+   * @api
+   */
+  function linear(t) {
+    return t;
+  }
+
+  /**
+   * @module ol/control/Zoom
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {number} [duration=250] Animation duration in milliseconds.
+   * @property {string} [className='ol-zoom'] CSS class name.
+   * @property {string} [zoomInClassName=className + '-in'] CSS class name for the zoom-in button.
+   * @property {string} [zoomOutClassName=className + '-out'] CSS class name for the zoom-out button.
+   * @property {string|HTMLElement} [zoomInLabel='+'] Text label to use for the zoom-in
+   * button. Instead of text, also an element (e.g. a `span` element) can be used.
+   * @property {string|HTMLElement} [zoomOutLabel='–'] Text label to use for the zoom-out button.
+   * Instead of text, also an element (e.g. a `span` element) can be used.
+   * @property {string} [zoomInTipLabel='Zoom in'] Text label to use for the button tip.
+   * @property {string} [zoomOutTipLabel='Zoom out'] Text label to use for the button tip.
+   * @property {number} [delta=1] The zoom delta applied on each click.
+   * @property {HTMLElement|string} [target] Specify a target if you want the control to be
+   * rendered outside of the map's viewport.
+   */
+
+  /**
+   * @classdesc
+   * A control with 2 buttons, one for zoom in and one for zoom out.
+   * This control is one of the default controls of a map. To style this control
+   * use css selectors `.ol-zoom-in` and `.ol-zoom-out`.
+   *
+   * @api
+   */
+  class Zoom extends Control {
+    /**
+     * @param {Options} [options] Zoom options.
+     */
+    constructor(options) {
+      options = options ? options : {};
+
+      super({
+        element: document.createElement('div'),
+        target: options.target,
+      });
+
+      const className =
+        options.className !== undefined ? options.className : 'ol-zoom';
+
+      const delta = options.delta !== undefined ? options.delta : 1;
+
+      const zoomInClassName =
+        options.zoomInClassName !== undefined
+          ? options.zoomInClassName
+          : className + '-in';
+
+      const zoomOutClassName =
+        options.zoomOutClassName !== undefined
+          ? options.zoomOutClassName
+          : className + '-out';
+
+      const zoomInLabel =
+        options.zoomInLabel !== undefined ? options.zoomInLabel : '+';
+      const zoomOutLabel =
+        options.zoomOutLabel !== undefined ? options.zoomOutLabel : '\u2013';
+
+      const zoomInTipLabel =
+        options.zoomInTipLabel !== undefined ? options.zoomInTipLabel : 'Zoom in';
+      const zoomOutTipLabel =
+        options.zoomOutTipLabel !== undefined
+          ? options.zoomOutTipLabel
+          : 'Zoom out';
+
+      const inElement = document.createElement('button');
+      inElement.className = zoomInClassName;
+      inElement.setAttribute('type', 'button');
+      inElement.title = zoomInTipLabel;
+      inElement.appendChild(
+        typeof zoomInLabel === 'string'
+          ? document.createTextNode(zoomInLabel)
+          : zoomInLabel,
+      );
+
+      inElement.addEventListener(
+        EventType.CLICK,
+        this.handleClick_.bind(this, delta),
+        false,
+      );
+
+      const outElement = document.createElement('button');
+      outElement.className = zoomOutClassName;
+      outElement.setAttribute('type', 'button');
+      outElement.title = zoomOutTipLabel;
+      outElement.appendChild(
+        typeof zoomOutLabel === 'string'
+          ? document.createTextNode(zoomOutLabel)
+          : zoomOutLabel,
+      );
+
+      outElement.addEventListener(
+        EventType.CLICK,
+        this.handleClick_.bind(this, -delta),
+        false,
+      );
+
+      const cssClasses =
+        className + ' ' + CLASS_UNSELECTABLE + ' ' + CLASS_CONTROL;
+      const element = this.element;
+      element.className = cssClasses;
+      element.appendChild(inElement);
+      element.appendChild(outElement);
+
+      /**
+       * @type {number}
+       * @private
+       */
+      this.duration_ = options.duration !== undefined ? options.duration : 250;
+    }
+
+    /**
+     * @param {number} delta Zoom delta.
+     * @param {MouseEvent} event The event to handle
+     * @private
+     */
+    handleClick_(delta, event) {
+      event.preventDefault();
+      this.zoomByDelta_(delta);
+    }
+
+    /**
+     * @param {number} delta Zoom delta.
+     * @private
+     */
+    zoomByDelta_(delta) {
+      const map = this.getMap();
+      const view = map.getView();
+      if (!view) {
+        // the map does not have a view, so we can't act
+        // upon it
+        return;
+      }
+      const currentZoom = view.getZoom();
+      if (currentZoom !== undefined) {
+        const newZoom = view.getConstrainedZoom(currentZoom + delta);
+        if (this.duration_ > 0) {
+          if (view.getAnimating()) {
+            view.cancelAnimations();
+          }
+          view.animate({
+            zoom: newZoom,
+            duration: this.duration_,
+            easing: easeOut,
+          });
+        } else {
+          view.setZoom(newZoom);
+        }
+      }
+    }
+  }
+
+  var Zoom$1 = Zoom;
+
+  /**
+   * @module ol/asserts
+   */
+
+  /**
+   * @param {*} assertion Assertion we expected to be truthy.
+   * @param {string} errorMessage Error message.
+   */
+  function assert$1(assertion, errorMessage) {
+    if (!assertion) {
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * @module ol/Feature
+   */
+
+  /**
+   * @typedef {typeof Feature|typeof import("./render/Feature.js").default} FeatureClass
+   */
+
+  /**
+   * @typedef {Feature|import("./render/Feature.js").default} FeatureLike
+   */
+
+  /***
+   * @template Return
+   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
+   *   import("./Observable").OnSignature<import("./ObjectEventType").Types|'change:geometry', import("./Object").ObjectEvent, Return> &
+   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types
+   *     |'change:geometry', Return>} FeatureOnSignature
+   */
+
+  /***
+   * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
+   * @typedef {Object<string, *> & { geometry?: Geometry }} ObjectWithGeometry
+   */
+
+  /**
+   * @classdesc
+   * A vector object for geographic features with a geometry and other
+   * attribute properties, similar to the features in vector file formats like
+   * GeoJSON.
+   *
+   * Features can be styled individually with `setStyle`; otherwise they use the
+   * style of their vector layer.
+   *
+   * Note that attribute properties are set as {@link module:ol/Object~BaseObject} properties on
+   * the feature object, so they are observable, and have get/set accessors.
+   *
+   * Typically, a feature has a single geometry property. You can set the
+   * geometry using the `setGeometry` method and get it with `getGeometry`.
+   * It is possible to store more than one geometry on a feature using attribute
+   * properties. By default, the geometry used for rendering is identified by
+   * the property name `geometry`. If you want to use another geometry property
+   * for rendering, use the `setGeometryName` method to change the attribute
+   * property associated with the geometry for the feature.  For example:
+   *
+   * ```js
+   *
+   * import Feature from 'ol/Feature.js';
+   * import Polygon from 'ol/geom/Polygon.js';
+   * import Point from 'ol/geom/Point.js';
+   *
+   * const feature = new Feature({
+   *   geometry: new Polygon(polyCoords),
+   *   labelPoint: new Point(labelCoords),
+   *   name: 'My Polygon',
+   * });
+   *
+   * // get the polygon geometry
+   * const poly = feature.getGeometry();
+   *
+   * // Render the feature as a point using the coordinates from labelPoint
+   * feature.setGeometryName('labelPoint');
+   *
+   * // get the point geometry
+   * const point = feature.getGeometry();
+   * ```
+   *
+   * @api
+   * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
+   */
+  class Feature extends BaseObject {
+    /**
+     * @param {Geometry|ObjectWithGeometry<Geometry>} [geometryOrProperties]
+     *     You may pass a Geometry object directly, or an object literal containing
+     *     properties. If you pass an object literal, you may include a Geometry
+     *     associated with a `geometry` key.
+     */
+    constructor(geometryOrProperties) {
+      super();
+
+      /***
+       * @type {FeatureOnSignature<import("./events").EventsKey>}
+       */
+      this.on;
+
+      /***
+       * @type {FeatureOnSignature<import("./events").EventsKey>}
+       */
+      this.once;
+
+      /***
+       * @type {FeatureOnSignature<void>}
+       */
+      this.un;
+
+      /**
+       * @private
+       * @type {number|string|undefined}
+       */
+      this.id_ = undefined;
+
+      /**
+       * @type {string}
+       * @private
+       */
+      this.geometryName_ = 'geometry';
+
+      /**
+       * User provided style.
+       * @private
+       * @type {import("./style/Style.js").StyleLike}
+       */
+      this.style_ = null;
+
+      /**
+       * @private
+       * @type {import("./style/Style.js").StyleFunction|undefined}
+       */
+      this.styleFunction_ = undefined;
+
+      /**
+       * @private
+       * @type {?import("./events.js").EventsKey}
+       */
+      this.geometryChangeKey_ = null;
+
+      this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
+
+      if (geometryOrProperties) {
+        if (
+          typeof (
+            /** @type {?} */ (geometryOrProperties).getSimplifiedGeometry
+          ) === 'function'
+        ) {
+          const geometry = /** @type {Geometry} */ (geometryOrProperties);
+          this.setGeometry(geometry);
+        } else {
+          /** @type {Object<string, *>} */
+          const properties = geometryOrProperties;
+          this.setProperties(properties);
+        }
+      }
+    }
+
+    /**
+     * Clone this feature. If the original feature has a geometry it
+     * is also cloned. The feature id is not set in the clone.
+     * @return {Feature<Geometry>} The clone.
+     * @api
+     */
+    clone() {
+      const clone = /** @type {Feature<Geometry>} */ (
+        new Feature(this.hasProperties() ? this.getProperties() : null)
+      );
+      clone.setGeometryName(this.getGeometryName());
+      const geometry = this.getGeometry();
+      if (geometry) {
+        clone.setGeometry(/** @type {Geometry} */ (geometry.clone()));
+      }
+      const style = this.getStyle();
+      if (style) {
+        clone.setStyle(style);
+      }
+      return clone;
+    }
+
+    /**
+     * Get the feature's default geometry.  A feature may have any number of named
+     * geometries.  The "default" geometry (the one that is rendered by default) is
+     * set when calling {@link module:ol/Feature~Feature#setGeometry}.
+     * @return {Geometry|undefined} The default geometry for the feature.
+     * @api
+     * @observable
+     */
+    getGeometry() {
+      return /** @type {Geometry|undefined} */ (this.get(this.geometryName_));
+    }
+
+    /**
+     * Get the feature identifier.  This is a stable identifier for the feature and
+     * is either set when reading data from a remote source or set explicitly by
+     * calling {@link module:ol/Feature~Feature#setId}.
+     * @return {number|string|undefined} Id.
+     * @api
+     */
+    getId() {
+      return this.id_;
+    }
+
+    /**
+     * Get the name of the feature's default geometry.  By default, the default
+     * geometry is named `geometry`.
+     * @return {string} Get the property name associated with the default geometry
+     *     for this feature.
+     * @api
+     */
+    getGeometryName() {
+      return this.geometryName_;
+    }
+
+    /**
+     * Get the feature's style. Will return what was provided to the
+     * {@link module:ol/Feature~Feature#setStyle} method.
+     * @return {import("./style/Style.js").StyleLike|undefined} The feature style.
+     * @api
+     */
+    getStyle() {
+      return this.style_;
+    }
+
+    /**
+     * Get the feature's style function.
+     * @return {import("./style/Style.js").StyleFunction|undefined} Return a function
+     * representing the current style of this feature.
+     * @api
+     */
+    getStyleFunction() {
+      return this.styleFunction_;
+    }
+
+    /**
+     * @private
+     */
+    handleGeometryChange_() {
+      this.changed();
+    }
+
+    /**
+     * @private
+     */
+    handleGeometryChanged_() {
+      if (this.geometryChangeKey_) {
+        unlistenByKey(this.geometryChangeKey_);
+        this.geometryChangeKey_ = null;
+      }
+      const geometry = this.getGeometry();
+      if (geometry) {
+        this.geometryChangeKey_ = listen(
+          geometry,
+          EventType.CHANGE,
+          this.handleGeometryChange_,
+          this,
+        );
+      }
+      this.changed();
+    }
+
+    /**
+     * Set the default geometry for the feature.  This will update the property
+     * with the name returned by {@link module:ol/Feature~Feature#getGeometryName}.
+     * @param {Geometry|undefined} geometry The new geometry.
+     * @api
+     * @observable
+     */
+    setGeometry(geometry) {
+      this.set(this.geometryName_, geometry);
+    }
+
+    /**
+     * Set the style for the feature to override the layer style.  This can be a
+     * single style object, an array of styles, or a function that takes a
+     * resolution and returns an array of styles. To unset the feature style, call
+     * `setStyle()` without arguments or a falsey value.
+     * @param {import("./style/Style.js").StyleLike} [style] Style for this feature.
+     * @api
+     * @fires module:ol/events/Event~BaseEvent#event:change
+     */
+    setStyle(style) {
+      this.style_ = style;
+      this.styleFunction_ = !style ? undefined : createStyleFunction(style);
+      this.changed();
+    }
+
+    /**
+     * Set the feature id.  The feature id is considered stable and may be used when
+     * requesting features or comparing identifiers returned from a remote source.
+     * The feature id can be used with the
+     * {@link module:ol/source/Vector~VectorSource#getFeatureById} method.
+     * @param {number|string|undefined} id The feature id.
+     * @api
+     * @fires module:ol/events/Event~BaseEvent#event:change
+     */
+    setId(id) {
+      this.id_ = id;
+      this.changed();
+    }
+
+    /**
+     * Set the property name to be used when getting the feature's default geometry.
+     * When calling {@link module:ol/Feature~Feature#getGeometry}, the value of the property with
+     * this name will be returned.
+     * @param {string} name The property name of the default geometry.
+     * @api
+     */
+    setGeometryName(name) {
+      this.removeChangeListener(this.geometryName_, this.handleGeometryChanged_);
+      this.geometryName_ = name;
+      this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
+      this.handleGeometryChanged_();
+    }
+  }
+
+  /**
+   * Convert the provided object into a feature style function.  Functions passed
+   * through unchanged.  Arrays of Style or single style objects wrapped
+   * in a new feature style function.
+   * @param {!import("./style/Style.js").StyleFunction|!Array<import("./style/Style.js").default>|!import("./style/Style.js").default} obj
+   *     A feature style function, a single style, or an array of styles.
+   * @return {import("./style/Style.js").StyleFunction} A style function.
+   */
+  function createStyleFunction(obj) {
+    if (typeof obj === 'function') {
+      return obj;
+    }
+    /**
+     * @type {Array<import("./style/Style.js").default>}
+     */
+    let styles;
+    if (Array.isArray(obj)) {
+      styles = obj;
+    } else {
+      assert$1(
+        typeof (/** @type {?} */ (obj).getZIndex) === 'function',
+        'Expected an `ol/style/Style` or an array of `ol/style/Style.js`',
+      );
+      const style = /** @type {import("./style/Style.js").default} */ (obj);
+      styles = [style];
+    }
+    return function () {
+      return styles;
+    };
+  }
+
+  /**
+   * @module ol/transform
+   */
+
+  /**
+   * An array representing an affine 2d transformation for use with
+   * {@link module:ol/transform} functions. The array has 6 elements.
+   * @typedef {!Array<number>} Transform
+   * @api
+   */
+
+  /**
+   * Collection of affine 2d transformation functions. The functions work on an
+   * array of 6 elements. The element order is compatible with the [SVGMatrix
+   * interface](https://developer.mozilla.org/en-US/docs/Web/API/SVGMatrix) and is
+   * a subset (elements a to f) of a 3×3 matrix:
+   * ```
+   * [ a c e ]
+   * [ b d f ]
+   * [ 0 0 1 ]
+   * ```
+   */
+
+  /**
+   * @private
+   * @type {Transform}
+   */
+  new Array(6);
+
+  /**
+   * Create an identity transform.
+   * @return {!Transform} Identity transform.
+   */
+  function create() {
+    return [1, 0, 0, 1, 0, 0];
+  }
+
+  /**
+   * Set transform on one matrix from another matrix.
+   * @param {!Transform} transform1 Matrix to set transform to.
+   * @param {!Transform} transform2 Matrix to set transform from.
+   * @return {!Transform} transform1 with transform from transform2 applied.
+   */
+  function setFromArray(transform1, transform2) {
+    transform1[0] = transform2[0];
+    transform1[1] = transform2[1];
+    transform1[2] = transform2[2];
+    transform1[3] = transform2[3];
+    transform1[4] = transform2[4];
+    transform1[5] = transform2[5];
+    return transform1;
+  }
+
+  /**
+   * Transforms the given coordinate with the given transform returning the
+   * resulting, transformed coordinate. The coordinate will be modified in-place.
+   *
+   * @param {Transform} transform The transformation.
+   * @param {import("./coordinate.js").Coordinate|import("./pixel.js").Pixel} coordinate The coordinate to transform.
+   * @return {import("./coordinate.js").Coordinate|import("./pixel.js").Pixel} return coordinate so that operations can be
+   *     chained together.
+   */
+  function apply(transform, coordinate) {
+    const x = coordinate[0];
+    const y = coordinate[1];
+    coordinate[0] = transform[0] * x + transform[2] * y + transform[4];
+    coordinate[1] = transform[1] * x + transform[3] * y + transform[5];
+    return coordinate;
+  }
+
+  /**
+   * Creates a composite transform given an initial translation, scale, rotation, and
+   * final translation (in that order only, not commutative).
+   * @param {!Transform} transform The transform (will be modified in place).
+   * @param {number} dx1 Initial translation x.
+   * @param {number} dy1 Initial translation y.
+   * @param {number} sx Scale factor x.
+   * @param {number} sy Scale factor y.
+   * @param {number} angle Rotation (in counter-clockwise radians).
+   * @param {number} dx2 Final translation x.
+   * @param {number} dy2 Final translation y.
+   * @return {!Transform} The composite transform.
+   */
+  function compose(transform, dx1, dy1, sx, sy, angle, dx2, dy2) {
+    const sin = Math.sin(angle);
+    const cos = Math.cos(angle);
+    transform[0] = sx * cos;
+    transform[1] = sy * sin;
+    transform[2] = -sx * sin;
+    transform[3] = sy * cos;
+    transform[4] = dx2 * sx * cos - dy2 * sx * sin + dx1;
+    transform[5] = dx2 * sy * sin + dy2 * sy * cos + dy1;
+    return transform;
+  }
+
+  /**
+   * Invert the given transform.
+   * @param {!Transform} target Transform to be set as the inverse of
+   *     the source transform.
+   * @param {!Transform} source The source transform to invert.
+   * @return {!Transform} The inverted (target) transform.
+   */
+  function makeInverse(target, source) {
+    const det = determinant(source);
+    assert$1(det !== 0, 'Transformation matrix cannot be inverted');
+
+    const a = source[0];
+    const b = source[1];
+    const c = source[2];
+    const d = source[3];
+    const e = source[4];
+    const f = source[5];
+
+    target[0] = d / det;
+    target[1] = -b / det;
+    target[2] = -c / det;
+    target[3] = a / det;
+    target[4] = (c * f - d * e) / det;
+    target[5] = -(a * f - b * e) / det;
+
+    return target;
+  }
+
+  /**
+   * Returns the determinant of the given matrix.
+   * @param {!Transform} mat Matrix.
+   * @return {number} Determinant.
+   */
+  function determinant(mat) {
+    return mat[0] * mat[3] - mat[1] * mat[2];
+  }
+
+  /**
+   * @type {Array}
+   */
+  const matrixPrecision = [1e6, 1e6, 1e6, 1e6, 2, 2];
+
+  /**
+   * A rounded string version of the transform.  This can be used
+   * for CSS transforms.
+   * @param {!Transform} mat Matrix.
+   * @return {string} The transform as a string.
+   */
+  function toString$1(mat) {
+    const transformString =
+      'matrix(' +
+      mat
+        .map(
+          (value, i) =>
+            Math.round(value * matrixPrecision[i]) / matrixPrecision[i],
+        )
+        .join(', ') +
+      ')';
+    return transformString;
+  }
 
   /**
    * @module ol/geom/flat/transform
@@ -10051,50 +12047,6 @@
   }
 
   /**
-   * @module ol/easing
-   */
-
-  /**
-   * Start slow and speed up.
-   * @param {number} t Input between 0 and 1.
-   * @return {number} Output between 0 and 1.
-   * @api
-   */
-  function easeIn(t) {
-    return Math.pow(t, 3);
-  }
-
-  /**
-   * Start fast and slow down.
-   * @param {number} t Input between 0 and 1.
-   * @return {number} Output between 0 and 1.
-   * @api
-   */
-  function easeOut(t) {
-    return 1 - easeIn(1 - t);
-  }
-
-  /**
-   * Start slow, speed up, and then slow down again.
-   * @param {number} t Input between 0 and 1.
-   * @return {number} Output between 0 and 1.
-   * @api
-   */
-  function inAndOut(t) {
-    return 3 * t * t - 2 * t * t * t;
-  }
-
-  /**
-   * Maintain a constant speed over time.
-   * @param {number} t Input between 0 and 1.
-   * @return {number} Output between 0 and 1.
-   * @api
-   */
-  function linear(t) {
-    return t;
-  }
-
-  /**
    * @module ol/View
    */
 
@@ -14583,249 +16535,6 @@
   }
 
   /**
-   * @module ol/has
-   */
-
-  const ua =
-    typeof navigator !== 'undefined' && typeof navigator.userAgent !== 'undefined'
-      ? navigator.userAgent.toLowerCase()
-      : '';
-
-  /**
-   * User agent string says we are dealing with Firefox as browser.
-   * @type {boolean}
-   */
-  const FIREFOX = ua.includes('firefox');
-
-  /**
-   * User agent string says we are dealing with Safari as browser.
-   * @type {boolean}
-   */
-  const SAFARI = ua.includes('safari') && !ua.includes('chrom');
-
-  /**
-   * https://bugs.webkit.org/show_bug.cgi?id=237906
-   * @type {boolean}
-   */
-  SAFARI &&
-    (ua.includes('version/15.4') ||
-      /cpu (os|iphone os) 15_4 like mac os x/.test(ua));
-
-  /**
-   * User agent string says we are dealing with a WebKit engine.
-   * @type {boolean}
-   */
-  const WEBKIT = ua.includes('webkit') && !ua.includes('edge');
-
-  /**
-   * User agent string says we are dealing with a Mac as platform.
-   * @type {boolean}
-   */
-  const MAC = ua.includes('macintosh');
-
-  /**
-   * The ratio between physical pixels and device-independent pixels
-   * (dips) on the device (`window.devicePixelRatio`).
-   * @const
-   * @type {number}
-   * @api
-   */
-  const DEVICE_PIXEL_RATIO =
-    typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1;
-
-  /**
-   * The execution context is a worker with OffscreenCanvas available.
-   * @const
-   * @type {boolean}
-   */
-  const WORKER_OFFSCREEN_CANVAS =
-    typeof WorkerGlobalScope !== 'undefined' &&
-    typeof OffscreenCanvas !== 'undefined' &&
-    self instanceof WorkerGlobalScope; //eslint-disable-line
-
-  /**
-   * Image.prototype.decode() is supported.
-   * @type {boolean}
-   */
-  const IMAGE_DECODE =
-    typeof Image !== 'undefined' && Image.prototype.decode;
-
-  /**
-   * @type {boolean}
-   */
-  const PASSIVE_EVENT_LISTENERS = (function () {
-    let passive = false;
-    try {
-      const options = Object.defineProperty({}, 'passive', {
-        get: function () {
-          passive = true;
-        },
-      });
-
-      // @ts-ignore Ignore invalid event type '_'
-      window.addEventListener('_', null, options);
-      // @ts-ignore Ignore invalid event type '_'
-      window.removeEventListener('_', null, options);
-    } catch (error) {
-      // passive not supported
-    }
-    return passive;
-  })();
-
-  /**
-   * @module ol/dom
-   */
-
-  //FIXME Move this function to the canvas module
-  /**
-   * Create an html canvas element and returns its 2d context.
-   * @param {number} [width] Canvas width.
-   * @param {number} [height] Canvas height.
-   * @param {Array<HTMLCanvasElement>} [canvasPool] Canvas pool to take existing canvas from.
-   * @param {CanvasRenderingContext2DSettings} [settings] CanvasRenderingContext2DSettings
-   * @return {CanvasRenderingContext2D} The context.
-   */
-  function createCanvasContext2D(width, height, canvasPool, settings) {
-    /** @type {HTMLCanvasElement|OffscreenCanvas} */
-    let canvas;
-    if (canvasPool && canvasPool.length) {
-      canvas = /** @type {HTMLCanvasElement} */ (canvasPool.shift());
-    } else if (WORKER_OFFSCREEN_CANVAS) {
-      canvas = new OffscreenCanvas(width || 300, height || 300);
-    } else {
-      canvas = document.createElement('canvas');
-    }
-    if (width) {
-      canvas.width = width;
-    }
-    if (height) {
-      canvas.height = height;
-    }
-    //FIXME Allow OffscreenCanvasRenderingContext2D as return type
-    return /** @type {CanvasRenderingContext2D} */ (
-      canvas.getContext('2d', settings)
-    );
-  }
-
-  /** @type {CanvasRenderingContext2D} */
-  let sharedCanvasContext;
-
-  /**
-   * @return {CanvasRenderingContext2D} Shared canvas context.
-   */
-  function getSharedCanvasContext2D() {
-    if (!sharedCanvasContext) {
-      sharedCanvasContext = createCanvasContext2D(1, 1);
-    }
-    return sharedCanvasContext;
-  }
-
-  /**
-   * Releases canvas memory to avoid exceeding memory limits in Safari.
-   * See https://pqina.nl/blog/total-canvas-memory-use-exceeds-the-maximum-limit/
-   * @param {CanvasRenderingContext2D} context Context.
-   */
-  function releaseCanvas(context) {
-    const canvas = context.canvas;
-    canvas.width = 1;
-    canvas.height = 1;
-    context.clearRect(0, 0, 1, 1);
-  }
-
-  /**
-   * Get the current computed width for the given element including margin,
-   * padding and border.
-   * Equivalent to jQuery's `$(el).outerWidth(true)`.
-   * @param {!HTMLElement} element Element.
-   * @return {number} The width.
-   */
-  function outerWidth(element) {
-    let width = element.offsetWidth;
-    const style = getComputedStyle(element);
-    width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
-
-    return width;
-  }
-
-  /**
-   * Get the current computed height for the given element including margin,
-   * padding and border.
-   * Equivalent to jQuery's `$(el).outerHeight(true)`.
-   * @param {!HTMLElement} element Element.
-   * @return {number} The height.
-   */
-  function outerHeight(element) {
-    let height = element.offsetHeight;
-    const style = getComputedStyle(element);
-    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
-
-    return height;
-  }
-
-  /**
-   * @param {Node} newNode Node to replace old node
-   * @param {Node} oldNode The node to be replaced
-   */
-  function replaceNode(newNode, oldNode) {
-    const parent = oldNode.parentNode;
-    if (parent) {
-      parent.replaceChild(newNode, oldNode);
-    }
-  }
-
-  /**
-   * @param {Node} node The node to remove the children from.
-   */
-  function removeChildren(node) {
-    while (node.lastChild) {
-      node.lastChild.remove();
-    }
-  }
-
-  /**
-   * Transform the children of a parent node so they match the
-   * provided list of children.  This function aims to efficiently
-   * remove, add, and reorder child nodes while maintaining a simple
-   * implementation (it is not guaranteed to minimize DOM operations).
-   * @param {Node} node The parent node whose children need reworking.
-   * @param {Array<Node>} children The desired children.
-   */
-  function replaceChildren(node, children) {
-    const oldChildren = node.childNodes;
-
-    for (let i = 0; true; ++i) {
-      const oldChild = oldChildren[i];
-      const newChild = children[i];
-
-      // check if our work is done
-      if (!oldChild && !newChild) {
-        break;
-      }
-
-      // check if children match
-      if (oldChild === newChild) {
-        continue;
-      }
-
-      // check if a new child needs to be added
-      if (!oldChild) {
-        node.appendChild(newChild);
-        continue;
-      }
-
-      // check if an old child needs to be removed
-      if (!newChild) {
-        node.removeChild(oldChild);
-        --i;
-        continue;
-      }
-
-      // reorder
-      node.insertBefore(newChild, oldChild);
-    }
-  }
-
-  /**
    * @module ol/Image
    */
 
@@ -15504,124 +17213,6 @@
     );
     return shared.getPattern(cacheKey, undefined, pattern.color);
   }
-
-  /**
-   * @module ol/css
-   */
-
-  /**
-   * @typedef {Object} FontParameters
-   * @property {string} style Style.
-   * @property {string} variant Variant.
-   * @property {string} weight Weight.
-   * @property {string} size Size.
-   * @property {string} lineHeight LineHeight.
-   * @property {string} family Family.
-   * @property {Array<string>} families Families.
-   */
-
-  /**
-   * The CSS class for hidden feature.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_HIDDEN = 'ol-hidden';
-
-  /**
-   * The CSS class that we'll give the DOM elements to have them selectable.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_SELECTABLE = 'ol-selectable';
-
-  /**
-   * The CSS class that we'll give the DOM elements to have them unselectable.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_UNSELECTABLE = 'ol-unselectable';
-
-  /**
-   * The CSS class for unsupported feature.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_UNSUPPORTED = 'ol-unsupported';
-
-  /**
-   * The CSS class for controls.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_CONTROL = 'ol-control';
-
-  /**
-   * The CSS class that we'll give the DOM elements that are collapsed, i.e.
-   * to those elements which usually can be expanded.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_COLLAPSED = 'ol-collapsed';
-
-  /**
-   * From https://stackoverflow.com/questions/10135697/regex-to-parse-any-css-font
-   * @type {RegExp}
-   */
-  const fontRegEx = new RegExp(
-    [
-      '^\\s*(?=(?:(?:[-a-z]+\\s*){0,2}(italic|oblique))?)',
-      '(?=(?:(?:[-a-z]+\\s*){0,2}(small-caps))?)',
-      '(?=(?:(?:[-a-z]+\\s*){0,2}(bold(?:er)?|lighter|[1-9]00 ))?)',
-      '(?:(?:normal|\\1|\\2|\\3)\\s*){0,3}((?:xx?-)?',
-      '(?:small|large)|medium|smaller|larger|[\\.\\d]+(?:\\%|in|[cem]m|ex|p[ctx]))',
-      '(?:\\s*\\/\\s*(normal|[\\.\\d]+(?:\\%|in|[cem]m|ex|p[ctx])?))',
-      '?\\s*([-,\\"\\\'\\sa-z]+?)\\s*$',
-    ].join(''),
-    'i',
-  );
-  /** @type {Array<'style'|'variant'|'weight'|'size'|'lineHeight'|'family'>} */
-  const fontRegExMatchIndex = [
-    'style',
-    'variant',
-    'weight',
-    'size',
-    'lineHeight',
-    'family',
-  ];
-
-  /**
-   * Get the list of font families from a font spec.  Note that this doesn't work
-   * for font families that have commas in them.
-   * @param {string} fontSpec The CSS font property.
-   * @return {FontParameters|null} The font parameters (or null if the input spec is invalid).
-   */
-  const getFontParameters = function (fontSpec) {
-    const match = fontSpec.match(fontRegEx);
-    if (!match) {
-      return null;
-    }
-    const style = /** @type {FontParameters} */ ({
-      lineHeight: 'normal',
-      size: '1.2em',
-      style: 'normal',
-      weight: 'normal',
-      variant: 'normal',
-    });
-    for (let i = 0, ii = fontRegExMatchIndex.length; i < ii; ++i) {
-      const value = match[i + 1];
-      if (value !== undefined) {
-        style[fontRegExMatchIndex[i]] = value;
-      }
-    }
-    style.families = style.family.split(/,\s?/);
-    return style;
-  };
 
   /**
    * @module ol/render/canvas
@@ -23712,68 +25303,6 @@
   }
 
   /**
-   * @module ol/MapEventType
-   */
-
-  /**
-   * @enum {string}
-   */
-  var MapEventType = {
-    /**
-     * Triggered after a map frame is rendered.
-     * @event module:ol/MapEvent~MapEvent#postrender
-     * @api
-     */
-    POSTRENDER: 'postrender',
-
-    /**
-     * Triggered when the map starts moving.
-     * @event module:ol/MapEvent~MapEvent#movestart
-     * @api
-     */
-    MOVESTART: 'movestart',
-
-    /**
-     * Triggered after the map is moved.
-     * @event module:ol/MapEvent~MapEvent#moveend
-     * @api
-     */
-    MOVEEND: 'moveend',
-
-    /**
-     * Triggered when loading of additional map data (tiles, images, features) starts.
-     * @event module:ol/MapEvent~MapEvent#loadstart
-     * @api
-     */
-    LOADSTART: 'loadstart',
-
-    /**
-     * Triggered when loading of additional map data has completed.
-     * @event module:ol/MapEvent~MapEvent#loadend
-     * @api
-     */
-    LOADEND: 'loadend',
-  };
-
-  /***
-   * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
-   */
-
-  /**
-   * @module ol/MapProperty
-   */
-
-  /**
-   * @enum {string}
-   */
-  var MapProperty = {
-    LAYERGROUP: 'layergroup',
-    SIZE: 'size',
-    TARGET: 'target',
-    VIEW: 'view',
-  };
-
-  /**
    * @module ol/structs/PriorityQueue
    */
 
@@ -24218,501 +25747,6 @@
   }
 
   /**
-   * @module ol/control/Control
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {HTMLElement} [element] The element is the control's
-   * container element. This only needs to be specified if you're developing
-   * a custom control.
-   * @property {function(import("../MapEvent.js").default):void} [render] Function called when
-   * the control should be re-rendered. This is called in a `requestAnimationFrame`
-   * callback.
-   * @property {HTMLElement|string} [target] Specify a target if you want
-   * the control to be rendered outside of the map's viewport.
-   */
-
-  /**
-   * @classdesc
-   * A control is a visible widget with a DOM element in a fixed position on the
-   * screen. They can involve user input (buttons), or be informational only;
-   * the position is determined using CSS. By default these are placed in the
-   * container with CSS class name `ol-overlaycontainer-stopevent`, but can use
-   * any outside DOM element.
-   *
-   * This is the base class for controls. You can use it for simple custom
-   * controls by creating the element with listeners, creating an instance:
-   * ```js
-   * const myControl = new Control({element: myElement});
-   * ```
-   * and then adding this to the map.
-   *
-   * The main advantage of having this as a control rather than a simple separate
-   * DOM element is that preventing propagation is handled for you. Controls
-   * will also be objects in a {@link module:ol/Collection~Collection}, so you can use their methods.
-   *
-   * You can also extend this base for your own control class. See
-   * examples/custom-controls for an example of how to do this.
-   *
-   * @api
-   */
-  class Control extends BaseObject {
-    /**
-     * @param {Options} options Control options.
-     */
-    constructor(options) {
-      super();
-
-      const element = options.element;
-      if (element && !options.target && !element.style.pointerEvents) {
-        element.style.pointerEvents = 'auto';
-      }
-
-      /**
-       * @protected
-       * @type {HTMLElement}
-       */
-      this.element = element ? element : null;
-
-      /**
-       * @private
-       * @type {HTMLElement}
-       */
-      this.target_ = null;
-
-      /**
-       * @private
-       * @type {import("../Map.js").default|null}
-       */
-      this.map_ = null;
-
-      /**
-       * @protected
-       * @type {!Array<import("../events.js").EventsKey>}
-       */
-      this.listenerKeys = [];
-
-      if (options.render) {
-        this.render = options.render;
-      }
-
-      if (options.target) {
-        this.setTarget(options.target);
-      }
-    }
-
-    /**
-     * Clean up.
-     * @override
-     */
-    disposeInternal() {
-      this.element?.remove();
-      super.disposeInternal();
-    }
-
-    /**
-     * Get the map associated with this control.
-     * @return {import("../Map.js").default|null} Map.
-     * @api
-     */
-    getMap() {
-      return this.map_;
-    }
-
-    /**
-     * Remove the control from its current map and attach it to the new map.
-     * Pass `null` to just remove the control from the current map.
-     * Subclasses may set up event handlers to get notified about changes to
-     * the map here.
-     * @param {import("../Map.js").default|null} map Map.
-     * @api
-     */
-    setMap(map) {
-      if (this.map_) {
-        this.element?.remove();
-      }
-      for (let i = 0, ii = this.listenerKeys.length; i < ii; ++i) {
-        unlistenByKey(this.listenerKeys[i]);
-      }
-      this.listenerKeys.length = 0;
-      this.map_ = map;
-      if (map) {
-        const target = this.target_ ?? map.getOverlayContainerStopEvent();
-        target.appendChild(this.element);
-        if (this.render !== VOID) {
-          this.listenerKeys.push(
-            listen(map, MapEventType.POSTRENDER, this.render, this),
-          );
-        }
-        map.render();
-      }
-    }
-
-    /**
-     * Renders the control.
-     * @param {import("../MapEvent.js").default} mapEvent Map event.
-     * @api
-     */
-    render(mapEvent) {}
-
-    /**
-     * This function is used to set a target element for the control. It has no
-     * effect if it is called after the control has been added to the map (i.e.
-     * after `setMap` is called on the control). If no `target` is set in the
-     * options passed to the control constructor and if `setTarget` is not called
-     * then the control is added to the map's overlay container.
-     * @param {HTMLElement|string} target Target.
-     * @api
-     */
-    setTarget(target) {
-      this.target_ =
-        typeof target === 'string' ? document.getElementById(target) : target;
-    }
-  }
-
-  /**
-   * @module ol/control/Attribution
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {string} [className='ol-attribution'] CSS class name.
-   * @property {HTMLElement|string} [target] Specify a target if you
-   * want the control to be rendered outside of the map's
-   * viewport.
-   * @property {boolean} [collapsible] Specify if attributions can
-   * be collapsed. If not specified, sources control this behavior with their
-   * `attributionsCollapsible` setting.
-   * @property {boolean} [collapsed=true] Specify if attributions should
-   * be collapsed at startup.
-   * @property {string} [tipLabel='Attributions'] Text label to use for the button tip.
-   * @property {string|HTMLElement} [label='i'] Text label to use for the
-   * collapsed attributions button.
-   * Instead of text, also an element (e.g. a `span` element) can be used.
-   * @property {string} [expandClassName=className + '-expand'] CSS class name for the
-   * collapsed attributions button.
-   * @property {string|HTMLElement} [collapseLabel='›'] Text label to use
-   * for the expanded attributions button.
-   * Instead of text, also an element (e.g. a `span` element) can be used.
-   * @property {string} [collapseClassName=className + '-collapse'] CSS class name for the
-   * expanded attributions button.
-   * @property {function(import("../MapEvent.js").default):void} [render] Function called when
-   * the control should be re-rendered. This is called in a `requestAnimationFrame`
-   * callback.
-   * @property {string|Array<string>|undefined} [attributions] Optional attribution(s) that will always be
-   * displayed regardless of the layers rendered
-   */
-
-  /**
-   * @classdesc
-   * Control to show all the attributions associated with the layer sources
-   * in the map. This control is one of the default controls included in maps.
-   * By default it will show in the bottom right portion of the map, but this can
-   * be changed by using a css selector for `.ol-attribution`.
-   *
-   * @api
-   */
-  class Attribution extends Control {
-    /**
-     * @param {Options} [options] Attribution options.
-     */
-    constructor(options) {
-      options = options ? options : {};
-
-      super({
-        element: document.createElement('div'),
-        render: options.render,
-        target: options.target,
-      });
-
-      /**
-       * @private
-       * @type {HTMLElement}
-       */
-      this.ulElement_ = document.createElement('ul');
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.collapsed_ =
-        options.collapsed !== undefined ? options.collapsed : true;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.userCollapsed_ = this.collapsed_;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.overrideCollapsible_ = options.collapsible !== undefined;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.collapsible_ =
-        options.collapsible !== undefined ? options.collapsible : true;
-
-      if (!this.collapsible_) {
-        this.collapsed_ = false;
-      }
-
-      /**
-       * @private
-       * @type {string | Array<string> | undefined}
-       */
-      this.attributions_ = options.attributions;
-
-      const className =
-        options.className !== undefined ? options.className : 'ol-attribution';
-
-      const tipLabel =
-        options.tipLabel !== undefined ? options.tipLabel : 'Attributions';
-
-      const expandClassName =
-        options.expandClassName !== undefined
-          ? options.expandClassName
-          : className + '-expand';
-
-      const collapseLabel =
-        options.collapseLabel !== undefined ? options.collapseLabel : '\u203A';
-
-      const collapseClassName =
-        options.collapseClassName !== undefined
-          ? options.collapseClassName
-          : className + '-collapse';
-
-      if (typeof collapseLabel === 'string') {
-        /**
-         * @private
-         * @type {HTMLElement}
-         */
-        this.collapseLabel_ = document.createElement('span');
-        this.collapseLabel_.textContent = collapseLabel;
-        this.collapseLabel_.className = collapseClassName;
-      } else {
-        this.collapseLabel_ = collapseLabel;
-      }
-
-      const label = options.label !== undefined ? options.label : 'i';
-
-      if (typeof label === 'string') {
-        /**
-         * @private
-         * @type {HTMLElement}
-         */
-        this.label_ = document.createElement('span');
-        this.label_.textContent = label;
-        this.label_.className = expandClassName;
-      } else {
-        this.label_ = label;
-      }
-
-      const activeLabel =
-        this.collapsible_ && !this.collapsed_ ? this.collapseLabel_ : this.label_;
-
-      /**
-       * @private
-       * @type {HTMLElement}
-       */
-      this.toggleButton_ = document.createElement('button');
-      this.toggleButton_.setAttribute('type', 'button');
-      this.toggleButton_.setAttribute('aria-expanded', String(!this.collapsed_));
-      this.toggleButton_.title = tipLabel;
-      this.toggleButton_.appendChild(activeLabel);
-
-      this.toggleButton_.addEventListener(
-        EventType.CLICK,
-        this.handleClick_.bind(this),
-        false,
-      );
-
-      const cssClasses =
-        className +
-        ' ' +
-        CLASS_UNSELECTABLE +
-        ' ' +
-        CLASS_CONTROL +
-        (this.collapsed_ && this.collapsible_ ? ' ' + CLASS_COLLAPSED : '') +
-        (this.collapsible_ ? '' : ' ol-uncollapsible');
-      const element = this.element;
-      element.className = cssClasses;
-      element.appendChild(this.toggleButton_);
-      element.appendChild(this.ulElement_);
-
-      /**
-       * A list of currently rendered resolutions.
-       * @type {Array<string>}
-       * @private
-       */
-      this.renderedAttributions_ = [];
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.renderedVisible_ = true;
-    }
-
-    /**
-     * Collect a list of visible attributions and set the collapsible state.
-     * @param {import("../Map.js").FrameState} frameState Frame state.
-     * @return {Array<string>} Attributions.
-     * @private
-     */
-    collectSourceAttributions_(frameState) {
-      const layers = this.getMap().getAllLayers();
-      const visibleAttributions = new Set(
-        layers.flatMap((layer) => layer.getAttributions(frameState)),
-      );
-      if (this.attributions_ !== undefined) {
-        Array.isArray(this.attributions_)
-          ? this.attributions_.forEach((item) => visibleAttributions.add(item))
-          : visibleAttributions.add(this.attributions_);
-      }
-
-      if (!this.overrideCollapsible_) {
-        const collapsible = !layers.some(
-          (layer) => layer.getSource()?.getAttributionsCollapsible() === false,
-        );
-        this.setCollapsible(collapsible);
-      }
-      return Array.from(visibleAttributions);
-    }
-
-    /**
-     * @private
-     * @param {?import("../Map.js").FrameState} frameState Frame state.
-     */
-    async updateElement_(frameState) {
-      if (!frameState) {
-        if (this.renderedVisible_) {
-          this.element.style.display = 'none';
-          this.renderedVisible_ = false;
-        }
-        return;
-      }
-
-      const attributions = await Promise.all(
-        this.collectSourceAttributions_(frameState).map((attribution) =>
-          toPromise(() => attribution),
-        ),
-      );
-
-      const visible = attributions.length > 0;
-      if (this.renderedVisible_ != visible) {
-        this.element.style.display = visible ? '' : 'none';
-        this.renderedVisible_ = visible;
-      }
-
-      if (equals$2(attributions, this.renderedAttributions_)) {
-        return;
-      }
-
-      removeChildren(this.ulElement_);
-
-      // append the attributions
-      for (let i = 0, ii = attributions.length; i < ii; ++i) {
-        const element = document.createElement('li');
-        element.innerHTML = attributions[i];
-        this.ulElement_.appendChild(element);
-      }
-
-      this.renderedAttributions_ = attributions;
-    }
-
-    /**
-     * @param {MouseEvent} event The event to handle
-     * @private
-     */
-    handleClick_(event) {
-      event.preventDefault();
-      this.handleToggle_();
-      this.userCollapsed_ = this.collapsed_;
-    }
-
-    /**
-     * @private
-     */
-    handleToggle_() {
-      this.element.classList.toggle(CLASS_COLLAPSED);
-      if (this.collapsed_) {
-        replaceNode(this.collapseLabel_, this.label_);
-      } else {
-        replaceNode(this.label_, this.collapseLabel_);
-      }
-      this.collapsed_ = !this.collapsed_;
-      this.toggleButton_.setAttribute('aria-expanded', String(!this.collapsed_));
-    }
-
-    /**
-     * Return `true` if the attribution is collapsible, `false` otherwise.
-     * @return {boolean} True if the widget is collapsible.
-     * @api
-     */
-    getCollapsible() {
-      return this.collapsible_;
-    }
-
-    /**
-     * Set whether the attribution should be collapsible.
-     * @param {boolean} collapsible True if the widget is collapsible.
-     * @api
-     */
-    setCollapsible(collapsible) {
-      if (this.collapsible_ === collapsible) {
-        return;
-      }
-      this.collapsible_ = collapsible;
-      this.element.classList.toggle('ol-uncollapsible');
-      if (this.userCollapsed_) {
-        this.handleToggle_();
-      }
-    }
-
-    /**
-     * Collapse or expand the attribution according to the passed parameter. Will
-     * not do anything if the attribution isn't collapsible or if the current
-     * collapsed state is already the one requested.
-     * @param {boolean} collapsed True if the widget is collapsed.
-     * @api
-     */
-    setCollapsed(collapsed) {
-      this.userCollapsed_ = collapsed;
-      if (!this.collapsible_ || this.collapsed_ === collapsed) {
-        return;
-      }
-      this.handleToggle_();
-    }
-
-    /**
-     * Return `true` when the attribution is currently collapsed or `false`
-     * otherwise.
-     * @return {boolean} True if the widget is collapsed.
-     * @api
-     */
-    getCollapsed() {
-      return this.collapsed_;
-    }
-
-    /**
-     * Update the attribution element.
-     * @param {import("../MapEvent.js").default} mapEvent Map event.
-     * @override
-     */
-    render(mapEvent) {
-      this.updateElement_(mapEvent.frameState);
-    }
-  }
-
-  var Attribution$1 = Attribution;
-
-  /**
    * @module ol/control/Rotate
    */
 
@@ -24893,163 +25927,6 @@
   }
 
   var Rotate$1 = Rotate;
-
-  /**
-   * @module ol/control/Zoom
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {number} [duration=250] Animation duration in milliseconds.
-   * @property {string} [className='ol-zoom'] CSS class name.
-   * @property {string} [zoomInClassName=className + '-in'] CSS class name for the zoom-in button.
-   * @property {string} [zoomOutClassName=className + '-out'] CSS class name for the zoom-out button.
-   * @property {string|HTMLElement} [zoomInLabel='+'] Text label to use for the zoom-in
-   * button. Instead of text, also an element (e.g. a `span` element) can be used.
-   * @property {string|HTMLElement} [zoomOutLabel='–'] Text label to use for the zoom-out button.
-   * Instead of text, also an element (e.g. a `span` element) can be used.
-   * @property {string} [zoomInTipLabel='Zoom in'] Text label to use for the button tip.
-   * @property {string} [zoomOutTipLabel='Zoom out'] Text label to use for the button tip.
-   * @property {number} [delta=1] The zoom delta applied on each click.
-   * @property {HTMLElement|string} [target] Specify a target if you want the control to be
-   * rendered outside of the map's viewport.
-   */
-
-  /**
-   * @classdesc
-   * A control with 2 buttons, one for zoom in and one for zoom out.
-   * This control is one of the default controls of a map. To style this control
-   * use css selectors `.ol-zoom-in` and `.ol-zoom-out`.
-   *
-   * @api
-   */
-  class Zoom extends Control {
-    /**
-     * @param {Options} [options] Zoom options.
-     */
-    constructor(options) {
-      options = options ? options : {};
-
-      super({
-        element: document.createElement('div'),
-        target: options.target,
-      });
-
-      const className =
-        options.className !== undefined ? options.className : 'ol-zoom';
-
-      const delta = options.delta !== undefined ? options.delta : 1;
-
-      const zoomInClassName =
-        options.zoomInClassName !== undefined
-          ? options.zoomInClassName
-          : className + '-in';
-
-      const zoomOutClassName =
-        options.zoomOutClassName !== undefined
-          ? options.zoomOutClassName
-          : className + '-out';
-
-      const zoomInLabel =
-        options.zoomInLabel !== undefined ? options.zoomInLabel : '+';
-      const zoomOutLabel =
-        options.zoomOutLabel !== undefined ? options.zoomOutLabel : '\u2013';
-
-      const zoomInTipLabel =
-        options.zoomInTipLabel !== undefined ? options.zoomInTipLabel : 'Zoom in';
-      const zoomOutTipLabel =
-        options.zoomOutTipLabel !== undefined
-          ? options.zoomOutTipLabel
-          : 'Zoom out';
-
-      const inElement = document.createElement('button');
-      inElement.className = zoomInClassName;
-      inElement.setAttribute('type', 'button');
-      inElement.title = zoomInTipLabel;
-      inElement.appendChild(
-        typeof zoomInLabel === 'string'
-          ? document.createTextNode(zoomInLabel)
-          : zoomInLabel,
-      );
-
-      inElement.addEventListener(
-        EventType.CLICK,
-        this.handleClick_.bind(this, delta),
-        false,
-      );
-
-      const outElement = document.createElement('button');
-      outElement.className = zoomOutClassName;
-      outElement.setAttribute('type', 'button');
-      outElement.title = zoomOutTipLabel;
-      outElement.appendChild(
-        typeof zoomOutLabel === 'string'
-          ? document.createTextNode(zoomOutLabel)
-          : zoomOutLabel,
-      );
-
-      outElement.addEventListener(
-        EventType.CLICK,
-        this.handleClick_.bind(this, -delta),
-        false,
-      );
-
-      const cssClasses =
-        className + ' ' + CLASS_UNSELECTABLE + ' ' + CLASS_CONTROL;
-      const element = this.element;
-      element.className = cssClasses;
-      element.appendChild(inElement);
-      element.appendChild(outElement);
-
-      /**
-       * @type {number}
-       * @private
-       */
-      this.duration_ = options.duration !== undefined ? options.duration : 250;
-    }
-
-    /**
-     * @param {number} delta Zoom delta.
-     * @param {MouseEvent} event The event to handle
-     * @private
-     */
-    handleClick_(delta, event) {
-      event.preventDefault();
-      this.zoomByDelta_(delta);
-    }
-
-    /**
-     * @param {number} delta Zoom delta.
-     * @private
-     */
-    zoomByDelta_(delta) {
-      const map = this.getMap();
-      const view = map.getView();
-      if (!view) {
-        // the map does not have a view, so we can't act
-        // upon it
-        return;
-      }
-      const currentZoom = view.getZoom();
-      if (currentZoom !== undefined) {
-        const newZoom = view.getConstrainedZoom(currentZoom + delta);
-        if (this.duration_ > 0) {
-          if (view.getAnimating()) {
-            view.cancelAnimations();
-          }
-          view.animate({
-            zoom: newZoom,
-            duration: this.duration_,
-            easing: easeOut,
-          });
-        } else {
-          view.setZoom(newZoom);
-        }
-      }
-    }
-  }
-
-  var Zoom$1 = Zoom;
 
   /**
    * @module ol/control/defaults
@@ -34562,398 +35439,6 @@
   }
 
   /**
-   * @module ol/control/FullScreen
-   */
-
-  const events = [
-    'fullscreenchange',
-    'webkitfullscreenchange',
-    'MSFullscreenChange',
-  ];
-
-  /**
-   * @enum {string}
-   */
-  const FullScreenEventType = {
-    /**
-     * Triggered after the map entered fullscreen.
-     * @event FullScreenEventType#enterfullscreen
-     * @api
-     */
-    ENTERFULLSCREEN: 'enterfullscreen',
-
-    /**
-     * Triggered after the map leave fullscreen.
-     * @event FullScreenEventType#leavefullscreen
-     * @api
-     */
-    LEAVEFULLSCREEN: 'leavefullscreen',
-  };
-
-  /***
-   * @template Return
-   * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes|
-   *     'enterfullscreen'|'leavefullscreen', import("../events/Event.js").default, Return> &
-   *   import("../Observable").OnSignature<import("../ObjectEventType").Types, import("../Object").ObjectEvent, Return> &
-   *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|
-   *     'enterfullscreen'|'leavefullscreen'|import("../ObjectEventType").Types, Return>} FullScreenOnSignature
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {string} [className='ol-full-screen'] CSS class name.
-   * @property {string|Text|HTMLElement} [label='\u2922'] Text label to use for the button.
-   * Instead of text, also an element (e.g. a `span` element) can be used.
-   * @property {string|Text|HTMLElement} [labelActive='\u00d7'] Text label to use for the
-   * button when full-screen is active.
-   * Instead of text, also an element (e.g. a `span` element) can be used.
-   * @property {string} [activeClassName=className + '-true'] CSS class name for the button
-   * when full-screen is active.
-   * @property {string} [inactiveClassName=className + '-false'] CSS class name for the button
-   * when full-screen is inactive.
-   * @property {string} [tipLabel='Toggle full-screen'] Text label to use for the button tip.
-   * @property {boolean} [keys=false] Full keyboard access.
-   * @property {HTMLElement|string} [target] Specify a target if you want the
-   * control to be rendered outside of the map's viewport.
-   * @property {HTMLElement|string} [source] The element to be displayed
-   * fullscreen. When not provided, the element containing the map viewport will
-   * be displayed fullscreen.
-   */
-
-  /**
-   * @classdesc
-   * Provides a button that when clicked fills up the full screen with the map.
-   * The full screen source element is by default the element containing the map viewport unless
-   * overridden by providing the `source` option. In which case, the dom
-   * element introduced using this parameter will be displayed in full screen.
-   *
-   * When in full screen mode, a close button is shown to exit full screen mode.
-   * The [Fullscreen API](https://www.w3.org/TR/fullscreen/) is used to
-   * toggle the map in full screen mode.
-   *
-   * @fires FullScreenEventType#enterfullscreen
-   * @fires FullScreenEventType#leavefullscreen
-   * @api
-   */
-  class FullScreen extends Control {
-    /**
-     * @param {Options} [options] Options.
-     */
-    constructor(options) {
-      options = options ? options : {};
-
-      super({
-        element: document.createElement('div'),
-        target: options.target,
-      });
-
-      /***
-       * @type {FullScreenOnSignature<import("../events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {FullScreenOnSignature<import("../events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {FullScreenOnSignature<void>}
-       */
-      this.un;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.keys_ = options.keys !== undefined ? options.keys : false;
-
-      /**
-       * @private
-       * @type {HTMLElement|string|undefined}
-       */
-      this.source_ = options.source;
-
-      /**
-       * @type {boolean}
-       * @private
-       */
-      this.isInFullscreen_ = false;
-
-      /**
-       * @private
-       */
-      this.boundHandleMapTargetChange_ = this.handleMapTargetChange_.bind(this);
-
-      /**
-       * @private
-       * @type {string}
-       */
-      this.cssClassName_ =
-        options.className !== undefined ? options.className : 'ol-full-screen';
-
-      /**
-       * @private
-       * @type {Array<import("../events.js").EventsKey>}
-       */
-      this.documentListeners_ = [];
-
-      /**
-       * @private
-       * @type {Array<string>}
-       */
-      this.activeClassName_ =
-        options.activeClassName !== undefined
-          ? options.activeClassName.split(' ')
-          : [this.cssClassName_ + '-true'];
-
-      /**
-       * @private
-       * @type {Array<string>}
-       */
-      this.inactiveClassName_ =
-        options.inactiveClassName !== undefined
-          ? options.inactiveClassName.split(' ')
-          : [this.cssClassName_ + '-false'];
-
-      const label = options.label !== undefined ? options.label : '\u2922';
-
-      /**
-       * @private
-       * @type {Text|HTMLElement}
-       */
-      this.labelNode_ =
-        typeof label === 'string' ? document.createTextNode(label) : label;
-
-      const labelActive =
-        options.labelActive !== undefined ? options.labelActive : '\u00d7';
-
-      /**
-       * @private
-       * @type {Text|HTMLElement}
-       */
-      this.labelActiveNode_ =
-        typeof labelActive === 'string'
-          ? document.createTextNode(labelActive)
-          : labelActive;
-
-      const tipLabel = options.tipLabel ? options.tipLabel : 'Toggle full-screen';
-
-      /**
-       * @private
-       * @type {HTMLElement}
-       */
-      this.button_ = document.createElement('button');
-      this.button_.title = tipLabel;
-      this.button_.setAttribute('type', 'button');
-      this.button_.appendChild(this.labelNode_);
-      this.button_.addEventListener(
-        EventType.CLICK,
-        this.handleClick_.bind(this),
-        false,
-      );
-      this.setClassName_(this.button_, this.isInFullscreen_);
-
-      this.element.className = `${this.cssClassName_} ${CLASS_UNSELECTABLE} ${CLASS_CONTROL}`;
-      this.element.appendChild(this.button_);
-    }
-
-    /**
-     * @param {MouseEvent} event The event to handle
-     * @private
-     */
-    handleClick_(event) {
-      event.preventDefault();
-      this.handleFullScreen_();
-    }
-
-    /**
-     * @private
-     */
-    handleFullScreen_() {
-      const map = this.getMap();
-      if (!map) {
-        return;
-      }
-      const doc = map.getOwnerDocument();
-      if (!isFullScreenSupported(doc)) {
-        return;
-      }
-      if (isFullScreen(doc)) {
-        exitFullScreen(doc);
-      } else {
-        let element;
-        if (this.source_) {
-          element =
-            typeof this.source_ === 'string'
-              ? doc.getElementById(this.source_)
-              : this.source_;
-        } else {
-          element = map.getTargetElement();
-        }
-        if (this.keys_) {
-          requestFullScreenWithKeys(element);
-        } else {
-          requestFullScreen(element);
-        }
-      }
-    }
-
-    /**
-     * @private
-     */
-    handleFullScreenChange_() {
-      const map = this.getMap();
-      if (!map) {
-        return;
-      }
-      const wasInFullscreen = this.isInFullscreen_;
-      this.isInFullscreen_ = isFullScreen(map.getOwnerDocument());
-      if (wasInFullscreen !== this.isInFullscreen_) {
-        this.setClassName_(this.button_, this.isInFullscreen_);
-        if (this.isInFullscreen_) {
-          replaceNode(this.labelActiveNode_, this.labelNode_);
-          this.dispatchEvent(FullScreenEventType.ENTERFULLSCREEN);
-        } else {
-          replaceNode(this.labelNode_, this.labelActiveNode_);
-          this.dispatchEvent(FullScreenEventType.LEAVEFULLSCREEN);
-        }
-        map.updateSize();
-      }
-    }
-
-    /**
-     * @param {HTMLElement} element Target element
-     * @param {boolean} fullscreen True if fullscreen class name should be active
-     * @private
-     */
-    setClassName_(element, fullscreen) {
-      if (fullscreen) {
-        element.classList.remove(...this.inactiveClassName_);
-        element.classList.add(...this.activeClassName_);
-      } else {
-        element.classList.remove(...this.activeClassName_);
-        element.classList.add(...this.inactiveClassName_);
-      }
-    }
-
-    /**
-     * Remove the control from its current map and attach it to the new map.
-     * Pass `null` to just remove the control from the current map.
-     * Subclasses may set up event handlers to get notified about changes to
-     * the map here.
-     * @param {import("../Map.js").default|null} map Map.
-     * @api
-     * @override
-     */
-    setMap(map) {
-      const oldMap = this.getMap();
-      if (oldMap) {
-        oldMap.removeChangeListener(
-          MapProperty.TARGET,
-          this.boundHandleMapTargetChange_,
-        );
-      }
-
-      super.setMap(map);
-
-      this.handleMapTargetChange_();
-      if (map) {
-        map.addChangeListener(
-          MapProperty.TARGET,
-          this.boundHandleMapTargetChange_,
-        );
-      }
-    }
-
-    /**
-     * @private
-     */
-    handleMapTargetChange_() {
-      const listeners = this.documentListeners_;
-      for (let i = 0, ii = listeners.length; i < ii; ++i) {
-        unlistenByKey(listeners[i]);
-      }
-      listeners.length = 0;
-
-      const map = this.getMap();
-      if (map) {
-        const doc = map.getOwnerDocument();
-        if (isFullScreenSupported(doc)) {
-          this.element.classList.remove(CLASS_UNSUPPORTED);
-        } else {
-          this.element.classList.add(CLASS_UNSUPPORTED);
-        }
-
-        for (let i = 0, ii = events.length; i < ii; ++i) {
-          listeners.push(
-            listen(doc, events[i], this.handleFullScreenChange_, this),
-          );
-        }
-        this.handleFullScreenChange_();
-      }
-    }
-  }
-
-  /**
-   * @param {Document} doc The root document to check.
-   * @return {boolean} Fullscreen is supported by the current platform.
-   */
-  function isFullScreenSupported(doc) {
-    const body = doc.body;
-    return !!(
-      body['webkitRequestFullscreen'] ||
-      (body.requestFullscreen && doc.fullscreenEnabled)
-    );
-  }
-
-  /**
-   * @param {Document} doc The root document to check.
-   * @return {boolean} Element is currently in fullscreen.
-   */
-  function isFullScreen(doc) {
-    return !!(doc['webkitIsFullScreen'] || doc.fullscreenElement);
-  }
-
-  /**
-   * Request to fullscreen an element.
-   * @param {HTMLElement} element Element to request fullscreen
-   */
-  function requestFullScreen(element) {
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element['webkitRequestFullscreen']) {
-      element['webkitRequestFullscreen']();
-    }
-  }
-
-  /**
-   * Request to fullscreen an element with keyboard input.
-   * @param {HTMLElement} element Element to request fullscreen
-   */
-  function requestFullScreenWithKeys(element) {
-    if (element['webkitRequestFullscreen']) {
-      element['webkitRequestFullscreen']();
-    } else {
-      requestFullScreen(element);
-    }
-  }
-
-  /**
-   * Exit fullscreen.
-   * @param {Document} doc The document to exit fullscren from
-   */
-  function exitFullScreen(doc) {
-    if (doc.exitFullscreen) {
-      doc.exitFullscreen();
-    } else if (doc['webkitExitFullscreen']) {
-      doc['webkitExitFullscreen']();
-    }
-  }
-
-  var FullScreen$1 = FullScreen;
-
-  /**
    * @module ol/control/MousePosition
    */
 
@@ -36486,491 +36971,6 @@
   }
 
   var OverviewMap$1 = OverviewMap;
-
-  /**
-   * @module ol/control/ScaleLine
-   */
-
-  /**
-   * @type {string}
-   */
-  const UNITS_PROP = 'units';
-
-  /**
-   * @typedef {'degrees' | 'imperial' | 'nautical' | 'metric' | 'us'} Units
-   * Units for the scale line.
-   */
-
-  /**
-   * @const
-   * @type {Array<number>}
-   */
-  const LEADING_DIGITS = [1, 2, 5];
-
-  /**
-   * @const
-   * @type {number}
-   */
-  const DEFAULT_DPI = 25.4 / 0.28;
-
-  /***
-   * @template Return
-   * @typedef {import("../Observable").OnSignature<import("../Observable").EventTypes, import("../events/Event.js").default, Return> &
-   *   import("../Observable").OnSignature<import("../ObjectEventType").Types|
-   *     'change:units', import("../Object").ObjectEvent, Return> &
-   *   import("../Observable").CombinedOnSignature<import("../Observable").EventTypes|import("../ObjectEventType").Types
-   *     |'change:units', Return>} ScaleLineOnSignature
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {string} [className] CSS class name. The default is `ol-scale-bar` when configured with
-   * `bar: true`. Otherwise the default is `ol-scale-line`.
-   * @property {number} [minWidth=64] Minimum width in pixels at the OGC default dpi. The width will be
-   * adjusted to match the dpi used.
-   * @property {number} [maxWidth] Maximum width in pixels at the OGC default dpi. The width will be
-   * adjusted to match the dpi used.
-   * @property {function(import("../MapEvent.js").default):void} [render] Function called when the control
-   * should be re-rendered. This is called in a `requestAnimationFrame` callback.
-   * @property {HTMLElement|string} [target] Specify a target if you want the control
-   * to be rendered outside of the map's viewport.
-   * @property {Units} [units='metric'] Units.
-   * @property {boolean} [bar=false] Render scalebars instead of a line.
-   * @property {number} [steps=4] Number of steps the scalebar should use. Use even numbers
-   * for best results. Only applies when `bar` is `true`.
-   * @property {boolean} [text=false] Render the text scale above of the scalebar. Only applies
-   * when `bar` is `true`.
-   * @property {number|undefined} [dpi=undefined] dpi of output device such as printer. Only applies
-   * when `bar` is `true`. If undefined the OGC default screen pixel size of 0.28mm will be assumed.
-   */
-
-  /**
-   * @classdesc
-   * A control displaying rough y-axis distances, calculated for the center of the
-   * viewport. For conformal projections (e.g. EPSG:3857, the default view
-   * projection in OpenLayers), the scale is valid for all directions.
-   * No scale line will be shown when the y-axis distance of a pixel at the
-   * viewport center cannot be calculated in the view projection.
-   * By default the scale line will show in the bottom left portion of the map,
-   * but this can be changed by using the css selector `.ol-scale-line`.
-   * When specifying `bar` as `true`, a scalebar will be rendered instead
-   * of a scaleline.
-   * For cartesian measurements of the scaleline, you need to set the
-   * `getPointResolution` method of your projection to simply return the input
-   * value, e.g. `projection.setGetPointResolution(r => r);`
-   *
-   * @api
-   */
-  class ScaleLine extends Control {
-    /**
-     * @param {Options} [options] Scale line options.
-     */
-    constructor(options) {
-      options = options ? options : {};
-
-      const element = document.createElement('div');
-      element.style.pointerEvents = 'none';
-
-      super({
-        element: element,
-        render: options.render,
-        target: options.target,
-      });
-
-      /***
-       * @type {ScaleLineOnSignature<import("../events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {ScaleLineOnSignature<import("../events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {ScaleLineOnSignature<void>}
-       */
-      this.un;
-
-      const className =
-        options.className !== undefined
-          ? options.className
-          : options.bar
-            ? 'ol-scale-bar'
-            : 'ol-scale-line';
-
-      /**
-       * @private
-       * @type {HTMLElement}
-       */
-      this.innerElement_ = document.createElement('div');
-      this.innerElement_.className = className + '-inner';
-
-      this.element.className = className + ' ' + CLASS_UNSELECTABLE;
-      this.element.appendChild(this.innerElement_);
-
-      /**
-       * @private
-       * @type {?import("../View.js").State}
-       */
-      this.viewState_ = null;
-
-      /**
-       * @private
-       * @type {number}
-       */
-      this.minWidth_ = options.minWidth !== undefined ? options.minWidth : 64;
-
-      /**
-       * @private
-       * @type {number|undefined}
-       */
-      this.maxWidth_ = options.maxWidth;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.renderedVisible_ = false;
-
-      /**
-       * @private
-       * @type {number|undefined}
-       */
-      this.renderedWidth_ = undefined;
-
-      /**
-       * @private
-       * @type {string}
-       */
-      this.renderedHTML_ = '';
-
-      this.addChangeListener(UNITS_PROP, this.handleUnitsChanged_);
-
-      this.setUnits(options.units || 'metric');
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.scaleBar_ = options.bar || false;
-
-      /**
-       * @private
-       * @type {number}
-       */
-      this.scaleBarSteps_ = options.steps || 4;
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.scaleBarText_ = options.text || false;
-
-      /**
-       * @private
-       * @type {number|undefined}
-       */
-      this.dpi_ = options.dpi || undefined;
-    }
-
-    /**
-     * Return the units to use in the scale line.
-     * @return {Units} The units
-     * to use in the scale line.
-     * @observable
-     * @api
-     */
-    getUnits() {
-      return this.get(UNITS_PROP);
-    }
-
-    /**
-     * @private
-     */
-    handleUnitsChanged_() {
-      this.updateElement_();
-    }
-
-    /**
-     * Set the units to use in the scale line.
-     * @param {Units} units The units to use in the scale line.
-     * @observable
-     * @api
-     */
-    setUnits(units) {
-      this.set(UNITS_PROP, units);
-    }
-
-    /**
-     * Specify the dpi of output device such as printer.
-     * @param {number|undefined} dpi The dpi of output device.
-     * @api
-     */
-    setDpi(dpi) {
-      this.dpi_ = dpi;
-    }
-
-    /**
-     * @private
-     */
-    updateElement_() {
-      const viewState = this.viewState_;
-
-      if (!viewState) {
-        if (this.renderedVisible_) {
-          this.element.style.display = 'none';
-          this.renderedVisible_ = false;
-        }
-        return;
-      }
-
-      const center = viewState.center;
-      const projection = viewState.projection;
-      const units = this.getUnits();
-      const pointResolutionUnits = units == 'degrees' ? 'degrees' : 'm';
-      let pointResolution = getPointResolution(
-        projection,
-        viewState.resolution,
-        center,
-        pointResolutionUnits,
-      );
-
-      const minWidth =
-        (this.minWidth_ * (this.dpi_ || DEFAULT_DPI)) / DEFAULT_DPI;
-
-      const maxWidth =
-        this.maxWidth_ !== undefined
-          ? (this.maxWidth_ * (this.dpi_ || DEFAULT_DPI)) / DEFAULT_DPI
-          : undefined;
-
-      let nominalCount = minWidth * pointResolution;
-      let suffix = '';
-      if (units == 'degrees') {
-        const metersPerDegree = METERS_PER_UNIT$1.degrees;
-        nominalCount *= metersPerDegree;
-        if (nominalCount < metersPerDegree / 60) {
-          suffix = '\u2033'; // seconds
-          pointResolution *= 3600;
-        } else if (nominalCount < metersPerDegree) {
-          suffix = '\u2032'; // minutes
-          pointResolution *= 60;
-        } else {
-          suffix = '\u00b0'; // degrees
-        }
-      } else if (units == 'imperial') {
-        if (nominalCount < 0.9144) {
-          suffix = 'in';
-          pointResolution /= 0.0254;
-        } else if (nominalCount < 1609.344) {
-          suffix = 'ft';
-          pointResolution /= 0.3048;
-        } else {
-          suffix = 'mi';
-          pointResolution /= 1609.344;
-        }
-      } else if (units == 'nautical') {
-        pointResolution /= 1852;
-        suffix = 'NM';
-      } else if (units == 'metric') {
-        if (nominalCount < 1e-6) {
-          suffix = 'nm';
-          pointResolution *= 1e9;
-        } else if (nominalCount < 0.001) {
-          suffix = 'μm';
-          pointResolution *= 1000000;
-        } else if (nominalCount < 1) {
-          suffix = 'mm';
-          pointResolution *= 1000;
-        } else if (nominalCount < 1000) {
-          suffix = 'm';
-        } else {
-          suffix = 'km';
-          pointResolution /= 1000;
-        }
-      } else if (units == 'us') {
-        if (nominalCount < 0.9144) {
-          suffix = 'in';
-          pointResolution *= 39.37;
-        } else if (nominalCount < 1609.344) {
-          suffix = 'ft';
-          pointResolution /= 0.30480061;
-        } else {
-          suffix = 'mi';
-          pointResolution /= 1609.3472;
-        }
-      } else {
-        throw new Error('Invalid units');
-      }
-
-      let i = 3 * Math.floor(Math.log(minWidth * pointResolution) / Math.log(10));
-      let count, width, decimalCount;
-      let previousCount, previousWidth, previousDecimalCount;
-      while (true) {
-        decimalCount = Math.floor(i / 3);
-        const decimal = Math.pow(10, decimalCount);
-        count = LEADING_DIGITS[((i % 3) + 3) % 3] * decimal;
-        width = Math.round(count / pointResolution);
-        if (isNaN(width)) {
-          this.element.style.display = 'none';
-          this.renderedVisible_ = false;
-          return;
-        }
-        if (maxWidth !== undefined && width >= maxWidth) {
-          count = previousCount;
-          width = previousWidth;
-          decimalCount = previousDecimalCount;
-          break;
-        } else if (width >= minWidth) {
-          break;
-        }
-        previousCount = count;
-        previousWidth = width;
-        previousDecimalCount = decimalCount;
-        ++i;
-      }
-      const html = this.scaleBar_
-        ? this.createScaleBar(width, count, suffix)
-        : count.toFixed(decimalCount < 0 ? -decimalCount : 0) + ' ' + suffix;
-
-      if (this.renderedHTML_ != html) {
-        this.innerElement_.innerHTML = html;
-        this.renderedHTML_ = html;
-      }
-
-      if (this.renderedWidth_ != width) {
-        this.innerElement_.style.width = width + 'px';
-        this.renderedWidth_ = width;
-      }
-
-      if (!this.renderedVisible_) {
-        this.element.style.display = '';
-        this.renderedVisible_ = true;
-      }
-    }
-
-    /**
-     * @private
-     * @param {number} width The current width of the scalebar.
-     * @param {number} scale The current scale.
-     * @param {string} suffix The suffix to append to the scale text.
-     * @return {string} The stringified HTML of the scalebar.
-     */
-    createScaleBar(width, scale, suffix) {
-      const resolutionScale = this.getScaleForResolution();
-      const mapScale =
-        resolutionScale < 1
-          ? Math.round(1 / resolutionScale).toLocaleString() + ' : 1'
-          : '1 : ' + Math.round(resolutionScale).toLocaleString();
-      const steps = this.scaleBarSteps_;
-      const stepWidth = width / steps;
-      const scaleSteps = [this.createMarker('absolute')];
-      for (let i = 0; i < steps; ++i) {
-        const cls =
-          i % 2 === 0 ? 'ol-scale-singlebar-odd' : 'ol-scale-singlebar-even';
-        scaleSteps.push(
-          '<div>' +
-            '<div ' +
-            `class="ol-scale-singlebar ${cls}" ` +
-            `style="width: ${stepWidth}px;"` +
-            '>' +
-            '</div>' +
-            this.createMarker('relative') +
-            // render text every second step, except when only 2 steps
-            (i % 2 === 0 || steps === 2
-              ? this.createStepText(i, width, false, scale, suffix)
-              : '') +
-            '</div>',
-        );
-      }
-      // render text at the end
-      scaleSteps.push(this.createStepText(steps, width, true, scale, suffix));
-
-      const scaleBarText = this.scaleBarText_
-        ? `<div class="ol-scale-text" style="width: ${width}px;">` +
-          mapScale +
-          '</div>'
-        : '';
-      return scaleBarText + scaleSteps.join('');
-    }
-
-    /**
-     * Creates a marker at given position
-     * @param {'absolute'|'relative'} position The position, absolute or relative
-     * @return {string} The stringified div containing the marker
-     */
-    createMarker(position) {
-      const top = position === 'absolute' ? 3 : -10;
-      return (
-        '<div ' +
-        'class="ol-scale-step-marker" ' +
-        `style="position: ${position}; top: ${top}px;"` +
-        '></div>'
-      );
-    }
-
-    /**
-     * Creates the label for a marker marker at given position
-     * @param {number} i The iterator
-     * @param {number} width The width the scalebar will currently use
-     * @param {boolean} isLast Flag indicating if we add the last step text
-     * @param {number} scale The current scale for the whole scalebar
-     * @param {string} suffix The suffix for the scale
-     * @return {string} The stringified div containing the step text
-     */
-    createStepText(i, width, isLast, scale, suffix) {
-      const length =
-        i === 0 ? 0 : Math.round((scale / this.scaleBarSteps_) * i * 100) / 100;
-      const lengthString = length + (i === 0 ? '' : ' ' + suffix);
-      const margin = i === 0 ? -3 : (width / this.scaleBarSteps_) * -1;
-      const minWidth = i === 0 ? 0 : (width / this.scaleBarSteps_) * 2;
-      return (
-        '<div ' +
-        'class="ol-scale-step-text" ' +
-        'style="' +
-        `margin-left: ${margin}px;` +
-        `text-align: ${i === 0 ? 'left' : 'center'};` +
-        `min-width: ${minWidth}px;` +
-        `left: ${isLast ? width + 'px' : 'unset'};` +
-        '">' +
-        lengthString +
-        '</div>'
-      );
-    }
-
-    /**
-     * Returns the appropriate scale for the given resolution and units.
-     * @return {number} The appropriate scale.
-     */
-    getScaleForResolution() {
-      const resolution = getPointResolution(
-        this.viewState_.projection,
-        this.viewState_.resolution,
-        this.viewState_.center,
-        'm',
-      );
-      const dpi = this.dpi_ || DEFAULT_DPI;
-      const inchesPerMeter = 1000 / 25.4;
-      return resolution * inchesPerMeter * dpi;
-    }
-
-    /**
-     * Update the scale line element.
-     * @param {import("../MapEvent.js").default} mapEvent Map event.
-     * @override
-     */
-    render(mapEvent) {
-      const frameState = mapEvent.frameState;
-      if (!frameState) {
-        this.viewState_ = null;
-      } else {
-        this.viewState_ = frameState.viewState;
-      }
-      this.updateElement_();
-    }
-  }
-
-  var ScaleLine$1 = ScaleLine;
 
   /**
    * @module ol/control/ZoomSlider
@@ -65815,7 +65815,7 @@
     calculateLength(feature) {
       if (feature) {
         const geometry = feature.getGeometry(),
-          length = ol.sphere.getLength(geometry),
+          length = getLength(geometry),
           fcs = this.getFlatCoordinates(geometry);
         let denivPos = 0,
           denivNeg = 0;
@@ -67473,7 +67473,7 @@
     display(coordinates) {
       if (this.position) {
         const ll4326 = ol.proj.transform(this.position, 'EPSG:3857', 'EPSG:4326'),
-          distance = ol.sphere.getDistance(coordinates, ll4326);
+          distance = getDistance(coordinates, ll4326);
 
         return distance < 1000 ?
           (Math.round(distance)) + ' m' :
@@ -67649,8 +67649,8 @@
   function collection$1(options = {}) {
     return [
       // Top left
-      new ol.control.Zoom(options.zoom),
-      new ol.control.FullScreen(options.fullScreen),
+      new Zoom$1(options.zoom),
+      new FullScreen$1(options.fullScreen),
       new MyGeocoder(options.geocoder),
       new MyGeolocation(options.geolocation),
       new Load(options.load),
@@ -67660,10 +67660,10 @@
       // Bottom left
       new LengthLine(options.lengthLine),
       new MyMousePosition(options.myMousePosition),
-      new ol.control.ScaleLine(options.scaleLine),
+      new ScaleLine$1(options.scaleLine),
 
       // Bottom right
-      new ol.control.Attribution(options.attribution),
+      new Attribution$1(options.attribution),
     ];
   }
 
@@ -77073,7 +77073,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 13/09/2024 17:42:12';
+  const VERSION = '1.1.2.dev 13/09/2024 21:00:14';
 
   async function trace() {
     const data = [

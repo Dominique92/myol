@@ -5,6 +5,7 @@
  */
 
 import ol from '../ol';
+
 import * as layerTile from './TileLayerCollection';
 
 class BackgroundLayer extends layerTile.Positron {

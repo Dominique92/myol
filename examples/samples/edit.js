@@ -10,7 +10,10 @@ const snaplayer = new ol.layer.Vector({
     }),
   }),
 
-  editorLayer = new Edit(),
+  editorLayer = new Edit({
+    editPoly: true,
+    withHoles: true,
+  }),
 
   /* eslint-disable-next-line no-unused-vars */
   map = new ol.Map({

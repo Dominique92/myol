@@ -4,6 +4,11 @@
  */
 
 import ol from '../ol';
+import {
+  getLength as sphereGetLength
+} from 'ol/sphere.js';
+
+import './lengthLine.css';
 
 class LengthLine extends ol.control.Control {
   constructor() {
@@ -33,7 +38,7 @@ class LengthLine extends ol.control.Control {
   calculateLength(feature) {
     if (feature) {
       const geometry = feature.getGeometry(),
-        length = ol.sphere.getLength(geometry),
+        length = sphereGetLength(geometry),
         fcs = this.getFlatCoordinates(geometry);
       let denivPos = 0,
         denivNeg = 0;

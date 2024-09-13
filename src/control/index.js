@@ -2,9 +2,12 @@
  * This file defines the myol.control exports
  */
 
-import ol from '../ol';
-import './control.css';
+import Attribution from 'ol/control/Attribution';
+import FullScreen from 'ol/control/FullScreen';
+import ScaleLine from 'ol/control/ScaleLine';
+import Zoom from 'ol/control/Zoom';
 
+import './control.css';
 import Button from './Button';
 import Download from './Download';
 import LayerSwitcher from './LayerSwitcher';
@@ -22,8 +25,8 @@ import Print from './Print';
 export function collection(options = {}) {
   return [
     // Top left
-    new ol.control.Zoom(options.zoom),
-    new ol.control.FullScreen(options.fullScreen),
+    new Zoom(options.zoom),
+    new FullScreen(options.fullScreen),
     new MyGeocoder(options.geocoder),
     new MyGeolocation(options.geolocation),
     new Load(options.load),
@@ -33,10 +36,10 @@ export function collection(options = {}) {
     // Bottom left
     new LengthLine(options.lengthLine),
     new MyMousePosition(options.myMousePosition),
-    new ol.control.ScaleLine(options.scaleLine),
+    new ScaleLine(options.scaleLine),
 
     // Bottom right
-    new ol.control.Attribution(options.attribution),
+    new Attribution(options.attribution),
   ];
 }
 

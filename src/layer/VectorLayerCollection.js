@@ -4,6 +4,7 @@
  */
 
 import ol from '../ol';
+
 import MyVectorLayer from './MyVectorLayer';
 
 // Get icon from chemineur.fr

@@ -3,9 +3,10 @@
  */
 
 import ol from '../ol';
-import Button from './Button.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorLayer from 'ol/layer/Vector.js';
+
+import Button from './Button.js';
 
 const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
   subMenuHTMLfr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;

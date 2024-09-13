@@ -3,6 +3,8 @@
  */
 
 import ol from '../ol';
+import Feature from 'ol/Feature.js';
+
 import Button from './Button.js';
 
 const subMenuHTML = '\
@@ -70,11 +72,11 @@ class Download extends Button {
           geometry.getCoordinates().forEach(coords => {
             if (typeof coords[0][0] === 'number')
               // Polygon
-              featuresToSave.push(new ol.Feature(new ol.geom.LineString(coords)));
+              featuresToSave.push(new Feature(new ol.geom.LineString(coords)));
             else
               // MultiPolygon
               coords.forEach(subCoords =>
-                featuresToSave.push(new ol.Feature(new ol.geom.LineString(subCoords)))
+                featuresToSave.push(new Feature(new ol.geom.LineString(subCoords)))
               );
           });
         }

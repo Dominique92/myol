@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 12/09/2024 21:36:48 using npm run build from the src/... sources
+ * Built 13/09/2024 17:42:12 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -64923,11 +64923,11 @@
             geometry.getCoordinates().forEach(coords => {
               if (typeof coords[0][0] === 'number')
                 // Polygon
-                featuresToSave.push(new ol.Feature(new ol.geom.LineString(coords)));
+                featuresToSave.push(new Feature(new ol.geom.LineString(coords)));
               else
                 // MultiPolygon
                 coords.forEach(subCoords =>
-                  featuresToSave.push(new ol.Feature(new ol.geom.LineString(subCoords)))
+                  featuresToSave.push(new Feature(new ol.geom.LineString(subCoords)))
                 );
             });
           }
@@ -65920,13 +65920,13 @@
         featureProjection: map.getView().getProjection(), // Map projection
       });
 
-      const gpxSource = new ol.source.Vector({
+      const gpxSource = new VectorSource({
         format: loadFormat,
         features: features,
         wrapX: false,
       });
 
-      const gpxLayer = new ol.layer.Vector({
+      const gpxLayer = new VectorLayer({
         background: 'transparent',
         source: gpxSource,
         style: feature => {
@@ -67275,8 +67275,8 @@
     } // End constructor
 
     addGraticule() {
-      this.graticuleFeature = new ol.Feature();
-      this.northGraticuleFeature = new ol.Feature();
+      this.graticuleFeature = new Feature();
+      this.northGraticuleFeature = new Feature();
 
       this.graticuleFeature.setStyle(new ol.style.Style({
         stroke: new ol.style.Stroke({
@@ -67294,7 +67294,7 @@
         }),
       }));
 
-      this.graticuleLayer = new ol.layer.Vector({
+      this.graticuleLayer = new VectorLayer({
         background: 'transparent',
         source: new ol.source.Vector({
           features: [this.graticuleFeature, this.northGraticuleFeature],
@@ -67308,7 +67308,7 @@
       map.addLayer(this.graticuleLayer);
       map.on('moveend', evt => this.subMenuAction(evt)); // Refresh graticule after map zoom
 
-      this.geolocation = new ol.Geolocation({
+      this.geolocation = new Geolocation({
         projection: map.getView().getProjection(),
         trackingOptions: this.options,
 
@@ -67756,7 +67756,7 @@
 <p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
   // Editor
-  class Editor extends ol.layer.Vector {
+  class Editor extends VectorLayer {
     constructor(opt) {
       const options = {
         background: 'transparent',
@@ -67785,7 +67785,7 @@
       const geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
         geoJson = (geoJsonEl ? geoJsonEl.value : '') || '{"type":"FeatureCollection","features":[]}';
 
-      const source = new ol.source.Vector({
+      const source = new VectorSource({
         features: options.format.readFeatures(geoJson, options),
         wrapX: false,
 
@@ -68046,11 +68046,11 @@
 
       //BEST Multilinestring / Multipolygon
       for (const l in coordinates.lines)
-        this.source.addFeature(new ol.Feature({
+        this.source.addFeature(new Feature({
           geometry: new ol.geom.LineString(coordinates.lines[l]),
         }));
       for (const p in coordinates.polys)
-        this.source.addFeature(new ol.Feature({
+        this.source.addFeature(new Feature({
           geometry: new ol.geom.Polygon(coordinates.polys[p]),
         }));
 
@@ -68212,11 +68212,11 @@
    */
 
 
-  class Hover extends ol.layer.Vector {
+  class Hover extends VectorLayer {
     constructor(options) {
       super({
         background: 'transparent',
-        source: new ol.source.Vector(),
+        source: new VectorSource(),
         zIndex: 500, // Above all layers
         wrapX: false,
 
@@ -75898,7 +75898,7 @@
    */
 
 
-  class Marker extends ol.layer.Vector {
+  class Marker extends VectorLayer {
     constructor(opt) {
       const options = {
         // src: 'imageUrl', // url of marker image
@@ -75923,8 +75923,8 @@
       );
 
       super({
-        source: new ol.source.Vector({
-          features: [new ol.Feature({
+        source: new VectorSource({
+          features: [new Feature({
             geometry: point,
           })],
           wrapX: false,
@@ -76342,7 +76342,7 @@
    * GeoJSON vector display
    * display the loading status
    */
-  class MyVectorSource extends ol.source.Vector {
+  class MyVectorSource extends VectorSource {
     constructor(options) {
       // selectName: '', // Name of checkbox inputs to tune the url parameters
       // addProperties: properties => {}, // Add properties to each received feature
@@ -76452,7 +76452,7 @@
         lines = ['Cliquer pour zoomer'];
 
       // Display a cluster point
-      return new ol.Feature({
+      return new Feature({
         id: features[0].getId(), // Pseudo id = the id of the first feature in the cluster
         name: agregateText(lines),
         geometry: point, // The gravity center of all the features in the cluster
@@ -76479,7 +76479,7 @@
   /**
    * Browser & server clustered layer
    */
-  class MyBrowserClusterVectorLayer extends ol.layer.Vector {
+  class MyBrowserClusterVectorLayer extends VectorLayer {
     constructor(options) {
       // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters but add a jitter
 
@@ -76517,7 +76517,7 @@
           type: 'lowResolution',
         };
 
-        this.lowResolutionLayer = new ol.layer.Vector(lowResOptions);
+        this.lowResolutionLayer = new VectorLayer(lowResOptions);
         this.lowResolutionLayer.options = lowResOptions;
       }
     }
@@ -76710,11 +76710,6 @@
       return super.reload(this.selector.getSelection().length > 0);
     }
   }
-
-  var myVectorLayer = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    default: MyVectorLayer
-  });
 
   /**
    * VectorLayerCollection.js
@@ -77067,7 +77062,7 @@
     Editor: Editor,
     Hover: Hover,
     Marker: Marker,
-    ...myVectorLayer,
+    MyVectorLayer,
     Selector: Selector,
     tile: tileLayercollection,
     vector: vectorLayerCollection,
@@ -77078,7 +77073,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 12/09/2024 21:36:48';
+  const VERSION = '1.1.2.dev 13/09/2024 17:42:12';
 
   async function trace() {
     const data = [

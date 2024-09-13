@@ -5,12 +5,14 @@
  */
 
 import ol from '../ol';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
 
-class Hover extends ol.layer.Vector {
+class Hover extends VectorLayer {
   constructor(options) {
     super({
       background: 'transparent',
-      source: new ol.source.Vector(),
+      source: new VectorSource(),
       zIndex: 500, // Above all layers
       wrapX: false,
 

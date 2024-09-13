@@ -4,6 +4,10 @@
  */
 
 import ol from '../ol';
+import Feature from 'ol/Feature.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
+
 import Button from '../control/Button';
 import './editor.css';
 
@@ -76,7 +80,7 @@ const helpModifFr = {
 <p>Un polygone entièrement compris dans un autre crée un "trou"</p>';
 
 // Editor
-class Editor extends ol.layer.Vector {
+class Editor extends VectorLayer {
   constructor(opt) {
     const options = {
       background: 'transparent',
@@ -105,7 +109,7 @@ class Editor extends ol.layer.Vector {
     const geoJsonEl = document.getElementById(options.geoJsonId), // Read data in an html element
       geoJson = (geoJsonEl ? geoJsonEl.value : '') || '{"type":"FeatureCollection","features":[]}';
 
-    const source = new ol.source.Vector({
+    const source = new VectorSource({
       features: options.format.readFeatures(geoJson, options),
       wrapX: false,
 
@@ -366,11 +370,11 @@ class Editor extends ol.layer.Vector {
 
     //BEST Multilinestring / Multipolygon
     for (const l in coordinates.lines)
-      this.source.addFeature(new ol.Feature({
+      this.source.addFeature(new Feature({
         geometry: new ol.geom.LineString(coordinates.lines[l]),
       }));
     for (const p in coordinates.polys)
-      this.source.addFeature(new ol.Feature({
+      this.source.addFeature(new Feature({
         geometry: new ol.geom.Polygon(coordinates.polys[p]),
       }));
 

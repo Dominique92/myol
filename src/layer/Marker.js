@@ -3,9 +3,12 @@
  */
 
 import ol from '../ol';
+import Feature from 'ol/Feature.js';
 import proj4Lib from 'proj4/lib/index';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
 
-class Marker extends ol.layer.Vector {
+class Marker extends VectorLayer {
   constructor(opt) {
     const options = {
       // src: 'imageUrl', // url of marker image
@@ -30,8 +33,8 @@ class Marker extends ol.layer.Vector {
     );
 
     super({
-      source: new ol.source.Vector({
-        features: [new ol.Feature({
+      source: new VectorSource({
+        features: [new Feature({
           geometry: point,
         })],
         wrapX: false,

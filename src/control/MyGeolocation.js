@@ -4,6 +4,10 @@
  */
 
 import ol from '../ol';
+import Feature from 'ol/Feature.js';
+import Geolocation from 'ol/Geolocation.js';
+import VectorLayer from 'ol/layer/Vector.js';
+
 import Button from './Button';
 
 const subMenuHTML = '<p>\
@@ -77,8 +81,8 @@ class MyGeolocation extends Button {
   } // End constructor
 
   addGraticule() {
-    this.graticuleFeature = new ol.Feature();
-    this.northGraticuleFeature = new ol.Feature();
+    this.graticuleFeature = new Feature();
+    this.northGraticuleFeature = new Feature();
 
     this.graticuleFeature.setStyle(new ol.style.Style({
       stroke: new ol.style.Stroke({
@@ -96,7 +100,7 @@ class MyGeolocation extends Button {
       }),
     }));
 
-    this.graticuleLayer = new ol.layer.Vector({
+    this.graticuleLayer = new VectorLayer({
       background: 'transparent',
       source: new ol.source.Vector({
         features: [this.graticuleFeature, this.northGraticuleFeature],
@@ -110,7 +114,7 @@ class MyGeolocation extends Button {
     map.addLayer(this.graticuleLayer);
     map.on('moveend', evt => this.subMenuAction(evt)); // Refresh graticule after map zoom
 
-    this.geolocation = new ol.Geolocation({
+    this.geolocation = new Geolocation({
       projection: map.getView().getProjection(),
       trackingOptions: this.options,
 

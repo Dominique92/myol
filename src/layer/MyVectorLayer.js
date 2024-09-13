@@ -4,6 +4,9 @@
  */
 
 import ol from '../ol';
+import Feature from 'ol/Feature.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
 
 import Selector from './Selector';
 import * as stylesOptions from './stylesOptions';
@@ -12,7 +15,7 @@ import * as stylesOptions from './stylesOptions';
  * GeoJSON vector display
  * display the loading status
  */
-class MyVectorSource extends ol.source.Vector {
+class MyVectorSource extends VectorSource {
   constructor(options) {
     // selectName: '', // Name of checkbox inputs to tune the url parameters
     // addProperties: properties => {}, // Add properties to each received feature
@@ -122,7 +125,7 @@ class MyClusterSource extends ol.source.Cluster {
       lines = ['Cliquer pour zoomer'];
 
     // Display a cluster point
-    return new ol.Feature({
+    return new Feature({
       id: features[0].getId(), // Pseudo id = the id of the first feature in the cluster
       name: stylesOptions.agregateText(lines),
       geometry: point, // The gravity center of all the features in the cluster
@@ -149,7 +152,7 @@ class MyClusterSource extends ol.source.Cluster {
 /**
  * Browser & server clustered layer
  */
-class MyBrowserClusterVectorLayer extends ol.layer.Vector {
+class MyBrowserClusterVectorLayer extends VectorLayer {
   constructor(options) {
     // browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters but add a jitter
 
@@ -187,7 +190,7 @@ class MyBrowserClusterVectorLayer extends ol.layer.Vector {
         type: 'lowResolution',
       };
 
-      this.lowResolutionLayer = new ol.layer.Vector(lowResOptions);
+      this.lowResolutionLayer = new VectorLayer(lowResOptions);
       this.lowResolutionLayer.options = lowResOptions;
     }
   }

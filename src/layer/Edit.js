@@ -5,6 +5,8 @@
 
 import ol from '../ol';
 import './edit.css';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
 
 function strokeFill(deep) {
   return {
@@ -68,7 +70,7 @@ function selectStyles(feature) {
 };
 
 // Editor
-class Edit extends ol.layer.Vector {
+class Edit extends VectorLayer {
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -84,7 +86,7 @@ class Edit extends ol.layer.Vector {
       geoJson = geoJsonEl.value || geoJsonEl.innerHTML || '{"type":"FeatureCollection","features":[]}';
 
     // The editor source
-    const editedSource = new ol.source.Vector({
+    const editedSource = new VectorSource({
       features: options.format.readFeatures(geoJson, options),
       wrapX: false,
 
@@ -108,7 +110,7 @@ class Edit extends ol.layer.Vector {
     this.map = map;
 
     // Interactions & buttons
-    this.snapSource = new ol.source.Vector({});
+    this.snapSource = new VectorSource({});
 
     this.interactions = [
       new ol.interaction.Modify({ // 0 Modify
@@ -142,17 +144,17 @@ class Edit extends ol.layer.Vector {
       source: this.editedSource,
       pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
     });
-
-    this.interactions[1].on('select', evt => {
-      console.log('select');
-    });
-    this.interactions[1].on('change', evt => {
-      console.log('change');
-    });
-    this.interactions[1].on('propertychange', evt => {
-      console.log('propertychange');
-    });
-
+    /*
+        this.interactions[1].on('select', evt => {
+          console.log('select');
+        });
+        this.interactions[1].on('change', evt => {
+          console.log('change');
+        });
+        this.interactions[1].on('propertychange', evt => {
+          console.log('propertychange');
+        });
+    */
     // End of one modify interaction
     this.interactions[0].on('modifyend', evt => {
       console.log('modifyend');

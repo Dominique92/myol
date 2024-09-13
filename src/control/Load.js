@@ -4,6 +4,8 @@
 
 import ol from '../ol';
 import Button from './Button.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
 
 const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
   subMenuHTMLfr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
@@ -59,13 +61,13 @@ class Load extends Button {
       featureProjection: map.getView().getProjection(), // Map projection
     });
 
-    const gpxSource = new ol.source.Vector({
+    const gpxSource = new VectorSource({
       format: loadFormat,
       features: features,
       wrapX: false,
     });
 
-    const gpxLayer = new ol.layer.Vector({
+    const gpxLayer = new VectorLayer({
       background: 'transparent',
       source: gpxSource,
       style: feature => {

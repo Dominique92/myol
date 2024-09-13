@@ -6,6 +6,9 @@ import ol from '../ol';
 import {
   getDistance
 } from 'ol/sphere.js';
+import {
+  transform
+} from 'ol/proj.js';
 
 class MyMousePosition extends ol.control.MousePosition {
   constructor(options) {
@@ -30,7 +33,7 @@ class MyMousePosition extends ol.control.MousePosition {
 
   display(coordinates) {
     if (this.position) {
-      const ll4326 = ol.proj.transform(this.position, 'EPSG:3857', 'EPSG:4326'),
+      const ll4326 = transform(this.position, 'EPSG:3857', 'EPSG:4326'),
         distance = getDistance(coordinates, ll4326);
 
       return distance < 1000 ?

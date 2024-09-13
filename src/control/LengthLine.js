@@ -3,14 +3,14 @@
  * Control to display the length & height difference of an hovered line
  */
 
-import ol from '../ol';
+import Control from 'ol/control/Control.js';
 import {
   getLength as sphereGetLength
 } from 'ol/sphere.js';
 
 import './lengthLine.css';
 
-class LengthLine extends ol.control.Control {
+class LengthLine extends Control {
   constructor() {
     super({
       element: document.createElement('div'), //HACK button not visible

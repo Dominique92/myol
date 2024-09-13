@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 13/09/2024 21:00:14 using npm run build from the src/... sources
+ * Built 13/09/2024 21:39:39 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -6529,6 +6529,106 @@
   }
 
   var Zoom$1 = Zoom;
+
+  /**
+   * Button.js
+   * Add some usefull controls with buttons
+   */
+
+
+  /**
+   * Control button
+   * Abstract class to be used by other control buttons definitions
+   */
+  class Button extends Control {
+    constructor(opt) {
+      const options = {
+        label: ' ', // An ascii or unicode character to decorate the button (OR : css button::after)
+        className: '', // To be added to the control.element
+
+        // Sub menu, by priority :
+        // subMenuId : 'id', // Html id-fr or Id containing the scrolling menu
+        // subMenuHTMLfr: '', // html code of the scrolling menu in locale lang
+        subMenuHTML: '', // html code of the scrolling menu
+        // title: '', // html title for button hovering by a mouse
+        // buttonAction() {}, // (evt, active) To run when an <input> ot <a> of the subMenu is clicked / hovered, ...
+        // subMenuAction() {}, // (evt) To run when the button is clicked / hovered, ...
+
+        // All ol.control.Control options
+
+        ...opt,
+      };
+
+      super({
+        element: document.createElement('div'),
+        ...options,
+      });
+
+      this.options = options;
+
+      if (options.buttonAction) this.buttonAction = options.buttonAction;
+      if (options.subMenuAction) this.subMenuAction = options.subMenuAction;
+
+      // Create a button
+      this.buttonEl = document.createElement('button');
+      this.buttonEl.setAttribute('type', 'button');
+      this.buttonEl.innerHTML = options.label;
+      if (options.title)
+        this.buttonEl.setAttribute('title', options.title);
+
+      // Add submenu below the button
+      this.subMenuEl =
+        document.getElementById(options.subMenuId + '-' + navigator.language.match(/[a-z]+/u)) ||
+        document.getElementById(options.subMenuId) ||
+        document.createElement('div');
+      this.subMenuEl.innerHTML ||=
+        options['subMenuHTML' + navigator.language.match(/[a-z]+/u)] ||
+        options.subMenuHTML;
+
+      // Populate the control
+      this.element.className = 'ol-control myol-button ' + options.className;
+      this.element.appendChild(this.buttonEl); // Add the button
+      this.element.appendChild(this.subMenuEl); // Add the submenu
+    }
+
+    setMap(map) {
+      // Add listeners to the buttons
+      this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
+      this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
+      this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
+
+      // Add listeners in the sub-menus
+      this.subMenuEl.querySelectorAll('a, input')
+        .forEach(el => ['click', 'change'].forEach(type =>
+          el.addEventListener(type, evt =>
+            this.subMenuAction(evt)
+          )));
+
+      return super.setMap(map);
+    }
+
+    buttonListener(evt) {
+      if (evt.type === 'mouseover')
+        this.element.classList.add('myol-button-hover');
+      else // mouseout | click
+        this.element.classList.remove('myol-button-hover');
+
+      if (evt.type === 'click') // Mouse click & touch
+        this.element.classList.toggle('myol-button-selected');
+
+      // Close other open buttons
+      for (const el of document.getElementsByClassName('myol-button'))
+        if (el !== this.element && evt.type === 'click')
+          el.classList.remove('myol-button-selected');
+
+      // Trigger action on the selected button
+      this.buttonAction(evt, this.element.classList.contains('myol-button-selected'));
+    }
+
+    buttonAction() {}
+
+    subMenuAction() {}
+  }
 
   /**
    * @module ol/asserts
@@ -64754,106 +64854,6 @@
   window.ol ||= ol;
 
   /**
-   * Button.js
-   * Add some usefull controls with buttons
-   */
-
-
-  /**
-   * Control button
-   * Abstract class to be used by other control buttons definitions
-   */
-  class Button extends ol.control.Control {
-    constructor(opt) {
-      const options = {
-        label: ' ', // An ascii or unicode character to decorate the button (OR : css button::after)
-        className: '', // To be added to the control.element
-
-        // Sub menu, by priority :
-        // subMenuId : 'id', // Html id-fr or Id containing the scrolling menu
-        // subMenuHTMLfr: '', // html code of the scrolling menu in locale lang
-        subMenuHTML: '', // html code of the scrolling menu
-        // title: '', // html title for button hovering by a mouse
-        // buttonAction() {}, // (evt, active) To run when an <input> ot <a> of the subMenu is clicked / hovered, ...
-        // subMenuAction() {}, // (evt) To run when the button is clicked / hovered, ...
-
-        // All ol.control.Control options
-
-        ...opt,
-      };
-
-      super({
-        element: document.createElement('div'),
-        ...options,
-      });
-
-      this.options = options;
-
-      if (options.buttonAction) this.buttonAction = options.buttonAction;
-      if (options.subMenuAction) this.subMenuAction = options.subMenuAction;
-
-      // Create a button
-      this.buttonEl = document.createElement('button');
-      this.buttonEl.setAttribute('type', 'button');
-      this.buttonEl.innerHTML = options.label;
-      if (options.title)
-        this.buttonEl.setAttribute('title', options.title);
-
-      // Add submenu below the button
-      this.subMenuEl =
-        document.getElementById(options.subMenuId + '-' + navigator.language.match(/[a-z]+/u)) ||
-        document.getElementById(options.subMenuId) ||
-        document.createElement('div');
-      this.subMenuEl.innerHTML ||=
-        options['subMenuHTML' + navigator.language.match(/[a-z]+/u)] ||
-        options.subMenuHTML;
-
-      // Populate the control
-      this.element.className = 'ol-control myol-button ' + options.className;
-      this.element.appendChild(this.buttonEl); // Add the button
-      this.element.appendChild(this.subMenuEl); // Add the submenu
-    }
-
-    setMap(map) {
-      // Add listeners to the buttons
-      this.element.addEventListener('mouseover', evt => this.buttonListener(evt));
-      this.element.addEventListener('mouseout', evt => this.buttonListener(evt));
-      this.buttonEl.addEventListener('click', evt => this.buttonListener(evt));
-
-      // Add listeners in the sub-menus
-      this.subMenuEl.querySelectorAll('a, input')
-        .forEach(el => ['click', 'change'].forEach(type =>
-          el.addEventListener(type, evt =>
-            this.subMenuAction(evt)
-          )));
-
-      return super.setMap(map);
-    }
-
-    buttonListener(evt) {
-      if (evt.type === 'mouseover')
-        this.element.classList.add('myol-button-hover');
-      else // mouseout | click
-        this.element.classList.remove('myol-button-hover');
-
-      if (evt.type === 'click') // Mouse click & touch
-        this.element.classList.toggle('myol-button-selected');
-
-      // Close other open buttons
-      for (const el of document.getElementsByClassName('myol-button'))
-        if (el !== this.element && evt.type === 'click')
-          el.classList.remove('myol-button-selected');
-
-      // Trigger action on the selected button
-      this.buttonAction(evt, this.element.classList.contains('myol-button-selected'));
-    }
-
-    buttonAction() {}
-
-    subMenuAction() {}
-  }
-
-  /**
    * File downloader control
    */
 
@@ -65787,7 +65787,7 @@
    */
 
 
-  class LengthLine extends ol.control.Control {
+  class LengthLine extends Control {
     constructor() {
       super({
         element: document.createElement('div'), //HACK button not visible
@@ -67472,7 +67472,7 @@
 
     display(coordinates) {
       if (this.position) {
-        const ll4326 = ol.proj.transform(this.position, 'EPSG:3857', 'EPSG:4326'),
+        const ll4326 = transform$1(this.position, 'EPSG:3857', 'EPSG:4326'),
           distance = getDistance(coordinates, ll4326);
 
         return distance < 1000 ?
@@ -67490,7 +67490,7 @@
    */
 
 
-  class Permalink extends ol.control.Control {
+  class Permalink extends Control {
     constructor(opt) {
       const options = {
         // display: false, // {false | true} Display permalink link the map.
@@ -67542,7 +67542,7 @@
 
         view.setZoom(urlMod.match(/zoom=([0-9.]+)/u)[1]);
 
-        view.setCenter(ol.proj.transform([
+        view.setCenter(transform$1([
           urlMod.match(/lon=(-?[0-9.]+)/u)[1],
           urlMod.match(/lat=(-?[0-9.]+)/u)[1],
         ], 'EPSG:4326', 'EPSG:3857'));
@@ -67550,7 +67550,7 @@
 
       // Set the permalink with current map zoom & position
       if (view.getCenter()) {
-        const ll4326 = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
+        const ll4326 = transform$1(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
           newParams = 'map=' +
           (localStorage.myolZoom = Math.round(view.getZoom() * 10) / 10) + '/' +
           (localStorage.myolLon = Math.round(ll4326[0] * 10000) / 10000) + '/' +
@@ -67842,7 +67842,7 @@
 
         if (ol.extent.isEmpty(extent)) {
           view.setCenter(
-            ol.proj.transform(defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
+            transform$1(defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
           );
           view.setZoom(localStorage.myolZoom || 6);
         } else
@@ -68303,7 +68303,7 @@
 
           if (hoveredLayer.options && hoveredLayer.options.hoverStylesOptions)
             f.setStyle(
-              new ol.style.Style(hoveredLayer.options.hoverStylesOptions(f, resolution, hoveredLayer))
+              new Style(hoveredLayer.options.hoverStylesOptions(f, resolution, hoveredLayer))
             );
 
           source.clear();
@@ -75919,7 +75919,7 @@
       };
 
       const point = new ol.geom.Point(
-        ol.proj.transform(options.defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
+        transform$1(options.defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
       );
 
       super({
@@ -75957,7 +75957,7 @@
           proj4.defs('EPSG:' + (32600 + u), '+proj=utm +zone=' + u + ' +ellps=WGS84 +datum=WGS84 +units=m +no_defs');
           proj4.defs('EPSG:' + (32700 + u), '+proj=utm +zone=' + u + ' +ellps=WGS84 +datum=WGS84 +units=m +no_defs');
         }
-        ol.proj.proj4.register(proj4);
+        register(proj4);
       }
 
       // Register the action listeners
@@ -76052,7 +76052,7 @@
       if (!position[0] && !position[1])
         return;
 
-      const ll4326 = ol.proj.transform([
+      const ll4326 = transform$1([
         // Protection against non-digital entries / transform , into .
         parseFloat(position[0].toString().replace(/[^-0-9]+/u, '.')),
         parseFloat(position[1].toString().replace(/[^-0-9]+/u, '.'))
@@ -76060,7 +76060,7 @@
 
       ll4326[0] -= Math.round(ll4326[0] / 360) * 360; // Wrap +-180°
 
-      const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857');
+      const ll3857 = transform$1(ll4326, 'EPSG:4326', 'EPSG:3857');
 
       const inEPSG21781 =
         typeof proj4 === 'function' &&
@@ -76085,10 +76085,10 @@
       };
 
       if (inEPSG21781) {
-        const ll21781 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:21781'),
+        const ll21781 = transform$1(ll4326, 'EPSG:4326', 'EPSG:21781'),
           z = Math.floor(ll4326[0] / 6 + 90) % 60 + 1,
           u = 32600 + z + (ll4326[1] < 0 ? 100 : 0),
-          llutm = ol.proj.transform(ll3857, 'EPSG:4326', 'EPSG:' + u);
+          llutm = transform$1(ll3857, 'EPSG:4326', 'EPSG:' + u);
 
         // UTM zones
         strings.utm = ' UTM ' + z +
@@ -77073,7 +77073,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 13/09/2024 21:00:14';
+  const VERSION = '1.1.2.dev 13/09/2024 21:39:39';
 
   async function trace() {
     const data = [

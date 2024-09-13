@@ -5,6 +5,9 @@
 
 import ol from '../ol';
 import Feature from 'ol/Feature.js';
+import {
+  transform
+} from 'ol/proj.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorLayer from 'ol/layer/Vector.js';
 
@@ -166,7 +169,7 @@ class Editor extends VectorLayer {
 
       if (ol.extent.isEmpty(extent)) {
         view.setCenter(
-          ol.proj.transform(defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
+          transform(defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
         );
         view.setZoom(localStorage.myolZoom || 6);
       } else

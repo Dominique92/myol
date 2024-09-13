@@ -4,6 +4,7 @@
  */
 
 import ol from '../ol';
+import Control from 'ol/control/Control.js';
 import Feature from 'ol/Feature.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
@@ -342,7 +343,7 @@ class Edit extends VectorLayer {
       // Add listeners to the buttons
       buttonEl.addEventListener('click', () => this.restartInteractions(noInteraction));
 
-      map.addControl(new ol.control.Control({
+      map.addControl(new Control({
         element: element,
       }));
     });

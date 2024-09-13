@@ -4,9 +4,9 @@
  * Go to the link property when click a feature
  */
 
-import ol from '../ol';
-import VectorSource from 'ol/source/Vector.js';
+import Style from 'ol/style/Style.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
 
 class Hover extends VectorLayer {
   constructor(options) {
@@ -99,7 +99,7 @@ class Hover extends VectorLayer {
 
         if (hoveredLayer.options && hoveredLayer.options.hoverStylesOptions)
           f.setStyle(
-            new ol.style.Style(hoveredLayer.options.hoverStylesOptions(f, resolution, hoveredLayer))
+            new Style(hoveredLayer.options.hoverStylesOptions(f, resolution, hoveredLayer))
           );
 
         source.clear();

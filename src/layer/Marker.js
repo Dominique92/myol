@@ -5,8 +5,14 @@
 import ol from '../ol';
 import Feature from 'ol/Feature.js';
 import proj4Lib from 'proj4/lib/index';
-import VectorSource from 'ol/source/Vector.js';
+import {
+  register
+} from 'ol/proj/proj4.js';
+import {
+  transform
+} from 'ol/proj.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
 
 class Marker extends VectorLayer {
   constructor(opt) {
@@ -29,7 +35,7 @@ class Marker extends VectorLayer {
     };
 
     const point = new ol.geom.Point(
-      ol.proj.transform(options.defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
+      transform(options.defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
     );
 
     super({
@@ -67,7 +73,7 @@ class Marker extends VectorLayer {
         proj4Lib.defs('EPSG:' + (32600 + u), '+proj=utm +zone=' + u + ' +ellps=WGS84 +datum=WGS84 +units=m +no_defs');
         proj4Lib.defs('EPSG:' + (32700 + u), '+proj=utm +zone=' + u + ' +ellps=WGS84 +datum=WGS84 +units=m +no_defs');
       }
-      ol.proj.proj4.register(proj4Lib);
+      register(proj4Lib);
     }
 
     // Register the action listeners
@@ -162,7 +168,7 @@ class Marker extends VectorLayer {
     if (!position[0] && !position[1])
       return;
 
-    const ll4326 = ol.proj.transform([
+    const ll4326 = transform([
       // Protection against non-digital entries / transform , into .
       parseFloat(position[0].toString().replace(/[^-0-9]+/u, '.')),
       parseFloat(position[1].toString().replace(/[^-0-9]+/u, '.'))
@@ -170,7 +176,7 @@ class Marker extends VectorLayer {
 
     ll4326[0] -= Math.round(ll4326[0] / 360) * 360; // Wrap +-180°
 
-    const ll3857 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:3857');
+    const ll3857 = transform(ll4326, 'EPSG:4326', 'EPSG:3857');
 
     const inEPSG21781 =
       typeof proj4Lib === 'function' &&
@@ -195,10 +201,10 @@ class Marker extends VectorLayer {
     };
 
     if (inEPSG21781) {
-      const ll21781 = ol.proj.transform(ll4326, 'EPSG:4326', 'EPSG:21781'),
+      const ll21781 = transform(ll4326, 'EPSG:4326', 'EPSG:21781'),
         z = Math.floor(ll4326[0] / 6 + 90) % 60 + 1,
         u = 32600 + z + (ll4326[1] < 0 ? 100 : 0),
-        llutm = ol.proj.transform(ll3857, 'EPSG:4326', 'EPSG:' + u);
+        llutm = transform(ll3857, 'EPSG:4326', 'EPSG:' + u);
 
       // UTM zones
       strings.utm = ' UTM ' + z +

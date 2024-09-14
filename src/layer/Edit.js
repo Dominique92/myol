@@ -20,42 +20,37 @@ function compareCoords(a, b) {
 
 // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
 // at the same level & split if one point = selectedVertex
-function flatCoord(lines, coords, selectedVertex, reverseLine) {
+function flatCoord(lines, coords, selectedVertex) {
   if (coords.length && typeof coords[0][0] === 'object') {
     // Multi*
     for (const c1 in coords)
-      flatCoord(lines, coords[c1], selectedVertex, reverseLine);
+      flatCoord(lines, coords[c1], selectedVertex);
   } else {
     // LineString
     const begCoords = []; // Coords before the selectedVertex
-    let selectedLine = false;
 
     while (coords.length) {
       const c = coords.shift();
 
       if (!coords.length || !compareCoords(c, coords[0])) { // Skip duplicated points
-        if (selectedVertex && compareCoords(c, selectedVertex)) {
-          selectedLine = true;
+        if (selectedVertex && compareCoords(c, selectedVertex))
           break; // Ignore this point and stop selection
-        }
+
         begCoords.push(c);
       }
     }
 
-    if (selectedLine && reverseLine)
-      lines.push(begCoords.concat(coords).reverse());
-    else
-      lines.push(begCoords, coords);
+    lines.push(begCoords, coords);
   }
 }
 
-function flatFeatures(geom, points, lines, polys, selectedVertex, reverseLine) {
+function flatFeatures(geom, points, lines, polys, selectedVertex) {
   // Expand geometryCollection
   if (geom.getType() === 'GeometryCollection') {
     const geometries = geom.getGeometries();
 
     for (const g in geometries)
-      flatFeatures(geometries[g], points, lines, polys, selectedVertex, reverseLine);
+      flatFeatures(geometries[g], points, lines, polys, selectedVertex);
   }
   // Point
   else if (geom.getType().match(/point$/iu))
@@ -64,19 +59,19 @@ function flatFeatures(geom, points, lines, polys, selectedVertex, reverseLine) {
   // line & poly
   else
     // Get lines or polyons as flat array of coordinates
-    flatCoord(lines, geom.getCoordinates(), selectedVertex, reverseLine);
+    flatCoord(lines, geom.getCoordinates(), selectedVertex);
 }
 
 // Refurbish Lines & Polygons
 // Split lines having a summit at selectedVertex
-function optimiseFeatures(options, features, selectedVertex, reverseLine) {
+function optimiseFeatures(options, features, selectedVertex) {
   const points = [],
     lines = [],
     polys = [];
 
   // Get all edited features as array of coordinates
   for (const f in features)
-    flatFeatures(features[f].getGeometry(), points, lines, polys, selectedVertex, reverseLine);
+    flatFeatures(features[f].getGeometry(), points, lines, polys, selectedVertex);
 
   for (const a in lines)
     // Exclude 1 coordinate features (points)
@@ -217,23 +212,16 @@ function selectStyles(feature) {
   return featureStyles;
 };
 
-/*
 //TODO editPoly: false, => optimise / export
-
 //TODO BUG edit polygone : ne peut pas supprimer un côté
 //TODO move only one summit when dragging
-//TODO Ctrl+Alt+click on summit : delete the line or poly
-//TODO Alt+click on segment : delete the segment & split the line
-Inverser une ligne
-
+//TODO Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
+/*
 https://github.com/openlayers/openlayers/issues/11608
 https://openlayers.org/en/latest/examples/modify-features.html
 Move 1 vertex from double (line / polygons, …
 	Dédouble / colle line
 	Défait / colle polygone
-Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
-
-Delete selected feature
 */
 
 // EDITOR
@@ -306,7 +294,7 @@ class Edit extends VectorLayer {
       new ol.interaction.Draw({ // 2 Draw line
         type: 'LineString',
         source: this.editedSource,
-        traceSource: this.snapSource, //TODO do not add the owner source
+        traceSource: this.snapSource,
         trace: true,
         style: displayStyle,
         stopClick: true, // Avoid zoom when you finish drawing by doubleclick
@@ -373,7 +361,9 @@ class Edit extends VectorLayer {
     // For snap & traceSource : register again the full list of features as addFeature manages already registered
     this.snapSource.clear();
     this.map.getLayers().forEach(layer => {
-      if (layer.getSource() && layer.getSource().getFeatures) // Vector layers only
+      if (layer.getSource() !== this.editedSource &&
+        layer.getSource() &&
+        layer.getSource().getFeatures) // Vector layers only
         layer.getSource().getFeatures().forEach(feature => {
           this.interactionSnap.addFeature(feature);
           this.snapSource.addFeature(feature);
@@ -410,13 +400,12 @@ class Edit extends VectorLayer {
   }
 
   // Processing the data
-  optimiseEdited(selectedVertex, reverseLine) {
+  optimiseEdited(selectedVertex) {
     // Get edited features
     const coordinates = optimiseFeatures(
       this.options,
       this.editedSource.getFeatures(),
       selectedVertex, //TODO
-      reverseLine, //TODO
     );
 
     // Recreate features

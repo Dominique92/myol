@@ -215,10 +215,9 @@ function selectStyles(feature) {
 //TODO editPoly: false, => optimise / export
 //TODO BUG edit polygone : ne peut pas supprimer un côté
 //TODO move only one summit when dragging
-//TODO Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
 /*
 https://github.com/openlayers/openlayers/issues/11608
-https://openlayers.org/en/latest/examples/modify-features.html
+	https://openlayers.org/en/latest/examples/modify-features.html
 Move 1 vertex from double (line / polygons, …
 	Dédouble / colle line
 	Défait / colle polygone
@@ -351,13 +350,6 @@ class Edit extends VectorLayer {
   } // End setMapInternal
 
   restartInteractions(noInteraction) {
-    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
-
-    this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
-
-    this.map.addInteraction(this.interactions[noInteraction]);
-    this.map.addInteraction(this.interactionSnap); // Must be added after the others
-
     // For snap & traceSource : register again the full list of features as addFeature manages already registered
     this.snapSource.clear();
     this.map.getLayers().forEach(layer => {
@@ -369,6 +361,11 @@ class Edit extends VectorLayer {
           this.snapSource.addFeature(feature);
         });
     });
+	
+    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
+    this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
+    this.map.addInteraction(this.interactions[noInteraction]);
+    this.map.addInteraction(this.interactionSnap); // Must be added after the others
   }
 
   endIntercation(evt) {

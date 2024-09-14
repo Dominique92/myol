@@ -281,8 +281,8 @@ class Edit extends VectorLayer {
     });
 
     this.options = options;
-    this.editedSource = editedSource;
     this.geoJsonEl = geoJsonEl;
+    this.editedSource = editedSource;
   } // End constructor
 
   setMapInternal(map) {
@@ -300,6 +300,7 @@ class Edit extends VectorLayer {
       }),
       new ol.interaction.Select({ // 1 Select
         condition: ol.events.condition.pointerMove,
+        filter: (feature, layer) => layer.getSource() === this.editedSource,
         style: selectStyles,
       }),
       new ol.interaction.Draw({ // 2 Draw line
@@ -343,21 +344,22 @@ class Edit extends VectorLayer {
       // Add listeners to the buttons
       buttonEl.addEventListener('click', () => this.restartInteractions(noInteraction));
 
-      [ /*'select', 'change', 'propertychange',*/ 'modifyend', 'drawend'].forEach(event =>
+      ['modifyend', 'drawend'].forEach(event =>
         this.interactions[noInteraction].on(event, evt => this.endIntercation(evt))
       );
-
-      // Init interaction & button to modify at the beginning & when a file is loaded
-      this.map.on('loadend', () => {
-        this.optimiseEdited();
-        this.restartInteractions(0);
-      });
 
       // Add the button to the map
       map.addControl(new Control({
         element: element,
       }));
     });
+
+    // Init interaction & button to modify at the beginning & when a file is loaded
+    this.map.on('loadend', () => {
+      this.optimiseEdited();
+      this.restartInteractions(0);
+    });
+    this.map.on('click', evt => this.mapClick(evt));
   } // End setMapInternal
 
   restartInteractions(noInteraction) {
@@ -382,28 +384,33 @@ class Edit extends VectorLayer {
   endIntercation(evt) {
     console.log(evt.type); //TODO
 
-    // End of one modify interaction
-    // Ctrl+Alt+click on segment : delete the line or poly
-    if (evt.mapBrowserEvent && evt.mapBrowserEvent.originalEvent.ctrlKey &&
-      evt.mapBrowserEvent.originalEvent.altKey) {
-      const selectedFeatures = this.map.getFeaturesAtPixel(
-        evt.mapBrowserEvent.pixel, {
-          hitTolerance: 6, // Default is 0
-          layerFilter: l => l.ol_uid === this.ol_uid
-        });
-
-      for (const f in selectedFeatures) // We delete the selected feature
-        this.editedSource.removeFeature(selectedFeatures[f]);
-    }
-
     this.optimiseEdited();
     this.restartInteractions(0);
   }
 
+  mapClick(evt) {
+    this.interactions[1].getFeatures().forEach(feature => {
+      const coordinates = feature.getGeometry().getCoordinates();
+
+      // Shift + click : reverse line direction
+      if (evt.originalEvent.shiftKey &&
+        typeof coordinates[0][0] === 'number') {
+        this.editedSource.removeFeature(feature);
+        this.editedSource.addFeature(new Feature({
+          geometry: new ol.geom.LineString(coordinates.reverse()),
+        }));
+      }
+
+      // Alt + click : delete line
+      if (evt.originalEvent.altKey)
+        this.editedSource.removeFeature(feature);
+
+      this.optimiseEdited();
+    });
+  }
+
   // Processing the data
   optimiseEdited(selectedVertex, reverseLine) {
-    const view = this.map.getView();
-
     // Get edited features
     const coordinates = optimiseFeatures(
       this.options,
@@ -426,7 +433,7 @@ class Edit extends VectorLayer {
       }));
 
     // Save geometries in <EL> as geoJSON at every change
-    if (this.geoJsonEl && view)
+    if (this.geoJsonEl && this.map.getView())
       this.geoJsonEl.value = this.options.featuresToSave(coordinates)
       .replace(/,"properties":(\{[^}]*\}|null)/u, '');
   }

@@ -64,6 +64,7 @@ export class Chemineur extends GeoBB {
 }
 
 // alpages.info
+//TODO vite : Access to XMLHttpRequest at 'https://alpages.info/ext/Dominique92/GeoBB/gis.php?forums=on&bbox=5.85311%2C44.7727%2C5.91689%2C44.8093' from origin 'http://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
 export class Alpages extends MyVectorLayer {
   constructor(options) {
     super({

@@ -8,8 +8,8 @@ import Feature from 'ol/Feature.js';
 import {
   transform
 } from 'ol/proj.js';
-import VectorSource from 'ol/source/Vector.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
 
 import Button from '../control/Button';
 import './editor.css';

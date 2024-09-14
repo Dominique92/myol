@@ -3,8 +3,8 @@
  */
 
 import ol from '../ol';
-import VectorSource from 'ol/source/Vector.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
 
 import Button from './Button.js';
 

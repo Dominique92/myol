@@ -11,7 +11,7 @@ import VectorSource from 'ol/source/Vector.js';
 
 import './edit.css';
 
-// Are coords identials ?
+// OPTIMIZE LINES & POLYS
 function compareCoords(a, b) {
   if (!a) return false;
   if (!b) return compareCoords(a[0], a[a.length - 1]); // Compare start with end
@@ -155,6 +155,7 @@ function optimiseFeatures(options, features, selectedVertex, reverseLine) {
   };
 }
 
+// STYLES
 function strokeFill(deep) {
   return {
     stroke: new ol.style.Stroke({
@@ -216,7 +217,26 @@ function selectStyles(feature) {
   return featureStyles;
 };
 
-// Editor
+/*
+//TODO editPoly: false, => optimise / export
+
+//TODO BUG edit polygone : ne peut pas supprimer un côté
+//TODO move only one summit when dragging
+//TODO Ctrl+Alt+click on summit : delete the line or poly
+//TODO Alt+click on segment : delete the segment & split the line
+Inverser une ligne
+
+https://github.com/openlayers/openlayers/issues/11608
+https://openlayers.org/en/latest/examples/modify-features.html
+Move 1 vertex from double (line / polygons, …
+	Dédouble / colle line
+	Défait / colle polygone
+Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
+
+Delete selected feature
+*/
+
+// EDITOR
 class Edit extends VectorLayer {
   constructor(opt) {
     const options = {
@@ -285,7 +305,7 @@ class Edit extends VectorLayer {
       new ol.interaction.Draw({ // 2 Draw line
         type: 'LineString',
         source: this.editedSource,
-        traceSource: this.snapSource,
+        traceSource: this.snapSource, //TODO do not add the owner source
         trace: true,
         style: displayStyle,
         stopClick: true, // Avoid zoom when you finish drawing by doubleclick
@@ -308,27 +328,7 @@ class Edit extends VectorLayer {
       pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
     });
 
-    // End of one modify interaction
-    /*
-      // Ctrl+Alt+click on segment : delete the line or poly
-      if (evt.mapBrowserEvent.originalEvent.ctrlKey &&
-        evt.mapBrowserEvent.originalEvent.altKey) {
-        const selectedFeatures = this.map.getFeaturesAtPixel(
-          evt.mapBrowserEvent.pixel, {
-            hitTolerance: 6, // Default is 0
-            layerFilter: l => l.ol_uid === this.ol_uid
-          });
-
-        for (const f in selectedFeatures) // We delete the selected feature
-          this.editedSource.removeFeature(selectedFeatures[f]);
-      }
-*/
-
     this.interactions.forEach((interaction, noInteraction) => {
-      ['select', 'change', 'propertychange', 'modifyend', 'drawend'].forEach(event =>
-        this.interactions[noInteraction].on(event, evt => this.finish(evt))
-      );
-
       // Draw buttons
       const buttonEl = document.createElement('button'),
         element = document.createElement('div');
@@ -343,17 +343,24 @@ class Edit extends VectorLayer {
       // Add listeners to the buttons
       buttonEl.addEventListener('click', () => this.restartInteractions(noInteraction));
 
+      [ /*'select', 'change', 'propertychange',*/ 'modifyend', 'drawend'].forEach(event =>
+        this.interactions[noInteraction].on(event, evt => this.endIntercation(evt))
+      );
+
+      // Init interaction & button to modify at the beginning & when a file is loaded
+      this.map.on('loadend', () => {
+        this.optimiseEdited();
+        this.restartInteractions(0);
+      });
+
+      // Add the button to the map
       map.addControl(new Control({
         element: element,
       }));
     });
-
-    // Init interaction & button to modify at the beginning & when a file is loaded
-    this.map.on('loadend', () => this.restartInteractions(0));
   } // End setMapInternal
 
   restartInteractions(noInteraction) {
-    console.log('restartInteractions');
     this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
 
     this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
@@ -372,9 +379,25 @@ class Edit extends VectorLayer {
     });
   }
 
-  finish(evt) {
+  endIntercation(evt) {
     console.log(evt.type); //TODO
+
+    // End of one modify interaction
+    // Ctrl+Alt+click on segment : delete the line or poly
+    if (evt.mapBrowserEvent && evt.mapBrowserEvent.originalEvent.ctrlKey &&
+      evt.mapBrowserEvent.originalEvent.altKey) {
+      const selectedFeatures = this.map.getFeaturesAtPixel(
+        evt.mapBrowserEvent.pixel, {
+          hitTolerance: 6, // Default is 0
+          layerFilter: l => l.ol_uid === this.ol_uid
+        });
+
+      for (const f in selectedFeatures) // We delete the selected feature
+        this.editedSource.removeFeature(selectedFeatures[f]);
+    }
+
     this.optimiseEdited();
+    this.restartInteractions(0);
   }
 
   // Processing the data
@@ -385,8 +408,8 @@ class Edit extends VectorLayer {
     const coordinates = optimiseFeatures(
       this.options,
       this.editedSource.getFeatures(),
-      selectedVertex,
-      reverseLine
+      selectedVertex, //TODO
+      reverseLine, //TODO
     );
 
     // Recreate features
@@ -410,22 +433,3 @@ class Edit extends VectorLayer {
 }
 
 export default Edit;
-
-/*//TODO new editor
-//TODO editPoly: false, => optimise / export
-
-//TODO BUG edit polygone : ne peut pas supprimer un côté
-//TODO move only one summit when dragging
-//TODO Ctrl+Alt+click on summit : delete the line or poly
-//TODO Alt+click on segment : delete the segment & split the line
-Inverser une ligne
-
-https://github.com/openlayers/openlayers/issues/11608
-https://openlayers.org/en/latest/examples/modify-features.html
-Move 1 vertex from double (line / polygons, …
-	Dédouble / colle line
-	Défait / colle polygone
-Quand interaction finie : transforme line -> poly si les 2 extrémités sont =
-
-Delete selected feature
-*/

@@ -5,8 +5,8 @@
 
 import ol from '../ol';
 import Feature from 'ol/Feature.js';
-import VectorSource from 'ol/source/Vector.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
 
 import Selector from './Selector';
 import * as stylesOptions from './stylesOptions';

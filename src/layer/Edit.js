@@ -222,8 +222,6 @@ function selectStyles(feature) {
 //TODO BUG edit polygone : ne peut pas supprimer un côté
 //TODO move only one summit when dragging
 /*
-https://github.com/openlayers/openlayers/issues/11608
-    https://openlayers.org/en/latest/examples/modify-features.html
 Move 1 vertex from double (line / polygons, …
     Dédouble / colle line
     Défait / colle polygone
@@ -335,12 +333,32 @@ class Edit extends VectorLayer {
         () => {
           this.map.getTargetElement().classList.remove('ed-selected');
         }, {
+          layerFilter: (layer) => layer.getSource() === this.editedSource,
           hitTolerance: this.options.tolerance, // Default is 0
         },
       );
     });
 
-    //this.map.on('click', evt => this.mapClick(evt));
+    this.map.on('click', evt => {
+      this.selectInteraction.getFeatures().forEach(feature => {
+        const coordinates = feature.getGeometry().getCoordinates();
+
+        // Shift + click : reverse line direction
+        if (evt.originalEvent.shiftKey &&
+          typeof coordinates[0][0] === 'number') {
+          this.editedSource.removeFeature(feature);
+          this.editedSource.addFeature(new Feature({
+            geometry: new ol.geom.LineString(coordinates.reverse()),
+          }));
+        }
+
+        // Alt + click : delete line
+        if (evt.originalEvent.altKey) //TODO BUG
+          this.editedSource.removeFeature(feature);
+
+        this.optimiseEdited();
+      });
+    });
 
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
@@ -381,28 +399,7 @@ class Edit extends VectorLayer {
     this.optimiseEdited();
     this.restartInteractions('modify');
   }
-  /*
-    mapClick(evt) {
-      this.interactions[1].getFeatures().forEach(feature => {
-        const coordinates = feature.getGeometry().getCoordinates();
 
-        // Shift + click : reverse line direction
-        if (evt.originalEvent.shiftKey &&
-          typeof coordinates[0][0] === 'number') {
-          this.editedSource.removeFeature(feature);
-          this.editedSource.addFeature(new Feature({
-            geometry: new ol.geom.LineString(coordinates.reverse()),
-          }));
-        }
-
-        // Alt + click : delete line
-        if (evt.originalEvent.altKey)
-          this.editedSource.removeFeature(feature);
-
-        this.optimiseEdited();
-      });
-    }
-  */
   // Processing the data
   optimiseEdited(selectedVertex) {
     // Get edited features

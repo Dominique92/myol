@@ -11,48 +11,54 @@
   margin: 2px;
 }
 
-/* Modify */
+/*.feature-hover {
+  cursor: pointer;
+}*/
+
+/* Modify 
 .ed-button-0 button::after {
   content: "\2725";
 }
 
 .ed-view-0 {
   cursor: default;
-}
+}*/
 
-/* Select */
+/* Select 
 .ed-button-1 button::after {
   content: "\2702";
 }
 
 .ed-view-1 {
   cursor: help;
-}
+}*/
 
-/* Draw line */
+/* Draw line 
 .ed-button-2 button::after {
   content: "\2608";
 }
 
 .ed-view-2 {
   cursor: copy;
-}
+}*/
 
-/* Draw poly */
+/* Draw poly 
 .ed-button-3 button::after {
   content: "\23E2";
 }
 
 .ed-view-3 {
   cursor: copy;
-}
+}*/
 
+/*
 .ed-view-0 .ed-button-0 button,
 .ed-view-1 .ed-button-1 button,
 .ed-view-2 .ed-button-2 button,
 .ed-view-3 .ed-button-3 button {
   background: lightblue;
 }
+*/
 
 /* Submenu */
 .ed-button>div {

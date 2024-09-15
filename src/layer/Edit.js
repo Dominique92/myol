@@ -8,6 +8,12 @@ import Control from 'ol/control/Control.js';
 import Feature from 'ol/Feature.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
+import {
+  Draw,
+  Modify,
+  Select,
+  Snap,
+} from 'ol/interaction.js';
 
 import './edit.css';
 
@@ -217,10 +223,10 @@ function selectStyles(feature) {
 //TODO move only one summit when dragging
 /*
 https://github.com/openlayers/openlayers/issues/11608
-	https://openlayers.org/en/latest/examples/modify-features.html
+    https://openlayers.org/en/latest/examples/modify-features.html
 Move 1 vertex from double (line / polygons, …
-	Dédouble / colle line
-	Défait / colle polygone
+    Dédouble / colle line
+    Défait / colle polygone
 */
 
 // EDITOR
@@ -231,6 +237,7 @@ class Edit extends VectorLayer {
       format: new ol.format.GeoJSON(),
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
+      tolerance: 7, // Px
       //editPoly: false | true, // output are lines | polygons
 
       featuresToSave: () => this.options.format.writeFeatures(
@@ -244,8 +251,8 @@ class Edit extends VectorLayer {
       ...opt,
     }
 
-    // The data entry
-    const geoJsonEl = document.getElementById(options.geoJsonId) || {}, // Read data in an html element
+    // Read data in an html element
+    const geoJsonEl = document.getElementById(options.geoJsonId) || {},
       geoJson = geoJsonEl.value.trim() ||
       geoJsonEl.innerHTML.trim() ||
       '{"type":"FeatureCollection","features":[]}';
@@ -254,7 +261,6 @@ class Edit extends VectorLayer {
     const editedSource = new VectorSource({
       features: options.format.readFeatures(geoJson, options),
       wrapX: false,
-
       ...options,
     });
 
@@ -263,13 +269,13 @@ class Edit extends VectorLayer {
       source: editedSource,
       style: displayStyle,
       zIndex: 400, // Editor & cursor : above the features
-
       ...options,
     });
 
     this.options = options;
     this.geoJsonEl = geoJsonEl;
     this.editedSource = editedSource;
+    this.snapSource = new VectorSource({});
   } // End constructor
 
   setMapInternal(map) {
@@ -277,79 +283,85 @@ class Edit extends VectorLayer {
     this.map = map;
 
     // Interactions & buttons
-    this.snapSource = new VectorSource({});
-
-    this.interactions = [
-      new ol.interaction.Modify({ // 0 Modify
-        source: this.editedSource,
-        pixelTolerance: 16, // Default is 10
-        style: displayStyle,
-      }),
-      new ol.interaction.Select({ // 1 Select
-        condition: ol.events.condition.pointerMove,
-        filter: (feature, layer) => layer.getSource() === this.editedSource,
-        style: selectStyles,
-      }),
-      new ol.interaction.Draw({ // 2 Draw line
-        type: 'LineString',
-        source: this.editedSource,
-        traceSource: this.snapSource,
-        trace: true,
-        style: displayStyle,
-        stopClick: true, // Avoid zoom when you finish drawing by doubleclick
-      }),
-    ];
-
-    if (this.options.editPoly)
-      this.interactions.push(
-        new ol.interaction.Draw({ // 3 Draw poly
-          type: 'Polygon',
-          source: this.editedSource,
-          traceSource: this.snapSource,
-          trace: true,
-          style: displayStyle,
-          stopClick: true, // Avoid zoom when you finish drawing by doubleclick
-        }));
-
-    this.interactionSnap = new ol.interaction.Snap({
+    this.selectInteraction = new Select({
+      filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
+      hitTolerance: this.options.tolerance, // Default is 0
+      style: selectStyles,
+    });
+    this.modifyInteraction = new Modify({
+      features: this.selectInteraction.getFeatures(),
+      pixelTolerance: this.options.tolerance, // Default is 10
+      style: displayStyle,
+    });
+    this.snapInteraction = new Snap({
       source: this.editedSource,
-      pixelTolerance: 7.5, // 6 + line width / 2 : default is 10
+      pixelTolerance: this.options.tolerance, // Default is 10
+    });
+    this.drawInteraction = new Draw({ // Draw line
+      type: 'LineString',
+      source: this.editedSource,
+      traceSource: this.snapSource,
+      trace: true,
+      style: displayStyle,
+      stopClick: true, // Avoid zoom when you finish drawing by doubleclick
     });
 
-    this.interactions.forEach((interaction, noInteraction) => {
-      // Draw buttons
-      const buttonEl = document.createElement('button'),
-        element = document.createElement('div');
+    this.restartInteractions();
 
-      element.className = 'ol-unselectable ol-control ed-button ed-button-' + noInteraction;
-      element.appendChild(buttonEl);
-
-      const helpEl = document.getElementById('ed-help' + noInteraction);
-      if (helpEl)
-        element.appendChild(helpEl);
-
-      // Add listeners to the buttons
-      buttonEl.addEventListener('click', () => this.restartInteractions(noInteraction));
-
-      ['modifyend', 'drawend'].forEach(event =>
-        this.interactions[noInteraction].on(event, evt => this.endIntercation(evt))
+    map.on('pointermove', evt => {
+      map.getTargetElement().style.cursor = "initial";
+      map.forEachFeatureAtPixel(
+        evt.pixel,
+        () => {
+          map.getTargetElement().style.cursor = "pointer";
+        }, {
+          hitTolerance: this.options.tolerance, // Default is 0
+        },
       );
-
-      // Add the button to the map
-      map.addControl(new Control({
-        element: element,
-      }));
     });
+
+    /*
+        this.interactions.forEach((interaction, noInteraction) => {
+          // Draw buttons
+          const buttonEl = document.createElement('button'),
+            element = document.createElement('div');
+
+          element.className = 'ol-unselectable ol-control ed-button ed-button-' + noInteraction;
+          element.appendChild(buttonEl);
+
+          const helpEl = document.getElementById('ed-help' + noInteraction);
+          if (helpEl)
+            element.appendChild(helpEl);
+
+          // Add listeners to the buttons
+          buttonEl.addEventListener('click', () => this.restartInteractions(noInteraction));
+
+          ['modifyend', 'drawend'].forEach(event =>
+            this.interactions[noInteraction].on(event, evt => this.endIntercation(evt))
+          );
+
+          // Add the button to the map
+          map.addControl(new Control({
+            element: element,
+          }));
+        });
+        this.map.on('click', evt => this.mapClick(evt));
+    */
 
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
-      this.optimiseEdited();
+      //this.optimiseEdited();
       this.restartInteractions(0);
     });
-    this.map.on('click', evt => this.mapClick(evt));
   } // End setMapInternal
 
-  restartInteractions(noInteraction) {
+  restartInteractions() {
+    //this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
+    //this.map.addInteraction(this.moveInteraction);  
+    this.map.addInteraction(this.selectInteraction);
+    this.map.addInteraction(this.modifyInteraction);
+    this.map.addInteraction(this.snapInteraction); // Must be added after the others
+
     // For snap & traceSource : register again the full list of features as addFeature manages already registered
     this.snapSource.clear();
     this.map.getLayers().forEach(layer => {
@@ -357,15 +369,16 @@ class Edit extends VectorLayer {
         layer.getSource() &&
         layer.getSource().getFeatures) // Vector layers only
         layer.getSource().getFeatures().forEach(feature => {
-          this.interactionSnap.addFeature(feature);
+          this.snapInteraction.addFeature(feature);
           this.snapSource.addFeature(feature);
         });
     });
-	
-    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
-    this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
-    this.map.addInteraction(this.interactions[noInteraction]);
-    this.map.addInteraction(this.interactionSnap); // Must be added after the others
+
+    /*
+        this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
+        this.map.addInteraction(this.interactions[noInteraction]);
+        this.map.addInteraction(this.interactionSnap); // Must be added after the others
+    */
   }
 
   endIntercation(evt) {

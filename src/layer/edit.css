@@ -2,7 +2,7 @@
  * edit.css
  */
 
-/* Position of the button */
+/* Position of the buttons */
 .ol-zoom,
 .ol-full-screen,
 .ed-button {
@@ -11,54 +11,28 @@
   margin: 2px;
 }
 
-/*.feature-hover {
-  cursor: pointer;
-}*/
-
-/* Modify 
-.ed-button-0 button::after {
+.ed-button-modify button::after {
   content: "\2725";
 }
 
-.ed-view-0 {
-  cursor: default;
-}*/
-
-/* Select 
-.ed-button-1 button::after {
-  content: "\2702";
+.ed-button-draw button::after {
+  content: "\2710";
+  display: inline-block;
+  transform: scaleX(-1);
 }
 
-.ed-view-1 {
-  cursor: help;
-}*/
-
-/* Draw line 
-.ed-button-2 button::after {
-  content: "\2608";
-}
-
-.ed-view-2 {
-  cursor: copy;
-}*/
-
-/* Draw poly 
-.ed-button-3 button::after {
-  content: "\23E2";
-}
-
-.ed-view-3 {
-  cursor: copy;
-}*/
-
-/*
-.ed-view-0 .ed-button-0 button,
-.ed-view-1 .ed-button-1 button,
-.ed-view-2 .ed-button-2 button,
-.ed-view-3 .ed-button-3 button {
+.ed-view-modify .ed-button-modify button,
+.ed-view-draw .ed-button-draw button {
   background: lightblue;
 }
-*/
+
+.ed-view-draw {
+  cursor: copy;
+}
+
+div:not(.ed-selected) .ed-view-modify {
+  cursor: pointer;
+}
 
 /* Submenu */
 .ed-button>div {

@@ -293,10 +293,6 @@ class Edit extends VectorLayer {
       pixelTolerance: this.options.tolerance, // Default is 10
       style: displayStyle,
     });
-    this.snapInteraction = new Snap({
-      source: this.editedSource,
-      pixelTolerance: this.options.tolerance, // Default is 10
-    });
     this.drawInteraction = new Draw({ // Draw line
       type: 'LineString',
       source: this.editedSource,
@@ -305,61 +301,65 @@ class Edit extends VectorLayer {
       style: displayStyle,
       stopClick: true, // Avoid zoom when you finish drawing by doubleclick
     });
+    this.snapInteraction = new Snap({
+      source: this.editedSource,
+      pixelTolerance: this.options.tolerance, // Default is 10
+    });
 
-    this.restartInteractions();
+    // Draw buttons
+    ['modify', 'draw'].forEach(intName => {
+      const buttonEl = document.createElement('button'),
+        element = document.createElement('div');
+
+      element.className = 'ol-unselectable ol-control ed-button ed-button-' + intName;
+      element.appendChild(buttonEl);
+
+      const helpEl = document.getElementById('ed-help-' + intName);
+      if (helpEl)
+        element.appendChild(helpEl);
+
+      // Add listeners to the buttons
+      buttonEl.addEventListener('click', () => this.restartInteractions(intName));
+      this[intName + 'Interaction'].on(intName + 'end', evt => this.endIntercation(evt))
+
+      // Add the button to the map
+      map.addControl(new Control({
+        element: element,
+      }));
+    });
 
     map.on('pointermove', evt => {
-      map.getTargetElement().style.cursor = "initial";
+      this.map.getTargetElement().classList.add('ed-selected');
       map.forEachFeatureAtPixel(
         evt.pixel,
         () => {
-          map.getTargetElement().style.cursor = "pointer";
+          this.map.getTargetElement().classList.remove('ed-selected');
         }, {
           hitTolerance: this.options.tolerance, // Default is 0
         },
       );
     });
 
-    /*
-        this.interactions.forEach((interaction, noInteraction) => {
-          // Draw buttons
-          const buttonEl = document.createElement('button'),
-            element = document.createElement('div');
-
-          element.className = 'ol-unselectable ol-control ed-button ed-button-' + noInteraction;
-          element.appendChild(buttonEl);
-
-          const helpEl = document.getElementById('ed-help' + noInteraction);
-          if (helpEl)
-            element.appendChild(helpEl);
-
-          // Add listeners to the buttons
-          buttonEl.addEventListener('click', () => this.restartInteractions(noInteraction));
-
-          ['modifyend', 'drawend'].forEach(event =>
-            this.interactions[noInteraction].on(event, evt => this.endIntercation(evt))
-          );
-
-          // Add the button to the map
-          map.addControl(new Control({
-            element: element,
-          }));
-        });
-        this.map.on('click', evt => this.mapClick(evt));
-    */
+    //this.map.on('click', evt => this.mapClick(evt));
 
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
       //this.optimiseEdited();
-      this.restartInteractions(0);
+      this.restartInteractions('modify');
     });
   } // End setMapInternal
 
-  restartInteractions() {
-    //this.interactions.forEach(interaction => this.map.removeInteraction(interaction));
-    //this.map.addInteraction(this.moveInteraction);  
-    this.map.addInteraction(this.selectInteraction);
-    this.map.addInteraction(this.modifyInteraction);
+  restartInteractions(intName) {
+    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
+
+    ['select', 'modify', 'draw', 'snap'].forEach(i =>
+      this.map.removeInteraction(this[i + 'Interaction'])
+    );
+
+    if (intName === 'modify')
+      this.map.addInteraction(this.selectInteraction);
+
+    this.map.addInteraction(this[intName + 'Interaction']);
     this.map.addInteraction(this.snapInteraction); // Must be added after the others
 
     // For snap & traceSource : register again the full list of features as addFeature manages already registered
@@ -373,42 +373,36 @@ class Edit extends VectorLayer {
           this.snapSource.addFeature(feature);
         });
     });
-
-    /*
-        this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + noInteraction;
-        this.map.addInteraction(this.interactions[noInteraction]);
-        this.map.addInteraction(this.interactionSnap); // Must be added after the others
-    */
   }
 
   endIntercation(evt) {
     console.log(evt.type); //TODO
 
     this.optimiseEdited();
-    this.restartInteractions(0);
+    this.restartInteractions('modify');
   }
+  /*
+    mapClick(evt) {
+      this.interactions[1].getFeatures().forEach(feature => {
+        const coordinates = feature.getGeometry().getCoordinates();
 
-  mapClick(evt) {
-    this.interactions[1].getFeatures().forEach(feature => {
-      const coordinates = feature.getGeometry().getCoordinates();
+        // Shift + click : reverse line direction
+        if (evt.originalEvent.shiftKey &&
+          typeof coordinates[0][0] === 'number') {
+          this.editedSource.removeFeature(feature);
+          this.editedSource.addFeature(new Feature({
+            geometry: new ol.geom.LineString(coordinates.reverse()),
+          }));
+        }
 
-      // Shift + click : reverse line direction
-      if (evt.originalEvent.shiftKey &&
-        typeof coordinates[0][0] === 'number') {
-        this.editedSource.removeFeature(feature);
-        this.editedSource.addFeature(new Feature({
-          geometry: new ol.geom.LineString(coordinates.reverse()),
-        }));
-      }
+        // Alt + click : delete line
+        if (evt.originalEvent.altKey)
+          this.editedSource.removeFeature(feature);
 
-      // Alt + click : delete line
-      if (evt.originalEvent.altKey)
-        this.editedSource.removeFeature(feature);
-
-      this.optimiseEdited();
-    });
-  }
-
+        this.optimiseEdited();
+      });
+    }
+  */
   // Processing the data
   optimiseEdited(selectedVertex) {
     // Get edited features

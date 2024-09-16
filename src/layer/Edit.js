@@ -316,9 +316,7 @@ class Edit extends VectorLayer {
       if (helpEl)
         element.appendChild(helpEl);
 
-      // Add listeners to the buttons
       buttonEl.addEventListener('click', () => this.restartInteractions(intName));
-      this[intName + 'Interaction'].on(intName + 'end', evt => this.endIntercation(evt))
 
       // Add the button to the map
       map.addControl(new Control({
@@ -326,9 +324,43 @@ class Edit extends VectorLayer {
       }));
     });
 
+    // Add interactions listeners
+    this.modifyInteraction.on('modifyend', evt => {
+      const originalEvt = evt.mapBrowserEvent.originalEvent,
+        selectedFeatures = this.selectInteraction.getFeatures();
+
+      // Ctrl+Alt+click on segment : delete the line or poly
+      if (originalEvt.ctrlKey && originalEvt.altKey) {
+        this.editedSource.removeFeatures(evt.features); //TODO delete all / replace by onmapatpixel
+      }
+
+      // Shift + click : reverse line direction
+      selectedFeatures.forEach(feature => {
+        const coordinates = feature.getGeometry().getCoordinates();
+
+        if (originalEvt.shiftKey &&
+          typeof coordinates[0][0] === 'number') {
+          this.editedSource.removeFeature(feature); //TODO BUG don't remove / deselect feature !
+
+          this.editedSource.addFeature(new Feature({
+            geometry: new ol.geom.LineString(coordinates.reverse()),
+          }));
+        }
+      });
+
+      this.optimiseEdited(); //TODO BUG deselect feature !
+      this.restartInteractions('modify');
+    });
+
+    this.drawInteraction.on('drawend', () => {
+      this.optimiseEdited();
+      this.restartInteractions('modify');
+    });
+
     map.on('pointermove', evt => {
       this.map.getTargetElement().classList.add('ed-selected');
-      map.forEachFeatureAtPixel(
+
+      this.map.forEachFeatureAtPixel(
         evt.pixel,
         () => {
           this.map.getTargetElement().classList.remove('ed-selected');
@@ -339,30 +371,9 @@ class Edit extends VectorLayer {
       );
     });
 
-    this.map.on('click', evt => {
-      this.selectInteraction.getFeatures().forEach(feature => {
-        const coordinates = feature.getGeometry().getCoordinates();
-
-        // Shift + click : reverse line direction
-        if (evt.originalEvent.shiftKey &&
-          typeof coordinates[0][0] === 'number') {
-          this.editedSource.removeFeature(feature);
-          this.editedSource.addFeature(new Feature({
-            geometry: new ol.geom.LineString(coordinates.reverse()),
-          }));
-        }
-
-        // Alt + click : delete line
-        if (evt.originalEvent.altKey) //TODO BUG
-          this.editedSource.removeFeature(feature);
-
-        this.optimiseEdited();
-      });
-    });
-
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
-      //this.optimiseEdited();
+      this.optimiseEdited();
       this.restartInteractions('modify');
     });
   } // End setMapInternal
@@ -391,13 +402,6 @@ class Edit extends VectorLayer {
           this.snapSource.addFeature(feature);
         });
     });
-  }
-
-  endIntercation(evt) {
-    console.log(evt.type); //TODO
-
-    this.optimiseEdited();
-    this.restartInteractions('modify');
   }
 
   // Processing the data

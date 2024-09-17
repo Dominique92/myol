@@ -182,39 +182,36 @@ function displayStyle() {
 }
 
 // Style to color selected (hoveres) features with begin & end points
-function selectStyles(feature) {
+function selectStyles(feature, resolution) {
   const geometry = feature.getGeometry(),
     featureStyles = [
       new ol.style.Style(strokeFill(3)),
     ],
-    summits = [];
+    icon = 'data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
+<path d="M0 0 4 3 M4 3 0 6" stroke="red" />\
+</svg>';
 
-  if (geometry.forEachSegment) {
+  // Arrows
+  if (geometry.forEachSegment)
     geometry.forEachSegment((start, end) => {
-      summits.push(start);
-      summits[1] = end;
-    });
-    featureStyles.push(
-      new ol.style.Style({
-        geometry: new ol.geom.Point(summits[0]),
-        image: new ol.style.Circle({
-          radius: 5,
-          ...strokeFill(2),
-        }),
-      }),
-    );
-    featureStyles.push(
-      new ol.style.Style({
-        geometry: new ol.geom.Point(summits[1]),
-        image: new ol.style.Circle({
-          radius: 4,
-          fill: new ol.style.Fill({
-            color: '#ff8000',
+      const dx = end[0] - start[0],
+        dy = end[1] - start[1];
+
+      if (Math.abs(dx) + Math.abs(dy) > resolution * 20) {
+        featureStyles.push(
+          new ol.style.Style({
+            geometry: new ol.geom.Point(end),
+            image: new ol.style.Icon({
+              rotateWithView: true,
+              rotation: -Math.atan2(dy, dx),
+              src: icon,
+            }),
           }),
-        }),
-      }),
-    );
-  }
+        );
+      }
+    });
+
   return featureStyles;
 };
 

@@ -157,40 +157,18 @@ function optimiseFeatures(options, features, selectedVertex) {
 }
 
 // STYLES
-function strokeFill(deep) {
-  return {
-    stroke: new ol.style.Stroke({
-      color: 'red',
-      width: deep,
-    }),
-    fill: new ol.style.Fill({
-      color: 'rgba(0,0,255,0.' + deep + ')',
-    }),
-  };
-}
 
-// Style of edited features display
-function displayStyle() {
-  return new ol.style.Style({
-    // Marker
-    image: new ol.style.Circle({
-      radius: 4,
-      ...strokeFill(2),
-    }),
-    ...strokeFill(2),
-  });
-}
-
-// Style to color selected (hoveres) features with begin & end points
+// Style to color selected features with begin & end points
 function selectStyles(feature, resolution) {
   const geometry = feature.getGeometry(),
     featureStyles = [
-      new ol.style.Style(strokeFill(3)),
-    ],
-    icon = 'data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
-<path d="M0 0 4 3 M4 3 0 6" stroke="red" />\
-</svg>';
+      new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#3399CC',
+          width: 3,
+        }),
+      }),
+    ];
 
   // Arrows
   if (geometry.forEachSegment)
@@ -205,7 +183,10 @@ function selectStyles(feature, resolution) {
             image: new ol.style.Icon({
               rotateWithView: true,
               rotation: -Math.atan2(dy, dx),
-              src: icon,
+              src: 'data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
+<path stroke="royalblue" d="M0 0 4 3 M4 3 0 6" />\
+</svg>',
             }),
           }),
         );
@@ -262,7 +243,6 @@ class Edit extends VectorLayer {
     // The editor layer
     super({
       source: editedSource,
-      style: displayStyle,
       zIndex: 400, // Editor & cursor : above the features
       ...options,
     });
@@ -277,7 +257,7 @@ class Edit extends VectorLayer {
     super.setMapInternal(map);
     this.map = map;
 
-    // Interactions & buttons
+    // Interactions
     this.selectInteraction = new Select({
       filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       hitTolerance: this.options.tolerance, // Default is 0
@@ -286,22 +266,20 @@ class Edit extends VectorLayer {
     this.modifyInteraction = new Modify({
       features: this.selectInteraction.getFeatures(),
       pixelTolerance: this.options.tolerance, // Default is 10
-      style: displayStyle,
     });
     this.drawInteraction = new Draw({ // Draw line
       type: 'LineString',
       source: this.editedSource,
       traceSource: this.snapSource,
       trace: true,
-      style: displayStyle,
-      stopClick: true, // Avoid zoom when you finish drawing by doubleclick
+      stopClick: true, // Avoid zoom when finish drawing by doubleclick
     });
     this.snapInteraction = new Snap({
       source: this.editedSource,
       pixelTolerance: this.options.tolerance, // Default is 10
     });
 
-    // Draw buttons
+    // Buttons
     ['modify', 'draw'].forEach(intName => {
       const buttonEl = document.createElement('button'),
         element = document.createElement('div');
@@ -321,8 +299,9 @@ class Edit extends VectorLayer {
       }));
     });
 
-    // Add interactions listeners
+    // Interactions listeners
     this.modifyInteraction.on('modifyend', evt => {
+      /*
       const originalEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeatures = this.selectInteraction.getFeatures();
 
@@ -344,9 +323,10 @@ class Edit extends VectorLayer {
           }));
         }
       });
+      */
 
-      this.optimiseEdited(); //TODO BUG deselect feature !
-      this.restartInteractions('modify');
+      //this.optimiseEdited(); //TODO BUG deselect feature !
+      //this.restartInteractions('modify');
     });
 
     this.drawInteraction.on('drawend', () => {

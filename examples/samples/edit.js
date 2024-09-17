@@ -8,6 +8,11 @@ const snaplayer = new ol.layer.Vector({
       url: 'images/switzerland.geojson',
       format: new ol.format.GeoJSON(),
     }),
+    style: new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: 'black',
+      }),
+    }),
   }),
 
   editorLayer = new Edit({

@@ -303,10 +303,19 @@ class Edit extends VectorLayer {
 
     this.modifyInteraction.on('modifystart', evt => {
       const originalEvt = evt.mapBrowserEvent.originalEvent,
+        selectedFeature = this.selectInteraction.getFeatures()[0],
         selectedFeatures = this.selectInteraction.getFeatures();
+		
+//*DCMM*/{var _r=' = ',_v=this.editedSource.getFeatures()[0];if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
+		
+          this.editedSource.forEachFeature(fs=>{
+//*DCMM*/{var _r=' = ',_v=fs.ol_uid;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
+		  });
 
+/*DCMM*/{var _r=' = ',_v=selectedFeature.ol_uid;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
       // Shift + click : reverse line direction
       selectedFeatures.forEach(feature => {
+/*DCMM*/{var _r=' = ',_v=feature.ol_uid;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
         const coordinates = feature.getGeometry().getCoordinates();
 
         if (originalEvt.shiftKey &&
@@ -321,7 +330,10 @@ class Edit extends VectorLayer {
         // Ctrl+Alt+click on segment : delete the line or poly
         if (originalEvt.ctrlKey && originalEvt.altKey)
           this.editedSource.removeFeature(feature);
+	  
       });
+
+
     });
 
     this.modifyInteraction.on('modifyend', evt => {
@@ -344,8 +356,10 @@ class Edit extends VectorLayer {
 
           clickedCoords.forEach(c => {
             splitCoords[splitCoords.length - 1].push(c);
-            if (c.toString() === clicked.vertex.toString())
+            if (c.toString() === clicked.vertex.toString()){
               splitCoords.push([c]);
+            splitCoords[splitCoords.length - 1].push(c);
+			}
           });
 
 //*DCMM*/{var _r=' = ',_v=splitCoords;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}

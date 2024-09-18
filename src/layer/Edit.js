@@ -162,24 +162,26 @@ function optimiseFeatures(options, features, selectedVertex) {
 function selectStyles(feature, resolution) {
   const geometry = feature.getGeometry(),
     selectStyle = {
-      radius: 3,
       stroke: new ol.style.Stroke({
         color: '#3399CC',
         width: 3,
       }),
+      radius: 4,
     },
     featureStyles = [
-      // Line style
-      new ol.style.Style(selectStyle),
-      // Start of the line
+      new ol.style.Style(selectStyle), // Line style
+    ];
+
+  // Circle at the begining of the line
+  if (geometry.getCoordinates)
+    featureStyles.push(
       new ol.style.Style({
         geometry: new ol.geom.Point(geometry.getCoordinates()[0]),
         image: new ol.style.Circle(selectStyle),
       }),
-    ];
+    );
 
   // Arrows
-  //TODO BUG no beginning line difference !
   if (geometry.forEachSegment)
     geometry.forEachSegment((start, end) => {
       const dx = end[0] - start[0],
@@ -205,17 +207,9 @@ function selectStyles(feature, resolution) {
   return featureStyles;
 };
 
-//TODO editPoly: false, => optimise / export
-//TODO BUG edit polygone : ne peut pas supprimer un côté
-//TODO move only one summit when dragging
-/*
-Move 1 vertex from double (line / polygons, …
-    Dédouble / colle line
-    Défait / colle polygone
-*/
-
 // EDITOR
 class Edit extends VectorLayer {
+  //TODO editPoly: false, => optimise / export
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -226,7 +220,7 @@ class Edit extends VectorLayer {
       //editPoly: false | true, // output are lines | polygons
 
       featuresToSave: () => this.options.format.writeFeatures(
-        //TODO put getFeatures in main method
+        //TODO ?? put getFeatures in main method
         this.editedSource.getFeatures(), {
           dataProjection: this.options.dataProjection,
           featureProjection: this.map.getView().getProjection(),
@@ -313,6 +307,7 @@ class Edit extends VectorLayer {
     this.modifyInteraction.on('modifystart', evt => {
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0],
+        //TODO BUG disjoin multiligne at init
         coordinates = selectedFeature.getGeometry().getCoordinates();
 
       // Shift + click : reverse line direction
@@ -354,6 +349,7 @@ class Edit extends VectorLayer {
               splitCoords.push([coords]);
           });
         } else { // Polygon
+          //TODO BUG generate an unusefull vertex
           splitCoords.push(...clickedCoords);
         }
 
@@ -367,6 +363,9 @@ class Edit extends VectorLayer {
 
       //this.restartInteractions('modify');
       //this.optimiseEdited();
+
+      //TODO Dédouble / colle line / 
+      //TODO Défait / colle polygone
     });
 
     this.drawInteraction.on('drawend', () => {
@@ -393,7 +392,7 @@ class Edit extends VectorLayer {
       const editedFeatures = this.editedSource.getFeatures();
 
       // Select the first edited feautre
-      //TODO BUG deselect sur simple click
+      //TODO BUG deselect sur simple click et bloque
       if (editedFeatures.length)
         this.selectInteraction.getFeatures().push(editedFeatures[0]);
 

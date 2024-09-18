@@ -172,6 +172,7 @@ function selectStyles(feature, resolution) {
     ];
 
   // Arrows
+  //TODO BUG no beginning line difference !
   if (geometry.forEachSegment)
     geometry.forEachSegment((start, end) => {
       const dx = end[0] - start[0],
@@ -326,7 +327,7 @@ class Edit extends VectorLayer {
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
 
-      // Ctrl + click : reverse line direction
+      // Ctrl + click : split line / convert polygon to lines
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
         const clicked = this.snapInteraction.snapTo(
             evt.mapBrowserEvent.pixel,
@@ -340,21 +341,21 @@ class Edit extends VectorLayer {
 
         if (typeof clickedCoords[0][0] === 'number') { // Line
           // Split the coordinates array in 2
-          clickedCoords.forEach(c => {
-            splitCoords[splitCoords.length - 1].push(c);
-            if (c.toString() === clicked.vertex.toString())
-              splitCoords.push([c]);
+          clickedCoords.forEach(coords => {
+            splitCoords[splitCoords.length - 1].push(coords);
+            if (coords.toString() === clicked.vertex.toString())
+              splitCoords.push([coords]);
           });
-
-          this.editedSource.removeFeature(selectedFeature);
-          splitCoords.forEach(c =>
-            this.editedSource.addFeature(new Feature({
-              geometry: new ol.geom.LineString(c),
-            }))
-          );
         } else { // Polygon
-          console.log('Polygon');
+          splitCoords.push(...clickedCoords);
         }
+
+        this.editedSource.removeFeature(selectedFeature);
+        splitCoords.forEach(coords => {
+          this.editedSource.addFeature(new Feature({
+            geometry: new ol.geom.LineString(coords),
+          }));
+        });
       }
 
       //this.restartInteractions('modify');

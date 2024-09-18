@@ -259,8 +259,9 @@ class Edit extends VectorLayer {
 
     // Interactions
     this.selectInteraction = new Select({
-      filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       hitTolerance: this.options.tolerance, // Default is 0
+      toggleCondition: ol.events.never, // No deselection on click
+      filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       style: selectStyles,
     });
     this.modifyInteraction = new Modify({
@@ -299,16 +300,9 @@ class Edit extends VectorLayer {
       }));
     });
 
-    // Interactions listeners
-    this.modifyInteraction.on('modifyend', evt => {
-      /*
+    this.modifyInteraction.on('modifystart', evt => {
       const originalEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeatures = this.selectInteraction.getFeatures();
-
-      // Ctrl+Alt+click on segment : delete the line or poly
-      if (originalEvt.ctrlKey && originalEvt.altKey) {
-        this.editedSource.removeFeatures(evt.features); //TODO delete all / replace by onmapatpixel
-      }
 
       // Shift + click : reverse line direction
       selectedFeatures.forEach(feature => {
@@ -316,21 +310,25 @@ class Edit extends VectorLayer {
 
         if (originalEvt.shiftKey &&
           typeof coordinates[0][0] === 'number') {
-          this.editedSource.removeFeature(feature); //TODO BUG don't remove / deselect feature !
+          this.editedSource.removeFeature(feature);
 
           this.editedSource.addFeature(new Feature({
             geometry: new ol.geom.LineString(coordinates.reverse()),
           }));
         }
-      });
-      */
 
-      //this.optimiseEdited(); //TODO BUG deselect feature !
-      //this.restartInteractions('modify');
+        // Ctrl+Alt+click on segment : delete the line or poly
+        if (originalEvt.ctrlKey && originalEvt.altKey)
+          this.editedSource.removeFeature(feature);
+      });
+    });
+
+    this.modifyInteraction.on('modifyend', evt => {
+      //this.optimiseEdited();
     });
 
     this.drawInteraction.on('drawend', () => {
-      this.optimiseEdited();
+      //this.optimiseEdited();
       this.restartInteractions('modify');
     });
 
@@ -350,7 +348,7 @@ class Edit extends VectorLayer {
 
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
-      this.optimiseEdited();
+      //this.optimiseEdited();
       this.restartInteractions('modify');
     });
   } // End setMapInternal

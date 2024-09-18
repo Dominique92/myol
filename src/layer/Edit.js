@@ -303,25 +303,23 @@ class Edit extends VectorLayer {
 
     this.modifyInteraction.on('modifystart', evt => {
       const originalEvt = evt.mapBrowserEvent.originalEvent,
-        selectedFeatures = this.selectInteraction.getFeatures();
+        selectedFeature = this.selectInteraction.getFeatures().getArray()[0],
+        coordinates = selectedFeature.getGeometry().getCoordinates();
 
       // Shift + click : reverse line direction
-      selectedFeatures.forEach(feature => {
-        const coordinates = feature.getGeometry().getCoordinates();
 
-        if (originalEvt.shiftKey &&
-          typeof coordinates[0][0] === 'number') {
-          this.editedSource.removeFeature(feature);
+      if (originalEvt.shiftKey &&
+        typeof coordinates[0][0] === 'number') {
+        this.editedSource.removeFeature(selectedFeature);
 
-          this.editedSource.addFeature(new Feature({
-            geometry: new ol.geom.LineString(coordinates.reverse()),
-          }));
-        }
+        this.editedSource.addFeature(new Feature({
+          geometry: new ol.geom.LineString(coordinates.reverse()),
+        }));
+      }
 
-        // Ctrl+Alt+click on segment : delete the line or poly
-        if (originalEvt.ctrlKey && originalEvt.altKey)
-          this.editedSource.removeFeature(feature);
-      });
+      // Ctrl+Alt+click on segment : delete the line or poly
+      if (originalEvt.ctrlKey && originalEvt.altKey)
+        this.editedSource.removeFeature(selectedFeature);
     });
 
     this.modifyInteraction.on('modifyend', evt => {
@@ -336,7 +334,9 @@ class Edit extends VectorLayer {
             this.map,
           ),
           clickedCoords = clicked.feature.getGeometry().getCoordinates(),
-          splitCoords = [Array()];
+          splitCoords = [
+            []
+          ];
 
         if (typeof clickedCoords[0][0] === 'number') {
           // Line
@@ -348,14 +348,12 @@ class Edit extends VectorLayer {
               splitCoords.push([c]);
           });
 
-//*DCMM*/{var _r=' = ',_v=splitCoords;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
+          //*DCMM*/{var _r=' = ',_v=splitCoords;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
         } else {
           // Polygon
           console.log('Polygon');
         }
       }
-
-      function shiftFeature() {};
 
       /*
       this.editedSource.removeFeature(feature);

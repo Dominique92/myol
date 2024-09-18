@@ -301,14 +301,14 @@ class Edit extends VectorLayer {
       }));
     });
 
+    // Interactions listeners
     this.modifyInteraction.on('modifystart', evt => {
-      const originalEvt = evt.mapBrowserEvent.originalEvent,
+      const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0],
         coordinates = selectedFeature.getGeometry().getCoordinates();
 
       // Shift + click : reverse line direction
-
-      if (originalEvt.shiftKey &&
+      if (oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey &&
         typeof coordinates[0][0] === 'number') {
         this.editedSource.removeFeature(selectedFeature);
 
@@ -318,16 +318,16 @@ class Edit extends VectorLayer {
       }
 
       // Ctrl+Alt+click on segment : delete the line or poly
-      if (originalEvt.ctrlKey && originalEvt.altKey)
+      if (!oEvt.shiftKey && oEvt.ctrlKey && oEvt.altKey)
         this.editedSource.removeFeature(selectedFeature);
     });
 
     this.modifyInteraction.on('modifyend', evt => {
-      const originalEvt = evt.mapBrowserEvent.originalEvent;
-      //const selectedFeatures = this.selectInteraction.getFeatures();
+      const oEvt = evt.mapBrowserEvent.originalEvent,
+        selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
 
       // Ctrl + click : reverse line direction
-      if (originalEvt.ctrlKey) {
+      if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
         const clicked = this.snapInteraction.snapTo(
             evt.mapBrowserEvent.pixel,
             evt.mapBrowserEvent.coordinate,
@@ -338,29 +338,26 @@ class Edit extends VectorLayer {
             []
           ];
 
-        if (typeof clickedCoords[0][0] === 'number') {
-          // Line
-          console.log('line');
-
+        if (typeof clickedCoords[0][0] === 'number') { // Line
+          // Split the coordinates array in 2
           clickedCoords.forEach(c => {
             splitCoords[splitCoords.length - 1].push(c);
             if (c.toString() === clicked.vertex.toString())
               splitCoords.push([c]);
           });
 
-          //*DCMM*/{var _r=' = ',_v=splitCoords;if(typeof _v=='array'||typeof _v=='object'){for(let _i in _v)if(typeof _v[_i]!='function'&&_v[_i])_r+=_i+'='+typeof _v[_i]+' '+_v[_i]+' '+(_v[_i]&&_v[_i].CLASS_NAME?'('+_v[_i].CLASS_NAME+')':'')+"\n"}else _r+=_v;console.log(_r)}
-        } else {
-          // Polygon
+          this.editedSource.removeFeature(selectedFeature);
+          splitCoords.forEach(c =>
+            this.editedSource.addFeature(new Feature({
+              geometry: new ol.geom.LineString(c),
+            }))
+          );
+        } else { // Polygon
           console.log('Polygon');
         }
       }
 
-      /*
-      this.editedSource.removeFeature(feature);
-      this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.LineString(coordinates.reverse()),
-      }));
-      */
+      //this.restartInteractions('modify');
       //this.optimiseEdited();
     });
 

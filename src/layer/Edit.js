@@ -158,16 +158,23 @@ function optimiseFeatures(options, features, selectedVertex) {
 }
 
 // STYLES
-
 // Style to color selected features with begin & end points
 function selectStyles(feature, resolution) {
   const geometry = feature.getGeometry(),
+    selectStyle = {
+      radius: 3,
+      stroke: new ol.style.Stroke({
+        color: '#3399CC',
+        width: 3,
+      }),
+    },
     featureStyles = [
+      // Line style
+      new ol.style.Style(selectStyle),
+      // Start of the line
       new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: '#3399CC',
-          width: 3,
-        }),
+        geometry: new ol.geom.Point(geometry.getCoordinates()[0]),
+        image: new ol.style.Circle(selectStyle),
       }),
     ];
 

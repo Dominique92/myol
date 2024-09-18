@@ -325,9 +325,46 @@ class Edit extends VectorLayer {
         this.editedSource.removeFeature(selectedFeature);
     });
 
+    function compareEnds(c1, c2) {
+      if (c1.pop().toString() === c2[0].toString())
+        return [...c1, ...c2];
+    }
+
     this.modifyInteraction.on('modifyend', evt => {
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
+
+      // End move vertex
+      if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey) {
+        const selectCoords = selectedFeature.getGeometry().getCoordinates();
+
+        this.editedSource.forEachFeature(feature => {
+          const geometry = feature.getGeometry();
+
+          if (feature.ol_uid !== selectedFeature.ol_uid &&
+            geometry.getCoordinates) {
+            const sourceCoords = geometry.getCoordinates();
+
+            if (typeof sourceCoords[0][0] === 'number') { // Line
+              //TODO do that with optimiseEdited
+              //TODO detection with snapInteraction.snapTo
+              const mergedCoords =
+                compareEnds(selectCoords, sourceCoords) ||
+                compareEnds(selectCoords, sourceCoords.reverse()) ||
+                compareEnds(selectCoords.reverse(), sourceCoords) ||
+                compareEnds(selectCoords.reverse(), sourceCoords.reverse());
+
+              if (mergedCoords) {
+                this.editedSource.removeFeature(feature);
+                this.editedSource.removeFeature(selectedFeature);
+                this.editedSource.addFeature(new Feature({
+                  geometry: new ol.geom.LineString(mergedCoords),
+                }));
+              }
+            }
+          }
+        });
+      }
 
       // Ctrl + click : split line / convert polygon to lines
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {

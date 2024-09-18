@@ -348,7 +348,15 @@ class Edit extends VectorLayer {
 
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
+      const editedFeatures = this.editedSource.getFeatures();
+
+      // Select the first edited feautre
+      if (editedFeatures.length)
+        this.selectInteraction.getFeatures().push(editedFeatures[0]);
+
       //this.optimiseEdited();
+
+      // Enable the first interaction
       this.restartInteractions('modify');
     });
   } // End setMapInternal

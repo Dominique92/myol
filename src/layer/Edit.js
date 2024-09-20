@@ -25,84 +25,79 @@ function compareCoords(a, b) {
   return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
 }
 
-// Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...)
-// at the same level & split if one point = selectedVertex
-function flatCoord(lines, coords, selectedVertex) {
+// Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
+function flatCoord(lines, coords) {
   if (coords.length && typeof coords[0][0] === 'object') {
     // Multi*
     for (const c1 in coords)
-      flatCoord(lines, coords[c1], selectedVertex);
+      flatCoord(lines, coords[c1]);
   } else {
     // LineString
-    const begCoords = []; // Coords before the selectedVertex
+    const begCoords = [];
 
     while (coords.length) {
       const c = coords.shift();
 
       if (!coords.length || !compareCoords(c, coords[0])) { // Skip duplicated points
-        if (selectedVertex && compareCoords(c, selectedVertex))
-          break; // Ignore this point and stop selection
-
         begCoords.push(c);
       }
     }
-
     lines.push(begCoords, coords);
   }
 }
 
-function flatFeatures(geom, points, lines, polys, selectedVertex) {
+function flatFeatures(geom, lines) {
   // Expand geometryCollection
   if (geom.getType() === 'GeometryCollection') {
     const geometries = geom.getGeometries();
 
     for (const g in geometries)
-      flatFeatures(geometries[g], points, lines, polys, selectedVertex);
-  }
-  // Point
-  else if (geom.getType().match(/point$/iu))
-    points.push(geom.getCoordinates());
-
-  // line & poly
-  else
+      // Recurse collections
+      flatFeatures(geometries[g], lines);
+  } else if (!geom.getType().match(/point$/iu)) { // Exclude Points
     // Get lines or polyons as flat array of coordinates
-    flatCoord(lines, geom.getCoordinates(), selectedVertex);
+    flatCoord(lines, geom.getCoordinates());
+  }
 }
 
 // Refurbish Lines & Polygons
-// Split lines having a summit at selectedVertex
-function optimiseFeatures(options, features, selectedVertex) {
-  const points = [],
+function optimiseFeatures(editedSource, options) {
+  const features = editedSource.getFeatures(), // Get edited features
     lines = [],
     polys = [];
 
-  // Get all edited features as array of coordinates
-  for (const f in features)
-    flatFeatures(features[f].getGeometry(), points, lines, polys, selectedVertex);
+  // Get all edited features as array of lines coordinates
+  features.forEach(f =>
+    flatFeatures(f.getGeometry(), lines)
+  );
 
-  for (const a in lines)
+  for (const a in lines) {
     // Exclude 1 coordinate features (points)
-    if (lines[a].length < 2)
+    if (lines[a].length < 2) {
       delete lines[a];
+    }
 
     // Merge lines having a common end
-    else if (options.canMerge)
-    for (let b = 0; b < a; b++) // Once each combination
-      if (lines[b]) {
-        const m = [a, b];
+    else if (options.canMerge) {
+      for (let b = 0; b < a; b++) { // Once each combination
+        if (lines[b]) {
+          const m = [a, b];
 
-        for (let i = 4; i; i--) // 4 times
-          if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
-            // Shake lines end to explore all possibilities
-            m.reverse();
-            lines[m[0]].reverse();
-            if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
-              // Merge 2 lines having 2 ends in common
-              lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1));
-              delete lines[m[1]]; // Remove the line but don't renumber the array keys
+          for (let i = 4; i; i--) // 4 times
+            if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
+              // Shake lines end to explore all possibilities
+              m.reverse();
+              lines[m[0]].reverse();
+              if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
+                // Merge 2 lines having 2 ends in common
+                lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1));
+                delete lines[m[1]]; // Remove the line but don't renumber the array keys
+              }
             }
-          }
+        }
       }
+    }
+  }
 
   // Make polygons with looped lines
   for (const a in lines)
@@ -150,11 +145,23 @@ function optimiseFeatures(options, features, selectedVertex) {
         }
     }
 
-  return {
-    points: points,
-    lines: lines.filter(Boolean), // Remove deleted array members
-    polys: polys.filter(Boolean),
-  };
+  // Recreate features
+  editedSource.clear();
+
+  lines.filter(Boolean) // Remove deleted array members
+    .forEach(line => {
+      editedSource.addFeature(new Feature({
+        geometry: new ol.geom.LineString(line),
+        //BEST Multilinestring / Multipolygon
+      }));
+    });
+
+  polys.filter(Boolean) // Remove deleted array members
+    .forEach(poly => {
+      editedSource.addFeature(new Feature({
+        geometry: new ol.geom.Polygon(poly),
+      }));
+    });
 }
 
 // STYLES
@@ -231,7 +238,8 @@ class Edit extends VectorLayer {
     }
 
     // Read data in an html element
-    const geoJsonEl = document.getElementById(options.geoJsonId) || {},
+    const geoJsonEl = document.getElementById(options.geoJsonId) ||
+      document.createElement('textarea'),
       geoJson = geoJsonEl.value.trim() ||
       geoJsonEl.innerHTML.trim() ||
       '{"type":"FeatureCollection","features":[]}';
@@ -324,17 +332,19 @@ class Edit extends VectorLayer {
       if (!oEvt.shiftKey && oEvt.ctrlKey && oEvt.altKey)
         this.editedSource.removeFeature(selectedFeature);
     });
-
+    /*
     function compareEnds(c1, c2) {
       if (c1.pop().toString() === c2[0].toString())
-        return [...c1, ...c2];
+    	return [...c1, ...c2];
     }
-
+    */
     this.modifyInteraction.on('modifyend', evt => {
+      //TODO BUG deselect sur simple click et bloque
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
 
       // End move vertex
+      /*
       if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey) {
         const selectCoords = selectedFeature.getGeometry().getCoordinates();
 
@@ -346,7 +356,7 @@ class Edit extends VectorLayer {
             const sourceCoords = geometry.getCoordinates();
 
             if (typeof sourceCoords[0][0] === 'number') { // Line
-              //TODO do that with optimiseEdited
+              //TODO do that with optimise
               //TODO detection with snapInteraction.snapTo
               const mergedCoords =
                 compareEnds(selectCoords, sourceCoords) ||
@@ -365,6 +375,7 @@ class Edit extends VectorLayer {
           }
         });
       }
+	  */
 
       // Ctrl + click : split line / convert polygon to lines
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
@@ -399,14 +410,16 @@ class Edit extends VectorLayer {
       }
 
       //this.restartInteractions('modify');
-      //this.optimiseEdited();
+      this.optimise();
+      this.save();
 
       //TODO Dédouble / colle line / 
       //TODO Défait / colle polygone
     });
 
     this.drawInteraction.on('drawend', () => {
-      //this.optimiseEdited();
+      this.optimise();
+      this.save();
       this.restartInteractions('modify');
     });
 
@@ -426,14 +439,9 @@ class Edit extends VectorLayer {
 
     // Init interaction & button to modify at the beginning & when a file is loaded
     this.map.on('loadend', () => {
-      const editedFeatures = this.editedSource.getFeatures();
-
-      // Select the first edited feautre
-      //TODO BUG deselect sur simple click et bloque
-      if (editedFeatures.length)
-        this.selectInteraction.getFeatures().push(editedFeatures[0]);
-
-      //this.optimiseEdited();
+      // Refurbish geojson
+      this.optimise(true);
+      this.save();
 
       // Enable the first interaction
       this.restartInteractions('modify');
@@ -466,32 +474,27 @@ class Edit extends VectorLayer {
     });
   }
 
-  // Processing the data
-  optimiseEdited(selectedVertex) {
-    // Get edited features
-    const coordinates = optimiseFeatures(
+  save() {
+    // Save geometries in <EL> as geoJSON at every change
+    //TODO integrate to featuresToSave
+    if (this.geoJsonEl)
+      this.geoJsonEl.value = this.options.featuresToSave() //TODO only poly for WRI
+      .replace(/,"properties":(\{[^}]*\}|null)/u, '');
+  }
+
+  optimise(init) {
+    optimiseFeatures(
+      this.editedSource,
       this.options,
-      this.editedSource.getFeatures(),
-      selectedVertex, //TODO
     );
 
-    // Recreate features
-    this.editedSource.clear();
+    //BUG ne voit pas encore les features créés
+    const editedFeatures = this.editedSource.getFeatures();
 
-    //BEST Multilinestring / Multipolygon
-    for (const l in coordinates.lines)
-      this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.LineString(coordinates.lines[l]),
-      }));
-    for (const p in coordinates.polys)
-      this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.Polygon(coordinates.polys[p]),
-      }));
-
-    // Save geometries in <EL> as geoJSON at every change
-    if (this.geoJsonEl && this.map.getView())
-      this.geoJsonEl.value = this.options.featuresToSave(coordinates)
-      .replace(/,"properties":(\{[^}]*\}|null)/u, '');
+    // Select the first edited feature
+    if (editedFeatures.length &&
+      (editedFeatures.length === 1 || init))
+      this.selectInteraction.getFeatures().push(editedFeatures[0]);
   }
 }
 

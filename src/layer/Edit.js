@@ -71,37 +71,35 @@ function optimiseFeatures(editedSource, options) {
     flatFeatures(f.getGeometry(), lines)
   );
 
-  for (const a in lines) {
-    // Exclude 1 coordinate features (points)
-    if (lines[a].length < 2) {
+  // Exclude 1 coordinate features (points)
+  for (const a in lines)
+    if (lines[a].length < 2)
       delete lines[a];
-    }
 
-    // Merge lines having a common end
-    else if (options.canMerge) {
-      for (let b = 0; b < a; b++) { // Once each combination
-        if (lines[b]) {
-          const m = [a, b];
+  // Merge lines having a common end
+  for (const a in lines) {
+    for (let b = 0; b < a; b++) { // Once each combination
+      if (lines[b]) {
+        const m = [a, b];
 
-          for (let i = 4; i; i--) // 4 times
-            if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
-              // Shake lines end to explore all possibilities
-              m.reverse();
-              lines[m[0]].reverse();
-              if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
-                // Merge 2 lines having 2 ends in common
-                lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1));
-                delete lines[m[1]]; // Remove the line but don't renumber the array keys
-              }
+        for (let i = 4; i; i--) // 4 times
+          if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
+            // Shake lines end to explore all possibilities
+            m.reverse();
+            lines[m[0]].reverse();
+            if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
+              // Merge 2 lines having 2 ends in common
+              lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
+              delete lines[m[1]]; // Remove the line but don't renumber the array keys
             }
-        }
+          }
       }
     }
   }
 
   // Make polygons with looped lines
   for (const a in lines)
-    if (options.editOnly !== 'line' && lines[a]) {
+    if (options.editOnly !== 'line') {
       // Close open lines
       if (options.editOnly === 'poly')
         if (!compareCoords(lines[a]))
@@ -121,7 +119,7 @@ function optimiseFeatures(editedSource, options) {
               i2 = lines[a].length;
             }
 
-        // Convert closed lines into polygons
+        // Convert closed lines to polygons
         polys.push([lines[a]]); // Add the polygon
         delete lines[a]; // Forget the line
       }
@@ -173,7 +171,10 @@ function selectStyles(feature, resolution) {
         color: '#3399CC',
         width: 3,
       }),
-      radius: 4,
+      fill: new ol.style.Fill({ // Polygons
+        color: 'rgba(51,153,204,0.1)',
+      }),
+      radius: 4, // Move & begin line marker
     },
     featureStyles = [
       new ol.style.Style(selectStyle), // Line style
@@ -216,7 +217,7 @@ function selectStyles(feature, resolution) {
 
 // EDITOR
 class Edit extends VectorLayer {
-  //TODO editPoly: false, => optimise / export
+  //editPoly: false, TODO optimise / export
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -315,7 +316,6 @@ class Edit extends VectorLayer {
     this.modifyInteraction.on('modifystart', evt => {
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0],
-        //TODO BUG disjoin multiligne at init
         coordinates = selectedFeature.getGeometry().getCoordinates();
 
       // Shift + click : reverse line direction
@@ -332,50 +332,14 @@ class Edit extends VectorLayer {
       if (!oEvt.shiftKey && oEvt.ctrlKey && oEvt.altKey)
         this.editedSource.removeFeature(selectedFeature);
     });
-    /*
-    function compareEnds(c1, c2) {
-      if (c1.pop().toString() === c2[0].toString())
-    	return [...c1, ...c2];
-    }
-    */
+
     this.modifyInteraction.on('modifyend', evt => {
-      //TODO BUG deselect sur simple click et bloque
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
 
       // End move vertex
-      /*
-      if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey) {
-        const selectCoords = selectedFeature.getGeometry().getCoordinates();
-
-        this.editedSource.forEachFeature(feature => {
-          const geometry = feature.getGeometry();
-
-          if (feature.ol_uid !== selectedFeature.ol_uid &&
-            geometry.getCoordinates) {
-            const sourceCoords = geometry.getCoordinates();
-
-            if (typeof sourceCoords[0][0] === 'number') { // Line
-              //TODO do that with optimise
-              //TODO detection with snapInteraction.snapTo
-              const mergedCoords =
-                compareEnds(selectCoords, sourceCoords) ||
-                compareEnds(selectCoords, sourceCoords.reverse()) ||
-                compareEnds(selectCoords.reverse(), sourceCoords) ||
-                compareEnds(selectCoords.reverse(), sourceCoords.reverse());
-
-              if (mergedCoords) {
-                this.editedSource.removeFeature(feature);
-                this.editedSource.removeFeature(selectedFeature);
-                this.editedSource.addFeature(new Feature({
-                  geometry: new ol.geom.LineString(mergedCoords),
-                }));
-              }
-            }
-          }
-        });
-      }
-	  */
+      if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey)
+        this.optimise();
 
       // Ctrl + click : split line / convert polygon to lines
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
@@ -386,7 +350,7 @@ class Edit extends VectorLayer {
           ),
           clickedCoords = clicked.feature.getGeometry().getCoordinates(),
           splitCoords = [
-            []
+            [],
           ];
 
         if (typeof clickedCoords[0][0] === 'number') { // Line
@@ -409,12 +373,7 @@ class Edit extends VectorLayer {
         });
       }
 
-      //this.restartInteractions('modify');
-      this.optimise();
       this.save();
-
-      //TODO Dédouble / colle line / 
-      //TODO Défait / colle polygone
     });
 
     this.drawInteraction.on('drawend', () => {

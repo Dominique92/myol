@@ -61,7 +61,7 @@ function flatFeatures(geom, lines) {
 }
 
 // Refurbish Lines & Polygons
-function optimiseFeatures(editedSource, options) {
+function optimizeFeatures(editedSource, options) {
   const features = editedSource.getFeatures(), // Get edited features
     lines = [],
     polys = [];
@@ -217,7 +217,7 @@ function selectStyles(feature, resolution) {
 
 // EDITOR
 class Edit extends VectorLayer {
-  //editPoly: false, TODO optimise / export
+  //editPoly: false, TODO optimize / export
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -263,6 +263,7 @@ class Edit extends VectorLayer {
     this.geoJsonEl = geoJsonEl;
     this.editedSource = editedSource;
     this.snapSource = new VectorSource({});
+    //this.pixel = [0, 0];
   } // End constructor
 
   setMapInternal(map) {
@@ -272,7 +273,9 @@ class Edit extends VectorLayer {
     // Interactions
     this.selectInteraction = new Select({
       hitTolerance: this.options.tolerance, // Default is 0
-      toggleCondition: ol.events.never, // No deselection on click
+      toggleCondition: ol.events.never, // No deselection on shift click
+      //condition: ol.events.never, // No deselection on click
+      //removeCondition: ol.events.never, // No deselection on click
       filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       style: selectStyles,
     });
@@ -314,6 +317,8 @@ class Edit extends VectorLayer {
 
     // Interactions listeners
     this.modifyInteraction.on('modifystart', evt => {
+      console.log('modifystart');
+
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0],
         coordinates = selectedFeature.getGeometry().getCoordinates();
@@ -334,14 +339,18 @@ class Edit extends VectorLayer {
     });
 
     this.modifyInteraction.on('modifyend', evt => {
+      console.log('modifyend');
+
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
 
       // End move vertex
-      if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey)
-        this.optimise();
+      if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey) {
+        //this.optimize();
+      }
 
       // Ctrl + click : split line / convert polygon to lines
+      //TODO Ctrl+Click  polygon immediately convert it
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
         const clicked = this.snapInteraction.snapTo(
             evt.mapBrowserEvent.pixel,
@@ -362,6 +371,7 @@ class Edit extends VectorLayer {
           });
         } else { // Polygon
           //TODO BUG generate an unusefull vertex
+          //TODO Ctrl+Click  polygon immediately convert it
           splitCoords.push(...clickedCoords);
         }
 
@@ -374,40 +384,54 @@ class Edit extends VectorLayer {
       }
 
       this.save();
+      this.optimize();
     });
 
     this.drawInteraction.on('drawend', () => {
-      this.optimise();
-      this.save();
+      console.log('drawend');
+      //this.optimize();
+      //this.save();
       this.restartInteractions('modify');
     });
 
     map.on('pointermove', evt => {
       this.map.getTargetElement().classList.add('ed-selected');
 
+      this.pixel = evt.pixel;
+
       this.map.forEachFeatureAtPixel(
         evt.pixel,
-        () => {
+        feature => {
           this.map.getTargetElement().classList.remove('ed-selected');
+          console.log('MOVE ' + feature.ol_uid);
+          //this.select(feature);
         }, {
-          layerFilter: (layer) => layer.getSource() === this.editedSource,
+          layerFilter: layer => layer.getSource() === this.editedSource,
           hitTolerance: this.options.tolerance, // Default is 0
         },
       );
     });
 
     // Init interaction & button to modify at the beginning & when a file is loaded
-    this.map.on('loadend', () => {
-      // Refurbish geojson
-      this.optimise(true);
+    this.map.once('loadend', () => {
+      this.optimize();
       this.save();
-
-      // Enable the first interaction
       this.restartInteractions('modify');
     });
   } // End setMapInternal
 
+  /*  select(feature) {
+      const sf = this.selectInteraction.getFeatures();
+
+      if (!sf.length || feature !== sf[0]) {
+        this.selectInteraction.getFeatures().clear();
+        this.selectInteraction.getFeatures().push(feature);
+      }
+    }*/
+
   restartInteractions(intName) {
+    console.log('restartInteractions ' + intName);
+
     this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
 
     ['select', 'modify', 'draw', 'snap'].forEach(i =>
@@ -434,6 +458,8 @@ class Edit extends VectorLayer {
   }
 
   save() {
+    console.log('save');
+
     // Save geometries in <EL> as geoJSON at every change
     //TODO integrate to featuresToSave
     if (this.geoJsonEl)
@@ -441,19 +467,34 @@ class Edit extends VectorLayer {
       .replace(/,"properties":(\{[^}]*\}|null)/u, '');
   }
 
-  optimise(init) {
-    optimiseFeatures(
+  optimize() {
+    console.log('optimize');
+
+    optimizeFeatures(
       this.editedSource,
       this.options,
     );
 
+    if (this.pixel)
+      this.map.forEachFeatureAtPixel(
+        this.pixel,
+        feature => {
+          console.log('OPTIMIZE ' + feature.ol_uid);
+        }, {
+          layerFilter: layer => layer.getSource() === this.editedSource,
+          hitTolerance: this.options.tolerance, // Default is 0
+        },
+      );
+
     //BUG ne voit pas encore les features créés
+    /*
     const editedFeatures = this.editedSource.getFeatures();
 
     // Select the first edited feature
     if (editedFeatures.length &&
       (editedFeatures.length === 1 || init))
       this.selectInteraction.getFeatures().push(editedFeatures[0]);
+	  */
   }
 }
 

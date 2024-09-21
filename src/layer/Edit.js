@@ -190,6 +190,8 @@ function selectStyles(feature, resolution) {
     );
 
   // Arrows
+  //TODO if option
+  //TODO doc options
   if (geometry.forEachSegment)
     geometry.forEachSegment((start, end) => {
       const dx = end[0] - start[0],
@@ -396,20 +398,7 @@ class Edit extends VectorLayer {
 
     map.on('pointermove', evt => {
       this.map.getTargetElement().classList.add('ed-selected');
-
       this.pixel = evt.pixel;
-
-      this.map.forEachFeatureAtPixel(
-        evt.pixel,
-        feature => {
-          this.map.getTargetElement().classList.remove('ed-selected');
-          console.log('MOVE ' + feature.ol_uid);
-          //this.select(feature);
-        }, {
-          layerFilter: layer => layer.getSource() === this.editedSource,
-          hitTolerance: this.options.tolerance, // Default is 0
-        },
-      );
     });
 
     // Init interaction & button to modify at the beginning & when a file is loaded
@@ -419,15 +408,6 @@ class Edit extends VectorLayer {
       this.restartInteractions('modify');
     });
   } // End setMapInternal
-
-  /*  select(feature) {
-      const sf = this.selectInteraction.getFeatures();
-
-      if (!sf.length || feature !== sf[0]) {
-        this.selectInteraction.getFeatures().clear();
-        this.selectInteraction.getFeatures().push(feature);
-      }
-    }*/
 
   restartInteractions(intName) {
     console.log('restartInteractions ' + intName);
@@ -475,26 +455,28 @@ class Edit extends VectorLayer {
       this.options,
     );
 
-    if (this.pixel)
-      this.map.forEachFeatureAtPixel(
-        this.pixel,
-        feature => {
-          console.log('OPTIMIZE ' + feature.ol_uid);
-        }, {
-          layerFilter: layer => layer.getSource() === this.editedSource,
-          hitTolerance: this.options.tolerance, // Default is 0
-        },
-      );
+    // Do it later from the stabilized features
+    setTimeout(() => {
+      // Search the first edited feature
+      const editedFeatures = this.editedSource.getFeatures();
 
-    //BUG ne voit pas encore les features créés
-    /*
-    const editedFeatures = this.editedSource.getFeatures();
+      // Search the feature at the mouse position
+      if (this.pixel)
+        this.map.forEachFeatureAtPixel(
+          this.pixel,
+          feature => {
+            editedFeatures[0] = feature;
+          }, {
+            layerFilter: layer => layer.getSource() === this.editedSource,
+            hitTolerance: this.options.tolerance, // Default is 0
+          },
+        );
 
-    // Select the first edited feature
-    if (editedFeatures.length &&
-      (editedFeatures.length === 1 || init))
-      this.selectInteraction.getFeatures().push(editedFeatures[0]);
-	  */
+      // Select this feature
+      this.selectInteraction.getFeatures().clear();
+      if (editedFeatures.length)
+        this.selectInteraction.getFeatures().push(editedFeatures[0]);
+    });
   }
 }
 

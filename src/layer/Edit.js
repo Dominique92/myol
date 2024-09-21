@@ -61,15 +61,12 @@ function flatFeatures(geom, lines) {
 }
 
 // Refurbish Lines & Polygons
-function optimizeFeatures(editedSource, options) {
-  const features = editedSource.getFeatures(), // Get edited features
-    lines = [],
+function optimizeFeatures(features, options) {
+  const lines = [],
     polys = [];
 
   // Get all edited features as array of lines coordinates
-  features.forEach(f =>
-    flatFeatures(f.getGeometry(), lines)
-  );
+  features.forEach(f => flatFeatures(f.getGeometry(), lines));
 
   // Exclude 1 coordinate features (points)
   for (const a in lines)
@@ -143,23 +140,10 @@ function optimizeFeatures(editedSource, options) {
         }
     }
 
-  // Recreate features
-  editedSource.clear();
-
-  lines.filter(Boolean) // Remove deleted array members
-    .forEach(line => {
-      editedSource.addFeature(new Feature({
-        geometry: new ol.geom.LineString(line),
-        //BEST Multilinestring / Multipolygon
-      }));
-    });
-
-  polys.filter(Boolean) // Remove deleted array members
-    .forEach(poly => {
-      editedSource.addFeature(new Feature({
-        geometry: new ol.geom.Polygon(poly),
-      }));
-    });
+  return {
+    lines: lines.filter(Boolean), // Remove deleted array members
+    polys: polys.filter(Boolean),
+  };
 }
 
 // STYLES
@@ -219,7 +203,6 @@ function selectStyles(feature, resolution) {
 
 // EDITOR
 class Edit extends VectorLayer {
-  //editPoly: false, TODO optimize / export
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -228,14 +211,6 @@ class Edit extends VectorLayer {
       featureProjection: 'EPSG:3857',
       tolerance: 7, // Px
       //editPoly: false | true, // output are lines | polygons
-
-      featuresToSave: () => this.options.format.writeFeatures(
-        //TODO ?? put getFeatures in main method
-        this.editedSource.getFeatures(), {
-          dataProjection: this.options.dataProjection,
-          featureProjection: this.map.getView().getProjection(),
-          decimals: 5,
-        }),
 
       ...opt,
     }
@@ -347,9 +322,11 @@ class Edit extends VectorLayer {
         selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
 
       // End move vertex
+      /*
       if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey) {
-        //this.optimize();
+        this.optimiseAndSave();
       }
+	  */
 
       // Ctrl + click : split line / convert polygon to lines
       //TODO Ctrl+Click  polygon immediately convert it
@@ -372,8 +349,7 @@ class Edit extends VectorLayer {
               splitCoords.push([coords]);
           });
         } else { // Polygon
-          //TODO BUG generate an unusefull vertex
-          //TODO Ctrl+Click  polygon immediately convert it
+          //TODO BUG generate an unusefull vertex / Ctrl+Click  polygon immediately convert it
           splitCoords.push(...clickedCoords);
         }
 
@@ -385,27 +361,15 @@ class Edit extends VectorLayer {
         });
       }
 
-      this.save();
-      this.optimize();
+      this.optimiseAndSave();
     });
 
-    this.drawInteraction.on('drawend', () => {
-      console.log('drawend');
-      //this.optimize();
-      //this.save();
-      this.restartInteractions('modify');
-    });
+    this.drawInteraction.on('drawend', () => this.optimiseAndSave());
+    this.map.once('loadend', () => this.optimiseAndSave());
 
     map.on('pointermove', evt => {
       this.map.getTargetElement().classList.add('ed-selected');
       this.pixel = evt.pixel;
-    });
-
-    // Init interaction & button to modify at the beginning & when a file is loaded
-    this.map.once('loadend', () => {
-      this.optimize();
-      this.save();
-      this.restartInteractions('modify');
     });
   } // End setMapInternal
 
@@ -437,46 +401,68 @@ class Edit extends VectorLayer {
     });
   }
 
-  save() {
-    console.log('save');
+  optimiseAndSave() {
+    console.log('optimiseAndSave');
 
-    // Save geometries in <EL> as geoJSON at every change
-    //TODO integrate to featuresToSave
-    if (this.geoJsonEl)
-      this.geoJsonEl.value = this.options.featuresToSave() //TODO only poly for WRI
-      .replace(/,"properties":(\{[^}]*\}|null)/u, '');
-  }
-
-  optimize() {
-    console.log('optimize');
-
-    optimizeFeatures(
-      this.editedSource,
+    // Get optimized coords
+    const optCoords = optimizeFeatures(
+      this.editedSource.getFeatures(), // Get edited features
       this.options,
     );
 
-    // Do it later from the stabilized features
-    setTimeout(() => {
-      // Search the first edited feature
+    // Body class to handle edit polys only
+    if (!optCoords.lines.length && optCoords.polys.length)
+      document.body.classList.add('edit-only-polys');
+    else
+      document.body.classList.remove('edit-only-polys');
+
+    // Recreate features
+    this.editedSource.clear();
+    optCoords.lines.forEach(line => {
+      this.editedSource.addFeature(new Feature({
+        geometry: new ol.geom.LineString(line),
+        //BEST Multilinestring / Multipolygon
+      }));
+    });
+    optCoords.polys.forEach(poly => {
+      this.editedSource.addFeature(new Feature({
+        geometry: new ol.geom.Polygon(poly),
+      }));
+    });
+
+    // Save geometries in <EL> as geoJSON at every change
+    //TODO only poly for WRI
+    if (this.geoJsonEl)
+      this.geoJsonEl.value = this.options.format.writeFeatures(
+        this.editedSource.getFeatures(), {
+          dataProjection: this.options.dataProjection,
+          featureProjection: this.map.getView().getProjection(),
+          decimals: 5,
+        })
+      .replace(/,"properties":(\{[^}]*\}|null)/u, '');
+
+    // Select the closest feature
+    setTimeout(() => { // Do it later from the stabilized features
       const editedFeatures = this.editedSource.getFeatures();
 
       // Search the feature at the mouse position
-      if (this.pixel)
-        this.map.forEachFeatureAtPixel(
-          this.pixel,
-          feature => {
-            editedFeatures[0] = feature;
-          }, {
-            layerFilter: layer => layer.getSource() === this.editedSource,
-            hitTolerance: this.options.tolerance, // Default is 0
-          },
-        );
+      this.map.forEachFeatureAtPixel(
+        this.pixel || [0, 0],
+        feature => {
+          editedFeatures[0] = feature;
+        }, {
+          layerFilter: layer => layer.getSource() === this.editedSource,
+          hitTolerance: this.options.tolerance, // Default is 0
+        },
+      );
 
-      // Select this feature
+      // Or the first edited feature
       this.selectInteraction.getFeatures().clear();
       if (editedFeatures.length)
         this.selectInteraction.getFeatures().push(editedFeatures[0]);
     });
+
+    this.restartInteractions('modify');
   }
 }
 

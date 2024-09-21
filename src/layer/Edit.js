@@ -175,7 +175,7 @@ function selectStyles(feature, resolution) {
 
   // Arrows
   //TODO if option
-  //TODO doc options
+  //TODO document all options
   if (geometry.forEachSegment)
     geometry.forEachSegment((start, end) => {
       const dx = end[0] - start[0],
@@ -240,7 +240,6 @@ class Edit extends VectorLayer {
     this.geoJsonEl = geoJsonEl;
     this.editedSource = editedSource;
     this.snapSource = new VectorSource({});
-    //this.pixel = [0, 0];
   } // End constructor
 
   setMapInternal(map) {
@@ -297,7 +296,7 @@ class Edit extends VectorLayer {
       console.log('modifystart');
 
       const oEvt = evt.mapBrowserEvent.originalEvent,
-        selectedFeature = this.selectInteraction.getFeatures().getArray()[0],
+        selectedFeature = this.selectInteraction.getFeatures().item(0),
         coordinates = selectedFeature.getGeometry().getCoordinates();
 
       // Shift + click : reverse line direction
@@ -319,42 +318,30 @@ class Edit extends VectorLayer {
       console.log('modifyend');
 
       const oEvt = evt.mapBrowserEvent.originalEvent,
-        selectedFeature = this.selectInteraction.getFeatures().getArray()[0];
-
-      // End move vertex
-      /*
-      if (!oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey) {
-        this.optimiseAndSave();
-      }
-	  */
+        selectedFeature = this.selectInteraction.getFeatures().item(0);
 
       // Ctrl + click : split line / convert polygon to lines
       //TODO Ctrl+Click  polygon immediately convert it
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
-        const clicked = this.snapInteraction.snapTo(
-            evt.mapBrowserEvent.pixel,
-            evt.mapBrowserEvent.coordinate,
-            this.map,
-          ),
-          clickedCoords = clicked.feature.getGeometry().getCoordinates(),
-          splitCoords = [
-            [],
-          ];
+        const mouseCoords = evt.mapBrowserEvent.coordinate,
+          featureCoords = evt.features.item(0).getGeometry().getCoordinates(),
+          inCoords = typeof featureCoords[0][0] === 'number' ? [featureCoords] : featureCoords, // Lines / Polys
+          outCoords = [];
 
-        if (typeof clickedCoords[0][0] === 'number') { // Line
-          // Split the coordinates array in 2
-          clickedCoords.forEach(coords => {
-            splitCoords[splitCoords.length - 1].push(coords);
-            if (coords.toString() === clicked.vertex.toString())
-              splitCoords.push([coords]);
+        inCoords.forEach(inLine => {
+          outCoords.push([]);
+          inLine.forEach(coords => {
+            outCoords[outCoords.length - 1].push(coords);
+            // Split the coordinates array in 2
+            if (coords[0] === mouseCoords[0] && coords[1] === mouseCoords[1])
+              outCoords.push([
+                [coords[0], coords[1] + 1]
+              ]);
           });
-        } else { // Polygon
-          //TODO BUG generate an unusefull vertex / Ctrl+Click  polygon immediately convert it
-          splitCoords.push(...clickedCoords);
-        }
+        });
 
         this.editedSource.removeFeature(selectedFeature);
-        splitCoords.forEach(coords => {
+        outCoords.forEach(coords => {
           this.editedSource.addFeature(new Feature({
             geometry: new ol.geom.LineString(coords),
           }));

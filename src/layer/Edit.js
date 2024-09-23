@@ -26,52 +26,48 @@ function compareCoords(a, b) {
 }
 
 // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
-function flatCoord(lines, coords) {
-  if (coords.length && typeof coords[0][0] === 'object') {
-    // Multi*
-    for (const c1 in coords)
-      flatCoord(lines, coords[c1]);
-  } else {
-    // LineString
-    const begCoords = [];
+function flatCoord(coords, splitCords) {
+  const lines = [];
 
-    while (coords.length) {
-      const c = coords.shift();
+  coords.forEach(c => {
+    if (typeof c[0][0] === 'number') {
+      if (splitCords) {
+        const r = [
+          []
+        ];
 
-      if (!coords.length || !compareCoords(c, coords[0])) { // Skip duplicated points
-        begCoords.push(c);
-      }
-    }
-    lines.push(begCoords, coords);
-  }
+        c.forEach(p => {
+          if (compareCoords(p, splitCords)) {
+            r[r.length - 1].push([p[0], p[1] - 1]);
+            r.push([
+              [p[0], p[1] + 1]
+            ]);
+          } else
+            r[r.length - 1].push(p);
+        });
+        lines.push(...r);
+      } else
+        lines.push(c);
+    } else
+      lines.push(...flatCoord(c, splitCords));
+  });
+  console.log(lines);
+
+  return lines;
 }
 
-function flatFeatures(geom, lines) {
-  // Expand geometryCollection
-  if (geom.getType() === 'GeometryCollection') {
-    const geometries = geom.getGeometries();
-
-    for (const g in geometries)
-      // Recurse collections
-      flatFeatures(geometries[g], lines);
-  } else if (!geom.getType().match(/point$/iu)) { // Exclude Points
-    // Get lines or polyons as flat array of coordinates
-    flatCoord(lines, geom.getCoordinates());
-  }
+function flatFeatures(geom, splitCords) {
+  if (geom.getType().match(/collection/iu)) // Recurse collections
+    return geom.getGeometries().map(g => flatFeatures(g, splitCords));
+  else if (!geom.getType().match(/point$/iu)) // Exclude Points
+    return geom.getCoordinates();
 }
 
 // Refurbish Lines & Polygons
-function optimizeFeatures(features, options) {
-  const lines = [],
-    polys = [];
-
+function optimizeFeatures(features, options, splitCords) {
   // Get all edited features as array of lines coordinates
-  features.forEach(f => flatFeatures(f.getGeometry(), lines));
-
-  // Exclude 1 coordinate features (points)
-  for (const a in lines)
-    if (lines[a].length < 2)
-      delete lines[a];
+  const lines = flatCoord(features.map(f => flatFeatures(f.getGeometry())), splitCords),
+    polys = [];
 
   // Merge lines having a common end
   for (const a in lines) {
@@ -156,7 +152,7 @@ function selectStyles(feature, resolution) {
         width: 3,
       }),
       fill: new ol.style.Fill({ // Polygons
-        color: 'rgba(51,153,204,0.1)',
+        color: 'rgba(51,153,204,0.2)',
       }),
       radius: 4, // Move & begin line marker
     },
@@ -181,7 +177,7 @@ function selectStyles(feature, resolution) {
       const dx = end[0] - start[0],
         dy = end[1] - start[1];
 
-      if (Math.abs(dx) + Math.abs(dy) > resolution * 20) {
+      if (Math.abs(dx) + Math.abs(dy) > resolution * 10) {
         featureStyles.push(
           new ol.style.Style({
             geometry: new ol.geom.Point(end),
@@ -293,7 +289,7 @@ class Edit extends VectorLayer {
 
     // Interactions listeners
     this.modifyInteraction.on('modifystart', evt => {
-      console.log('modifystart');
+      //console.log('modifystart');
 
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().item(0),
@@ -315,7 +311,7 @@ class Edit extends VectorLayer {
     });
 
     this.modifyInteraction.on('modifyend', evt => {
-      console.log('modifyend');
+      //console.log('modifyend');
 
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().item(0);
@@ -323,6 +319,10 @@ class Edit extends VectorLayer {
       // Ctrl + click : split line / convert polygon to lines
       //TODO Ctrl+Click  polygon immediately convert it
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
+        console.log(evt.type);
+        return this.optimiseAndSave(evt.mapBrowserEvent.coordinate_);
+
+        /*
         const mouseCoords = evt.mapBrowserEvent.coordinate,
           featureCoords = evt.features.item(0).getGeometry().getCoordinates(),
           inCoords = typeof featureCoords[0][0] === 'number' ? [featureCoords] : featureCoords, // Lines / Polys
@@ -346,6 +346,7 @@ class Edit extends VectorLayer {
             geometry: new ol.geom.LineString(coords),
           }));
         });
+	  */
       }
 
       this.optimiseAndSave();
@@ -361,7 +362,7 @@ class Edit extends VectorLayer {
   } // End setMapInternal
 
   restartInteractions(intName) {
-    console.log('restartInteractions ' + intName);
+    //console.log('restartInteractions ' + intName);
 
     this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
 
@@ -388,13 +389,14 @@ class Edit extends VectorLayer {
     });
   }
 
-  optimiseAndSave() {
-    console.log('optimiseAndSave');
+  optimiseAndSave(splitCords) {
+    //console.log('optimiseAndSave');
 
     // Get optimized coords
     const optCoords = optimizeFeatures(
       this.editedSource.getFeatures(), // Get edited features
       this.options,
+      splitCords,
     );
 
     // Body class to handle edit polys only

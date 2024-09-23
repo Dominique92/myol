@@ -44,6 +44,7 @@ function flatCoord(coords, splitCord) {
     } else
       lines.push(c);
   });
+  //TODO remove empty & 1 coord lines ??
 
   return lines;
 }
@@ -55,9 +56,10 @@ function flatFeatures(geom) {
 }
 
 // Refurbish Lines & Polygons
-function optimizeFeatures(features, options, splitCord) {
+function optimizeCoordinates(coordinates, options, splitCord) {
+  //TODO move into optimiseAndSave
   // Get all edited features as array of lines coordinates
-  const lines = flatCoord(features.map(f => flatFeatures(f.getGeometry())), splitCord),
+  const lines = flatCoord(coordinates, splitCord),
     polys = [];
 
   // Merge lines having a common end
@@ -134,7 +136,7 @@ function optimizeFeatures(features, options, splitCord) {
 }
 
 // STYLES
-// Style to color selected features with begin & end points
+// Style to color selected features with arrows, begin & end points
 function selectStyles(feature, resolution) {
   const geometry = feature.getGeometry(),
     selectStyle = {
@@ -151,6 +153,7 @@ function selectStyles(feature, resolution) {
       new ol.style.Style(selectStyle), // Line style
     ];
 
+  //if (options.arrows) { //TODO missing options
   // Circle at the begining of the line
   if (geometry.getCoordinates)
     featureStyles.push(
@@ -160,9 +163,7 @@ function selectStyles(feature, resolution) {
       }),
     );
 
-  // Arrows
-  //TODO if option
-  //TODO document all options
+  // Arrows to show the line direction
   if (geometry.forEachSegment)
     geometry.forEachSegment((start, end) => {
       const dx = end[0] - start[0],
@@ -184,6 +185,7 @@ function selectStyles(feature, resolution) {
         );
       }
     });
+  //}
 
   return featureStyles;
 };
@@ -197,13 +199,13 @@ class Edit extends VectorLayer {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
       tolerance: 7, // Px
+      //TODO test & document all options
       //editPoly: false | true, // output are lines | polygons
 
       ...opt,
     }
 
     // Read data in an html element
-    //TODO TESTS load external .json
     const geoJsonEl = document.getElementById(options.geoJsonId) ||
       document.createElement('textarea'),
       geoJson = geoJsonEl.value.trim() ||
@@ -324,10 +326,11 @@ class Edit extends VectorLayer {
           this.pixel,
           feature => {
             const gc = feature.getGeometry().getCoordinates();
-
             if (typeof gc[0] === 'number')
               splitCord = gc;
           }, {
+            //TODO only on the selected layer
+            //layerFilter: layer => layer.getSource() === this.editedSource,
             hitTolerance: this.options.tolerance, // Default is 0
           },
         );
@@ -338,40 +341,17 @@ class Edit extends VectorLayer {
     });
   } // End setMapInternal
 
-  restartInteractions(intName) {
-    //TODO centralize ?
-    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
-
-    ['select', 'modify', 'draw', 'snap'].forEach(i =>
-      this.map.removeInteraction(this[i + 'Interaction'])
-    );
-
-    if (intName === 'modify')
-      this.map.addInteraction(this.selectInteraction);
-
-    this.map.addInteraction(this[intName + 'Interaction']);
-    this.map.addInteraction(this.snapInteraction); // Must be added after the others
-
-    // For snap & traceSource : register again the full list of features as addFeature manages already registered
-    this.snapSource.clear();
-    this.map.getLayers().forEach(layer => {
-      if (layer.getSource() !== this.editedSource &&
-        layer.getSource() &&
-        layer.getSource().getFeatures) // Vector layers only
-        layer.getSource().getFeatures().forEach(feature => {
-          this.snapInteraction.addFeature(feature);
-          this.snapSource.addFeature(feature);
-        });
-    });
-  }
-
   optimiseAndSave(splitCord) {
     // Get optimized coords
-    const optCoords = optimizeFeatures(
-      this.editedSource.getFeatures(), // Get edited features
-      this.options,
-      splitCord,
-    );
+    const editedFeatures = this.editedSource.getFeatures(), // Get edited features
+      coordinates = editedFeatures.map(
+        f => flatFeatures(f.getGeometry()) // Get flat coordinates
+      ),
+      optCoords = optimizeCoordinates(
+        coordinates,
+        this.options,
+        splitCord,
+      );
 
     // Body class to handle edit polys only
     if (!optCoords.lines.length && optCoords.polys.length)
@@ -406,26 +386,53 @@ class Edit extends VectorLayer {
 
     // Select the closest feature
     setTimeout(() => { // Do it later from the stabilized features
-      const editedFeatures = this.editedSource.getFeatures();
+      const editFeatures = this.editedSource.getFeatures();
 
-      // Search the feature at the mouse position
-      this.map.forEachFeatureAtPixel(
-        this.pixel || [0, 0],
-        feature => {
-          editedFeatures[0] = feature;
-        }, {
-          layerFilter: layer => layer.getSource() === this.editedSource,
-          hitTolerance: this.options.tolerance, // Default is 0
-        },
-      );
+      if (editFeatures.length) {
+        // Search the feature at the mouse position
+        this.map.forEachFeatureAtPixel(
+          this.pixel || [0, 0],
+          feature => {
+            editFeatures[0] = feature;
+          }, {
+            layerFilter: layer => layer.getSource() === this.editedSource,
+            hitTolerance: this.options.tolerance, // Default is 0
+          },
+        );
 
-      // Or the first edited feature
-      this.selectInteraction.getFeatures().clear();
-      if (editedFeatures.length)
-        this.selectInteraction.getFeatures().push(editedFeatures[0]);
+        // Or the first edited feature
+        this.selectInteraction.getFeatures().clear();
+        this.selectInteraction.getFeatures().push(editFeatures[0]);
+      }
     });
 
     this.restartInteractions('modify');
+  }
+
+  restartInteractions(intName) {
+    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
+
+    ['select', 'modify', 'draw', 'snap'].forEach(i =>
+      this.map.removeInteraction(this[i + 'Interaction'])
+    );
+
+    if (intName === 'modify')
+      this.map.addInteraction(this.selectInteraction);
+
+    this.map.addInteraction(this[intName + 'Interaction']);
+    this.map.addInteraction(this.snapInteraction); // Must be added after the others
+
+    // For snap & traceSource : register again the full list of features as addFeature manages already registered
+    this.snapSource.clear();
+    this.map.getLayers().forEach(layer => {
+      if (layer.getSource() !== this.editedSource &&
+        layer.getSource() &&
+        layer.getSource().getFeatures) // Vector layers only
+        layer.getSource().getFeatures().forEach(feature => {
+          this.snapInteraction.addFeature(feature);
+          this.snapSource.addFeature(feature);
+        });
+    });
   }
 }
 

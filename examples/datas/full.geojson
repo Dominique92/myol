@@ -75,5 +75,14 @@
         ]
       ]
     }
+  }, {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [2.5, 47]
+    },
+    "properties": {
+      "name": "Dinagat Islands"
+    }
   }]
 }

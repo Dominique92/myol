@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 13/09/2024 21:39:39 using npm run build from the src/... sources
+ * Built 23/09/2024 14:36:28 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -998,7 +998,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION$1 = '10.1.0';
+  const VERSION$1 = '10.2.0';
 
   /**
    * @module ol/Object
@@ -2169,8 +2169,6 @@
     }
   }
 
-  var Attribution$1 = Attribution;
-
   /**
    * @module ol/MapProperty
    */
@@ -2575,8 +2573,6 @@
     }
   }
 
-  var FullScreen$1 = FullScreen;
-
   /**
    * @module ol/proj/Units
    */
@@ -2875,8 +2871,6 @@
     }
   };
 
-  var Projection$2 = Projection$1;
-
   /**
    * @module ol/proj/epsg3857
    */
@@ -2918,7 +2912,7 @@
    * @classdesc
    * Projection object for web/spherical Mercator (EPSG:3857).
    */
-  class EPSG3857Projection extends Projection$2 {
+  class EPSG3857Projection extends Projection$1 {
     /**
      * @param {string} code Code.
      */
@@ -3048,7 +3042,7 @@
    * The EPSG registry defines 4326 as a CRS for Latitude,Longitude (y,x).
    * OpenLayers treats EPSG:4326 as a pseudo-projection, with x,y coordinates.
    */
-  class EPSG4326Projection extends Projection$2 {
+  class EPSG4326Projection extends Projection$1 {
     /**
      * @param {string} code Code.
      * @param {string} [axisOrientation] Axis orientation.
@@ -5808,7 +5802,7 @@
   var proj = /*#__PURE__*/Object.freeze({
     __proto__: null,
     METERS_PER_UNIT: METERS_PER_UNIT$1,
-    Projection: Projection$2,
+    Projection: Projection$1,
     addCommon: addCommon,
     addCoordinateTransforms: addCoordinateTransforms,
     addEquivalentProjections: addEquivalentProjections,
@@ -6327,8 +6321,6 @@
     }
   }
 
-  var ScaleLine$1 = ScaleLine;
-
   /**
    * @module ol/easing
    */
@@ -6527,8 +6519,6 @@
       }
     }
   }
-
-  var Zoom$1 = Zoom;
 
   /**
    * Button.js
@@ -7620,8 +7610,6 @@
     }
   }
 
-  var Geometry$1 = Geometry;
-
   /**
    * @module ol/geom/SimpleGeometry
    */
@@ -7634,7 +7622,7 @@
    * @abstract
    * @api
    */
-  class SimpleGeometry extends Geometry$1 {
+  class SimpleGeometry extends Geometry {
     constructor() {
       super();
 
@@ -7975,8 +7963,6 @@
       dest,
     );
   }
-
-  var SimpleGeometry$1 = SimpleGeometry;
 
   /**
    * @module ol/geom/flat/closest
@@ -8921,7 +8907,7 @@
    *
    * @api
    */
-  class LinearRing extends SimpleGeometry$1 {
+  class LinearRing extends SimpleGeometry {
     /**
      * @param {Array<import("../coordinate.js").Coordinate>|Array<number>} coordinates Coordinates.
      *     For internal use, flat coordinates in combination with `layout` are also accepted.
@@ -9098,8 +9084,6 @@
     }
   }
 
-  var LinearRing$1 = LinearRing;
-
   /**
    * @module ol/geom/Point
    */
@@ -9110,7 +9094,7 @@
    *
    * @api
    */
-  let Point$1 = class Point extends SimpleGeometry$1 {
+  let Point$1 = class Point extends SimpleGeometry {
     /**
      * @param {import("../coordinate.js").Coordinate} coordinates Coordinates.
      * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
@@ -9975,7 +9959,7 @@
    *
    * @api
    */
-  class Polygon extends SimpleGeometry$1 {
+  class Polygon extends SimpleGeometry {
     /**
      * @param {!Array<Array<import("../coordinate.js").Coordinate>>|!Array<number>} coordinates
      *     Array of linear rings that define the polygon. The first linear ring of the
@@ -10237,7 +10221,7 @@
       if (index < 0 || this.ends_.length <= index) {
         return null;
       }
-      return new LinearRing$1(
+      return new LinearRing(
         this.flatCoordinates.slice(
           index === 0 ? 0 : this.ends_[index - 1],
           this.ends_[index],
@@ -10259,7 +10243,7 @@
       let offset = 0;
       for (let i = 0, ii = ends.length; i < ii; ++i) {
         const end = ends[i];
-        const linearRing = new LinearRing$1(
+        const linearRing = new LinearRing(
           flatCoordinates.slice(offset, end),
           layout,
         );
@@ -10365,8 +10349,6 @@
       this.changed();
     }
   }
-
-  var Polygon$1 = Polygon;
 
   /**
    * Create an approximation of a circle on the surface of a sphere.
@@ -13413,9 +13395,9 @@
      * @api
      */
     getResolutionForZoom(zoom) {
-      if (this.resolutions_) {
-        if (this.resolutions_.length <= 1) {
-          return 0;
+      if (this.resolutions_?.length) {
+        if (this.resolutions_.length === 1) {
+          return this.resolutions_[0];
         }
         const baseLevel = clamp(
           Math.floor(zoom),
@@ -14703,23 +14685,30 @@
         this.mapPrecomposeKey_ = listen(
           map,
           RenderEventType.PRECOMPOSE,
-          (evt) => {
-            const renderEvent =
-              /** @type {import("../render/Event.js").default} */ (evt);
-            const layerStatesArray = renderEvent.frameState.layerStatesArray;
-            const layerState = this.getLayerState(false);
-            assert$1(
-              !layerStatesArray.some(function (arrayLayerState) {
-                return arrayLayerState.layer === layerState.layer;
-              }),
-              'A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both.',
-            );
-            layerStatesArray.push(layerState);
-          },
+          this.handlePrecompose_,
+          this,
         );
         this.mapRenderKey_ = listen(this, EventType.CHANGE, map.render, map);
         this.changed();
       }
+    }
+
+    /**
+     * @param {import("../events/Event.js").default} renderEvent Render event
+     * @private
+     */
+    handlePrecompose_(renderEvent) {
+      const layerStatesArray =
+        /** @type {import("../render/Event.js").default} */ (renderEvent)
+          .frameState.layerStatesArray;
+      const layerState = this.getLayerState(false);
+      assert$1(
+        !layerStatesArray.some(
+          (arrayLayerState) => arrayLayerState.layer === layerState.layer,
+        ),
+        'A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both.',
+      );
+      layerStatesArray.push(layerState);
     }
 
     /**
@@ -15750,8 +15739,6 @@
       return Promise.resolve();
     }
   }
-
-  var ImageStyle$1 = ImageStyle;
 
   /**
    * RGB space.
@@ -17135,11 +17122,12 @@
       }
 
       const image = this.image_;
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(image.width * pixelRatio);
-      canvas.height = Math.ceil(image.height * pixelRatio);
+      const ctx = createCanvasContext2D(
+        Math.ceil(image.width * pixelRatio),
+        Math.ceil(image.height * pixelRatio),
+      );
+      const canvas = ctx.canvas;
 
-      const ctx = canvas.getContext('2d');
       ctx.scale(pixelRatio, pixelRatio);
       ctx.drawImage(image, 0, 0);
 
@@ -17215,8 +17203,6 @@
     }
     return iconImage;
   }
-
-  var IconImage$1 = IconImage;
 
   /**
    * @module ol/colorlike
@@ -17849,7 +17835,7 @@
    * `radius2` are provided.
    * @api
    */
-  class RegularShape extends ImageStyle$1 {
+  class RegularShape extends ImageStyle {
     /**
      * @param {Options} options Options.
      */
@@ -18426,8 +18412,6 @@
     }
   }
 
-  var RegularShape$1 = RegularShape;
-
   /**
    * @module ol/style/Circle
    */
@@ -18453,7 +18437,7 @@
    * Set circle style for vector features.
    * @api
    */
-  class CircleStyle extends RegularShape$1 {
+  class CircleStyle extends RegularShape {
     /**
      * @param {Options} [options] Options.
      */
@@ -18508,8 +18492,6 @@
       this.render();
     }
   }
-
-  var Circle$2 = CircleStyle;
 
   /**
    * @module ol/style/Fill
@@ -18617,8 +18599,6 @@
       return this.patternImage_ ? this.patternImage_.ready() : Promise.resolve();
     }
   }
-
-  var Fill$1 = Fill;
 
   /**
    * @module ol/style/Stroke
@@ -18846,8 +18826,6 @@
       this.width_ = width;
     }
   }
-
-  var Stroke$1 = Stroke;
 
   /**
    * @module ol/style/Style
@@ -19330,16 +19308,16 @@
     // canvas.getContext('2d') at construction time, which will cause an.error
     // in such browsers.)
     if (!defaultStyles) {
-      const fill = new Fill$1({
+      const fill = new Fill({
         color: 'rgba(255,255,255,0.4)',
       });
-      const stroke = new Stroke$1({
+      const stroke = new Stroke({
         color: '#3399CC',
         width: 1.25,
       });
       defaultStyles = [
         new Style({
-          image: new Circle$2({
+          image: new CircleStyle({
             fill: fill,
             stroke: stroke,
             radius: 5,
@@ -19364,7 +19342,7 @@
     const width = 3;
     styles['Polygon'] = [
       new Style({
-        fill: new Fill$1({
+        fill: new Fill({
           color: [255, 255, 255, 0.5],
         }),
       }),
@@ -19373,13 +19351,13 @@
 
     styles['LineString'] = [
       new Style({
-        stroke: new Stroke$1({
+        stroke: new Stroke({
           color: white,
           width: width + 2,
         }),
       }),
       new Style({
-        stroke: new Stroke$1({
+        stroke: new Stroke({
           color: blue,
           width: width,
         }),
@@ -19391,12 +19369,12 @@
 
     styles['Point'] = [
       new Style({
-        image: new Circle$2({
+        image: new CircleStyle({
           radius: width * 2,
-          fill: new Fill$1({
+          fill: new Fill({
             color: blue,
           }),
-          stroke: new Stroke$1({
+          stroke: new Stroke({
             color: white,
             width: width / 2,
           }),
@@ -19497,7 +19475,7 @@
    * Set icon style for vector features.
    * @api
    */
-  class Icon extends ImageStyle$1 {
+  class Icon extends ImageStyle {
     /**
      * @param {Options} [options] Options.
      */
@@ -20150,7 +20128,7 @@
       this.fill_ =
         options.fill !== undefined
           ? options.fill
-          : new Fill$1({color: DEFAULT_FILL_COLOR});
+          : new Fill({color: DEFAULT_FILL_COLOR});
 
       /**
        * @private
@@ -20632,8 +20610,6 @@
       this.padding_ = padding;
     }
   }
-
-  var Text$1 = Text;
 
   /**
    * @module ol/expr/expression
@@ -22616,7 +22592,7 @@
       return null;
     }
 
-    const fill = new Fill$1();
+    const fill = new Fill();
     return function (context) {
       const color = evaluateColor(context);
       if (color === NO_COLOR) {
@@ -22684,7 +22660,7 @@
       context,
     );
 
-    const stroke = new Stroke$1();
+    const stroke = new Stroke();
     return function (context) {
       if (evaluateColor) {
         const color = evaluateColor(context);
@@ -22845,7 +22821,7 @@
       prefix + 'declutter-mode',
     );
 
-    const text = new Text$1({declutterMode});
+    const text = new Text({declutterMode});
 
     return function (context) {
       text.setText(evaluateValue(context));
@@ -23135,7 +23111,7 @@
       prefix + 'declutter-mode',
     );
 
-    const shape = new RegularShape$1({
+    const shape = new RegularShape({
       points,
       radius,
       radius2,
@@ -23202,7 +23178,7 @@
       prefix + 'declutter-mode',
     );
 
-    const circle = new Circle$2({
+    const circle = new CircleStyle({
       radius: 5, // this is arbitrary, but required - the evaluated radius is used below
       declutterMode,
     });
@@ -24265,7 +24241,8 @@
       this.fontChangeListenerKey_ = listen(
         checkedFonts,
         ObjectEventType.PROPERTYCHANGE,
-        map.redrawText.bind(map),
+        map.redrawText,
+        map,
       );
 
       /**
@@ -26026,8 +26003,6 @@
     }
   }
 
-  var Rotate$1 = Rotate;
-
   /**
    * @module ol/control/defaults
    */
@@ -26068,18 +26043,18 @@
 
     const zoomControl = options.zoom !== undefined ? options.zoom : true;
     if (zoomControl) {
-      controls.push(new Zoom$1(options.zoomOptions));
+      controls.push(new Zoom(options.zoomOptions));
     }
 
     const rotateControl = options.rotate !== undefined ? options.rotate : true;
     if (rotateControl) {
-      controls.push(new Rotate$1(options.rotateOptions));
+      controls.push(new Rotate(options.rotateOptions));
     }
 
     const attributionControl =
       options.attribution !== undefined ? options.attribution : true;
     if (attributionControl) {
-      controls.push(new Attribution$1(options.attributionOptions));
+      controls.push(new Attribution(options.attributionOptions));
     }
 
     return controls;
@@ -26112,7 +26087,7 @@
   /**
    * Object literal with config options for interactions.
    * @typedef {Object} InteractionOptions
-   * @property {function(import("../MapBrowserEvent.js").default):boolean} handleEvent
+   * @property {function(import("../MapBrowserEvent.js").default):boolean} [handleEvent]
    * Method called by the map to notify the interaction that a browser event was
    * dispatched to the map. If the function returns a falsy value, propagation of
    * the event to other interactions in the map's interactions chain will be
@@ -26643,6 +26618,17 @@
   const always = TRUE;
 
   /**
+   * Return `true` if the event is a `click` event, `false` otherwise.
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if the event is a map `click` event.
+   * @api
+   */
+  const click = function (mapBrowserEvent) {
+    return mapBrowserEvent.type == MapBrowserEventType.CLICK;
+  };
+
+  /**
    * Return `true` if the event has an "action"-producing mouse button.
    *
    * By definition, this includes left-click on windows/linux, and left-click
@@ -26691,6 +26677,17 @@
   };
 
   /**
+   * Return `true` if the event is a map `dblclick` event, `false` otherwise.
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if the event is a map `dblclick` event.
+   * @api
+   */
+  const doubleClick = function (mapBrowserEvent) {
+    return mapBrowserEvent.type == MapBrowserEventType.DBLCLICK;
+  };
+
+  /**
    * Return `true` if no modifier key (alt-, shift- or platform-modifier-key) is
    * pressed.
    *
@@ -26705,6 +26702,26 @@
     return (
       !originalEvent.altKey &&
       !(originalEvent.metaKey || originalEvent.ctrlKey) &&
+      !originalEvent.shiftKey
+    );
+  };
+
+  /**
+   * Return `true` if only the platform-modifier-key (the meta-key on Mac,
+   * ctrl-key otherwise) is pressed, `false` otherwise (e.g. when additionally
+   * the shift-key is pressed).
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if only the platform modifier key is pressed.
+   * @api
+   */
+  const platformModifierKeyOnly = function (mapBrowserEvent) {
+    const originalEvent = /** @type {KeyboardEvent|MouseEvent|TouchEvent} */ (
+      mapBrowserEvent.originalEvent
+    );
+    return (
+      !originalEvent.altKey &&
+      (MAC ? originalEvent.metaKey : originalEvent.ctrlKey) &&
       !originalEvent.shiftKey
     );
   };
@@ -26788,6 +26805,44 @@
   };
 
   /**
+   * Return `true` if the event originates from a touchable device.
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if the event originates from a touchable device.
+   * @api
+   */
+  const touchOnly = function (mapBrowserEvent) {
+    const pointerEvt = /** @type {import("../MapBrowserEvent").default} */ (
+      mapBrowserEvent
+    ).originalEvent;
+    assert$1(
+      pointerEvt !== undefined,
+      'mapBrowserEvent must originate from a pointer event',
+    );
+    // see https://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
+    return pointerEvt.pointerType === 'touch';
+  };
+
+  /**
+   * Return `true` if the event originates from a digital pen.
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if the event originates from a digital pen.
+   * @api
+   */
+  const penOnly = function (mapBrowserEvent) {
+    const pointerEvt = /** @type {import("../MapBrowserEvent").default} */ (
+      mapBrowserEvent
+    ).originalEvent;
+    assert$1(
+      pointerEvt !== undefined,
+      'mapBrowserEvent must originate from a pointer event',
+    );
+    // see https://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
+    return pointerEvt.pointerType === 'pen';
+  };
+
+  /**
    * Return `true` if the event originates from a primary pointer in
    * contact with the surface or if the left mouse button is pressed.
    * See https://www.w3.org/TR/pointerevents/#button-states.
@@ -26806,6 +26861,31 @@
     );
     return pointerEvent.isPrimary && pointerEvent.button === 0;
   };
+
+  var condition = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    all: all$1,
+    altKeyOnly: altKeyOnly,
+    altShiftKeysOnly: altShiftKeysOnly,
+    always: always,
+    click: click,
+    doubleClick: doubleClick,
+    focus: focus,
+    focusWithTabindex: focusWithTabindex,
+    mouseActionButton: mouseActionButton,
+    mouseOnly: mouseOnly,
+    never: never,
+    noModifierKeys: noModifierKeys,
+    penOnly: penOnly,
+    platformModifierKey: platformModifierKey,
+    platformModifierKeyOnly: platformModifierKeyOnly,
+    pointerMove: pointerMove,
+    primaryAction: primaryAction,
+    shiftKeyOnly: shiftKeyOnly,
+    singleClick: singleClick,
+    targetNotEditable: targetNotEditable,
+    touchOnly: touchOnly
+  });
 
   /**
    * @module ol/interaction/DragPan
@@ -27222,7 +27302,7 @@
       // close the polygon
       coordinates[4] = coordinates[0].slice();
       if (!this.geometry_) {
-        this.geometry_ = new Polygon$1([coordinates]);
+        this.geometry_ = new Polygon([coordinates]);
       } else {
         this.geometry_.setCoordinates([coordinates]);
       }
@@ -28095,7 +28175,7 @@
 
       /**
        * @private
-       * @type {?import("../coordinate.js").Coordinate}
+       * @type {?import("../pixel.js").Pixel}
        */
       this.lastAnchor_ = null;
 
@@ -28152,7 +28232,7 @@
       view.endInteraction(
         undefined,
         this.lastDelta_ ? (this.lastDelta_ > 0 ? 1 : -1) : 0,
-        this.lastAnchor_,
+        this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : null,
       );
     }
 
@@ -28179,7 +28259,7 @@
       wheelEvent.preventDefault();
 
       if (this.useAnchor_) {
-        this.lastAnchor_ = mapBrowserEvent.coordinate;
+        this.lastAnchor_ = mapBrowserEvent.pixel;
       }
 
       // Delta normalisation inspired by
@@ -28227,7 +28307,10 @@
           this.endInteraction_.bind(this),
           this.timeout_,
         );
-        view.adjustZoom(-delta / this.deltaPerZoom_, this.lastAnchor_);
+        view.adjustZoom(
+          -delta / this.deltaPerZoom_,
+          this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : null,
+        );
         this.startTime_ = now;
         return false;
       }
@@ -28264,7 +28347,12 @@
         // view has a zoom constraint, zoom by 1
         delta = delta ? (delta > 0 ? 1 : -1) : 0;
       }
-      zoomByDelta(view, delta, this.lastAnchor_, this.duration_);
+      zoomByDelta(
+        view,
+        delta,
+        this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : null,
+        this.duration_,
+      );
 
       this.mode_ = undefined;
       this.totalDelta_ = 0;
@@ -30774,7 +30862,7 @@
    *
    * @api
    */
-  class LineString extends SimpleGeometry$1 {
+  class LineString extends SimpleGeometry {
     /**
      * @param {Array<import("../coordinate.js").Coordinate>|Array<number>} coordinates Coordinates.
      *     For internal use, flat coordinates in combination with `layout` are also accepted.
@@ -31070,8 +31158,6 @@
     }
   }
 
-  var LineString$1 = LineString;
-
   /**
    * @module ol/geom/Circle
    */
@@ -31082,7 +31168,7 @@
    *
    * @api
    */
-  class Circle extends SimpleGeometry$1 {
+  class Circle extends SimpleGeometry {
     /**
      * @param {!import("../coordinate.js").Coordinate} center Center.
      *     For internal use, flat coordinates in combination with `layout` and no
@@ -31345,7 +31431,6 @@
    * @api
    */
   Circle.prototype.transform;
-  var Circle$1 = Circle;
 
   /**
    * @module ol/geom/GeometryCollection
@@ -31357,7 +31442,7 @@
    *
    * @api
    */
-  class GeometryCollection extends Geometry$1 {
+  class GeometryCollection extends Geometry {
     /**
      * @param {Array<Geometry>} geometries Geometries.
      */
@@ -31689,8 +31774,6 @@
     return geometries.map((geometry) => geometry.clone());
   }
 
-  var GeometryCollection$1 = GeometryCollection;
-
   /**
    * @module ol/geom/MultiLineString
    */
@@ -31701,7 +31784,7 @@
    *
    * @api
    */
-  class MultiLineString extends SimpleGeometry$1 {
+  class MultiLineString extends SimpleGeometry {
     /**
      * @param {Array<Array<import("../coordinate.js").Coordinate>|LineString>|Array<number>} coordinates
      *     Coordinates or LineString geometries. (For internal use, flat coordinates in
@@ -31901,7 +31984,7 @@
       if (index < 0 || this.ends_.length <= index) {
         return null;
       }
-      return new LineString$1(
+      return new LineString(
         this.flatCoordinates.slice(
           index === 0 ? 0 : this.ends_[index - 1],
           this.ends_[index],
@@ -31924,7 +32007,7 @@
       let offset = 0;
       for (let i = 0, ii = ends.length; i < ii; ++i) {
         const end = ends[i];
-        const lineString = new LineString$1(
+        const lineString = new LineString(
           flatCoordinates.slice(offset, end),
           layout,
         );
@@ -32034,8 +32117,6 @@
     }
   }
 
-  var MultiLineString$1 = MultiLineString;
-
   /**
    * @module ol/geom/MultiPoint
    */
@@ -32046,7 +32127,7 @@
    *
    * @api
    */
-  class MultiPoint extends SimpleGeometry$1 {
+  class MultiPoint extends SimpleGeometry {
     /**
      * @param {Array<import("../coordinate.js").Coordinate>|Array<number>} coordinates Coordinates.
      *     For internal use, flat coordinates in combination with `layout` are also accepted.
@@ -32231,8 +32312,6 @@
     }
   }
 
-  var MultiPoint$1 = MultiPoint;
-
   /**
    * @module ol/geom/flat/center
    */
@@ -32271,7 +32350,7 @@
    *
    * @api
    */
-  class MultiPolygon extends SimpleGeometry$1 {
+  class MultiPolygon extends SimpleGeometry {
     /**
      * @param {Array<Array<Array<import("../coordinate.js").Coordinate>>|Polygon>|Array<number>} coordinates Coordinates.
      *     For internal use, flat coordinates in combination with `layout` and `endss` are also accepted.
@@ -32549,7 +32628,7 @@
      * @api
      */
     getInteriorPoints() {
-      return new MultiPoint$1(this.getFlatInteriorPoints().slice(), 'XYM');
+      return new MultiPoint(this.getFlatInteriorPoints().slice(), 'XYM');
     }
 
     /**
@@ -32624,7 +32703,7 @@
           ends[i] -= offset;
         }
       }
-      return new Polygon$1(
+      return new Polygon(
         this.flatCoordinates.slice(offset, end),
         this.layout,
         ends,
@@ -32650,7 +32729,7 @@
             ends[j] -= offset;
           }
         }
-        const polygon = new Polygon$1(
+        const polygon = new Polygon(
           flatCoordinates.slice(offset, end),
           layout,
           ends,
@@ -32718,25 +32797,23 @@
     }
   }
 
-  var MultiPolygon$1 = MultiPolygon;
-
   /**
    * @module ol/geom
    */
 
   var geom = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    Circle: Circle$1,
-    Geometry: Geometry$1,
-    GeometryCollection: GeometryCollection$1,
-    LineString: LineString$1,
-    LinearRing: LinearRing$1,
-    MultiLineString: MultiLineString$1,
-    MultiPoint: MultiPoint$1,
-    MultiPolygon: MultiPolygon$1,
+    Circle: Circle,
+    Geometry: Geometry,
+    GeometryCollection: GeometryCollection,
+    LineString: LineString,
+    LinearRing: LinearRing,
+    MultiLineString: MultiLineString,
+    MultiPoint: MultiPoint,
+    MultiPolygon: MultiPolygon,
     Point: Point$1,
-    Polygon: Polygon$1,
-    SimpleGeometry: SimpleGeometry$1
+    Polygon: Polygon,
+    SimpleGeometry: SimpleGeometry
   });
 
   /**
@@ -33493,11 +33570,11 @@
 
   const GeometryConstructor = {
     Point: Point$1,
-    LineString: LineString$1,
-    Polygon: Polygon$1,
-    MultiPoint: MultiPoint$1,
-    MultiLineString: MultiLineString$1,
-    MultiPolygon: MultiPolygon$1,
+    LineString: LineString,
+    Polygon: Polygon,
+    MultiPoint: MultiPoint,
+    MultiLineString: MultiLineString,
+    MultiPolygon: MultiPolygon,
   };
 
   function orientFlatCoordinates(flatCoordinates, ends, stride) {
@@ -33568,7 +33645,7 @@
       const geometries = object.map((geometry) =>
         createGeometry(geometry, options),
       );
-      return new GeometryCollection$1(geometries);
+      return new GeometryCollection(geometries);
     }
     const Geometry = GeometryConstructor[object.type];
     return transformGeometryWithOptions(
@@ -34440,11 +34517,11 @@
           let geometry;
           if (values.ndrefs[0] == values.ndrefs[values.ndrefs.length - 1]) {
             // closed way
-            geometry = new Polygon$1(flatCoordinates, 'XY', [
+            geometry = new Polygon(flatCoordinates, 'XY', [
               flatCoordinates.length,
             ]);
           } else {
-            geometry = new LineString$1(flatCoordinates, 'XY');
+            geometry = new LineString(flatCoordinates, 'XY');
           }
           transformGeometryWithOptions(geometry, false, options);
           const feature = new Feature(geometry);
@@ -35836,8 +35913,6 @@
     }
   }
 
-  var MousePosition$1 = MousePosition;
-
   /**
    * @module ol/Overlay
    */
@@ -37070,8 +37145,6 @@
     }
   }
 
-  var OverviewMap$1 = OverviewMap;
-
   /**
    * @module ol/control/ZoomSlider
    */
@@ -37455,8 +37528,6 @@
     }
   }
 
-  var ZoomSlider$1 = ZoomSlider;
-
   /**
    * @module ol/control/ZoomToExtent
    */
@@ -37546,24 +37617,22 @@
     }
   }
 
-  var ZoomToExtent$1 = ZoomToExtent;
-
   /**
    * @module ol/control
    */
 
   var control$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    Attribution: Attribution$1,
+    Attribution: Attribution,
     Control: Control,
-    FullScreen: FullScreen$1,
-    MousePosition: MousePosition$1,
-    OverviewMap: OverviewMap$1,
-    Rotate: Rotate$1,
-    ScaleLine: ScaleLine$1,
-    Zoom: Zoom$1,
-    ZoomSlider: ZoomSlider$1,
-    ZoomToExtent: ZoomToExtent$1,
+    FullScreen: FullScreen,
+    MousePosition: MousePosition,
+    OverviewMap: OverviewMap,
+    Rotate: Rotate,
+    ScaleLine: ScaleLine,
+    Zoom: Zoom,
+    ZoomSlider: ZoomSlider,
+    ZoomToExtent: ZoomToExtent,
     defaults: defaults$1
   });
 
@@ -39437,7 +39506,7 @@
     const layoutOptions = /** @type {LayoutOptions} */ (values['layoutOptions']);
     delete values['layoutOptions'];
     const layout = applyLayoutOptions(layoutOptions, flatCoordinates);
-    const geometry = new LineString$1(flatCoordinates, layout);
+    const geometry = new LineString(flatCoordinates, layout);
     transformGeometryWithOptions(geometry, false, options);
     const feature = new Feature(geometry);
     feature.setProperties(values, true);
@@ -39475,7 +39544,7 @@
     const layoutOptions = /** @type {LayoutOptions} */ (values['layoutOptions']);
     delete values['layoutOptions'];
     const layout = applyLayoutOptions(layoutOptions, flatCoordinates, ends);
-    const geometry = new MultiLineString$1(flatCoordinates, layout, ends);
+    const geometry = new MultiLineString(flatCoordinates, layout, ends);
     transformGeometryWithOptions(geometry, false, options);
     const feature = new Feature(geometry);
     feature.setProperties(values, true);
@@ -39914,7 +39983,7 @@
   function createStyleDefaults() {
     DEFAULT_COLOR = [255, 255, 255, 1];
 
-    DEFAULT_FILL_STYLE = new Fill$1({
+    DEFAULT_FILL_STYLE = new Fill({
       color: DEFAULT_COLOR,
     });
 
@@ -39943,17 +40012,17 @@
 
     DEFAULT_NO_IMAGE_STYLE = 'NO_IMAGE';
 
-    DEFAULT_STROKE_STYLE = new Stroke$1({
+    DEFAULT_STROKE_STYLE = new Stroke({
       color: DEFAULT_COLOR,
       width: 1,
     });
 
-    DEFAULT_TEXT_STROKE_STYLE = new Stroke$1({
+    DEFAULT_TEXT_STROKE_STYLE = new Stroke({
       color: [51, 51, 51, 1],
       width: 2,
     });
 
-    DEFAULT_TEXT_STYLE = new Text$1({
+    DEFAULT_TEXT_STYLE = new Text({
       font: 'bold 16px Helvetica',
       fill: DEFAULT_FILL_STYLE,
       stroke: DEFAULT_TEXT_STROKE_STYLE,
@@ -40677,7 +40746,7 @@
         if (drawName) {
           const geometry = feature.getGeometry();
           if (geometry) {
-            if (geometry instanceof GeometryCollection$1) {
+            if (geometry instanceof GeometryCollection) {
               multiGeometryPoints = geometry
                 .getGeometriesArrayRecursive()
                 .filter(function (geometry) {
@@ -40717,7 +40786,7 @@
             // in multigeometries restrict the name style to points and create a
             // style without image or text for geometries requiring fill or stroke
             // including any polygon specific style if there is one
-            nameStyle.setGeometry(new GeometryCollection$1(multiGeometryPoints));
+            nameStyle.setGeometry(new GeometryCollection(multiGeometryPoints));
             const baseStyle = new Style({
               geometry: featureStyle[0].getGeometry(),
               image: null,
@@ -41063,8 +41132,8 @@
       return;
     }
     const styleObject = objectStack[objectStack.length - 1];
-    const textStyle = new Text$1({
-      fill: new Fill$1({
+    const textStyle = new Text({
+      fill: new Fill({
         color:
           /** @type {import("../color.js").Color} */
           ('color' in object ? object['color'] : DEFAULT_COLOR),
@@ -41099,7 +41168,7 @@
       return;
     }
     const styleObject = objectStack[objectStack.length - 1];
-    const strokeStyle = new Stroke$1({
+    const strokeStyle = new Stroke({
       color:
         /** @type {import("../color.js").Color} */
         ('color' in object ? object['color'] : DEFAULT_COLOR),
@@ -41130,7 +41199,7 @@
       return;
     }
     const styleObject = objectStack[objectStack.length - 1];
-    const fillStyle = new Fill$1({
+    const fillStyle = new Fill({
       color:
         /** @type {import("../color.js").Color} */
         ('color' in object ? object['color'] : DEFAULT_COLOR),
@@ -41211,7 +41280,7 @@
     if (!lineStrings) {
       return undefined;
     }
-    return new MultiLineString$1(lineStrings);
+    return new MultiLineString(lineStrings);
   }
 
   /**
@@ -41264,7 +41333,7 @@
         );
       }
     }
-    return new LineString$1(flatCoordinates, 'XYZM');
+    return new LineString(flatCoordinates, 'XYZM');
   }
 
   /**
@@ -41346,7 +41415,7 @@
     );
     const flatCoordinates = readFlatCoordinatesFromNode(node, objectStack);
     if (flatCoordinates) {
-      const lineString = new LineString$1(flatCoordinates, 'XYZ');
+      const lineString = new LineString(flatCoordinates, 'XYZ');
       lineString.setProperties(properties, true);
       return lineString;
     }
@@ -41367,7 +41436,7 @@
     );
     const flatCoordinates = readFlatCoordinatesFromNode(node, objectStack);
     if (flatCoordinates) {
-      const polygon = new Polygon$1(flatCoordinates, 'XYZ', [
+      const polygon = new Polygon(flatCoordinates, 'XYZ', [
         flatCoordinates.length,
       ]);
       polygon.setProperties(properties, true);
@@ -41405,7 +41474,7 @@
       return null;
     }
     if (geometries.length === 0) {
-      return new GeometryCollection$1(geometries);
+      return new GeometryCollection(geometries);
     }
     let multiGeometry;
     let homogeneous = true;
@@ -41429,21 +41498,21 @@
           geometry = geometries[i];
           extend$3(flatCoordinates, geometry.getFlatCoordinates());
         }
-        multiGeometry = new MultiPoint$1(flatCoordinates, layout);
+        multiGeometry = new MultiPoint(flatCoordinates, layout);
         setCommonGeometryProperties(multiGeometry, geometries);
       } else if (type == 'LineString') {
-        multiGeometry = new MultiLineString$1(geometries);
+        multiGeometry = new MultiLineString(geometries);
         setCommonGeometryProperties(multiGeometry, geometries);
       } else if (type == 'Polygon') {
-        multiGeometry = new MultiPolygon$1(geometries);
+        multiGeometry = new MultiPolygon(geometries);
         setCommonGeometryProperties(multiGeometry, geometries);
       } else if (type == 'GeometryCollection' || type.startsWith('Multi')) {
-        multiGeometry = new GeometryCollection$1(geometries);
+        multiGeometry = new GeometryCollection(geometries);
       } else {
         throw new Error('Unknown geometry type found');
       }
     } else {
-      multiGeometry = new GeometryCollection$1(geometries);
+      multiGeometry = new GeometryCollection(geometries);
     }
     return /** @type {import("../geom/Geometry.js").default} */ (multiGeometry);
   }
@@ -41504,7 +41573,7 @@
         extend$3(flatCoordinates, flatLinearRings[i]);
         ends.push(flatCoordinates.length);
       }
-      const polygon = new Polygon$1(flatCoordinates, 'XYZ', ends);
+      const polygon = new Polygon(flatCoordinates, 'XYZ', ends);
       polygon.setProperties(properties, true);
       return polygon;
     }
@@ -41586,7 +41655,7 @@
                 /** @type {import("../geom/GeometryCollection").default} */ (
                   geometry
                 );
-              return new GeometryCollection$1(
+              return new GeometryCollection(
                 collection
                   .getGeometriesArrayRecursive()
                   .filter(function (geometry) {
@@ -41614,7 +41683,7 @@
                 /** @type {import("../geom/GeometryCollection").default} */ (
                   geometry
                 );
-              return new GeometryCollection$1(
+              return new GeometryCollection(
                 collection
                   .getGeometriesArrayRecursive()
                   .filter(function (geometry) {
@@ -49250,15 +49319,15 @@
 
   var style = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    Circle: Circle$2,
-    Fill: Fill$1,
+    Circle: CircleStyle,
+    Fill: Fill,
     Icon: Icon,
-    IconImage: IconImage$1,
-    Image: ImageStyle$1,
-    RegularShape: RegularShape$1,
-    Stroke: Stroke$1,
+    IconImage: IconImage,
+    Image: ImageStyle,
+    RegularShape: RegularShape,
+    Stroke: Stroke,
     Style: Style,
-    Text: Text$1
+    Text: Text
   });
 
   /**
@@ -52968,25 +53037,25 @@
    * @param {Array<TraceTarget>} targets The trace targets.
    */
   function appendGeometryTraceTargets(coordinate, geometry, targets) {
-    if (geometry instanceof LineString$1) {
+    if (geometry instanceof LineString) {
       appendTraceTarget(coordinate, geometry.getCoordinates(), false, targets);
       return;
     }
-    if (geometry instanceof MultiLineString$1) {
+    if (geometry instanceof MultiLineString) {
       const coordinates = geometry.getCoordinates();
       for (let i = 0, ii = coordinates.length; i < ii; ++i) {
         appendTraceTarget(coordinate, coordinates[i], false, targets);
       }
       return;
     }
-    if (geometry instanceof Polygon$1) {
+    if (geometry instanceof Polygon) {
       const coordinates = geometry.getCoordinates();
       for (let i = 0, ii = coordinates.length; i < ii; ++i) {
         appendTraceTarget(coordinate, coordinates[i], true, targets);
       }
       return;
     }
-    if (geometry instanceof MultiPolygon$1) {
+    if (geometry instanceof MultiPolygon) {
       const polys = geometry.getCoordinates();
       for (let i = 0, ii = polys.length; i < ii; ++i) {
         const coordinates = polys[i];
@@ -52996,7 +53065,7 @@
       }
       return;
     }
-    if (geometry instanceof GeometryCollection$1) {
+    if (geometry instanceof GeometryCollection) {
       const geometries = geometry.getGeometries();
       for (let i = 0; i < geometries.length; ++i) {
         appendGeometryTraceTargets(coordinate, geometries[i], targets);
@@ -53415,7 +53484,7 @@
           geometryFunction = (coordinates, geometry, projection) => {
             const circle = geometry
               ? /** @type {Circle} */ (geometry)
-              : new Circle$1([NaN, NaN]);
+              : new Circle([NaN, NaN]);
             const center = fromUserCoordinate(coordinates[0], projection);
             const squaredLength = squaredDistance(
               center,
@@ -53437,9 +53506,9 @@
           if (mode === 'Point') {
             Constructor = Point$1;
           } else if (mode === 'LineString') {
-            Constructor = LineString$1;
+            Constructor = LineString;
           } else if (mode === 'Polygon') {
-            Constructor = Polygon$1;
+            Constructor = Polygon;
           }
           /**
            * @param {!LineCoordType} coordinates The coordinates.
@@ -54120,7 +54189,7 @@
       const ring = geometry.getLinearRing(0);
       let sketchLineGeom = this.sketchLine_.getGeometry();
       if (!sketchLineGeom) {
-        sketchLineGeom = new LineString$1(
+        sketchLineGeom = new LineString(
           ring.getFlatCoordinates(),
           ring.getLayout(),
         );
@@ -54155,7 +54224,7 @@
         this.sketchCoords_ = [start.slice(), start.slice()];
       }
       if (this.sketchLineCoords_) {
-        this.sketchLine_ = new Feature(new LineString$1(this.sketchLineCoords_));
+        this.sketchLine_ = new Feature(new LineString(this.sketchLineCoords_));
       }
       const geometry = this.geometryFunction_(
         this.sketchCoords_,
@@ -54354,15 +54423,15 @@
       // cast multi-part geometries
       if (this.type_ === 'MultiPoint') {
         sketchFeature.setGeometry(
-          new MultiPoint$1([/** @type {PointCoordType} */ (coordinates)]),
+          new MultiPoint([/** @type {PointCoordType} */ (coordinates)]),
         );
       } else if (this.type_ === 'MultiLineString') {
         sketchFeature.setGeometry(
-          new MultiLineString$1([/** @type {LineCoordType} */ (coordinates)]),
+          new MultiLineString([/** @type {LineCoordType} */ (coordinates)]),
         );
       } else if (this.type_ === 'MultiPolygon') {
         sketchFeature.setGeometry(
-          new MultiPolygon$1([/** @type {PolyCoordType} */ (coordinates)]),
+          new MultiPolygon([/** @type {PolyCoordType} */ (coordinates)]),
         );
       }
 
@@ -57736,6 +57805,14 @@
         this.transitionStarts_[id] = -1;
       }
     }
+
+    /**
+     * @override
+     */
+    disposeInternal() {
+      this.release();
+      super.disposeInternal();
+    }
   }
 
   /**
@@ -60004,6 +60081,15 @@
         this.unlisten_ = null;
       }
     }
+
+    /**
+     * @override
+     */
+    disposeInternal() {
+      this.unlistenImage_();
+      this.image_ = null;
+      super.disposeInternal();
+    }
   }
 
   /**
@@ -60084,12 +60170,16 @@
     }
 
     /**
-     * Expire the cache.
+     * Expire the cache. When the cache entry is a {@link module:ol/Disposable~Disposable},
+     * the entry will be disposed.
      * @param {!Object<string, boolean>} [keep] Keys to keep. To be implemented by subclasses.
      */
     expireCache(keep) {
       while (this.canExpireCache()) {
-        this.pop();
+        const entry = this.pop();
+        if (entry instanceof Disposable) {
+          entry.dispose();
+        }
       }
     }
 
@@ -60680,6 +60770,12 @@
        */
       this.tileCache_ = new LRUCache(cacheSize);
 
+      /**
+       * @private
+       * @type {import("../../proj/Projection.js").default}
+       */
+      this.renderedProjection_ = undefined;
+
       this.maxStaleKeys = cacheSize * 0.5;
     }
 
@@ -60791,7 +60887,7 @@
          * @type {import('../../DataTile.js').ImageLike}
          */
         let image;
-        if (tile instanceof ImageTile) {
+        if (tile instanceof ImageTile || tile instanceof ReprojTile) {
           image = tile.getImage();
         } else if (tile instanceof DataTile) {
           image = asImageLike(tile.getData());
@@ -60831,6 +60927,13 @@
      * @override
      */
     prepareFrame(frameState) {
+      if (!this.renderedProjection_) {
+        this.renderedProjection_ = frameState.viewState.projection;
+      } else if (frameState.viewState.projection !== this.renderedProjection_) {
+        this.tileCache_.clear();
+        this.renderedProjection_ = frameState.viewState.projection;
+      }
+
       const source = this.getLayer().getSource();
       if (!source) {
         return false;
@@ -61309,7 +61412,6 @@
       }
       context.imageSmoothingEnabled = true;
 
-      // TODO: let the renderers manage their own cache instead of managing the source cache
       /**
        * Here we unconditionally expire the source cache since the renderer maintains
        * its own cache.
@@ -61516,7 +61618,7 @@
           units = 'degrees';
         }
         addProjection(
-          new Projection$2({
+          new Projection$1({
             code: code,
             axisOrientation: def.axis,
             metersPerUnit: def.to_meter,
@@ -62018,6 +62120,7 @@
 
       /**
        * @type {import("../tilegrid/TileGrid.js").default|null}
+       * @protected
        */
       this.tileGrid = options.tileGrid !== undefined ? options.tileGrid : null;
 
@@ -62025,12 +62128,6 @@
       if (this.tileGrid) {
         toSize(this.tileGrid.getTileSize(this.tileGrid.getMinZoom()), tileSize);
       }
-
-      /**
-       * @protected
-       * @type {import("../TileCache.js").default}
-       */
-      this.tileCache = new TileCache(options.cacheSize || 0);
 
       /**
        * @protected
@@ -62042,7 +62139,7 @@
        * @private
        * @type {string}
        */
-      this.key_ = options.key || '';
+      this.key_ = options.key || getUid(this);
 
       /**
        * @protected
@@ -62067,7 +62164,7 @@
      * @return {boolean} Can expire cache.
      */
     canExpireCache() {
-      return this.tileCache.canExpireCache();
+      return false;
     }
 
     /**
@@ -62166,9 +62263,9 @@
       const sourceProjection = this.getProjection();
       assert$1(
         sourceProjection === null || equivalent(sourceProjection, projection),
-        'A VectorTile source can only be rendered if it has a projection compatible with the view projection.',
+        "Use the renderer's tile cache when not reprojecting.",
       );
-      return this.tileCache;
+      return null;
     }
 
     /**
@@ -62217,12 +62314,10 @@
     }
 
     /**
-     * Remove all cached tiles from the source. The next render cycle will fetch new tiles.
+     * Remove all cached reprojected tiles from the source. The next render cycle will create new tiles.
      * @api
      */
-    clear() {
-      this.tileCache.clear();
-    }
+    clear() {}
 
     /**
      * @override
@@ -62231,16 +62326,6 @@
       this.clear();
       super.refresh();
     }
-
-    /**
-     * Marks a tile coord as being used, without triggering a load.
-     * @abstract
-     * @param {number} z Tile coordinate z.
-     * @param {number} x Tile coordinate x.
-     * @param {number} y Tile coordinate y.
-     * @param {import("../proj/Projection.js").default} projection Projection.
-     */
-    useTile(z, x, y, projection) {}
   }
 
   /**
@@ -62584,7 +62669,6 @@
      * @api
      */
     setTileLoadFunction(tileLoadFunction) {
-      this.tileCache.clear();
       this.tileLoadFunction = tileLoadFunction;
       this.changed();
     }
@@ -62598,7 +62682,6 @@
      */
     setTileUrlFunction(tileUrlFunction, key) {
       this.tileUrlFunction = tileUrlFunction;
-      this.tileCache.pruneExceptNewestZ();
       if (typeof key !== 'undefined') {
         this.setKey(key);
       } else {
@@ -62641,20 +62724,6 @@
      */
     tileUrlFunction(tileCoord, pixelRatio, projection) {
       return undefined;
-    }
-
-    /**
-     * Marks a tile coord as being used, without triggering a load.
-     * @param {number} z Tile coordinate z.
-     * @param {number} x Tile coordinate x.
-     * @param {number} y Tile coordinate y.
-     * @override
-     */
-    useTile(z, x, y) {
-      const tileCoordKey = getKeyZXY(z, x, y);
-      if (this.tileCache.containsKey(tileCoordKey)) {
-        this.tileCache.get(tileCoordKey);
-      }
     }
   }
 
@@ -62784,9 +62853,6 @@
      * @override
      */
     canExpireCache() {
-      if (this.tileCache.canExpireCache()) {
-        return true;
-      }
       for (const key in this.tileCacheForProjection) {
         if (this.tileCacheForProjection[key].canExpireCache()) {
           return true;
@@ -62804,9 +62870,6 @@
     expireCache(projection, usedTiles) {
       const usedTileCache = this.getTileCacheForProjection(projection);
 
-      this.tileCache.expireCache(
-        this.tileCache == usedTileCache ? usedTiles : {},
-      );
       for (const id in this.tileCacheForProjection) {
         const tileCache = this.tileCacheForProjection[id];
         tileCache.expireCache(tileCache == usedTileCache ? usedTiles : {});
@@ -62875,13 +62938,11 @@
     getTileCacheForProjection(projection) {
       const thisProj = this.getProjection();
       if (!thisProj || equivalent(thisProj, projection)) {
-        return this.tileCache;
+        return super.getTileCacheForProjection(projection);
       }
       const projKey = getUid(projection);
       if (!(projKey in this.tileCacheForProjection)) {
-        this.tileCacheForProjection[projKey] = new TileCache(
-          this.tileCache.highWaterMark,
-        );
+        this.tileCacheForProjection[projKey] = new TileCache(512);
       }
       return this.tileCacheForProjection[projKey];
     }
@@ -62994,20 +63055,8 @@
      * @protected
      */
     getTileInternal(z, x, y, pixelRatio, projection) {
-      const tileCoordKey = getKeyZXY(z, x, y);
       const key = this.getKey();
-      if (!this.tileCache.containsKey(tileCoordKey)) {
-        const tile = this.createTile_(z, x, y, pixelRatio, projection, key);
-        this.tileCache.set(tileCoordKey, tile);
-        return tile;
-      }
-
-      let tile = this.tileCache.get(tileCoordKey);
-      if (tile.key != key) {
-        tile = this.createTile_(z, x, y, pixelRatio, projection, key);
-        this.tileCache.replace(tileCoordKey, tile);
-      }
-      return tile;
+      return this.createTile_(z, x, y, pixelRatio, projection, key);
     }
 
     /**
@@ -64798,9 +64847,7 @@
     control: control$1,
     coordinate: coordinate,
     events: {
-      condition: {
-        pointerMove: pointerMove,
-      },
+      condition: condition
     },
     extent: extent,
     Feature: Feature,
@@ -67649,8 +67696,8 @@
   function collection$1(options = {}) {
     return [
       // Top left
-      new Zoom$1(options.zoom),
-      new FullScreen$1(options.fullScreen),
+      new Zoom(options.zoom),
+      new FullScreen(options.fullScreen),
       new MyGeocoder(options.geocoder),
       new MyGeolocation(options.geolocation),
       new Load(options.load),
@@ -67660,10 +67707,10 @@
       // Bottom left
       new LengthLine(options.lengthLine),
       new MyMousePosition(options.myMousePosition),
-      new ScaleLine$1(options.scaleLine),
+      new ScaleLine(options.scaleLine),
 
       // Bottom right
-      new Attribution$1(options.attribution),
+      new Attribution(options.attribution),
     ];
   }
 
@@ -76774,6 +76821,7 @@
   }
 
   // alpages.info
+  //TODO vite : Access to XMLHttpRequest at 'https://alpages.info/ext/Dominique92/GeoBB/gis.php?forums=on&bbox=5.85311%2C44.7727%2C5.91689%2C44.8093' from origin 'http://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
   class Alpages extends MyVectorLayer {
     constructor(options) {
       super({
@@ -77073,7 +77121,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 13/09/2024 21:39:39';
+  const VERSION = '1.1.2.dev 23/09/2024 14:36:28';
 
   async function trace() {
     const data = [

@@ -26,18 +26,18 @@ function compareCoords(a, b) {
 }
 
 // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
-function flatCoord(coords, splitCords) {
+function flatCoord(coords, splitCord) {
   const lines = [];
 
   coords.forEach(c => {
     if (typeof c[0][0] === 'number') {
-      if (splitCords) {
+      if (splitCord) {
         const r = [
           []
         ];
 
         c.forEach(p => {
-          if (compareCoords(p, splitCords)) {
+          if (compareCoords(p, splitCord)) {
             r[r.length - 1].push([p[0], p[1] - 1]);
             r.push([
               [p[0], p[1] + 1]
@@ -49,24 +49,25 @@ function flatCoord(coords, splitCords) {
       } else
         lines.push(c);
     } else
-      lines.push(...flatCoord(c, splitCords));
+      lines.push(...flatCoord(c, splitCord));
   });
-  console.log(lines);
+  //console.log(lines);
 
   return lines;
 }
 
-function flatFeatures(geom, splitCords) {
-  if (geom.getType().match(/collection/iu)) // Recurse collections
-    return geom.getGeometries().map(g => flatFeatures(g, splitCords));
+function flatFeatures(geom, splitCord) {
+  if (geom.getType().match(/collection/iu)) // Recurse Collections
+    return geom.getGeometries().map(g => flatFeatures(g, splitCord));
   else if (!geom.getType().match(/point$/iu)) // Exclude Points
     return geom.getCoordinates();
 }
 
 // Refurbish Lines & Polygons
-function optimizeFeatures(features, options, splitCords) {
+function optimizeFeatures(features, options, splitCord) {
+  //TODO remove splitCord
   // Get all edited features as array of lines coordinates
-  const lines = flatCoord(features.map(f => flatFeatures(f.getGeometry())), splitCords),
+  const lines = flatCoord(features.map(f => flatFeatures(f.getGeometry())), splitCord),
     polys = [];
 
   // Merge lines having a common end
@@ -212,6 +213,7 @@ class Edit extends VectorLayer {
     }
 
     // Read data in an html element
+    //TODO TESTS load external .json
     const geoJsonEl = document.getElementById(options.geoJsonId) ||
       document.createElement('textarea'),
       geoJson = geoJsonEl.value.trim() ||
@@ -330,20 +332,20 @@ class Edit extends VectorLayer {
 
         inCoords.forEach(inLine => {
           outCoords.push([]);
-          inLine.forEach(coords => {
-            outCoords[outCoords.length - 1].push(coords);
+          inLine.forEach(coord => {
+            outCoords[outCoords.length - 1].push(coord);
             // Split the coordinates array in 2
-            if (coords[0] === mouseCoords[0] && coords[1] === mouseCoords[1])
+            if (coord[0] === mouseCoords[0] && coord[1] === mouseCoords[1])
               outCoords.push([
-                [coords[0], coords[1] + 1]
+                [coord[0], coord[1] + 1]
               ]);
           });
         });
 
         this.editedSource.removeFeature(selectedFeature);
-        outCoords.forEach(coords => {
+        outCoords.forEach(coord => {
           this.editedSource.addFeature(new Feature({
-            geometry: new ol.geom.LineString(coords),
+            geometry: new ol.geom.LineString(coord),
           }));
         });
 	  */
@@ -354,10 +356,36 @@ class Edit extends VectorLayer {
 
     this.drawInteraction.on('drawend', () => this.optimiseAndSave());
     this.map.once('loadend', () => this.optimiseAndSave());
+    //TODO desélectionnes quand hover trop tot
 
     map.on('pointermove', evt => {
       this.map.getTargetElement().classList.add('ed-selected');
       this.pixel = evt.pixel;
+    });
+
+    map.on('click', evt => {
+      const oEvt = evt.originalEvent,
+        clickedCoords = [];
+      //console.log(evt.coordinate);
+      //console.log(evt.pixel);
+
+      if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
+        // Search the feature at the mouse position
+        this.map.forEachFeatureAtPixel(
+          this.pixel,
+          feature => {
+            const gc = feature.getGeometry().getCoordinates();
+
+            //this.editedSource.removeFeature(feature);
+            clickedCoords[typeof gc[0] === 'number' ? 0 : 1] = gc;
+          }, {
+            //layerFilter: layer => layer.getSource() === this.editedSource,
+            hitTolerance: this.options.tolerance, // Default is 0
+          },
+        );
+
+        console.log(clickedCoords);
+      }
     });
   } // End setMapInternal
 
@@ -389,14 +417,14 @@ class Edit extends VectorLayer {
     });
   }
 
-  optimiseAndSave(splitCords) {
+  optimiseAndSave(splitCord) {
     //console.log('optimiseAndSave');
 
     // Get optimized coords
     const optCoords = optimizeFeatures(
       this.editedSource.getFeatures(), // Get edited features
       this.options,
-      splitCords,
+      splitCord,
     );
 
     // Body class to handle edit polys only

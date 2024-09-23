@@ -5,7 +5,7 @@ import Edit from '../../src/layer/Edit.js';
 
 const snaplayer = new ol.layer.Vector({
     source: new ol.source.Vector({
-      url: 'images/switzerland.geojson',
+      url: 'datas/switzerland.geojson',
       format: new ol.format.GeoJSON(),
     }),
     style: new ol.style.Style({

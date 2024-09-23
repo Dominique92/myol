@@ -28,7 +28,9 @@ import * as util from 'ol/util';
 const ol = {
   control: control,
   coordinate: coordinate,
-  events: condition,
+  events: {
+    condition: condition,
+  },
   extent: extent,
   Feature: Feature,
   format: { // Not all formats are used & the total file is big

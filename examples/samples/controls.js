@@ -23,7 +23,7 @@ const map = new ol.Map({
     new ol.layer.Vector({
       background: 'transparent',
       source: new ol.source.Vector({
-        url: 'images/features.geojson',
+        url: 'datas/features.geojson',
         format: new ol.format.GeoJSON(),
       }),
     }),

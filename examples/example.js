@@ -68,7 +68,8 @@ async function replaceIncludes() {
 })();
 
 /* global myol */
-myol.trace();
+if (typeof myol === 'object')
+  myol.trace();
 
 
 // Default keys for development only

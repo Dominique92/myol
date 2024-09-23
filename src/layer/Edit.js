@@ -30,42 +30,32 @@ function flatCoord(coords, splitCord) {
   const lines = [];
 
   coords.forEach(c => {
-    if (typeof c[0][0] === 'number') {
-      if (splitCord) {
-        const r = [
-          []
-        ];
-
-        c.forEach(p => {
-          if (compareCoords(p, splitCord)) {
-            r[r.length - 1].push([p[0], p[1] - 1]);
-            r.push([
-              [p[0], p[1] + 1]
-            ]);
-          } else
-            r[r.length - 1].push(p);
-        });
-        lines.push(...r);
-      } else
-        lines.push(c);
-    } else
+    if (typeof c[0][0] === 'object') // Recurse for multi* or polys
       lines.push(...flatCoord(c, splitCord));
+    else if (splitCord) {
+      lines.push([]);
+      c.forEach(p => {
+        lines[lines.length - 1].push(p);
+        if (compareCoords(splitCord, p))
+          lines.push([
+            [p[0], p[1] + 1],
+          ]);
+      });
+    } else
+      lines.push(c);
   });
-  //console.log(lines);
 
   return lines;
 }
 
-function flatFeatures(geom, splitCord) {
+function flatFeatures(geom) {
   if (geom.getType().match(/collection/iu)) // Recurse Collections
-    return geom.getGeometries().map(g => flatFeatures(g, splitCord));
-  else if (!geom.getType().match(/point$/iu)) // Exclude Points
-    return geom.getCoordinates();
+    return geom.getGeometries().map(g => flatFeatures(g));
+  return geom.getCoordinates();
 }
 
 // Refurbish Lines & Polygons
 function optimizeFeatures(features, options, splitCord) {
-  //TODO remove splitCord
   // Get all edited features as array of lines coordinates
   const lines = flatCoord(features.map(f => flatFeatures(f.getGeometry())), splitCord),
     polys = [];
@@ -291,8 +281,6 @@ class Edit extends VectorLayer {
 
     // Interactions listeners
     this.modifyInteraction.on('modifystart', evt => {
-      //console.log('modifystart');
-
       const oEvt = evt.mapBrowserEvent.originalEvent,
         selectedFeature = this.selectInteraction.getFeatures().item(0),
         coordinates = selectedFeature.getGeometry().getCoordinates();
@@ -312,49 +300,9 @@ class Edit extends VectorLayer {
         this.editedSource.removeFeature(selectedFeature);
     });
 
-    this.modifyInteraction.on('modifyend', evt => {
-      //console.log('modifyend');
-
-      const oEvt = evt.mapBrowserEvent.originalEvent,
-        selectedFeature = this.selectInteraction.getFeatures().item(0);
-
-      // Ctrl + click : split line / convert polygon to lines
-      //TODO Ctrl+Click  polygon immediately convert it
-      if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
-        console.log(evt.type);
-        return this.optimiseAndSave(evt.mapBrowserEvent.coordinate_);
-
-        /*
-        const mouseCoords = evt.mapBrowserEvent.coordinate,
-          featureCoords = evt.features.item(0).getGeometry().getCoordinates(),
-          inCoords = typeof featureCoords[0][0] === 'number' ? [featureCoords] : featureCoords, // Lines / Polys
-          outCoords = [];
-
-        inCoords.forEach(inLine => {
-          outCoords.push([]);
-          inLine.forEach(coord => {
-            outCoords[outCoords.length - 1].push(coord);
-            // Split the coordinates array in 2
-            if (coord[0] === mouseCoords[0] && coord[1] === mouseCoords[1])
-              outCoords.push([
-                [coord[0], coord[1] + 1]
-              ]);
-          });
-        });
-
-        this.editedSource.removeFeature(selectedFeature);
-        outCoords.forEach(coord => {
-          this.editedSource.addFeature(new Feature({
-            geometry: new ol.geom.LineString(coord),
-          }));
-        });
-	  */
-      }
-
-      this.optimiseAndSave();
-    });
-
+    this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
     this.drawInteraction.on('drawend', () => this.optimiseAndSave());
+
     this.map.once('loadend', () => this.optimiseAndSave());
     //TODO desélectionnes quand hover trop tot
 
@@ -364,34 +312,34 @@ class Edit extends VectorLayer {
     });
 
     map.on('click', evt => {
-      const oEvt = evt.originalEvent,
-        clickedCoords = [];
-      //console.log(evt.coordinate);
-      //console.log(evt.pixel);
+      const oEvt = evt.originalEvent;
 
       if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
+        /* eslint-disable-next-line init-declarations */
+        let splitCord;
+
         // Search the feature at the mouse position
+        //TODO map.atpixel ?
         this.map.forEachFeatureAtPixel(
           this.pixel,
           feature => {
             const gc = feature.getGeometry().getCoordinates();
 
-            //this.editedSource.removeFeature(feature);
-            clickedCoords[typeof gc[0] === 'number' ? 0 : 1] = gc;
+            if (typeof gc[0] === 'number')
+              splitCord = gc;
           }, {
-            //layerFilter: layer => layer.getSource() === this.editedSource,
             hitTolerance: this.options.tolerance, // Default is 0
           },
         );
 
-        console.log(clickedCoords);
+        if (splitCord)
+          this.optimiseAndSave(splitCord);
       }
     });
   } // End setMapInternal
 
   restartInteractions(intName) {
-    //console.log('restartInteractions ' + intName);
-
+    //TODO centralize ?
     this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
 
     ['select', 'modify', 'draw', 'snap'].forEach(i =>
@@ -418,8 +366,6 @@ class Edit extends VectorLayer {
   }
 
   optimiseAndSave(splitCord) {
-    //console.log('optimiseAndSave');
-
     // Get optimized coords
     const optCoords = optimizeFeatures(
       this.editedSource.getFeatures(), // Get edited features

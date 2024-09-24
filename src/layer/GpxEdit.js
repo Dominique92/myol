@@ -1,5 +1,5 @@
 /**
- * Edit.js
+ * GpxEdit.js
  * geoJson lines & polygons edit
  */
 //TODO interactions avec load / download, ...
@@ -16,7 +16,7 @@ import {
   Snap,
 } from 'ol/interaction.js';
 
-import './edit.css';
+import './gpxEdit.css';
 
 // OPTIMIZE LINES & POLYS
 function compareCoords(a, b) {
@@ -191,7 +191,7 @@ function selectStyles(feature, resolution) {
 };
 
 // EDITOR
-class Edit extends VectorLayer {
+class GpxEdit extends VectorLayer {
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -303,10 +303,16 @@ class Edit extends VectorLayer {
     });
 
     this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
-    this.drawInteraction.on('drawend', () => this.optimiseAndSave());
+    this.drawInteraction.on('drawend', () => {
+      this.optimiseAndSave(); //TODO BUG don't merge lines as it's not already in the source.
+      this.restartInteractions('modify');
+    });
 
-    this.map.once('loadend', () => this.optimiseAndSave());
-    //TODO desélectionnes quand hover trop tot
+    this.map.once('loadend', () => {
+      //TODO desélectionnes quand hover trop tot
+      this.optimiseAndSave();
+      this.restartInteractions('modify');
+    });
 
     map.on('pointermove', evt => {
       this.map.getTargetElement().classList.add('ed-selected');
@@ -364,7 +370,7 @@ class Edit extends VectorLayer {
     optCoords.lines.forEach(line => {
       this.editedSource.addFeature(new Feature({
         geometry: new ol.geom.LineString(line),
-        //BEST Multilinestring / Multipolygon
+        //BEST "full.geojson" Multilinestring / Multipolygon
       }));
     });
     optCoords.polys.forEach(poly => {
@@ -405,9 +411,7 @@ class Edit extends VectorLayer {
         this.selectInteraction.getFeatures().push(editFeatures[0]);
       }
     });
-
-    this.restartInteractions('modify');
-  }
+  } // End optimiseAndSave
 
   restartInteractions(intName) {
     this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
@@ -436,4 +440,4 @@ class Edit extends VectorLayer {
   }
 }
 
-export default Edit;
+export default GpxEdit;

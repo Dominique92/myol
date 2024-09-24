@@ -1,7 +1,7 @@
 import ol from '../../src/ol';
 import Load from '../../src/control/Load';
 import LengthLine from '../../src/control/LengthLine';
-import Edit from '../../src/layer/Edit.js';
+import GpxEdit from '../../src/layer/GpxEdit.js';
 
 const snaplayer = new ol.layer.Vector({
     source: new ol.source.Vector({
@@ -15,7 +15,7 @@ const snaplayer = new ol.layer.Vector({
     }),
   }),
 
-  editorLayer = new Edit({
+  editorLayer = new GpxEdit({
     editPoly: true,
     withHoles: true,
   }),

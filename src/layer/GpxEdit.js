@@ -241,28 +241,14 @@ class GpxEdit extends VectorLayer {
     map.on('click', evt => {
       const oEvt = evt.originalEvent;
 
-      if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey) {
-        /* eslint-disable-next-line init-declarations */
-        let splitCord;
-
-        // Search the feature at the mouse position
-        //TODO map.atpixel ?
-        this.map.forEachFeatureAtPixel(
-          this.pixel,
-          feature => {
-            const gc = feature.getGeometry().getCoordinates();
-            if (typeof gc[0] === 'number')
-              splitCord = gc;
-          }, {
-            //TODO only on the selected layer
-            //layerFilter: layer => layer.getSource() === this.editedSource,
-            hitTolerance: this.options.tolerance, // Default is 0
-          },
+      if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey)
+        this.optimiseAndSave(
+          this.snapInteraction.snapTo(
+            evt.pixel,
+            evt.coordinate,
+            map,
+          ).vertex
         );
-
-        if (splitCord)
-          this.optimiseAndSave(splitCord);
-      }
     });
   } // End setMapInternal
 

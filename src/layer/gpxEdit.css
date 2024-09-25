@@ -26,12 +26,12 @@
   background: lightblue;
 }
 
-.edit-view-draw {
-  cursor: copy;
+.edit-pointed .edit-view-modify {
+  cursor: pointer;
 }
 
-div:not(.edit-selected) .edit-view-modify {
-  cursor: pointer;
+.edit-view-draw {
+  cursor: copy;
 }
 
 /* Submenu */

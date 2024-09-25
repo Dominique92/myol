@@ -142,16 +142,29 @@ class GpxEdit extends VectorLayer {
     });
 
     this.map.once('loadend', () => {
-      //TODO desélectionnes quand hover trop tot
       this.optimiseAndSave();
       this.restartInteractions('modify');
     });
 
     map.on('pointermove', evt => {
-      //TODO change pointer if hover a feature to be selected
-      //TODO change pointer if a feature is selected
-      this.map.getTargetElement().classList.add('edit-selected');
-      this.pixel = evt.pixel;
+      this.coordinate = evt.coordinate;
+
+      // Change pointer if a feature is hovered
+      const selectedFeatures = this.selectInteraction.getFeatures();
+
+      this.map.getTargetElement().classList.remove('edit-pointed');
+      if (selectedFeatures.getLength()) {
+        this.map.forEachFeatureAtPixel(
+          evt.pixel,
+          feature => {
+            if (feature !== selectedFeatures.item(0))
+              this.map.getTargetElement().classList.add('edit-pointed');
+          }, {
+            layerFilter: (layer) => layer.getSource() === this.editedSource, // Only the edited layer
+            hitTolerance: this.options.tolerance, // Default is 0
+          },
+        );
+      }
     });
 
     map.on('click', evt => {
@@ -293,36 +306,23 @@ class GpxEdit extends VectorLayer {
     });
 
     // Save geometries in <EL> as geoJSON at every change
-    if (this.geoJsonEl)
+    if (this.geoJsonEl) {
       this.geoJsonEl.value = this.options.format.writeFeatures(
-        this.editedSource.getFeatures(), {
-          dataProjection: this.options.dataProjection,
-          featureProjection: this.map.getView().getProjection(),
-          decimals: 5,
-        })
-      .replace(/,"properties":(\{[^}]*\}|null)/u, '');
+          this.editedSource.getFeatures(), {
+            dataProjection: this.options.dataProjection,
+            featureProjection: this.map.getView().getProjection(),
+            decimals: 5,
+          })
+        .replace(/,"properties":(\{[^}]*\}|null)/u, '');
+    }
 
-    // Select the closest feature
+    // Select the feature closest to the mouse position
     setTimeout(() => { // Do it later from the stabilized features
-      const editFeatures = this.editedSource.getFeatures();
-
-      if (editFeatures.length) {
-        // Search the feature at the mouse position
-        this.map.forEachFeatureAtPixel(
-          this.pixel || [0, 0],
-          feature => {
-            editFeatures[0] = feature;
-          }, {
-            layerFilter: layer => layer.getSource() === this.editedSource,
-            hitTolerance: this.options.tolerance, // Default is 0
-          },
-        );
-
-        // Or the first edited feature
-        this.selectInteraction.getFeatures().clear();
-        this.selectInteraction.getFeatures().push(editFeatures[0]);
-      }
-    });
+      this.selectInteraction.getFeatures().clear();
+      this.selectInteraction.getFeatures().push(this.editedSource.getClosestFeatureToCoordinate(
+        this.coordinate || this.map.getView().getCenter()
+      ));
+    }, 100);
   } // End optimiseAndSave
 
   flatFeatures(geom) {

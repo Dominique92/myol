@@ -17,8 +17,9 @@ const snaplayer = new ol.layer.Vector({
   }),
 
   editorLayer = new GpxEdit({
-    canMerge: true,
     direction: true,
+    canMerge: true,
+    withPolys: true,
     withHoles: true,
   }),
 

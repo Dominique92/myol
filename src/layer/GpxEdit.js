@@ -25,9 +25,10 @@ class GpxEdit extends VectorLayer {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
       tolerance: 7, // Px
-      //canMerge: false, // Merge lines having a common end
       //direction: false, // Add arrows to each line segment to show the direction
-      //withHoles: false, // Authorize holes in polygons
+      //canMerge: false, // Merge lines having a common end
+      //withPolys: false, // Can edit polygons
+      //withHoles: false, // Allow holes in polygons
 
       //TODO only poly for WRI
       //editPoly: false | true, // output are lines | polygons
@@ -72,8 +73,6 @@ class GpxEdit extends VectorLayer {
     this.selectInteraction = new Select({
       hitTolerance: this.options.tolerance, // Default is 0
       toggleCondition: ol.events.never, // No deselection on shift click
-      //condition: ol.events.never, // No deselection on click
-      //removeCondition: ol.events.never, // No deselection on click
       filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       style: (f, r) => this.selectStyles(f, r),
     });
@@ -82,12 +81,12 @@ class GpxEdit extends VectorLayer {
       pixelTolerance: this.options.tolerance, // Default is 10
     });
     this.drawInteraction = new Draw({ // Draw line
-      //TODO red style when edit
       type: 'LineString',
       source: this.editedSource,
       traceSource: this.snapSource,
       trace: true,
       stopClick: true, // Avoid zoom when finish drawing by doubleclick
+      style: f => this.selectStyles(f),
     });
     this.snapInteraction = new Snap({
       source: this.editedSource,
@@ -138,7 +137,7 @@ class GpxEdit extends VectorLayer {
     this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
 
     this.drawInteraction.on('drawend', () => {
-      this.modified = true;
+      this.modified = true; // Wait for modifyend completion before optim
     });
 
     this.editedSource.on('addfeature', () => {
@@ -149,6 +148,7 @@ class GpxEdit extends VectorLayer {
       }
     });
 
+    // At init
     this.map.once('loadend', () => {
       this.optimiseAndSave();
       this.restartInteractions('modify');
@@ -248,32 +248,34 @@ class GpxEdit extends VectorLayer {
       }
 
     // Make polygons with looped lines
-    for (const a in lines)
-      if (this.options.editOnly !== 'line') {
-        // Close open lines
-        if (this.options.editOnly === 'poly')
-          if (!this.compareCoords(lines[a]))
-            lines[a].push(lines[a][0]);
+    //TODO BUG if no polys or empty
+    if (this.options.withPolys)
+      for (const a in lines)
+        if (this.options.editOnly !== 'line') {
+          // Close open lines
+          if (this.options.editOnly === 'poly')
+            if (!this.compareCoords(lines[a]))
+              lines[a].push(lines[a][0]);
 
-        if (this.compareCoords(lines[a])) { // If this line is closed
-          // Split squeezed polygons
-          // Explore all summits combinaison
-          for (let i1 = 0; i1 < lines[a].length - 1; i1++)
-            for (let i2 = 0; i2 < i1; i2++)
-              if (lines[a][i1][0] === lines[a][i2][0] &&
-                lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
-                const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
-                squized.push(squized[0]); // Close the poly
-                polys.push([squized]); // Add the squized poly
-                i1 = lines[a].length; // End loop
-                i2 = lines[a].length;
-              }
+          if (this.compareCoords(lines[a])) { // If this line is closed
+            // Split squeezed polygons
+            // Explore all summits combinaison
+            for (let i1 = 0; i1 < lines[a].length - 1; i1++)
+              for (let i2 = 0; i2 < i1; i2++)
+                if (lines[a][i1][0] === lines[a][i2][0] &&
+                  lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
+                  const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
+                  squized.push(squized[0]); // Close the poly
+                  polys.push([squized]); // Add the squized poly
+                  i1 = lines[a].length; // End loop
+                  i2 = lines[a].length;
+                }
 
-          // Convert closed lines to polygons
-          polys.push([lines[a]]); // Add the polygon
-          delete lines[a]; // Forget the line
+            // Convert closed lines to polygons
+            polys.push([lines[a]]); // Add the polygon
+            delete lines[a]; // Forget the line
+          }
         }
-      }
 
     // Makes holes if a polygon is included in a biggest one
     if (this.options.withHoles)
@@ -304,7 +306,6 @@ class GpxEdit extends VectorLayer {
     lines.forEach(line => {
       this.editedSource.addFeature(new Feature({
         geometry: new ol.geom.LineString(line),
-        //BEST "full.geojson" Multilinestring / Multipolygon
       }));
     });
     polys.forEach(poly => {
@@ -369,7 +370,7 @@ class GpxEdit extends VectorLayer {
   // Style to color selected features with arrows, begin & end points
   selectStyles(feature, resolution) {
     const geometry = feature.getGeometry(),
-      selectStyle = {
+      selectedStyle = {
         stroke: new ol.style.Stroke({
           color: 'red',
           width: 2,
@@ -380,8 +381,7 @@ class GpxEdit extends VectorLayer {
         radius: 3, // Move & begin line marker
       },
       featureStyles = [
-        //TODO blue circle pointer to a red one
-        new ol.style.Style(selectStyle), // Line style
+        new ol.style.Style(selectedStyle), // Line style
       ];
 
     // Circle at the ends of the line
@@ -396,14 +396,14 @@ class GpxEdit extends VectorLayer {
         featureStyles.push(
           new ol.style.Style({
             geometry: new ol.geom.Point(cc),
-            image: new ol.style.Circle(selectStyle),
+            image: new ol.style.Circle(selectedStyle),
           }),
         );
       });
     }
 
     // Arrows to show the line direction
-    if (this.options.direction && geometry.forEachSegment)
+    if (this.options.direction && geometry.forEachSegment && resolution)
       geometry.forEachSegment((start, end) => {
         const dx = end[0] - start[0],
           dy = end[1] - start[1];

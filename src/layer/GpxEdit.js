@@ -136,9 +136,17 @@ class GpxEdit extends VectorLayer {
     });
 
     this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
+
     this.drawInteraction.on('drawend', () => {
-      this.optimiseAndSave(); //TODO BUG don't merge lines as it's not already in the source.
-      this.restartInteractions('modify');
+      this.modified = true;
+    });
+
+    this.editedSource.on('addfeature', () => {
+      if (this.modified) {
+        this.modified = false;
+        this.optimiseAndSave();
+        this.restartInteractions('modify');
+      }
     });
 
     this.map.once('loadend', () => {
@@ -317,12 +325,10 @@ class GpxEdit extends VectorLayer {
     }
 
     // Select the feature closest to the mouse position
-    setTimeout(() => { // Do it later from the stabilized features
-      this.selectInteraction.getFeatures().clear();
-      this.selectInteraction.getFeatures().push(this.editedSource.getClosestFeatureToCoordinate(
-        this.coordinate || this.map.getView().getCenter()
-      ));
-    }, 100);
+    this.selectInteraction.getFeatures().clear();
+    this.selectInteraction.getFeatures().push(this.editedSource.getClosestFeatureToCoordinate(
+      this.coordinate || this.map.getView().getCenter()
+    ));
   } // End optimiseAndSave
 
   flatFeatures(geom) {

@@ -25,8 +25,14 @@ class GpxEdit extends VectorLayer {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
       tolerance: 7, // Px
-      //TODO test & document all options
+      //canMerge: false, // Merge lines having a common end
+      //direction: false, // Add arrows to each line segment to show the direction
+      //withHoles: false, // Authorize holes in polygons
+
+      //TODO only poly for WRI
       //editPoly: false | true, // output are lines | polygons
+      //editOnly: 'line' | 'poly',
+      //featuresToSave: () => this.format.writeFeatures(
 
       ...opt,
     }
@@ -76,6 +82,7 @@ class GpxEdit extends VectorLayer {
       pixelTolerance: this.options.tolerance, // Default is 10
     });
     this.drawInteraction = new Draw({ // Draw line
+      //TODO red style when edit
       type: 'LineString',
       source: this.editedSource,
       traceSource: this.snapSource,
@@ -92,10 +99,10 @@ class GpxEdit extends VectorLayer {
       const buttonEl = document.createElement('button'),
         element = document.createElement('div');
 
-      element.className = 'ol-unselectable ol-control ed-button ed-button-' + intName;
+      element.className = 'ol-unselectable ol-control edit-button edit-button-' + intName;
       element.appendChild(buttonEl);
 
-      const helpEl = document.getElementById('ed-help-' + intName);
+      const helpEl = document.getElementById('edit-help-' + intName);
       if (helpEl)
         element.appendChild(helpEl);
 
@@ -141,7 +148,9 @@ class GpxEdit extends VectorLayer {
     });
 
     map.on('pointermove', evt => {
-      this.map.getTargetElement().classList.add('ed-selected');
+      //TODO change pointer if hover a feature to be selected
+      //TODO change pointer if a feature is selected
+      this.map.getTargetElement().classList.add('edit-selected');
       this.pixel = evt.pixel;
     });
 
@@ -160,7 +169,7 @@ class GpxEdit extends VectorLayer {
   } // End setMapInternal
 
   restartInteractions(intName) {
-    this.map.getTargetElement().firstChild.className = 'ol-viewport ed-view-' + intName;
+    this.map.getTargetElement().firstChild.className = 'ol-viewport edit-view-' + intName;
 
     ['select', 'modify', 'draw', 'snap'].forEach(i =>
       this.map.removeInteraction(this[i + 'Interaction'])
@@ -196,25 +205,26 @@ class GpxEdit extends VectorLayer {
       polys = [];
 
     // Merge lines having a common end
-    for (const a in lines) {
-      for (let b = 0; b < a; b++) { // Once each combination
-        if (lines[b]) {
-          const m = [a, b];
+    if (this.options.canMerge)
+      for (const a in lines) {
+        for (let b = 0; b < a; b++) { // Once each combination
+          if (lines[b]) {
+            const m = [a, b];
 
-          for (let i = 4; i; i--) // 4 times
-            if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
-              // Shake lines end to explore all possibilities
-              m.reverse();
-              lines[m[0]].reverse();
-              if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
-                // Merge 2 lines having 2 ends in common
-                lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
-                delete lines[m[1]]; // Remove the line but don't renumber the array keys
+            for (let i = 4; i; i--) // 4 times
+              if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
+                // Shake lines end to explore all possibilities
+                m.reverse();
+                lines[m[0]].reverse();
+                if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
+                  // Merge 2 lines having 2 ends in common
+                  lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
+                  delete lines[m[1]]; // Remove the line but don't renumber the array keys
+                }
               }
-            }
+          }
         }
       }
-    }
 
     // Make polygons with looped lines
     for (const a in lines)
@@ -245,8 +255,8 @@ class GpxEdit extends VectorLayer {
       }
 
     // Makes holes if a polygon is included in a biggest one
-    for (const p1 in polys) // Explore all Polygons combinaison
-      if (this.options.withHoles && polys[p1]) {
+    if (this.options.withHoles)
+      for (const p1 in polys) { // Explore all Polygons combinaison
         const fs = new ol.geom.Polygon(polys[p1]);
 
         for (const p2 in polys)
@@ -283,7 +293,6 @@ class GpxEdit extends VectorLayer {
     });
 
     // Save geometries in <EL> as geoJSON at every change
-    //TODO only poly for WRI
     if (this.geoJsonEl)
       this.geoJsonEl.value = this.options.format.writeFeatures(
         this.editedSource.getFeatures(), {
@@ -356,29 +365,39 @@ class GpxEdit extends VectorLayer {
     const geometry = feature.getGeometry(),
       selectStyle = {
         stroke: new ol.style.Stroke({
-          color: '#3399CC',
-          width: 3,
+          color: 'red',
+          width: 2,
         }),
         fill: new ol.style.Fill({ // Polygons
-          color: 'rgba(51,153,204,0.2)',
+          color: 'rgba(255,0,0,0.2)',
         }),
-        radius: 4, // Move & begin line marker
+        radius: 3, // Move & begin line marker
       },
       featureStyles = [
+        //TODO blue circle pointer to a red one
         new ol.style.Style(selectStyle), // Line style
       ];
 
-    // Circle at the begining of the line
-    if (this.options.arrows && geometry.getCoordinates)
-      featureStyles.push(
-        new ol.style.Style({
-          geometry: new ol.geom.Point(geometry.getCoordinates()[0]),
-          image: new ol.style.Circle(selectStyle),
-        }),
-      );
+    // Circle at the ends of the line
+    if (geometry.getCoordinates) {
+      const coordinates = geometry.getCoordinates(),
+        circlesCoords = [coordinates[0]];
+
+      if (!this.options.direction)
+        circlesCoords.push(coordinates[coordinates.length - 1]);
+
+      circlesCoords.forEach(cc => {
+        featureStyles.push(
+          new ol.style.Style({
+            geometry: new ol.geom.Point(cc),
+            image: new ol.style.Circle(selectStyle),
+          }),
+        );
+      });
+    }
 
     // Arrows to show the line direction
-    if (geometry.forEachSegment)
+    if (this.options.direction && geometry.forEachSegment)
       geometry.forEachSegment((start, end) => {
         const dx = end[0] - start[0],
           dy = end[1] - start[1];
@@ -392,7 +411,7 @@ class GpxEdit extends VectorLayer {
                 rotation: -Math.atan2(dy, dx),
                 src: 'data:image/svg+xml;utf8,\
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
-<path stroke="royalblue" d="M0 0 4 3 M4 3 0 6" />\
+<path stroke="red" d="M0 0 4 3 M4 3 0 6" />\
 </svg>',
               }),
             }),

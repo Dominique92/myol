@@ -5,46 +5,46 @@
 /* Position of the buttons */
 .ol-zoom,
 .ol-full-screen,
-.ed-button {
+.edit-button {
   position: static;
   float: left;
   margin: 2px;
 }
 
-.ed-button-modify button::after {
+.edit-button-modify button::after {
   content: "\2725";
 }
 
-.ed-button-draw button::after {
+.edit-button-draw button::after {
   content: "\2710";
   display: inline-block;
   transform: scaleX(-1);
 }
 
-.ed-view-modify .ed-button-modify button,
-.ed-view-draw .ed-button-draw button {
+.edit-view-modify .edit-button-modify button,
+.edit-view-draw .edit-button-draw button {
   background: lightblue;
 }
 
-.ed-view-draw {
+.edit-view-draw {
   cursor: copy;
 }
 
-div:not(.ed-selected) .ed-view-modify {
+div:not(.edit-selected) .edit-view-modify {
   cursor: pointer;
 }
 
 /* Submenu */
-.ed-button>div {
+.edit-button>div {
   display: none;
 }
 
-.ed-button:hover>div,
-.ed-button>div:hover {
+.edit-button:hover>div,
+.edit-button>div:hover {
   display: initial;
 }
 
-.ed-button>div {
+.edit-button>div {
   position: absolute;
   top: 26px;
   max-height: calc(100% - 38px);
@@ -56,6 +56,6 @@ div:not(.ed-selected) .ed-view-modify {
   z-index: 30;
 }
 
-.ed-button>div * {
+.edit-button>div * {
   margin: 0;
 }

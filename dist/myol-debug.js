@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 23/09/2024 14:36:28 using npm run build from the src/... sources
+ * Built 25/09/2024 11:06:48 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -6521,15 +6521,13 @@
   }
 
   /**
-   * Button.js
-   * Add some usefull controls with buttons
-   */
-
-
-  /**
-   * Control button
    * Abstract class to be used by other control buttons definitions
+   * Add some usefull controls with displayed buttons
    */
+  //BEST redesign button hover & touch
+  //BEST click sur in/out file / ...
+
+
   class Button extends Control {
     constructor(opt) {
       const options = {
@@ -64847,7 +64845,7 @@
     control: control$1,
     coordinate: coordinate,
     events: {
-      condition: condition
+      condition: condition,
     },
     extent: extent,
     Feature: Feature,
@@ -64901,14 +64899,15 @@
   window.ol ||= ol;
 
   /**
-   * File downloader control
+   * Download control to download vectors features
+   * Supports GPX, KML, GeoJson formats
    */
 
 
   const subMenuHTML$3 = '\
   <p><a mime="application/gpx+xml">GPX</a></p>\
   <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
-  <p><a mime="application/json">GeoJSON</a></p>',
+  <p><a mime="application/json">GeoJson</a></p>',
 
     subMenuHTMLfr$3 = '\
   <p>Cliquer sur un format ci-dessous pour obtenir\
@@ -65010,8 +65009,7 @@
   }
 
   /**
-   * TileLayerCollection.js
-   * Acces to various tiles layers services
+   * Many simplified display of various tiles layers services
    */
 
 
@@ -65707,7 +65705,7 @@
   }
 
   /**
-   * LayerSwitcher.js
+   * LayerSwitcher control for both tiled & vectors layers
    */
 
 
@@ -65829,8 +65827,7 @@
   }
 
   /**
-   * LengthLine control
-   * Control to display the length & height difference of an hovered line
+   * LengthLine control to display the length of an hovered line
    */
 
 
@@ -65909,7 +65906,8 @@
   }
 
   /**
-   * GPX file loader control
+   * Load control to load vectors features
+   * Supports any format supported by Openlayers
    */
 
 
@@ -67204,7 +67202,7 @@
   }
 
   /**
-   * Geocoder
+   * myGeocoder control that overloads ol-geocoder
    * From https://github.com/jonataswalker/ol-geocoder
    * Corrected https://github.com/kirtan-desai/ol-geocoder
    * Corrected https://github.com/Dominique92/ol-geocoder
@@ -67246,8 +67244,7 @@
   }
 
   /**
-   * Geolocation control
-   * Display status, altitude & speed
+   * MyGeolocation control to isplay status, altitude & speed
    */
 
 
@@ -67492,7 +67489,7 @@
   }
 
   /**
-   * Control to display the mouse position
+   * MyMousePosition control to display the mouse position
    */
 
 
@@ -76380,13 +76377,12 @@
   });
 
   /**
-   * MyVectorLayer.js
-   * Facilities to vector layers
+   * MyVectorLayer class to facilitate vector layers display
    */
 
 
   /**
-   * GeoJSON vector display
+   * GeoJson vector display
    * display the loading status
    */
   class MyVectorSource extends VectorSource {
@@ -76686,7 +76682,7 @@
 
         ...opt,
       };
-      options.format ||= new ol.format.GeoJSON(options); //BEST treat & display JSON errors
+      options.format ||= new ol.format.GeoJSON(options); //BEST treat & display Json errors
 
       super({
         url: (e, r, p) => this.url(e, r, p),
@@ -76759,8 +76755,7 @@
   }
 
   /**
-   * VectorLayerCollection.js
-   * Various acces to geoJson services
+   * Many simplified display of various vector layers services
    */
 
 
@@ -77121,7 +77116,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 23/09/2024 14:36:28';
+  const VERSION = '1.1.2.dev 25/09/2024 11:06:48';
 
   async function trace() {
     const data = [

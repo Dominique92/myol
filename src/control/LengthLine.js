@@ -1,12 +1,11 @@
 /**
- * LengthLine control
- * Control to display the length & height difference of an hovered line
+ * LengthLine control to display the length of an hovered line
  */
 
-import Control from 'ol/control/Control.js';
+import Control from 'ol/control/Control';
 import {
   getLength as sphereGetLength
-} from 'ol/sphere.js';
+} from 'ol/sphere';
 
 import './lengthLine.css';
 

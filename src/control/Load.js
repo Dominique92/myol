@@ -1,12 +1,13 @@
 /**
- * GPX file loader control
+ * Load control to load vectors features
+ * Supports any format supported by Openlayers
  */
 
 import ol from '../ol';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
-import Button from './Button.js';
+import Button from './Button';
 
 const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
   subMenuHTMLfr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;

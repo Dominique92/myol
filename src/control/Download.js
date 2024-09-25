@@ -1,16 +1,17 @@
 /**
- * File downloader control
+ * Download control to download vectors features
+ * Supports GPX, KML, GeoJson formats
  */
 
 import ol from '../ol';
-import Feature from 'ol/Feature.js';
+import Feature from 'ol/Feature';
 
-import Button from './Button.js';
+import Button from './Button';
 
 const subMenuHTML = '\
   <p><a mime="application/gpx+xml">GPX</a></p>\
   <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
-  <p><a mime="application/json">GeoJSON</a></p>',
+  <p><a mime="application/json">GeoJson</a></p>',
 
   subMenuHTMLfr = '\
   <p>Cliquer sur un format ci-dessous pour obtenir\

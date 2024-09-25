@@ -3,16 +3,16 @@
  */
 
 import ol from '../ol';
-import Feature from 'ol/Feature.js';
+import Feature from 'ol/Feature';
 import proj4Lib from 'proj4/lib/index';
 import {
   register
-} from 'ol/proj/proj4.js';
+} from 'ol/proj/proj4';
 import {
   transform
-} from 'ol/proj.js';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
+} from 'ol/proj';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 class Marker extends VectorLayer {
   constructor(opt) {

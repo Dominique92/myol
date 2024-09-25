@@ -1,14 +1,16 @@
 /**
- * Control to display the mouse position
+ * MyMousePosition control to display the mouse position
  */
 
 import ol from '../ol';
 import {
   getDistance
-} from 'ol/sphere.js';
+} from 'ol/sphere';
 import {
   transform
-} from 'ol/proj.js';
+} from 'ol/proj';
+
+import './control.css';
 
 class MyMousePosition extends ol.control.MousePosition {
   constructor(options) {

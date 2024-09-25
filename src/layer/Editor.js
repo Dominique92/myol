@@ -4,12 +4,12 @@
  */
 
 import ol from '../ol';
-import Feature from 'ol/Feature.js';
+import Feature from 'ol/Feature';
 import {
   transform
-} from 'ol/proj.js';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
+} from 'ol/proj';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 import Button from '../control/Button';
 import './editor.css';

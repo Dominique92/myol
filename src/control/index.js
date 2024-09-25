@@ -7,7 +7,6 @@ import FullScreen from 'ol/control/FullScreen';
 import ScaleLine from 'ol/control/ScaleLine';
 import Zoom from 'ol/control/Zoom';
 
-import './control.css';
 import Button from './Button';
 import Download from './Download';
 import LayerSwitcher from './LayerSwitcher';

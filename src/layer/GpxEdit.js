@@ -1,20 +1,19 @@
 /**
- * GpxEdit.js
- * geoJson lines & polygons edit
+ * GpxEdit layer to edit geoJson lines & polygons
  */
 //TODO interactions avec load / download, ...
 
 import ol from '../ol';
-import Control from 'ol/control/Control.js';
-import Feature from 'ol/Feature.js';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
+import Control from 'ol/control/Control';
+import Feature from 'ol/Feature';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 import {
   Draw,
   Modify,
   Select,
   Snap,
-} from 'ol/interaction.js';
+} from 'ol/interaction';
 
 import './gpxEdit.css';
 

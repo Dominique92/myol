@@ -1,5 +1,5 @@
 /**
- * LayerSwitcher.js
+ * LayerSwitcher control for both tiled & vectors layers
  */
 
 import Button from './Button';

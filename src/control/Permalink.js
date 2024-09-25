@@ -7,7 +7,9 @@
 import Control from 'ol/control/Control.js';
 import {
   transform
-} from 'ol/proj.js';
+} from 'ol/proj';
+
+import './control.css';
 
 class Permalink extends Control {
   constructor(opt) {

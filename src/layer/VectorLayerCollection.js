@@ -1,6 +1,5 @@
 /**
- * VectorLayerCollection.js
- * Various acces to geoJson services
+ * Many simplified display of various vector layers services
  */
 
 import ol from '../ol';

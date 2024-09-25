@@ -1,18 +1,17 @@
 /**
- * MyVectorLayer.js
- * Facilities to vector layers
+ * MyVectorLayer class to facilitate vector layers display
  */
 
 import ol from '../ol';
-import Feature from 'ol/Feature.js';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
+import Feature from 'ol/Feature';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 import Selector from './Selector';
 import * as stylesOptions from './stylesOptions';
 
 /**
- * GeoJSON vector display
+ * GeoJson vector display
  * display the loading status
  */
 class MyVectorSource extends VectorSource {
@@ -312,7 +311,7 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
 
       ...opt,
     };
-    options.format ||= new ol.format.GeoJSON(options); //BEST treat & display JSON errors
+    options.format ||= new ol.format.GeoJSON(options); //BEST treat & display Json errors
 
     super({
       url: (e, r, p) => this.url(e, r, p),

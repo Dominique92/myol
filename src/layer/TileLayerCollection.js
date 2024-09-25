@@ -1,6 +1,5 @@
 /**
- * TileLayerCollection.js
- * Acces to various tiles layers services
+ * Many simplified display of various tiles layers services
  */
 
 import ol from '../ol';

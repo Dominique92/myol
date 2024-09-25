@@ -1,5 +1,5 @@
 /**
- * Geocoder
+ * MyGeocoder control that overloads ol-geocoder
  * From https://github.com/jonataswalker/ol-geocoder
  * Corrected https://github.com/kirtan-desai/ol-geocoder
  * Corrected https://github.com/Dominique92/ol-geocoder

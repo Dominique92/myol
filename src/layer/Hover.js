@@ -4,9 +4,9 @@
  * Go to the link property when click a feature
  */
 
-import Style from 'ol/style/Style.js';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
+import Style from 'ol/style/Style';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 class Hover extends VectorLayer {
   constructor(options) {

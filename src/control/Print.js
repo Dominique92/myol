@@ -2,7 +2,7 @@
  * Print control
  */
 
-import Button from './Button.js';
+import Button from './Button';
 import './print.css';
 
 const subMenuHTML = '\

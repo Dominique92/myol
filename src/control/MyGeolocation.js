@@ -1,12 +1,11 @@
 /**
- * Geolocation control
- * Display status, altitude & speed
+ * MyGeolocation control to isplay status, altitude & speed
  */
 
 import ol from '../ol';
-import Feature from 'ol/Feature.js';
-import Geolocation from 'ol/Geolocation.js';
-import VectorLayer from 'ol/layer/Vector.js';
+import Feature from 'ol/Feature';
+import Geolocation from 'ol/Geolocation';
+import VectorLayer from 'ol/layer/Vector';
 
 import Button from './Button';
 

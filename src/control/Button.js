@@ -1,19 +1,14 @@
 /**
- * Button.js
- * Add some usefull controls with buttons
+ * Abstract class to be used by other control buttons definitions
+ * Add some usefull controls with displayed buttons
  */
-
-//BEST refund button hover & touch
+//BEST redesign button hover & touch
 //BEST click sur in/out file / ...
 
-import Control from 'ol/control/Control.js';
+import Control from 'ol/control/Control';
 
 import './button.css';
 
-/**
- * Control button
- * Abstract class to be used by other control buttons definitions
- */
 class Button extends Control {
   constructor(opt) {
     const options = {

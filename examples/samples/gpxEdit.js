@@ -1,6 +1,7 @@
 import ol from '../../src/ol';
 import Load from '../../src/control/Load';
 import LengthLine from '../../src/control/LengthLine';
+import MyMousePosition from '../../src/control/MyMousePosition';
 import GpxEdit from '../../src/layer/GpxEdit.js';
 
 const snaplayer = new ol.layer.Vector({
@@ -25,8 +26,9 @@ const snaplayer = new ol.layer.Vector({
     target: 'map',
 
     controls: [
-      new LengthLine(),
       new Load(),
+      new LengthLine(),
+      new MyMousePosition(),
     ],
 
     layers: [

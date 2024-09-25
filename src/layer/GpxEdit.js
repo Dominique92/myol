@@ -17,98 +17,6 @@ import {
 
 import './gpxEdit.css';
 
-// OPTIMIZE LINES & POLYS
-function compareCoords(a, b) {
-  if (!a) return false;
-  if (!b) return compareCoords(a[0], a[a.length - 1]); // Compare start with end
-  return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
-}
-
-// Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
-function flatCoord(coords, splitCord) {
-  const lines = [];
-
-  coords.forEach(c => {
-    if (typeof c[0][0] === 'object') // Recurse for multi* or polys
-      lines.push(...flatCoord(c, splitCord));
-    else if (splitCord) {
-      lines.push([]);
-      c.forEach(p => {
-        lines[lines.length - 1].push(p);
-        if (compareCoords(splitCord, p))
-          lines.push([
-            [p[0], p[1] + 1],
-          ]);
-      });
-    } else
-      lines.push(c);
-  });
-
-  return lines;
-}
-
-function flatFeatures(geom) {
-  if (geom.getType().match(/collection/iu)) // Recurse Collections
-    return geom.getGeometries().map(g => flatFeatures(g));
-  return geom.getCoordinates();
-}
-
-// STYLES
-// Style to color selected features with arrows, begin & end points
-function selectStyles(feature, resolution) {
-  const geometry = feature.getGeometry(),
-    selectStyle = {
-      stroke: new ol.style.Stroke({
-        color: '#3399CC',
-        width: 3,
-      }),
-      fill: new ol.style.Fill({ // Polygons
-        color: 'rgba(51,153,204,0.2)',
-      }),
-      radius: 4, // Move & begin line marker
-    },
-    featureStyles = [
-      new ol.style.Style(selectStyle), // Line style
-    ];
-
-  //if (options.arrows) { //TODO missing options
-  // Circle at the begining of the line
-  if (geometry.getCoordinates)
-    featureStyles.push(
-      new ol.style.Style({
-        geometry: new ol.geom.Point(geometry.getCoordinates()[0]),
-        image: new ol.style.Circle(selectStyle),
-      }),
-    );
-
-  // Arrows to show the line direction
-  if (geometry.forEachSegment)
-    geometry.forEachSegment((start, end) => {
-      const dx = end[0] - start[0],
-        dy = end[1] - start[1];
-
-      if (Math.abs(dx) + Math.abs(dy) > resolution * 10) {
-        featureStyles.push(
-          new ol.style.Style({
-            geometry: new ol.geom.Point(end),
-            image: new ol.style.Icon({
-              rotateWithView: true,
-              rotation: -Math.atan2(dy, dx),
-              src: 'data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
-<path stroke="royalblue" d="M0 0 4 3 M4 3 0 6" />\
-</svg>',
-            }),
-          }),
-        );
-      }
-    });
-  //}
-
-  return featureStyles;
-};
-
-// EDITOR
 class GpxEdit extends VectorLayer {
   constructor(opt) {
     const options = {
@@ -161,7 +69,7 @@ class GpxEdit extends VectorLayer {
       //condition: ol.events.never, // No deselection on click
       //removeCondition: ol.events.never, // No deselection on click
       filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
-      style: selectStyles,
+      style: (f, r) => this.selectStyles(f, r),
     });
     this.modifyInteraction = new Modify({
       features: this.selectInteraction.getFeatures(),
@@ -281,10 +189,10 @@ class GpxEdit extends VectorLayer {
     // Get optimized coords
     const editedFeatures = this.editedSource.getFeatures(), // Get edited features
       coordinates = editedFeatures.map(
-        f => flatFeatures(f.getGeometry()) // Get flat coordinates
+        f => this.flatFeatures(f.getGeometry()) // Get flat coordinates
       );
     // Get all edited features as array of lines coordinates
-    const lines = flatCoord(coordinates, splitCord),
+    const lines = this.flatCoord(coordinates, splitCord),
       polys = [];
 
     // Merge lines having a common end
@@ -298,7 +206,7 @@ class GpxEdit extends VectorLayer {
               // Shake lines end to explore all possibilities
               m.reverse();
               lines[m[0]].reverse();
-              if (compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
+              if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
                 // Merge 2 lines having 2 ends in common
                 lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
                 delete lines[m[1]]; // Remove the line but don't renumber the array keys
@@ -313,10 +221,10 @@ class GpxEdit extends VectorLayer {
       if (this.options.editOnly !== 'line') {
         // Close open lines
         if (this.options.editOnly === 'poly')
-          if (!compareCoords(lines[a]))
+          if (!this.compareCoords(lines[a]))
             lines[a].push(lines[a][0]);
 
-        if (compareCoords(lines[a])) { // If this line is closed
+        if (this.compareCoords(lines[a])) { // If this line is closed
           // Split squeezed polygons
           // Explore all summits combinaison
           for (let i1 = 0; i1 < lines[a].length - 1; i1++)
@@ -407,6 +315,94 @@ class GpxEdit extends VectorLayer {
       }
     });
   } // End optimiseAndSave
+
+  flatFeatures(geom) {
+    if (geom.getType().match(/collection/iu)) // Recurse Collections
+      return geom.getGeometries().map(g => this.flatFeatures(g));
+    return geom.getCoordinates();
+  }
+
+  // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
+  flatCoord(coords, splitCord) {
+    const lines = [];
+
+    coords.forEach(c => {
+      if (typeof c[0][0] === 'object') // Recurse for multi* or polys
+        lines.push(...this.flatCoord(c, splitCord));
+      else if (splitCord) {
+        lines.push([]);
+        c.forEach(p => {
+          lines[lines.length - 1].push(p);
+          if (this.compareCoords(splitCord, p))
+            lines.push([
+              [p[0], p[1] + 1],
+            ]);
+        });
+      } else
+        lines.push(c);
+    });
+
+    return lines;
+  }
+
+  compareCoords(a, b) {
+    if (!a) return false;
+    if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
+    return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
+  }
+
+  // Style to color selected features with arrows, begin & end points
+  selectStyles(feature, resolution) {
+    const geometry = feature.getGeometry(),
+      selectStyle = {
+        stroke: new ol.style.Stroke({
+          color: '#3399CC',
+          width: 3,
+        }),
+        fill: new ol.style.Fill({ // Polygons
+          color: 'rgba(51,153,204,0.2)',
+        }),
+        radius: 4, // Move & begin line marker
+      },
+      featureStyles = [
+        new ol.style.Style(selectStyle), // Line style
+      ];
+
+    // Circle at the begining of the line
+    if (this.options.arrows && geometry.getCoordinates)
+      featureStyles.push(
+        new ol.style.Style({
+          geometry: new ol.geom.Point(geometry.getCoordinates()[0]),
+          image: new ol.style.Circle(selectStyle),
+        }),
+      );
+
+    // Arrows to show the line direction
+    if (geometry.forEachSegment)
+      geometry.forEachSegment((start, end) => {
+        const dx = end[0] - start[0],
+          dy = end[1] - start[1];
+
+        if (Math.abs(dx) + Math.abs(dy) > resolution * 10) {
+          featureStyles.push(
+            new ol.style.Style({
+              geometry: new ol.geom.Point(end),
+              image: new ol.style.Icon({
+                rotateWithView: true,
+                rotation: -Math.atan2(dy, dx),
+                src: 'data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
+<path stroke="royalblue" d="M0 0 4 3 M4 3 0 6" />\
+</svg>',
+              }),
+            }),
+          );
+        }
+      });
+    //}
+
+    return featureStyles;
+  };
 }
 
 export default GpxEdit;

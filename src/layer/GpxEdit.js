@@ -320,10 +320,9 @@ class GpxEdit extends VectorLayer {
     }
 
     // Select the feature closest to the mouse position
-    //TODO BUG don't work
     const selectedFeatures = this.selectInteraction.getFeatures();
 
-    if (selectedFeatures.length) {
+    if (this.editedSource.getFeatures().length) {
       selectedFeatures.clear();
       selectedFeatures.push(
         this.editedSource.getClosestFeatureToCoordinate(this.coordinate)

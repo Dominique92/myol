@@ -150,6 +150,8 @@ class GpxEdit extends VectorLayer {
 
     // At init
     this.map.once('loadend', () => {
+      this.coordinate = this.map.getView().getCenter();
+
       this.optimiseAndSave();
       this.restartInteractions('modify');
     });
@@ -287,7 +289,6 @@ class GpxEdit extends VectorLayer {
             }
           }
       }
-    console.log([lines, polys]);
 
     // Body class to handle edit polys only
     if (!lines.length && polys.length)
@@ -319,12 +320,14 @@ class GpxEdit extends VectorLayer {
     }
 
     // Select the feature closest to the mouse position
+    //TODO BUG don't work
     const selectedFeatures = this.selectInteraction.getFeatures();
+
     if (selectedFeatures.length) {
       selectedFeatures.clear();
-      selectedFeatures.push(this.editedSource.getClosestFeatureToCoordinate(
-        this.coordinate || this.map.getView().getCenter()
-      ));
+      selectedFeatures.push(
+        this.editedSource.getClosestFeatureToCoordinate(this.coordinate)
+      );
     }
   } // End optimiseAndSave
 
@@ -401,12 +404,17 @@ class GpxEdit extends VectorLayer {
     }
 
     // Arrows to show the line direction
-    if (this.options.direction && geometry.forEachSegment && resolution)
-      geometry.forEachSegment((start, end) => {
-        const dx = end[0] - start[0],
-          dy = end[1] - start[1];
+    if (this.options.direction && geometry.forEachSegment && resolution) {
+      let last = null;
 
-        if (Math.abs(dx) + Math.abs(dy) > resolution * 10) { //TODO also each 10 little segments
+      geometry.forEachSegment((start, end) => {
+        if (!last) last = start;
+
+        const dx = end[0] - last[0],
+          dy = end[1] - last[1];
+
+        if (Math.abs(dx) + Math.abs(dy) > resolution * 50) {
+          last = end;
           featureStyles.push(
             new ol.style.Style({
               geometry: new ol.geom.Point(end),
@@ -422,6 +430,7 @@ class GpxEdit extends VectorLayer {
           );
         }
       });
+    }
 
     return featureStyles;
   };

@@ -21,6 +21,24 @@ const snaplayer = new ol.layer.Vector({
     canMerge: true,
     withPolys: true,
     withHoles: true,
+
+    // For WRI
+    wwwriteGeoJson: (features, lines, polys, options) => {
+      const warnEl = document.getElementById('warn');
+
+      // Body class to warn edit polys only
+      if (lines.length)
+        warnEl.innerHTML = 'Il ne doit pas y avoir de lignes dans un massif.';
+      else if (polys.length)
+        warnEl.innerHTML = '';
+      else
+        warnEl.innerHTML = 'Il doit y avoir au moins 1 polygone dans un massif.';
+
+      return options.format.writeGeometry(
+        new ol.geom.MultiPolygon(polys),
+        options,
+      );
+    },
   }),
 
   map = new ol.Map({

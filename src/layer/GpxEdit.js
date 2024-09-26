@@ -24,16 +24,18 @@ class GpxEdit extends VectorLayer {
       format: new ol.format.GeoJSON(),
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
+      decimals: 5, //Output precision
       tolerance: 7, // Px
       //direction: false, // Add arrows to each line segment to show the direction
       //canMerge: false, // Merge lines having a common end
       //withPolys: false, // Can edit polygons
       //withHoles: false, // Allow holes in polygons
 
-      //TODO only poly for WRI
-      //editPoly: false | true, // output are lines | polygons
-      //editOnly: 'line' | 'poly',
-      //featuresToSave: () => this.format.writeFeatures(
+      writeGeoJson: () => // writeGeoJson (features, lines, polys, options)
+        this.options.format.writeFeatures(
+          this.editedSource.getFeatures(),
+          this.options,
+        ),
 
       ...opt,
     }
@@ -290,34 +292,27 @@ class GpxEdit extends VectorLayer {
           }
       }
 
-    // Body class to handle edit polys only
-    if (!lines.length && polys.length)
-      document.body.classList.add('edit-only-polys');
-    else
-      document.body.classList.remove('edit-only-polys');
-
     // Recreate features
     this.editedSource.clear();
-    lines.forEach(line => {
+    lines.forEach(l => {
       this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.LineString(line),
+        geometry: new ol.geom.LineString(l),
       }));
     });
-    polys.forEach(poly => {
+    polys.forEach(p => {
       this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.Polygon(poly),
+        geometry: new ol.geom.Polygon(p),
       }));
     });
 
     // Save geometries in <EL> as geoJSON at every change
-    if (this.geoJsonEl) {
-      this.geoJsonEl.value = this.options.format.writeFeatures(
-        this.editedSource.getFeatures(), {
-          dataProjection: this.options.dataProjection,
-          featureProjection: this.map.getView().getProjection(),
-          decimals: 5,
-        }); //TODO remove properties:null
-    }
+    if (this.geoJsonEl)
+      this.geoJsonEl.value = this.options.writeGeoJson(
+        this.editedSource.getFeatures(),
+        lines.filter(Boolean),
+        polys.filter(Boolean),
+        this.options,
+      ).replaceAll(',"properties":null', '');
 
     // Select the feature closest to the mouse position
     const selectedFeatures = this.selectInteraction.getFeatures();

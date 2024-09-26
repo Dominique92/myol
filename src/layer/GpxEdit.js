@@ -220,9 +220,9 @@ class GpxEdit extends VectorLayer {
     const editedFeatures = this.editedSource.getFeatures(), // Get edited features
       coordinates = editedFeatures.map(
         f => this.flatFeatures(f.getGeometry()) // Get flat coordinates
-      );
-    // Get all edited features as array of lines coordinates
-    const lines = this.flatCoord(coordinates, splitCord),
+      ),
+      // Get all edited features as array of lines coordinates
+      lines = this.flatCoord(coordinates, splitCord),
       polys = [];
 
     // Merge lines having a common end
@@ -248,34 +248,27 @@ class GpxEdit extends VectorLayer {
       }
 
     // Make polygons with looped lines
-    //TODO BUG if no polys or empty
     if (this.options.withPolys)
-      for (const a in lines)
-        if (this.options.editOnly !== 'line') {
-          // Close open lines
-          if (this.options.editOnly === 'poly')
-            if (!this.compareCoords(lines[a]))
-              lines[a].push(lines[a][0]);
+      for (const a in lines) {
+        if (this.compareCoords(lines[a])) { // If this line is closed
+          // Split squeezed polygons
+          // Explore all summits combinaison
+          for (let i1 = 0; i1 < lines[a].length - 1; i1++)
+            for (let i2 = 0; i2 < i1; i2++)
+              if (lines[a][i1][0] === lines[a][i2][0] &&
+                lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
+                const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
+                squized.push(squized[0]); // Close the poly
+                polys.push([squized]); // Add the squized poly
+                i1 = lines[a].length; // End loop
+                i2 = lines[a].length;
+              }
 
-          if (this.compareCoords(lines[a])) { // If this line is closed
-            // Split squeezed polygons
-            // Explore all summits combinaison
-            for (let i1 = 0; i1 < lines[a].length - 1; i1++)
-              for (let i2 = 0; i2 < i1; i2++)
-                if (lines[a][i1][0] === lines[a][i2][0] &&
-                  lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
-                  const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
-                  squized.push(squized[0]); // Close the poly
-                  polys.push([squized]); // Add the squized poly
-                  i1 = lines[a].length; // End loop
-                  i2 = lines[a].length;
-                }
-
-            // Convert closed lines to polygons
-            polys.push([lines[a]]); // Add the polygon
-            delete lines[a]; // Forget the line
-          }
+          // Convert closed lines to polygons
+          polys.push([lines[a]]); // Add the polygon
+          delete lines[a]; // Forget the line
         }
+      }
 
     // Makes holes if a polygon is included in a biggest one
     if (this.options.withHoles)
@@ -294,6 +287,7 @@ class GpxEdit extends VectorLayer {
             }
           }
       }
+    console.log([lines, polys]);
 
     // Body class to handle edit polys only
     if (!lines.length && polys.length)
@@ -302,6 +296,7 @@ class GpxEdit extends VectorLayer {
       document.body.classList.remove('edit-only-polys');
 
     // Recreate features
+    //TODO BUG if no polys or empty
     this.editedSource.clear();
     lines.forEach(line => {
       this.editedSource.addFeature(new Feature({
@@ -317,19 +312,21 @@ class GpxEdit extends VectorLayer {
     // Save geometries in <EL> as geoJSON at every change
     if (this.geoJsonEl) {
       this.geoJsonEl.value = this.options.format.writeFeatures(
-          this.editedSource.getFeatures(), {
-            dataProjection: this.options.dataProjection,
-            featureProjection: this.map.getView().getProjection(),
-            decimals: 5,
-          })
-        .replace(/,"properties":(\{[^}]*\}|null)/u, '');
+        this.editedSource.getFeatures(), {
+          dataProjection: this.options.dataProjection,
+          featureProjection: this.map.getView().getProjection(),
+          decimals: 5,
+        }); //TODO remove properties:null
     }
 
     // Select the feature closest to the mouse position
-    this.selectInteraction.getFeatures().clear();
-    this.selectInteraction.getFeatures().push(this.editedSource.getClosestFeatureToCoordinate(
-      this.coordinate || this.map.getView().getCenter()
-    ));
+    const selectedFeatures = this.selectInteraction.getFeatures();
+    if (selectedFeatures.length) {
+      selectedFeatures.clear();
+      selectedFeatures.push(this.editedSource.getClosestFeatureToCoordinate(
+        this.coordinate || this.map.getView().getCenter()
+      ));
+    }
   } // End optimiseAndSave
 
   flatFeatures(geom) {
@@ -424,7 +421,6 @@ class GpxEdit extends VectorLayer {
           );
         }
       });
-    //}
 
     return featureStyles;
   };

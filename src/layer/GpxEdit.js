@@ -296,7 +296,6 @@ class GpxEdit extends VectorLayer {
       document.body.classList.remove('edit-only-polys');
 
     // Recreate features
-    //TODO BUG if no polys or empty
     this.editedSource.clear();
     lines.forEach(line => {
       this.editedSource.addFeature(new Feature({
@@ -342,17 +341,19 @@ class GpxEdit extends VectorLayer {
     coords.forEach(c => {
       if (typeof c[0][0] === 'object') // Recurse for multi* or polys
         lines.push(...this.flatCoord(c, splitCord));
-      else if (splitCord) {
-        lines.push([]);
-        c.forEach(p => {
-          lines[lines.length - 1].push(p);
-          if (this.compareCoords(splitCord, p))
-            lines.push([
-              [p[0], p[1] + 1],
-            ]);
-        });
-      } else
-        lines.push(c);
+      else if (typeof c[0][0] === 'number') { // Lines
+        if (splitCord) {
+          lines.push([]);
+          c.forEach(p => {
+            lines[lines.length - 1].push(p);
+            if (this.compareCoords(splitCord, p))
+              lines.push([
+                [p[0], p[1] + 1],
+              ]);
+          });
+        } else
+          lines.push(c);
+      }
     });
 
     return lines;
@@ -405,7 +406,7 @@ class GpxEdit extends VectorLayer {
         const dx = end[0] - start[0],
           dy = end[1] - start[1];
 
-        if (Math.abs(dx) + Math.abs(dy) > resolution * 10) {
+        if (Math.abs(dx) + Math.abs(dy) > resolution * 10) { //TODO also each 10 little segments
           featureStyles.push(
             new ol.style.Style({
               geometry: new ol.geom.Point(end),

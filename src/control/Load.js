@@ -4,11 +4,14 @@
  */
 
 import ol from '../ol'; //TODO finir imports via node_modules;
+import Icon from 'ol/style/Icon';
 import {
   isEmpty,
 } from 'ol/extent';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
+import Stroke from 'ol/style/Stroke';
+import Style from 'ol/style/Style';
 
 import Button from './Button';
 
@@ -78,12 +81,12 @@ class Load extends Button {
       style: feature => {
         const properties = feature.getProperties();
 
-        return new ol.style.Style({
-          stroke: new ol.style.Stroke({
+        return new Style({
+          stroke: new Stroke({
             color: 'blue',
             width: 2,
           }),
-          image: properties.sym ? new ol.style.Icon({
+          image: properties.sym ? new Icon({
             src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
           }) : null,
         });

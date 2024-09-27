@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/09/2024 17:55:04 using npm run build from the src/... sources
+ * Built 27/09/2024 19:37:29 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -65800,12 +65800,12 @@
         style: feature => {
           const properties = feature.getProperties();
 
-          return new ol.style.Style({
-            stroke: new ol.style.Stroke({
+          return new Style({
+            stroke: new Stroke({
               color: 'blue',
               width: 2,
             }),
-            image: properties.sym ? new ol.style.Icon({
+            image: properties.sym ? new Icon({
               src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
             }) : null,
           });
@@ -68190,7 +68190,7 @@
           this.editedSource.removeFeature(selectedFeature);
 
           this.editedSource.addFeature(new Feature({
-            geometry: new ol.geom.LineString(coordinates.reverse()),
+            geometry: new LineString(coordinates.reverse()),
           }));
         }
 
@@ -68340,7 +68340,7 @@
       // Makes holes if a polygon is included in a biggest one
       if (this.options.withHoles)
         for (const p1 in polys) { // Explore all Polygons combinaison
-          const fs = new ol.geom.Polygon(polys[p1]);
+          const fs = new Polygon(polys[p1]);
 
           for (const p2 in polys)
             if (polys[p2] && p1 !== p2) {
@@ -68359,12 +68359,12 @@
       this.editedSource.clear();
       lines.forEach(l => {
         this.editedSource.addFeature(new Feature({
-          geometry: new ol.geom.LineString(l),
+          geometry: new LineString(l),
         }));
       });
       polys.forEach(p => {
         this.editedSource.addFeature(new Feature({
-          geometry: new ol.geom.Polygon(p),
+          geometry: new Polygon(p),
         }));
       });
 
@@ -68429,17 +68429,17 @@
     selectStyles(feature, resolution) {
       const geometry = feature.getGeometry(),
         selectedStyle = {
-          stroke: new ol.style.Stroke({
+          stroke: new Stroke({
             color: 'red',
             width: 2,
           }),
-          fill: new ol.style.Fill({ // Polygons
+          fill: new Fill({ // Polygons
             color: 'rgba(255,0,0,0.2)',
           }),
           radius: 3, // Move & begin line marker
         },
         featureStyles = [
-          new ol.style.Style(selectedStyle), // Line style
+          new Style(selectedStyle), // Line style
         ];
 
       // Circle at the ends of the line
@@ -68452,9 +68452,9 @@
 
         circlesCoords.forEach(cc => {
           featureStyles.push(
-            new ol.style.Style({
-              geometry: new ol.geom.Point(cc),
-              image: new ol.style.Circle(selectedStyle),
+            new Style({
+              geometry: new Point$1(cc),
+              image: new CircleStyle(selectedStyle),
             }),
           );
         });
@@ -68473,9 +68473,9 @@
           if (Math.abs(dx) + Math.abs(dy) > resolution * 50) {
             last = end;
             featureStyles.push(
-              new ol.style.Style({
-                geometry: new ol.geom.Point(end),
-                image: new ol.style.Icon({
+              new Style({
+                geometry: new Point$1(end),
+                image: new Icon({
                   rotateWithView: true,
                   rotation: -Math.atan2(dy, dx),
                   src: 'data:image/svg+xml;utf8,\
@@ -76206,7 +76206,7 @@
         ...opt,
       };
 
-      const point = new ol.geom.Point(
+      const point = new Point$1(
         transform$1(options.defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
       );
 
@@ -76219,8 +76219,8 @@
 
           ...options,
         }),
-        style: new ol.style.Style({
-          image: new ol.style.Icon(options),
+        style: new Style({
+          image: new Icon(options),
         }),
         properties: {
           marker: true, // To recognise that this is a marker
@@ -76496,7 +76496,7 @@
       elLabel.innerHTML = properties.label; //HACK to render the html entities in the canvas
 
       return {
-        text: new ol.style.Text({
+        text: new Text({
           text: elLabel.innerText,
           overflow: properties.overflow, // Display label even if not contained in polygon
           textBaseline: featureArea ? 'middle' : 'bottom',
@@ -76504,13 +76504,13 @@
           padding: [1, 1, -1, 3],
           //BEST line & poly label following the cursor
           font: '12px Verdana',
-          fill: new ol.style.Fill({
+          fill: new Fill({
             color: 'black',
           }),
-          backgroundFill: new ol.style.Fill({
+          backgroundFill: new Fill({
             color: 'white',
           }),
-          backgroundStroke: new ol.style.Stroke({
+          backgroundStroke: new Stroke({
             color: 'blue',
           }),
         }),
@@ -76525,7 +76525,7 @@
     return [{
       // Point
       image: properties.icon ?
-        new ol.style.Icon({
+        new Icon({
           anchor: resolution < layer.options.minResolution ? [
             feature.getId() / 5 % 1 / 2 + 0.25, // 32 px width frame
             feature.getId() / 9 % 1, // 44 px hight frame
@@ -76534,13 +76534,13 @@
         }) : null,
 
       // Lines
-      stroke: new ol.style.Stroke({
+      stroke: new Stroke({
         color: 'blue',
         width: 2,
       }),
 
       // Polygons
-      fill: new ol.style.Fill({
+      fill: new Fill({
         color: 'rgba(0,0,256,0.3)',
       }),
       // properties.label if any
@@ -76552,17 +76552,17 @@
   // Display a circle with the number of features on the cluster
   function cluster(feature) {
     return [{
-      image: new ol.style.Circle({
+      image: new CircleStyle({
         radius: 14,
-        stroke: new ol.style.Stroke({
+        stroke: new Stroke({
           color: 'blue',
         }),
-        fill: new ol.style.Fill({
+        fill: new Fill({
           color: 'white',
         }),
       }),
       //BEST laisser le texte sur les clusters < 3 icônes
-      text: new ol.style.Text({
+      text: new Text({
         text: feature.getProperties().cluster.toString(),
         font: '12px Verdana',
       }),
@@ -76603,7 +76603,7 @@
     return {
       ...details(...args),
 
-      stroke: new ol.style.Stroke({
+      stroke: new Stroke({
         color: 'red',
         width: 2,
       }),
@@ -76989,7 +76989,7 @@
         this.options.basicStylesOptions;
 
       return sof(feature, ...args) // Call the styleOptions function
-        .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
+        .map(so => new Style(so)); // Transform into an array of Style objects
     }
 
     // Define reload action
@@ -77361,7 +77361,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 27/09/2024 17:55:04';
+  const VERSION = '1.1.2.dev 27/09/2024 19:37:29';
 
   async function trace() {
     const data = [

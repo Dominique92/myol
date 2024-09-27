@@ -7,10 +7,13 @@ import {
   containsCoordinate,
 } from 'ol/extent';
 import Feature from 'ol/Feature';
+import Icon from 'ol/style/Icon';
+import Point from 'ol/geom/Point';
 import proj4Lib from 'proj4/lib/index';
 import {
   register,
 } from 'ol/proj/proj4';
+import Style from 'ol/style/Style';
 import {
   transform,
 } from 'ol/proj';
@@ -37,7 +40,7 @@ class Marker extends VectorLayer {
       ...opt,
     };
 
-    const point = new ol.geom.Point(
+    const point = new Point(
       transform(options.defaultPosition, 'EPSG:4326', 'EPSG:3857') // If no json value
     );
 
@@ -50,8 +53,8 @@ class Marker extends VectorLayer {
 
         ...options,
       }),
-      style: new ol.style.Style({
-        image: new ol.style.Icon(options),
+      style: new Style({
+        image: new Icon(options),
       }),
       properties: {
         marker: true, // To recognise that this is a marker

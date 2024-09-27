@@ -9,9 +9,10 @@ import {
 } from 'ol/extent';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
+import Style from 'ol/style/Style';
 
 import Selector from './Selector';
-import * as stylesOptions from './stylesOptions';
+import * as stylesOptions from './stylesOptions'; //TODO
 
 /**
  * GeoJson vector display
@@ -377,7 +378,7 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
       this.options.basicStylesOptions;
 
     return sof(feature, ...args) // Call the styleOptions function
-      .map(so => new ol.style.Style(so)); // Transform into an array of Style objects
+      .map(so => new Style(so)); // Transform into an array of Style objects
   }
 
   // Define reload action

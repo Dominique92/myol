@@ -5,8 +5,14 @@
 //TODO tester WRI
 
 import ol from '../ol'; //TODO finir imports via node_modules;
+import Circle from 'ol/style/Circle';
 import Control from 'ol/control/Control';
 import Feature from 'ol/Feature';
+import Fill from 'ol/style/Fill';
+import Icon from 'ol/style/Icon';
+import LineString from 'ol/geom/LineString';
+import Point from 'ol/geom/Point';
+import Polygon from 'ol/geom/Polygon';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import {
@@ -15,6 +21,8 @@ import {
   Select,
   Snap,
 } from 'ol/interaction';
+import Stroke from 'ol/style/Stroke';
+import Style from 'ol/style/Style';
 
 import './gpxEdit.css';
 
@@ -129,7 +137,7 @@ class GpxEdit extends VectorLayer {
         this.editedSource.removeFeature(selectedFeature);
 
         this.editedSource.addFeature(new Feature({
-          geometry: new ol.geom.LineString(coordinates.reverse()),
+          geometry: new LineString(coordinates.reverse()),
         }));
       }
 
@@ -279,7 +287,7 @@ class GpxEdit extends VectorLayer {
     // Makes holes if a polygon is included in a biggest one
     if (this.options.withHoles)
       for (const p1 in polys) { // Explore all Polygons combinaison
-        const fs = new ol.geom.Polygon(polys[p1]);
+        const fs = new Polygon(polys[p1]);
 
         for (const p2 in polys)
           if (polys[p2] && p1 !== p2) {
@@ -298,12 +306,12 @@ class GpxEdit extends VectorLayer {
     this.editedSource.clear();
     lines.forEach(l => {
       this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.LineString(l),
+        geometry: new LineString(l),
       }));
     });
     polys.forEach(p => {
       this.editedSource.addFeature(new Feature({
-        geometry: new ol.geom.Polygon(p),
+        geometry: new Polygon(p),
       }));
     });
 
@@ -368,17 +376,17 @@ class GpxEdit extends VectorLayer {
   selectStyles(feature, resolution) {
     const geometry = feature.getGeometry(),
       selectedStyle = {
-        stroke: new ol.style.Stroke({
+        stroke: new Stroke({
           color: 'red',
           width: 2,
         }),
-        fill: new ol.style.Fill({ // Polygons
+        fill: new Fill({ // Polygons
           color: 'rgba(255,0,0,0.2)',
         }),
         radius: 3, // Move & begin line marker
       },
       featureStyles = [
-        new ol.style.Style(selectedStyle), // Line style
+        new Style(selectedStyle), // Line style
       ];
 
     // Circle at the ends of the line
@@ -391,9 +399,9 @@ class GpxEdit extends VectorLayer {
 
       circlesCoords.forEach(cc => {
         featureStyles.push(
-          new ol.style.Style({
-            geometry: new ol.geom.Point(cc),
-            image: new ol.style.Circle(selectedStyle),
+          new Style({
+            geometry: new Point(cc),
+            image: new Circle(selectedStyle),
           }),
         );
       });
@@ -412,9 +420,9 @@ class GpxEdit extends VectorLayer {
         if (Math.abs(dx) + Math.abs(dy) > resolution * 50) {
           last = end;
           featureStyles.push(
-            new ol.style.Style({
-              geometry: new ol.geom.Point(end),
-              image: new ol.style.Icon({
+            new Style({
+              geometry: new Point(end),
+              image: new Icon({
                 rotateWithView: true,
                 rotation: -Math.atan2(dy, dx),
                 src: 'data:image/svg+xml;utf8,\

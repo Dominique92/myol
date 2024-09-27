@@ -2,8 +2,11 @@
  * MyVectorLayer class to facilitate vector layers display
  */
 
-import ol from '../ol';
+import ol from '../ol'; //TODO finir imports via node_modules;
 import Feature from 'ol/Feature';
+import {
+  getCenter,
+} from 'ol/extent';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 
@@ -97,7 +100,7 @@ class MyClusterSource extends ol.source.Cluster {
       if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
         this.addFeature(feature); // And return null to not cluster this feature
       else
-        return new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent()));
+        return new ol.geom.Point(getCenter(feature.getGeometry().getExtent()));
     }
   }
 

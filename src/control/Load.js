@@ -3,7 +3,10 @@
  * Supports any format supported by Openlayers
  */
 
-import ol from '../ol';
+import ol from '../ol'; //TODO finir imports via node_modules;
+import {
+  isEmpty,
+} from 'ol/extent';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 
@@ -89,7 +92,7 @@ class Load extends Button {
 
     const fileExtent = gpxSource.getExtent();
 
-    if (ol.extent.isEmpty(fileExtent))
+    if (isEmpty(fileExtent))
       alert(url + ' ne comporte pas de point ni de trace.');
     else {
       if (this.options.receivingLayer) //TODO replace it by map.on('loadend') when new editor will be published

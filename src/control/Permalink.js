@@ -6,7 +6,7 @@
 
 import Control from 'ol/control/Control.js';
 import {
-  transform
+  transform,
 } from 'ol/proj';
 
 import './control.css';

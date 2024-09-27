@@ -2,7 +2,11 @@
  * Many simplified display of various tiles layers services
  */
 
-import ol from '../ol';
+import ol from '../ol'; //TODO finir imports via node_modules;
+import {
+  getTopLeft,
+  getWidth,
+} from 'ol/extent';
 
 /**
  * Virtual class to factorise XYZ layers code
@@ -136,7 +140,7 @@ export class IGN extends ol.layer.Tile {
       IGNmatrixIds = [];
 
     for (let i = 0; i < 18; i++) {
-      IGNresolutions[i] = ol.extent.getWidth(ol.proj.get('EPSG:3857').getExtent()) / 256 / (2 ** i);
+      IGNresolutions[i] = getWidth(ol.proj.get('EPSG:3857').getExtent()) / 256 / (2 ** i);
       IGNmatrixIds[i] = i.toString();
     }
 
@@ -184,7 +188,7 @@ export class SwissTopo extends ol.layer.Tile {
       matrixIds = [];
 
     for (let r = 0; r < 18; ++r) {
-      resolutions[r] = ol.extent.getWidth(projectionExtent) / 256 / (2 ** r);
+      resolutions[r] = getWidth(projectionExtent) / 256 / (2 ** r);
       matrixIds[r] = r;
     }
 
@@ -193,7 +197,7 @@ export class SwissTopo extends ol.layer.Tile {
         url: options.host + options.subLayer +
           '/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
         tileGrid: new ol.tilegrid.WMTS({
-          origin: ol.extent.getTopLeft(projectionExtent),
+          origin: getTopLeft(projectionExtent),
           resolutions: resolutions,
           matrixIds: matrixIds,
         }),

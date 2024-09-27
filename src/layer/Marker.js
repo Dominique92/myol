@@ -2,14 +2,17 @@
  * Marker position display & edit
  */
 
-import ol from '../ol';
+import ol from '../ol'; //TODO finir imports via node_modules;
+import {
+  containsCoordinate,
+} from 'ol/extent';
 import Feature from 'ol/Feature';
 import proj4Lib from 'proj4/lib/index';
 import {
-  register
+  register,
 } from 'ol/proj/proj4';
 import {
-  transform
+  transform,
 } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
@@ -180,7 +183,7 @@ class Marker extends VectorLayer {
 
     const inEPSG21781 =
       typeof proj4Lib === 'function' &&
-      ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
+      containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
 
     // Move the marker
     this.point.setCoordinates(ll3857);

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/09/2024 08:15:28 using npm run build from the src/... sources
+ * Built 27/09/2024 12:01:27 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -64967,7 +64967,7 @@
         IGNmatrixIds = [];
 
       for (let i = 0; i < 18; i++) {
-        IGNresolutions[i] = ol.extent.getWidth(ol.proj.get('EPSG:3857').getExtent()) / 256 / (2 ** i);
+        IGNresolutions[i] = getWidth(ol.proj.get('EPSG:3857').getExtent()) / 256 / (2 ** i);
         IGNmatrixIds[i] = i.toString();
       }
 
@@ -65015,7 +65015,7 @@
         matrixIds = [];
 
       for (let r = 0; r < 18; ++r) {
-        resolutions[r] = ol.extent.getWidth(projectionExtent) / 256 / (2 ** r);
+        resolutions[r] = getWidth(projectionExtent) / 256 / (2 ** r);
         matrixIds[r] = r;
       }
 
@@ -65024,7 +65024,7 @@
           url: options.host + options.subLayer +
             '/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
           tileGrid: new ol.tilegrid.WMTS({
-            origin: ol.extent.getTopLeft(projectionExtent),
+            origin: getTopLeft(projectionExtent),
             resolutions: resolutions,
             matrixIds: matrixIds,
           }),
@@ -65517,7 +65517,7 @@
         if (l.getUseInterimTilesOnError && // Is a tile layer
           l !== this && l !== this.lowResLayer && // Not one of the background layers
           l.isVisible() && // Is visible
-          ol.extent.containsExtent(l.getExtent() || mapExtent, mapExtent))
+          containsExtent(l.getExtent() || mapExtent, mapExtent))
           needed = false;
       });
 
@@ -65813,7 +65813,7 @@
 
       const fileExtent = gpxSource.getExtent();
 
-      if (ol.extent.isEmpty(fileExtent))
+      if (isEmpty(fileExtent))
         alert(url + ' ne comporte pas de point ni de trace.');
       else {
         if (this.options.receivingLayer) //TODO replace it by map.on('loadend') when new editor will be published
@@ -68074,9 +68074,7 @@
   /**
    * GpxEdit layer to edit geoJson lines & polygons
    */
-  //TODO interactions avec load / download, ...
-  //TODO inclure dans dist / tester chemineur + wri
-  //TODO finir imports via node_modules
+  //TODO tester chemineur + wri
 
 
   class GpxEdit extends VectorLayer {
@@ -76351,7 +76349,7 @@
 
       const inEPSG21781 =
         typeof proj4 === 'function' &&
-        ol.extent.containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
+        containsCoordinate([664577, 5753148, 1167741, 6075303], ll3857);
 
       // Move the marker
       this.point.setCoordinates(ll3857);
@@ -76489,7 +76487,7 @@
     const properties = feature.getProperties();
 
     if (properties.label) {
-      const featureArea = ol.extent.getArea(feature.getGeometry().getExtent()),
+      const featureArea = getArea$1(feature.getGeometry().getExtent()),
         elLabel = document.createElement('span');
 
       elLabel.innerHTML = properties.label; //HACK to render the html entities in the canvas
@@ -76711,7 +76709,7 @@
         if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
           this.addFeature(feature); // And return null to not cluster this feature
         else
-          return new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent()));
+          return new ol.geom.Point(getCenter(feature.getGeometry().getExtent()));
       }
     }
 
@@ -77360,7 +77358,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 27/09/2024 08:15:28';
+  const VERSION = '1.1.2.dev 27/09/2024 12:01:27';
 
   async function trace() {
     const data = [

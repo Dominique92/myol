@@ -4,7 +4,7 @@
 
 import Control from 'ol/control/Control';
 import {
-  getLength as sphereGetLength
+  getLength as sphereGetLength,
 } from 'ol/sphere';
 
 import './lengthLine.css';

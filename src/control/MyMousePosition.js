@@ -2,12 +2,12 @@
  * MyMousePosition control to display the mouse position
  */
 
-import ol from '../ol';
+import ol from '../ol'; //TODO finir imports via node_modules;
 import {
-  getDistance
+  getDistance,
 } from 'ol/sphere';
 import {
-  transform
+  transform,
 } from 'ol/proj';
 
 import './control.css';

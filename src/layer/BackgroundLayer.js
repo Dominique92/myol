@@ -4,8 +4,9 @@
  * Must be added to map before partial layers
  */
 
-import ol from '../ol';
-
+import {
+  containsExtent,
+} from 'ol/extent';
 import * as layerTile from './TileLayerCollection';
 
 class BackgroundLayer extends layerTile.Positron {
@@ -41,7 +42,7 @@ class BackgroundLayer extends layerTile.Positron {
       if (l.getUseInterimTilesOnError && // Is a tile layer
         l !== this && l !== this.lowResLayer && // Not one of the background layers
         l.isVisible() && // Is visible
-        ol.extent.containsExtent(l.getExtent() || mapExtent, mapExtent))
+        containsExtent(l.getExtent() || mapExtent, mapExtent))
         needed = false;
     });
 

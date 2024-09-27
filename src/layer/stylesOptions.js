@@ -6,14 +6,17 @@
  *   layer : that owns the feature
  */
 
-import ol from '../ol';
+import ol from '../ol'; //TODO finir imports via node_modules;
+import {
+  getArea,
+} from 'ol/extent';
 
 // Display a label with properties.label
 export function label(feature) {
   const properties = feature.getProperties();
 
   if (properties.label) {
-    const featureArea = ol.extent.getArea(feature.getGeometry().getExtent()),
+    const featureArea = getArea(feature.getGeometry().getExtent()),
       elLabel = document.createElement('span');
 
     elLabel.innerHTML = properties.label; //HACK to render the html entities in the canvas

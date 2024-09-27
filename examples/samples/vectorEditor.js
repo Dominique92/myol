@@ -12,7 +12,7 @@ const snaplayer = new ol.layer.Vector({
     }),
   }),
 
-  editorLayer = new myol.layer.GpxEdit({
+  editorLayer = new myol.layer.VectorEditor({
     direction: true,
     canMerge: true,
     withPolys: true,

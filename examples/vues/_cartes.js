@@ -490,49 +490,49 @@ function mapNav(options) {
 // Carte de la page de création ou d'édion de massif ou de zone
 /* eslint-disable-next-line no-unused-vars */
 function mapEdit(options) {
-  const editorLayer = new myol.layer.GpxEdit({
-    geoJsonId: 'edit-json',
-    canMerge: true,
-    withPolys: true,
-    withHoles: true,
+  const editorLayer = new myol.layer.VectorEditor({
+      geoJsonId: 'edit-json',
+      canMerge: true,
+      withPolys: true,
+      withHoles: true,
 
-    writeGeoJson: (features, lines, polys, options) => {
+      writeGeoJson: (features, lines, polys, opt) => {
+        /*
       const warnEl = document.getElementById('warn');
 
       // Body class to warn edit polys only
-      /*
       if (lines.length)
         warnEl.innerHTML = 'Il ne doit pas y avoir de lignes dans un massif.';
       else if (polys.length)
         warnEl.innerHTML = '';
       else
         warnEl.innerHTML = 'Il doit y avoir au moins 1 polygone dans un massif.';
-*/
+      */
 
-      return options.format.writeGeometry(
-        new ol.geom.MultiPolygon(polys),
-        options,
-      );
-    },
-  });
+        return opt.format.writeGeometry(
+          new ol.geom.MultiPolygon(polys),
+          opt,
+        );
+      },
+    }),
 
-  map = new ol.Map({
-    ...basicMapOptions(options),
+    map = new ol.Map({
+      ...basicMapOptions(options),
 
-    controls: [
-      new myol.control.LayerSwitcher({
-        layers: fondsCarte('edit', options.mapKeys),
-      }),
-      ...basicControls(),
-    ],
+      controls: [
+        new myol.control.LayerSwitcher({
+          layers: fondsCarte('edit', options.mapKeys),
+        }),
+        ...basicControls(),
+      ],
 
-    layers: [
-      coucheContourMassif({
-        host: options.host,
-      }),
-      editorLayer,
-    ],
-  });
+      layers: [
+        coucheContourMassif({
+          host: options.host,
+        }),
+        editorLayer,
+      ],
+    });
 
   // Centrer sur la zone du polygone
   if (options.extent) {

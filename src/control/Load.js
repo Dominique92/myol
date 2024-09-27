@@ -98,10 +98,7 @@ class Load extends Button {
     if (isEmpty(fileExtent))
       alert(url + ' ne comporte pas de point ni de trace.');
     else {
-      if (this.options.receivingLayer) //TODO replace it by map.on('loadend') when new editor will be published
-        this.options.receivingLayer.getSource().addFeatures(features);
-      else
-        map.addLayer(gpxLayer);
+      map.addLayer(gpxLayer);
 
       // Zoom the map on the added features
       map.getView().fit(

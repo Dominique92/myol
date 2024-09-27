@@ -1,5 +1,5 @@
 /**
- * GpxEdit layer to edit geoJson lines & polygons
+ * VectorEditor layer to edit geoJson lines & polygons
  */
 //TODO ne downloader que editedSource
 //TODO tester WRI
@@ -25,9 +25,9 @@ import {
 import Stroke from 'ol/style/Stroke';
 import Style from 'ol/style/Style';
 
-import './gpxEdit.css';
+import './vectorEditor.css';
 
-class GpxEdit extends VectorLayer {
+class VectorEditor extends VectorLayer {
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
@@ -67,7 +67,7 @@ class GpxEdit extends VectorLayer {
     // The editor layer
     super({
       source: editedSource,
-      zIndex: 400, // Editor & cursor : above the features
+      zIndex: 400, // Editor & cursor above the features
       style: new Style({
         stroke: new Stroke({
           color: 'blue',
@@ -451,4 +451,4 @@ class GpxEdit extends VectorLayer {
   };
 }
 
-export default GpxEdit;
+export default VectorEditor;

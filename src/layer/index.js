@@ -4,6 +4,7 @@
 
 import BackgroundLayer from './BackgroundLayer';
 import Editor from './Editor';
+import GpxEdit from './GpxEdit';
 import Hover from './Hover';
 import Marker from './Marker';
 import MyVectorLayer from './MyVectorLayer';
@@ -14,6 +15,7 @@ import * as vectorLayerCollection from './VectorLayerCollection';
 export default {
   BackgroundLayer: BackgroundLayer,
   Editor: Editor,
+  GpxEdit: GpxEdit,
   Hover: Hover,
   Marker: Marker,
   MyVectorLayer,

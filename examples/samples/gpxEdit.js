@@ -1,8 +1,4 @@
-import ol from '../../src/ol';
-import Load from '../../src/control/Load';
-import LengthLine from '../../src/control/LengthLine';
-import MyMousePosition from '../../src/control/MyMousePosition';
-import GpxEdit from '../../src/layer/GpxEdit.js';
+/* global ol, myol */
 
 const snaplayer = new ol.layer.Vector({
     source: new ol.source.Vector({
@@ -16,7 +12,7 @@ const snaplayer = new ol.layer.Vector({
     }),
   }),
 
-  editorLayer = new GpxEdit({
+  editorLayer = new myol.layer.GpxEdit({
     direction: true,
     canMerge: true,
     withPolys: true,
@@ -45,9 +41,9 @@ const snaplayer = new ol.layer.Vector({
     target: 'map',
 
     controls: [
-      new Load(),
-      new LengthLine(),
-      new MyMousePosition(),
+      new myol.control.Load(),
+      new myol.control.LengthLine(),
+      new myol.control.MyMousePosition(),
     ],
 
     layers: [

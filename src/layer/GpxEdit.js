@@ -2,6 +2,8 @@
  * GpxEdit layer to edit geoJson lines & polygons
  */
 //TODO interactions avec load / download, ...
+//TODO tester chemineur + wri
+//TODO finir imports via node_modules
 
 import ol from '../ol';
 import Control from 'ol/control/Control';

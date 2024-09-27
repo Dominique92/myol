@@ -85,12 +85,10 @@ const mapKeys = {
   maptiler: 'YiOqxKkIAWZyREPRjd7d',
   mapbox: 'pk.eyJ1IjoiZG9taW5pcXVlOTIiLCJhIjoiY2xtOWprMmZmMGcwejNlbzVvOTl3dmt2eSJ9.B9IsLuXTDBarbCY4_YTIrQ',
 
-  //https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
+  // https://www.microsoft.com/en-us/maps/create-a-bing-maps-key
   bing: 'AldBMbaKNyat-j6CBRKxxH05uaxP7dvQu1RnMWCQEGGC3z0gjBu-bLniE_8WZvcC',
 
-  // https://geoservices.ign.fr/
-  //TODO private key when available at // https://geoservices.ign.fr/actualites/2023-11-20-acces-donnesnonlibres-gpf
-  //TODO new keys at : https://cartes.gouv.fr
+  // https://cartes.gouv.fr
   ign: 'ign_scan_ws',
 
   // SwissTopo : register your domain at

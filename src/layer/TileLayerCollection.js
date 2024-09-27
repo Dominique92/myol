@@ -132,7 +132,8 @@ export class Thunderforest extends OpenStreetMap {
 
 /**
  * IGN France
- * Doc, API & key : https://geoservices.ign.fr/services-web
+ * Doc & API : https://geoservices.ign.fr/services-web
+ * Key : https://cartes.gouv.fr
  */
 export class IGN extends ol.layer.Tile {
   constructor(options = {}) {

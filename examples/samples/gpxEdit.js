@@ -42,6 +42,7 @@ const snaplayer = new ol.layer.Vector({
 
     controls: [
       new myol.control.Load(),
+      new myol.control.Download(),
       new myol.control.LengthLine(),
       new myol.control.MyMousePosition(),
     ],

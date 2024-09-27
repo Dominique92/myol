@@ -1,7 +1,8 @@
 /**
  * GpxEdit layer to edit geoJson lines & polygons
  */
-//TODO tester chemineur + wri
+//TODO ne downloader que editedSource
+//TODO tester WRI
 
 import ol from '../ol'; //TODO finir imports via node_modules;
 import Control from 'ol/control/Control';
@@ -100,6 +101,7 @@ class GpxEdit extends VectorLayer {
       const buttonEl = document.createElement('button'),
         element = document.createElement('div');
 
+      buttonEl.setAttribute('type', 'button');
       element.className = 'ol-unselectable ol-control edit-button edit-button-' + intName;
       element.appendChild(buttonEl);
 

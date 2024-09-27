@@ -14,7 +14,7 @@ import VectorSource from 'ol/source/Vector';
 import Button from '../control/Button';
 import './editor.css';
 
-//TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
+//TD ? ne montre pas départ / arrivée + tests sur permutation de sens
 
 // Default french text
 const helpModifFr = {
@@ -184,7 +184,7 @@ class Editor extends VectorLayer {
 
     this.buttons = [
       new Button({ // 0
-        className: 'myol-button-inspect myol-button-nokeepselect', //TODO refund button hover & touch
+        className: 'myol-button-inspect myol-button-nokeepselect', //TD refund button hover & touch
         subMenuId: 'myol-edit-help-inspect',
         subMenuHTML: '<p>Inspect</p>',
         subMenuHTMLfr: helpModifFr.inspect,
@@ -253,7 +253,7 @@ class Editor extends VectorLayer {
 
     // End of one modify interaction
     this.interactions[1].on('modifyend', evt => {
-      //TODO BUG edit polygone : ne peut pas supprimer un côté
+      //TD BUG edit polygone : ne peut pas supprimer un côté
       //BEST move only one summit when dragging
       //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -271,8 +271,8 @@ class Editor extends VectorLayer {
       }
 
       // Alt+click on segment : delete the segment & split the line
-      //TODO Snap : register again the full list of features as addFeature manages already registered
-      //TODO Le faire aussi à l’init vers edit
+      //TD Snap : register again the full list of features as addFeature manages already registered
+      //TD Le faire aussi à l’init vers edit
       const tmpFeature = this.interactions[4].snapTo(
         evt.mapBrowserEvent.pixel,
         evt.mapBrowserEvent.coordinate,

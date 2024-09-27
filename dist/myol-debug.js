@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/09/2024 12:01:27 using npm run build from the src/... sources
+ * Built 27/09/2024 17:55:04 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -64959,7 +64959,8 @@
 
   /**
    * IGN France
-   * Doc, API & key : https://geoservices.ign.fr/services-web
+   * Doc & API : https://geoservices.ign.fr/services-web
+   * Key : https://cartes.gouv.fr
    */
   class IGN extends ol.layer.Tile {
     constructor(options = {}) {
@@ -67553,7 +67554,7 @@
    */
 
 
-  //TODO ? ne montre pas départ / arrivée + tests sur permutation de sens
+  //TD ? ne montre pas départ / arrivée + tests sur permutation de sens
 
   // Default french text
   const helpModifFr = {
@@ -67723,7 +67724,7 @@
 
       this.buttons = [
         new Button({ // 0
-          className: 'myol-button-inspect myol-button-nokeepselect', //TODO refund button hover & touch
+          className: 'myol-button-inspect myol-button-nokeepselect', //TD refund button hover & touch
           subMenuId: 'myol-edit-help-inspect',
           subMenuHTML: '<p>Inspect</p>',
           subMenuHTMLfr: helpModifFr.inspect,
@@ -67792,7 +67793,7 @@
 
       // End of one modify interaction
       this.interactions[1].on('modifyend', evt => {
-        //TODO BUG edit polygone : ne peut pas supprimer un côté
+        //TD BUG edit polygone : ne peut pas supprimer un côté
         //BEST move only one summit when dragging
         //BEST Ctrl+Alt+click on summit : delete the line or poly
 
@@ -67810,8 +67811,8 @@
         }
 
         // Alt+click on segment : delete the segment & split the line
-        //TODO Snap : register again the full list of features as addFeature manages already registered
-        //TODO Le faire aussi à l’init vers edit
+        //TD Snap : register again the full list of features as addFeature manages already registered
+        //TD Le faire aussi à l’init vers edit
         const tmpFeature = this.interactions[4].snapTo(
           evt.mapBrowserEvent.pixel,
           evt.mapBrowserEvent.coordinate,
@@ -68074,7 +68075,8 @@
   /**
    * GpxEdit layer to edit geoJson lines & polygons
    */
-  //TODO tester chemineur + wri
+  //TODO ne downloader que editedSource
+  //TODO tester WRI
 
 
   class GpxEdit extends VectorLayer {
@@ -68160,6 +68162,7 @@
         const buttonEl = document.createElement('button'),
           element = document.createElement('div');
 
+        buttonEl.setAttribute('type', 'button');
         element.className = 'ol-unselectable ol-control edit-button edit-button-' + intName;
         element.appendChild(buttonEl);
 
@@ -77358,7 +77361,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 27/09/2024 12:01:27';
+  const VERSION = '1.1.2.dev 27/09/2024 17:55:04';
 
   async function trace() {
     const data = [

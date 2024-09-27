@@ -150,8 +150,7 @@ function coucheContourMassif(options) {
     basicStylesOptions: () => [{
       // Simple contour bleu
       stroke: new ol.style.Stroke({
-        color: 'blue',
-        width: 2,
+        color: 'black',
       }),
     }],
 
@@ -491,31 +490,40 @@ function mapNav(options) {
 // Carte de la page de création ou d'édion de massif ou de zone
 /* eslint-disable-next-line no-unused-vars */
 function mapEdit(options) {
-  const editorLayer = new myol.layer.Editor({
+  const editorLayer = new myol.layer.GpxEdit({
     geoJsonId: 'edit-json',
-    editOnly: 'poly',
+    canMerge: true,
+    withPolys: true,
+    withHoles: true,
 
-    featuresToSave: function(coordinates) {
-      return this.format.writeGeometry(
-        new ol.geom.MultiPolygon(coordinates.polys), {
-          featureProjection: 'EPSG:3857',
-          decimals: 5,
-        });
+    writeGeoJson: (features, lines, polys, options) => {
+      const warnEl = document.getElementById('warn');
+
+      // Body class to warn edit polys only
+      /*
+      if (lines.length)
+        warnEl.innerHTML = 'Il ne doit pas y avoir de lignes dans un massif.';
+      else if (polys.length)
+        warnEl.innerHTML = '';
+      else
+        warnEl.innerHTML = 'Il doit y avoir au moins 1 polygone dans un massif.';
+*/
+
+      return options.format.writeGeometry(
+        new ol.geom.MultiPolygon(polys),
+        options,
+      );
     },
   });
 
-  return new ol.Map({
+  map = new ol.Map({
     ...basicMapOptions(options),
 
     controls: [
-      ...basicControls({
-        load: {
-          receivingLayer: editorLayer,
-        },
-      }),
       new myol.control.LayerSwitcher({
         layers: fondsCarte('edit', options.mapKeys),
       }),
+      ...basicControls(),
     ],
 
     layers: [
@@ -525,4 +533,14 @@ function mapEdit(options) {
       editorLayer,
     ],
   });
+
+  // Centrer sur la zone du polygone
+  if (options.extent) {
+    const extent4326 = options.extent.map(c => parseFloat(c)),
+      extent3857 = ol.proj.transformExtent(extent4326, 'EPSG:4326', 'EPSG:3857');
+
+    map.getView().fit(extent3857);
+  }
+
+  return map;
 }

@@ -3,6 +3,7 @@
  */
 //TODO ne downloader que editedSource
 //TODO tester WRI
+//TODO Snap sur la couche du fond empêche la fusion des lignes
 
 import ol from '../ol'; //TODO finir imports via node_modules;
 import Circle from 'ol/style/Circle';
@@ -67,6 +68,16 @@ class GpxEdit extends VectorLayer {
     super({
       source: editedSource,
       zIndex: 400, // Editor & cursor : above the features
+      style: new Style({
+        stroke: new Stroke({
+          color: 'blue',
+          width: 2,
+        }),
+        fill: new Fill({
+          color: 'rgba(0,0,255,0.2)',
+        }),
+      }),
+
       ...options,
     });
 

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/09/2024 19:37:29 using npm run build from the src/... sources
+ * Built 27/09/2024 21:13:18 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -68077,6 +68077,7 @@
    */
   //TODO ne downloader que editedSource
   //TODO tester WRI
+  //TODO Snap sur la couche du fond empêche la fusion des lignes
 
 
   class GpxEdit extends VectorLayer {
@@ -68120,6 +68121,16 @@
       super({
         source: editedSource,
         zIndex: 400, // Editor & cursor : above the features
+        style: new Style({
+          stroke: new Stroke({
+            color: 'blue',
+            width: 2,
+          }),
+          fill: new Fill({
+            color: 'rgba(0,0,255,0.2)',
+          }),
+        }),
+
         ...options,
       });
 
@@ -77361,7 +77372,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 27/09/2024 19:37:29';
+  const VERSION = '1.1.2.dev 27/09/2024 21:13:18';
 
   async function trace() {
     const data = [

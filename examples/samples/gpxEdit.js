@@ -18,7 +18,7 @@ const snaplayer = new ol.layer.Vector({
     withPolys: true,
     withHoles: true,
 
-    // For WRI
+    // For WRI //TODO move to cartes_ & WRI tests
     wwwriteGeoJson: (features, lines, polys, options) => {
       const warnEl = document.getElementById('warn');
 

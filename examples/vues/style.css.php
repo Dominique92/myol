@@ -875,6 +875,17 @@ a.infobulle:hover span { /* qd on passe dessus, ca affiche */
     height: 450px;
   }
 }
+/* Blocages de l'enregistrement de mauvais polygones */
+.edit-error-lines,
+.edit-error-polys {
+	color: red;
+}
+.edit-lines-0 .edit-error-lines,
+div:not(.edit-polys-0) .edit-error-polys,
+div:not(.edit-lines-0) input[name="enregistrer"],
+.edit-polys-0 input[name="enregistrer"] {
+	display: none;
+}
 @media (pointer:coarse) {
   .hide-touch-screen {
     display: none;

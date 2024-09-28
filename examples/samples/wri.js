@@ -1,4 +1,5 @@
 /* global mapKeys */
+/* eslint-disable camelcase */
 
 const params = new URLSearchParams(document.location.search),
   mapFunction = 'map' + params.get('map'),
@@ -12,6 +13,17 @@ const params = new URLSearchParams(document.location.search),
 // Populate map options with URI arguments
 for (const k of params.keys())
   options[k] = params.get(k);
+
+if (typeof options.extent === 'string')
+  options.extent = options.extent.split(',');
+
+if (typeof options.id_polygone === 'string')
+  options.id_polygone = parseFloat(options.id_polygone);
+
+options.initSelect = options.initSelect === 'true';
+
+if (typeof options.id_polygone_type === 'string')
+  options.id_polygone_type = parseFloat(options.id_polygone_type);
 
 // Load example map
 window[mapFunction](options);

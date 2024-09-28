@@ -478,7 +478,7 @@ function mapNav(options) {
 
   // Centrer sur la zone du polygone
   if (options.extent) {
-    const extent4326 = options.extent.map(c => parseFloat(c)),
+    const extent4326 = options.extent.map(c => parseFloat(c)), // Parse string
       extent3857 = ol.proj.transformExtent(extent4326, 'EPSG:4326', 'EPSG:3857');
 
     map.getView().fit(extent3857);
@@ -497,18 +497,15 @@ function mapEdit(options) {
       withHoles: true,
 
       writeGeoJson: (features, lines, polys, opt) => {
-        /*
-      const warnEl = document.getElementById('warn');
+        // Controle du statut d'enregistrement par le CSS
+        const editStatus = document.getElementById('selecteur-carte-edit');
 
-      // Body class to warn edit polys only
-      if (lines.length)
-        warnEl.innerHTML = 'Il ne doit pas y avoir de lignes dans un massif.';
-      else if (polys.length)
-        warnEl.innerHTML = '';
-      else
-        warnEl.innerHTML = 'Il doit y avoir au moins 1 polygone dans un massif.';
-      */
+        if (editStatus)
+          editStatus.className = 'noprint ' +
+          'edit-lines-' + lines.length +
+          ' edit-polys-' + polys.length;
 
+        // Enregistrement au format MultiPolygon
         return opt.format.writeGeometry(
           new ol.geom.MultiPolygon(polys),
           opt,

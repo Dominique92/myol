@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 27/09/2024 21:48:44 using npm run build from the src/... sources
+ * Built 28/09/2024 18:16:54 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -67550,7 +67550,6 @@
    */
   //TODO ne downloader que editedSource
   //TODO tester WRI
-  //TODO Snap sur la couche du fond empêche la fusion des lignes
 
 
   class VectorEditor extends VectorLayer {
@@ -67663,6 +67662,8 @@
       });
 
       // Interactions listeners
+      this.selectInteraction.on('select', () => this.optimiseAndSave()); // Merge old separated segments
+
       this.modifyInteraction.on('modifystart', evt => {
         const oEvt = evt.mapBrowserEvent.originalEvent,
           selectedFeature = this.selectInteraction.getFeatures().item(0),
@@ -67788,8 +67789,9 @@
                   // Shake lines end to explore all possibilities
                   m.reverse();
                   lines[m[0]].reverse();
-                  if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0])) {
-                    // Merge 2 lines having 2 ends in common
+
+                  // Merge 2 lines having 2 ends in common
+                  if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0], splitCord)) {
                     lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
                     delete lines[m[1]]; // Remove the line but don't renumber the array keys
                   }
@@ -67800,26 +67802,12 @@
 
       // Make polygons with looped lines
       if (this.options.withPolys)
-        for (const a in lines) {
-          if (this.compareCoords(lines[a])) { // If this line is closed
-            // Split squeezed polygons
-            // Explore all summits combinaison
-            for (let i1 = 0; i1 < lines[a].length - 1; i1++)
-              for (let i2 = 0; i2 < i1; i2++)
-                if (lines[a][i1][0] === lines[a][i2][0] &&
-                  lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
-                  const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
-                  squized.push(squized[0]); // Close the poly
-                  polys.push([squized]); // Add the squized poly
-                  i1 = lines[a].length; // End loop
-                  i2 = lines[a].length;
-                }
-
-            // Convert closed lines to polygons
+        for (const a in lines)
+          if (this.compareCoords(lines[a]) && // If this line is closed
+            !this.compareCoords(splitCord, lines[a][0])) { // Except if we just split it
             polys.push([lines[a]]); // Add the polygon
             delete lines[a]; // Forget the line
           }
-        }
 
       // Makes holes if a polygon is included in a biggest one
       if (this.options.withHoles)
@@ -67829,9 +67817,11 @@
           for (const p2 in polys)
             if (polys[p2] && p1 !== p2) {
               let intersects = true;
+
               for (const c in polys[p2][0])
                 if (!fs.intersectsCoordinate(polys[p2][0][c]))
                   intersects = false;
+
               if (intersects) { // If one intersects a bigger
                 polys[p1].push(polys[p2][0]); // Include the smaler in the bigger
                 delete polys[p2]; // Forget the smaller
@@ -67882,29 +67872,29 @@
     flatCoord(coords, splitCord) {
       const lines = [];
 
-      coords.forEach(c => {
-        if (typeof c[0][0] === 'object') // Recurse for multi* or polys
-          lines.push(...this.flatCoord(c, splitCord));
-        else if (typeof c[0][0] === 'number') { // Lines
+      coords.forEach(segmentCoords => {
+        if (typeof segmentCoords[0][0] === 'object') // Recurse for multi* or polys
+          lines.push(...this.flatCoord(segmentCoords, splitCord));
+        else if (typeof segmentCoords[0][0] === 'number') { // Lines
           if (splitCord) {
             lines.push([]);
-            c.forEach(p => {
+            segmentCoords.forEach(p => {
               lines[lines.length - 1].push(p);
+              // Split segments if required
               if (this.compareCoords(splitCord, p))
-                lines.push([
-                  [p[0], p[1] + 1],
-                ]);
+                lines.push([p]);
             });
           } else
-            lines.push(c);
+            lines.push(segmentCoords);
         }
       });
 
       return lines;
     }
 
-    compareCoords(a, b) {
+    compareCoords(a, b, splitCord) {
       if (!a) return false;
+      if (this.compareCoords(splitCord, a)) return false; // Except if we just split it
       if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
       return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
     }
@@ -76844,7 +76834,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 27/09/2024 21:48:44';
+  const VERSION = '1.1.2.dev 28/09/2024 18:16:54';
 
   async function trace() {
     const data = [

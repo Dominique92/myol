@@ -136,7 +136,8 @@ class VectorEditor extends VectorLayer {
     });
 
     // Interactions listeners
-    this.selectInteraction.on('select', () => this.optimiseAndSave()); // Merge old separated segments
+    // Merge old separated segments
+    this.selectInteraction.on('select', () => this.optimiseAndSave());
 
     this.modifyInteraction.on('modifystart', evt => {
       const oEvt = evt.mapBrowserEvent.originalEvent,
@@ -276,12 +277,31 @@ class VectorEditor extends VectorLayer {
 
     // Make polygons with looped lines
     if (this.options.withPolys)
-      for (const a in lines)
-        if (this.compareCoords(lines[a]) && // If this line is closed
-          !this.compareCoords(splitCord, lines[a][0])) { // Except if we just split it
+      for (const a in lines) {
+        if (this.compareCoords(lines[a])) { // If this line is closed
+          // Split squeezed polygons
+          // Explore all summits combinaison
+          for (let i1 = 0; i1 < lines[a].length - 1; i1++)
+            for (let i2 = 0; i2 < i1; i2++)
+
+              // Find 2 identical summits
+              if (lines[a][i1][0] === lines[a][i2][0] &&
+                lines[a][i1][1] === lines[a][i2][1]
+                // Except if we just split it
+                //&&  !this.compareCoords(splitCord,  lines[a][i1])
+              ) {
+                const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
+                squized.push(squized[0]); // Close the poly
+                polys.push([squized]); // Add the squized poly
+                i1 = lines[a].length; // End loop
+                i2 = lines[a].length;
+              }
+
+          // Convert closed lines to polygons
           polys.push([lines[a]]); // Add the polygon
           delete lines[a]; // Forget the line
         }
+      }
 
     // Makes holes if a polygon is included in a biggest one
     if (this.options.withHoles)
@@ -291,11 +311,9 @@ class VectorEditor extends VectorLayer {
         for (const p2 in polys)
           if (polys[p2] && p1 !== p2) {
             let intersects = true;
-
             for (const c in polys[p2][0])
               if (!fs.intersectsCoordinate(polys[p2][0][c]))
                 intersects = false;
-
             if (intersects) { // If one intersects a bigger
               polys[p1].push(polys[p2][0]); // Include the smaler in the bigger
               delete polys[p2]; // Forget the smaller
@@ -346,20 +364,22 @@ class VectorEditor extends VectorLayer {
   flatCoord(coords, splitCord) {
     const lines = [];
 
-    coords.forEach(segmentCoords => {
-      if (typeof segmentCoords[0][0] === 'object') // Recurse for multi* or polys
-        lines.push(...this.flatCoord(segmentCoords, splitCord));
-      else if (typeof segmentCoords[0][0] === 'number') { // Lines
+    coords.forEach(c => {
+      if (typeof c[0][0] === 'object') // Recurse for multi* or polys
+        lines.push(...this.flatCoord(c, splitCord));
+      else if (typeof c[0][0] === 'number') { // Lines
         if (splitCord) {
           lines.push([]);
-          segmentCoords.forEach(p => {
+          c.forEach(p => {
             lines[lines.length - 1].push(p);
             // Split segments if required
             if (this.compareCoords(splitCord, p))
-              lines.push([p]);
+              lines.push([
+                [p[0], p[1]],
+              ]);
           });
         } else
-          lines.push(segmentCoords);
+          lines.push(c);
       }
     });
 
@@ -367,8 +387,8 @@ class VectorEditor extends VectorLayer {
   }
 
   compareCoords(a, b, splitCord) {
+    if (compareCoords(splitCord, a)) return false;
     if (!a) return false;
-    if (this.compareCoords(splitCord, a)) return false; // Except if we just split it
     if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
     return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
   }

@@ -136,7 +136,8 @@ class VectorEditor extends VectorLayer {
     });
 
     // Interactions listeners
-    this.selectInteraction.on('select', () => this.optimiseAndSave()); // Merge old separated segments
+    // Merge old separated segments
+    this.selectInteraction.on('select', () => this.optimiseAndSave());
 
     this.modifyInteraction.on('modifystart', evt => {
       const oEvt = evt.mapBrowserEvent.originalEvent,
@@ -265,7 +266,9 @@ class VectorEditor extends VectorLayer {
                 lines[m[0]].reverse();
 
                 // Merge 2 lines having 2 ends in common
-                if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0], splitCord)) {
+                if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0]) &&
+                  // Except if we just split it
+                  !this.compareCoords(splitCord, lines[m[1]][0])) {
                   lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
                   delete lines[m[1]]; // Remove the line but don't renumber the array keys
                 }
@@ -276,12 +279,26 @@ class VectorEditor extends VectorLayer {
 
     // Make polygons with looped lines
     if (this.options.withPolys)
-      for (const a in lines)
-        if (this.compareCoords(lines[a]) && // If this line is closed
-          !this.compareCoords(splitCord, lines[a][0])) { // Except if we just split it
+      for (const a in lines) {
+        if (this.compareCoords(lines[a])) { // If this line is closed
+          // Split squeezed polygons
+          // Explore all summits combinaison
+          for (let i1 = 0; i1 < lines[a].length - 1; i1++)
+            for (let i2 = 0; i2 < i1; i2++)
+              if (lines[a][i1][0] === lines[a][i2][0] &&
+                lines[a][i1][1] === lines[a][i2][1]) { // Find 2 identical summits
+                const squized = lines[a].splice(i2, i1 - i2); // Extract the squized part
+                squized.push(squized[0]); // Close the poly
+                polys.push([squized]); // Add the squized poly
+                i1 = lines[a].length; // End loop
+                i2 = lines[a].length;
+              }
+
+          // Convert closed lines to polygons
           polys.push([lines[a]]); // Add the polygon
           delete lines[a]; // Forget the line
         }
+      }
 
     // Makes holes if a polygon is included in a biggest one
     if (this.options.withHoles)
@@ -291,11 +308,9 @@ class VectorEditor extends VectorLayer {
         for (const p2 in polys)
           if (polys[p2] && p1 !== p2) {
             let intersects = true;
-
             for (const c in polys[p2][0])
               if (!fs.intersectsCoordinate(polys[p2][0][c]))
                 intersects = false;
-
             if (intersects) { // If one intersects a bigger
               polys[p1].push(polys[p2][0]); // Include the smaler in the bigger
               delete polys[p2]; // Forget the smaller
@@ -366,9 +381,8 @@ class VectorEditor extends VectorLayer {
     return lines;
   }
 
-  compareCoords(a, b, splitCord) {
+  compareCoords(a, b) {
     if (!a) return false;
-    if (this.compareCoords(splitCord, a)) return false; // Except if we just split it
     if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
     return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
   }

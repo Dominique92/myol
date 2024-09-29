@@ -3,7 +3,7 @@
  */
 
 import ol from './ol';
-import Geocoder from '@myol/geocoder/src/base'; //TODO BUG to be replaced by ol-geocoder when /src published in npm
+import Geocoder from '@myol/geocoder/src/base'; //BEST to be replaced by ol-geocoder when /src published in npm
 
 export const VERSION = '__myolBuildVersion__ __myolBuildDate__';
 

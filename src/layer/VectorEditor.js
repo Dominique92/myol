@@ -1,10 +1,8 @@
 /**
  * VectorEditor layer to edit geoJson lines & polygons
  */
-//TODO ne downloader que editedSource
-//TODO tester WRI
 
-import ol from '../ol'; //TODO finir imports via node_modules;
+import ol from '../ol'; //BEST imports direct de node_modules/ol
 import Circle from 'ol/style/Circle';
 import Control from 'ol/control/Control';
 import Feature from 'ol/Feature';

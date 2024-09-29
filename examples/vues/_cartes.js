@@ -209,7 +209,7 @@ function basicControls(options = {}) {
     new myol.control.MyGeocoder(),
     new myol.control.MyGeolocation(),
     new myol.control.Load(options.load),
-    new myol.control.Download(),
+    new myol.control.Download(options.download),
     new myol.control.Print(),
 
     // Bas gauche
@@ -517,10 +517,17 @@ function mapEdit(options) {
       ...basicMapOptions(options),
 
       controls: [
+        new myol.control.Permalink({
+          init: !options.extent,
+        }),
         new myol.control.LayerSwitcher({
           layers: fondsCarte('edit', options.mapKeys),
         }),
-        ...basicControls(),
+        ...basicControls({
+          download: {
+            savedLayer: editorLayer,
+          },
+        }),
       ],
 
       layers: [

@@ -2,7 +2,7 @@
  * Many simplified display of various tiles layers services
  */
 
-import ol from '../ol'; //TODO finir imports via node_modules;
+import ol from '../ol'; //BEST imports direct de node_modules/ol
 import {
   getTopLeft,
   getWidth,

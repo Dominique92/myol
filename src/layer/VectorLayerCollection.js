@@ -2,7 +2,7 @@
  * Many simplified display of various vector layers services
  */
 
-import ol from '../ol'; //TODO finir imports via node_modules;
+import ol from '../ol'; //BEST imports direct de node_modules/ol
 
 import MyVectorLayer from './MyVectorLayer';
 

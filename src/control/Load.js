@@ -3,7 +3,7 @@
  * Supports any format supported by Openlayers
  */
 
-import ol from '../ol'; //TODO finir imports via node_modules;
+import ol from '../ol'; //BEST imports direct de node_modules/ol
 import Icon from 'ol/style/Icon';
 import {
   isEmpty,
@@ -26,8 +26,6 @@ class Load extends Button {
       subMenuId: 'myol-button-load',
       subMenuHTML: subMenuHTML,
       subMenuHTMLfr: subMenuHTMLfr,
-
-      // receivingLayer: layer, // Layer to addFeatures when loaded
 
       ...options,
     });
@@ -84,7 +82,6 @@ class Load extends Button {
         return new Style({
           stroke: new Stroke({
             color: 'blue',
-            width: 2,
           }),
           image: properties.sym ? new Icon({
             src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',

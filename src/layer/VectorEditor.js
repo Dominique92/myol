@@ -3,24 +3,23 @@
  */
 
 import ol from '../ol'; //BEST imports direct de node_modules/ol
+
 import Circle from 'ol/style/Circle';
 import Control from 'ol/control/Control';
+import Draw from 'ol/interaction/Draw';
 import Feature from 'ol/Feature';
 import Fill from 'ol/style/Fill';
 import Icon from 'ol/style/Icon';
 import LineString from 'ol/geom/LineString';
+import Modify from 'ol/interaction/Modify';
 import Point from 'ol/geom/Point';
 import Polygon from 'ol/geom/Polygon';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import {
-  Draw,
-  Modify,
-  Select,
-  Snap,
-} from 'ol/interaction';
+import Select from 'ol/interaction/Select';
+import Snap from 'ol/interaction/Snap';
 import Stroke from 'ol/style/Stroke';
 import Style from 'ol/style/Style';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 import './vectorEditor.css';
 
@@ -95,11 +94,23 @@ class VectorEditor extends VectorLayer {
       filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       style: (f, r) => this.selectStyles(f, r),
     });
+
     this.modifyInteraction = new Modify({
       features: this.selectInteraction.getFeatures(),
       pixelTolerance: this.options.tolerance, // Default is 10
     });
-    this.drawInteraction = new Draw({ // Draw line
+
+    if (this.options.withPolys)
+      this.drawPolyInteraction = new Draw({ // Draw line
+        type: 'Polygon',
+        source: this.editedSource,
+        traceSource: this.snapSource,
+        trace: true,
+        stopClick: true, // Avoid zoom when finish drawing by doubleclick
+        style: f => this.selectStyles(f),
+      });
+
+    this.drawLineInteraction = new Draw({ // Draw line
       type: 'LineString',
       source: this.editedSource,
       traceSource: this.snapSource,
@@ -107,13 +118,16 @@ class VectorEditor extends VectorLayer {
       stopClick: true, // Avoid zoom when finish drawing by doubleclick
       style: f => this.selectStyles(f),
     });
+
     this.snapInteraction = new Snap({
       source: this.editedSource,
       pixelTolerance: this.options.tolerance, // Default is 10
     });
 
     // Buttons
-    ['modify', 'draw'].forEach(intName => {
+    const buttonsName = this.options.withPolys ? ['modify', 'drawPoly', 'drawLine'] : ['modify', 'drawLine'];
+
+    buttonsName.forEach(intName => {
       const buttonEl = document.createElement('button'),
         element = document.createElement('div');
 
@@ -158,9 +172,14 @@ class VectorEditor extends VectorLayer {
 
     this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
 
-    this.drawInteraction.on('drawend', () => {
+    this.drawLineInteraction.on('drawend', () => {
       this.modified = true; // Wait for modifyend completion before optim
     });
+
+    if (this.options.withPolys)
+      this.drawPolyInteraction.on('drawend', () => {
+        this.modified = true; // Wait for modifyend completion before optim
+      });
 
     this.editedSource.on('addfeature', () => {
       if (this.modified) {
@@ -214,9 +233,9 @@ class VectorEditor extends VectorLayer {
   } // End setMapInternal
 
   restartInteractions(intName) {
-    this.map.getTargetElement().firstChild.className = 'ol-viewport edit-view-' + intName;
+    const interactionName = this.options.withPolys ? ['select', 'modify', 'drawPoly', 'drawLine', 'snap'] : ['select', 'modify', 'drawLine', 'snap'];
 
-    ['select', 'modify', 'draw', 'snap'].forEach(i =>
+    interactionName.forEach(i =>
       this.map.removeInteraction(this[i + 'Interaction'])
     );
 
@@ -225,6 +244,8 @@ class VectorEditor extends VectorLayer {
 
     this.map.addInteraction(this[intName + 'Interaction']);
     this.map.addInteraction(this.snapInteraction); // Must be added after the others
+
+    this.map.getTargetElement().firstChild.className = 'ol-viewport edit-view-' + intName;
 
     // For snap & traceSource : register again the full list of features as addFeature manages already registered
     this.snapSource.clear();

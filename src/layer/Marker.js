@@ -3,12 +3,14 @@
  */
 
 import ol from '../ol'; //BEST imports direct de node_modules/ol
+
 import {
   containsCoordinate,
 } from 'ol/extent';
 import Feature from 'ol/Feature';
 import Icon from 'ol/style/Icon';
 import Point from 'ol/geom/Point';
+import Pointer from 'ol/interaction/Pointer';
 import proj4Lib from 'proj4/lib/index';
 import {
   register,
@@ -115,7 +117,7 @@ class Marker extends VectorLayer {
 
     // Drag the marker
     if (this.options.dragable) {
-      map.addInteraction(new ol.interaction.Pointer({
+      map.addInteraction(new Pointer({
         handleDownEvent: evt => map.getFeaturesAtPixel(evt.pixel, {
           layerFilter: l => l.ol_uid === this.ol_uid
         }).length,

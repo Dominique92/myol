@@ -3,6 +3,7 @@
  */
 
 import ol from '../ol'; //BEST imports direct de node_modules/ol
+
 import {
   getTopLeft,
   getWidth,

@@ -4,6 +4,10 @@
 
 import ol from '../ol'; //BEST imports direct de node_modules/ol
 
+import {
+  transformExtent,
+} from 'ol/proj';
+
 import MyVectorLayer from './MyVectorLayer';
 
 // Get icon from chemineur.fr
@@ -301,7 +305,7 @@ export class Overpass extends MyVectorLayer {
 
   query(extent, resolution, mapProjection) {
     const selections = this.selector.getSelection(),
-      ex4326 = ol.proj.transformExtent(extent, mapProjection, 'EPSG:4326').map(c => c.toPrecision(6)),
+      ex4326 = transformExtent(extent, mapProjection, 'EPSG:4326').map(c => c.toPrecision(6)),
       bbox = '(' + ex4326[1] + ',' + ex4326[0] + ',' + ex4326[3] + ',' + ex4326[2] + ');',
       args = [];
 

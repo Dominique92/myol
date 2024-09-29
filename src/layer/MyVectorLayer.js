@@ -3,16 +3,22 @@
  */
 
 import ol from '../ol'; //BEST imports direct de node_modules/ol
+
+import ClusterSource from 'ol/source/Cluster';
 import Feature from 'ol/Feature';
 import {
   getCenter,
 } from 'ol/extent';
+import Point from 'ol/geom/Point';
+import Style from 'ol/style/Style';
+import {
+  transformExtent,
+} from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import Style from 'ol/style/Style';
 
 import Selector from './Selector';
-import * as stylesOptions from './stylesOptions'; //TODO
+import * as stylesOptions from './stylesOptions';
 
 /**
  * GeoJson vector display
@@ -68,7 +74,7 @@ class MyVectorSource extends VectorSource {
 /**
  * Cluster source to manage clusters in the browser
  */
-class MyClusterSource extends ol.source.Cluster {
+class MyClusterSource extends ClusterSource {
   constructor(options) {
     // options:
     // browserClusterFeaturelMaxPerimeter: 300, // (pixels) perimeter of a line or poly above which we do not cluster
@@ -101,7 +107,7 @@ class MyClusterSource extends ol.source.Cluster {
       if (featurePixelPerimeter > options.browserClusterFeaturelMaxPerimeter)
         this.addFeature(feature); // And return null to not cluster this feature
       else
-        return new ol.geom.Point(getCenter(feature.getGeometry().getExtent()));
+        return new Point(getCenter(feature.getGeometry().getExtent()));
     }
   }
 
@@ -362,7 +368,7 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
   }
 
   bbox(extent, resolution, mapProjection) {
-    return ol.proj.transformExtent(
+    return transformExtent(
       extent,
       mapProjection,
       this.dataProjection, // Received projection

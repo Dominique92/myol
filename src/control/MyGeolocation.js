@@ -2,13 +2,19 @@
  * MyGeolocation control to isplay status, altitude & speed
  */
 
-import ol from '../ol'; //BEST imports direct de node_modules/ol
 import Feature from 'ol/Feature';
 import Geolocation from 'ol/Geolocation';
+import GeometryCollection from 'ol/geom/GeometryCollection';
+import LineString from 'ol/geom/LineString';
+import MultiLineString from 'ol/geom/MultiLineString';
+import Stroke from 'ol/style/Stroke';
+import Style from 'ol/style/Style';
 import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 import Button from './Button';
 
+//BEST move this in html
 const subMenuHTML = '<p>\
   <input type="radio" name="myol-gps-source" value="0" checked="checked">None &nbsp;\
   <input type="radio" name="myol-gps-source" value="1">Outdoor &nbsp;\
@@ -83,16 +89,16 @@ class MyGeolocation extends Button {
     this.graticuleFeature = new Feature();
     this.northGraticuleFeature = new Feature();
 
-    this.graticuleFeature.setStyle(new ol.style.Style({
-      stroke: new ol.style.Stroke({
+    this.graticuleFeature.setStyle(new Style({
+      stroke: new Stroke({
         color: '#00f',
         lineDash: [16, 14],
         width: 1,
       }),
     }));
 
-    this.northGraticuleFeature.setStyle(new ol.style.Style({
-      stroke: new ol.style.Stroke({
+    this.northGraticuleFeature.setStyle(new Style({
+      stroke: new Stroke({
         color: '#c00',
         lineDash: [16, 14],
         width: 1,
@@ -101,7 +107,7 @@ class MyGeolocation extends Button {
 
     this.graticuleLayer = new VectorLayer({
       background: 'transparent',
-      source: new ol.source.Vector({
+      source: new VectorSource({
         features: [this.graticuleFeature, this.northGraticuleFeature],
       }),
       wrapX: false,
@@ -182,7 +188,7 @@ class MyGeolocation extends Button {
 
       const // The graticule
         geometry = [
-          new ol.geom.MultiLineString([
+          new MultiLineString([
             [
               [p[0] - far, p[1]],
               [p[0] + far, p[1]]
@@ -195,7 +201,7 @@ class MyGeolocation extends Button {
         ],
         // Color north in red
         northGeometry = [
-          new ol.geom.LineString([
+          new LineString([
             [p[0], p[1]],
             [p[0], p[1] + far]
           ]),
@@ -205,8 +211,8 @@ class MyGeolocation extends Button {
       if (this.accuracygeometry)
         geometry.push(this.accuracygeometry);
 
-      this.graticuleFeature.setGeometry(new ol.geom.GeometryCollection(geometry));
-      this.northGraticuleFeature.setGeometry(new ol.geom.GeometryCollection(northGeometry));
+      this.graticuleFeature.setGeometry(new GeometryCollection(geometry));
+      this.northGraticuleFeature.setGeometry(new GeometryCollection(northGeometry));
 
       // Center the map
       if (displayLevel > 0)

@@ -1044,14 +1044,21 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
   content: "\2725";
 }
 
-.edit-button-draw button::after {
+.edit-button-drawLine button::after {
   content: "\2710";
   display: inline-block;
   transform: scaleX(-1);
 }
 
+.edit-button-drawPoly button::after {
+  content: "\23E2";
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
 .edit-view-modify .edit-button-modify button,
-.edit-view-draw .edit-button-draw button {
+.edit-view-drawLine .edit-button-drawLine button,
+.edit-view-drawPoly .edit-button-drawPoly button {
   background: lightblue;
 }
 
@@ -1059,7 +1066,8 @@ body:has(.myol-print-landscape)>*:not(.myol-print-landscape),
   cursor: pointer;
 }
 
-.edit-view-draw {
+.edit-view-drawLine,
+.edit-view-drawPoly {
   cursor: copy;
 }
 

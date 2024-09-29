@@ -3,7 +3,7 @@
  * Supports any format supported by Openlayers
  */
 
-import ol from '../ol'; //BEST imports direct de node_modules/ol
+import * as format from 'ol/format';
 import Icon from 'ol/style/Icon';
 import {
   isEmpty,
@@ -54,7 +54,8 @@ class Load extends Button {
   loadText(text, url) {
     const map = this.getMap(),
       formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
-      loadFormat = new ol.format[formatName in ol.format ? formatName : 'GeoJSON'](), // Find existing format
+      loadFormat = new format[formatName in format ? formatName : 'GeoJSON'](), // Find existing format
+      //TODO BUG KML don't work
       receivedLat = text.match(/lat="-?([0-9]+)/u); // Received projection depending on the first value
 
     const receivedProjection =

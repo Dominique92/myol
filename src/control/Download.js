@@ -2,9 +2,9 @@
  * Download control to download vectors features
  * Supports GPX, KML, GeoJson formats
  */
-
-import ol from '../ol'; //BEST imports direct de node_modules/ol
 import Feature from 'ol/Feature';
+import * as format from 'ol/format';
+import LineString from 'ol/geom/LineString';
 
 import Button from './Button';
 
@@ -46,7 +46,7 @@ class Download extends Button {
   subMenuAction(evt) {
     const map = this.getMap(),
       formatName = evt.target.innerText,
-      downloadFormat = new ol.format[formatName](),
+      downloadFormat = new format[formatName](),
       mime = evt.target.getAttribute('mime'),
       mapExtent = map.getView().calculateExtent();
 
@@ -73,11 +73,11 @@ class Download extends Button {
           geometry.getCoordinates().forEach(coords => {
             if (typeof coords[0][0] === 'number')
               // Polygon
-              featuresToSave.push(new Feature(new ol.geom.LineString(coords)));
+              featuresToSave.push(new Feature(new LineString(coords)));
             else
               // MultiPolygon
               coords.forEach(subCoords =>
-                featuresToSave.push(new Feature(new ol.geom.LineString(subCoords)))
+                featuresToSave.push(new Feature(new LineString(subCoords)))
               );
           });
         }

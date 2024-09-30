@@ -106,7 +106,6 @@ class MyGeolocation extends Button {
     }));
 
     this.graticuleLayer = new VectorLayer({
-      background: 'transparent',
       source: new VectorSource({
         features: [this.graticuleFeature, this.northGraticuleFeature],
       }),

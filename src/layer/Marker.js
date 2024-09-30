@@ -30,7 +30,6 @@ class Marker extends VectorLayer {
       // dragable: false, // Can draw the marker to edit position
       // focus: number // Center & value of zoom on the marker
       zIndex: 600, // Above points & hover
-      background: 'transparent',
 
       prefix: 'marker', // Will take the values on
       // marker-json, // <input> json form

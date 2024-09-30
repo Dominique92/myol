@@ -19,7 +19,6 @@ const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
   subMenuHTMLfr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
 
 class Load extends Button {
-  //TODO BUG style load kml massif wri avec points
   constructor(options) {
     super({
       className: 'myol-button-load', // Button options
@@ -55,8 +54,9 @@ class Load extends Button {
   loadText(text, url) {
     const map = this.getMap(),
       formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
-      loadFormat = new format[formatName in format ? formatName : 'GeoJSON'](), // Find existing format
-      //TODO BUG KML don't work
+      loadFormat = new format[formatName in format ? formatName : 'GeoJSON']({ // Find existing format
+        extractStyles: false, // For KML
+      }),
       receivedLat = text.match(/lat="-?([0-9]+)/u); // Received projection depending on the first value
 
     const receivedProjection =
@@ -76,8 +76,8 @@ class Load extends Button {
     });
 
     const gpxLayer = new VectorLayer({
-      background: 'transparent',
       source: gpxSource,
+
       style: feature => {
         const properties = feature.getProperties();
 

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 30/09/2024 20:28:58 using npm run build from the src/... sources
+ * Built 30/09/2024 21:06:23 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -77421,7 +77421,6 @@
     subMenuHTMLfr$2 = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML$2;
 
   class Load extends Button {
-    //TODO BUG style load kml massif wri avec points
     constructor(options) {
       super({
         className: 'myol-button-load', // Button options
@@ -77457,8 +77456,9 @@
     loadText(text, url) {
       const map = this.getMap(),
         formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
-        loadFormat = new format[formatName in format ? formatName : 'GeoJSON'](), // Find existing format
-        //TODO BUG KML don't work
+        loadFormat = new format[formatName in format ? formatName : 'GeoJSON']({ // Find existing format
+          extractStyles: false, // For KML
+        }),
         receivedLat = text.match(/lat="-?([0-9]+)/u); // Received projection depending on the first value
 
       const receivedProjection =
@@ -77478,8 +77478,8 @@
       });
 
       const gpxLayer = new VectorLayer({
-        background: 'transparent',
         source: gpxSource,
+
         style: feature => {
           const properties = feature.getProperties();
 
@@ -78845,7 +78845,6 @@
       }));
 
       this.graticuleLayer = new VectorLayer({
-        background: 'transparent',
         source: new VectorSource({
           features: [this.graticuleFeature, this.northGraticuleFeature],
         }),
@@ -79690,7 +79689,6 @@
   class Hover extends VectorLayer {
     constructor(options) {
       super({
-        background: 'transparent',
         source: new VectorSource(),
         zIndex: 500, // Above all layers
         wrapX: false,
@@ -87381,7 +87379,6 @@
         // dragable: false, // Can draw the marker to edit position
         // focus: number // Center & value of zoom on the marker
         zIndex: 600, // Above points & hover
-        background: 'transparent',
 
         prefix: 'marker', // Will take the values on
         // marker-json, // <input> json form
@@ -87962,8 +87959,6 @@
 
       // High resolutions layer, can call for server clustering
       const hiResOptions = {
-        background: 'transparent',
-
         source: options.nbMaxClusters ?
           new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
           new MyVectorSource(options), // or a vector source to get the data
@@ -87983,7 +87978,6 @@
       if (options.browserClusterMinResolution &&
         options.browserClusterMinResolution < options.maxResolution) {
         const lowResOptions = {
-          background: 'transparent',
           source: new MyVectorSource(options),
 
           ...options,
@@ -88548,7 +88542,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 30/09/2024 20:28:58';
+  const VERSION = '1.1.2.dev 30/09/2024 21:06:23';
 
   async function trace() {
     const data = [

@@ -11,7 +11,6 @@ import VectorSource from 'ol/source/Vector';
 class Hover extends VectorLayer {
   constructor(options) {
     super({
-      background: 'transparent',
       source: new VectorSource(),
       zIndex: 500, // Above all layers
       wrapX: false,

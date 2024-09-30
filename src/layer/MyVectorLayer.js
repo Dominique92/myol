@@ -169,8 +169,6 @@ class MyBrowserClusterVectorLayer extends VectorLayer {
 
     // High resolutions layer, can call for server clustering
     const hiResOptions = {
-      background: 'transparent',
-
       source: options.nbMaxClusters ?
         new MyClusterSource(options) : // Use a cluster source and a vector source to manages clusters
         new MyVectorSource(options), // or a vector source to get the data
@@ -190,7 +188,6 @@ class MyBrowserClusterVectorLayer extends VectorLayer {
     if (options.browserClusterMinResolution &&
       options.browserClusterMinResolution < options.maxResolution) {
       const lowResOptions = {
-        background: 'transparent',
         source: new MyVectorSource(options),
 
         ...options,

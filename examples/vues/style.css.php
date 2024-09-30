@@ -848,7 +848,7 @@ a.infobulle:hover span { /* qd on passe dessus, ca affiche */
 /* Carte de la page des points mobiles */
 @media screen and (max-width: 640px) {
   #carte-point {
-    width: 99vw;
+    width: 96vw;
     height: 400px;
     max-height: 100vw;
   }

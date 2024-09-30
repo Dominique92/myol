@@ -43,6 +43,7 @@ export class NoTile extends XYZ {
     super({
       url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
       attributions: 'Out of zoom',
+
       ...options,
     });
   }
@@ -107,6 +108,7 @@ export class Kompass extends OpenStreetMap { // Austria
         'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
       maxZoom: 17,
       attributions: '<a href="https://www.kompass.de/">Kompass</a>',
+
       ...options,
     });
   }
@@ -126,6 +128,7 @@ export class Thunderforest extends OpenStreetMap {
       // subLayer: 'outdoors', ...
       // key: '...',
       attributions: '<a href="https://www.thunderforest.com/">Thunderforest</a>',
+
       ...options, // Include key
     });
   }
@@ -163,6 +166,7 @@ export class IGN extends ol.layer.Tile {
         // IGN options
         ...options, // Include layer
       }),
+
       ...options, // For layer limits
     });
   }
@@ -235,6 +239,7 @@ export class IgnES extends XYZ {
         '&Format=image/jpeg' +
         '&style=default&tilematrixset=GoogleMapsCompatible' +
         '&TileMatrix={z}&TileCol={x}&TileRow={y}',
+
       ...options,
     });
   }
@@ -303,6 +308,7 @@ export class OS extends XYZ {
         options.subLayer +
         '/{z}/{x}/{y}.png' +
         '?key=' + options.key,
+
       ...options,
     });
   }
@@ -428,6 +434,7 @@ export class MapTilerElevation extends XYZ {
       url: 'https://api.maptiler.com/tiles/terrain-rgb/{z}/{x}/{y}.png?key=' + options.key,
       maxZoom: 12,
       attributions: '<a href="https://www.maptiler.com/copyright/"">&copy; MapTiler</a> ' + '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap contributors</a>',
+	  
       ...options,
     });
   }

@@ -57,6 +57,7 @@ class Marker extends VectorLayer {
       }),
       style: new Style({
         image: new Icon(options),
+        ...options.styleOptions,
       }),
       properties: {
         marker: true, // To recognise that this is a marker

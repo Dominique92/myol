@@ -1,5 +1,5 @@
 /**
- * VectorEditor layer to edit geoJson lines & polygons
+ * VectorEditor layer to edit GeoJSON lines & polygons
  */
 
 import ol from '../ol'; //BEST imports direct de node_modules/ol
@@ -36,6 +36,8 @@ class VectorEditor extends VectorLayer {
       //canMerge: false, // Merge lines having a common end
       //withPolys: false, // Can edit polygons
       //withHoles: false, // Allow holes in polygons
+      //baseStyleOptions: {},
+      //selectedStyleOptions: {},
 
       writeGeoJson: () => // writeGeoJson (features, lines, polys, options)
         this.options.format.writeFeatures(
@@ -57,6 +59,7 @@ class VectorEditor extends VectorLayer {
     const editedSource = new VectorSource({
       features: options.format.readFeatures(geoJson, options),
       wrapX: false,
+
       ...options,
     });
 
@@ -72,6 +75,8 @@ class VectorEditor extends VectorLayer {
         fill: new Fill({
           color: 'rgba(0,0,255,0.2)',
         }),
+
+        ...options.baseStyleOptions,
       }),
 
       ...options,
@@ -404,6 +409,8 @@ class VectorEditor extends VectorLayer {
           color: 'rgba(255,0,0,0.2)',
         }),
         radius: 3, // Move & begin line marker
+
+        ...this.options.selectedStyleOptions,
       },
       featureStyles = [
         new Style(selectedStyle), // Line style

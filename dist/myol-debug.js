@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 29/09/2024 21:25:00 using npm run build from the src/... sources
+ * Built 30/09/2024 20:28:58 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -36656,13 +36656,13 @@
 
   /**
    * Download control to download vectors features
-   * Supports GPX, KML, GeoJson formats
+   * Supports GPX, KML, GeoJSON formats
    */
 
   const subMenuHTML$3 = '\
   <p><a mime="application/gpx+xml">GPX</a></p>\
   <p><a mime="vnd.google-earth.kml+xml">KML</a></p>\
-  <p><a mime="application/json">GeoJson</a></p>',
+  <p><a mime="application/json">GeoJSON</a></p>',
 
     subMenuHTMLfr$3 = '\
   <p>Cliquer sur un format ci-dessous pour obtenir\
@@ -76545,6 +76545,7 @@
       super({
         url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
         attributions: 'Out of zoom',
+
         ...options,
       });
     }
@@ -76609,6 +76610,7 @@
           'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
         maxZoom: 17,
         attributions: '<a href="https://www.kompass.de/">Kompass</a>',
+
         ...options,
       });
     }
@@ -76628,6 +76630,7 @@
         // subLayer: 'outdoors', ...
         // key: '...',
         attributions: '<a href="https://www.thunderforest.com/">Thunderforest</a>',
+
         ...options, // Include key
       });
     }
@@ -76665,6 +76668,7 @@
           // IGN options
           ...options, // Include layer
         }),
+
         ...options, // For layer limits
       });
     }
@@ -76737,6 +76741,7 @@
           '&Format=image/jpeg' +
           '&style=default&tilematrixset=GoogleMapsCompatible' +
           '&TileMatrix={z}&TileCol={x}&TileRow={y}',
+
         ...options,
       });
     }
@@ -76805,6 +76810,7 @@
           options.subLayer +
           '/{z}/{x}/{y}.png' +
           '?key=' + options.key,
+
         ...options,
       });
     }
@@ -76930,6 +76936,7 @@
         url: 'https://api.maptiler.com/tiles/terrain-rgb/{z}/{x}/{y}.png?key=' + options.key,
         maxZoom: 12,
         attributions: '<a href="https://www.maptiler.com/copyright/"">&copy; MapTiler</a> ' + '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap contributors</a>',
+  	  
         ...options,
       });
     }
@@ -77414,13 +77421,14 @@
     subMenuHTMLfr$2 = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML$2;
 
   class Load extends Button {
+    //TODO BUG style load kml massif wri avec points
     constructor(options) {
       super({
-        // Button options
-        className: 'myol-button-load',
+        className: 'myol-button-load', // Button options
         subMenuId: 'myol-button-load',
         subMenuHTML: subMenuHTML$2,
         subMenuHTMLfr: subMenuHTMLfr$2,
+        //loadedStyleOptions: {},// Style of the loaded features
 
         ...options,
       });
@@ -77445,7 +77453,7 @@
         .then(text => this.loadText(text, url));
     }
 
-    // Method to load features from a geoJson text
+    // Method to load features from a GeoJSON text
     loadText(text, url) {
       const map = this.getMap(),
         formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
@@ -77478,10 +77486,13 @@
           return new Style({
             stroke: new Stroke({
               color: 'blue',
+              width: 2,
             }),
             image: properties.sym ? new Icon({
               src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
             }) : null,
+
+            ...this.options.loadedStyleOptions,
           });
         },
       });
@@ -79221,7 +79232,7 @@
   };
 
   /**
-   * VectorEditor layer to edit geoJson lines & polygons
+   * VectorEditor layer to edit GeoJSON lines & polygons
    */
 
 
@@ -79238,6 +79249,8 @@
         //canMerge: false, // Merge lines having a common end
         //withPolys: false, // Can edit polygons
         //withHoles: false, // Allow holes in polygons
+        //baseStyleOptions: {},
+        //selectedStyleOptions: {},
 
         writeGeoJson: () => // writeGeoJson (features, lines, polys, options)
           this.options.format.writeFeatures(
@@ -79259,6 +79272,7 @@
       const editedSource = new VectorSource({
         features: options.format.readFeatures(geoJson, options),
         wrapX: false,
+
         ...options,
       });
 
@@ -79274,6 +79288,8 @@
           fill: new Fill({
             color: 'rgba(0,0,255,0.2)',
           }),
+
+          ...options.baseStyleOptions,
         }),
 
         ...options,
@@ -79606,6 +79622,8 @@
             color: 'rgba(255,0,0,0.2)',
           }),
           radius: 3, // Move & begin line marker
+
+          ...this.options.selectedStyleOptions,
         },
         featureStyles = [
           new Style(selectedStyle), // Line style
@@ -87390,6 +87408,7 @@
         }),
         style: new Style({
           image: new Icon(options),
+          ...options.styleOptions,
         }),
         properties: {
           marker: true, // To recognise that this is a marker
@@ -87795,7 +87814,7 @@
 
 
   /**
-   * GeoJson vector display
+   * GeoJSON vector display
    * display the loading status
    */
   class MyVectorSource extends VectorSource {
@@ -88529,7 +88548,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 29/09/2024 21:25:00';
+  const VERSION = '1.1.2.dev 30/09/2024 20:28:58';
 
   async function trace() {
     const data = [

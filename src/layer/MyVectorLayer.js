@@ -21,7 +21,7 @@ import Selector from './Selector';
 import * as stylesOptions from './stylesOptions';
 
 /**
- * GeoJson vector display
+ * GeoJSON vector display
  * display the loading status
  */
 class MyVectorSource extends VectorSource {

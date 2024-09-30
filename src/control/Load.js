@@ -19,13 +19,14 @@ const subMenuHTML = '<input type="file" accept=".gpx,.kml,.json,.geojson">',
   subMenuHTMLfr = '<p>Importer un fichier de points ou de traces</p>' + subMenuHTML;
 
 class Load extends Button {
+  //TODO BUG style load kml massif wri avec points
   constructor(options) {
     super({
-      // Button options
-      className: 'myol-button-load',
+      className: 'myol-button-load', // Button options
       subMenuId: 'myol-button-load',
       subMenuHTML: subMenuHTML,
       subMenuHTMLfr: subMenuHTMLfr,
+      //loadedStyleOptions: {},// Style of the loaded features
 
       ...options,
     });
@@ -50,7 +51,7 @@ class Load extends Button {
       .then(text => this.loadText(text, url));
   }
 
-  // Method to load features from a geoJson text
+  // Method to load features from a GeoJSON text
   loadText(text, url) {
     const map = this.getMap(),
       formatName = url.split('.').pop().toUpperCase(), // Extract extension to be used as format name
@@ -83,10 +84,13 @@ class Load extends Button {
         return new Style({
           stroke: new Stroke({
             color: 'blue',
+            width: 2,
           }),
           image: properties.sym ? new Icon({
             src: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/' + properties.sym + '.svg',
           }) : null,
+
+          ...this.options.loadedStyleOptions,
         });
       },
     });

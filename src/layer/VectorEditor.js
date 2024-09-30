@@ -2,16 +2,18 @@
  * VectorEditor layer to edit GeoJSON lines & polygons
  */
 
-import ol from '../ol'; //BEST imports direct de node_modules/ol
-
 import Circle from 'ol/style/Circle';
 import Control from 'ol/control/Control';
 import Draw from 'ol/interaction/Draw';
 import Feature from 'ol/Feature';
 import Fill from 'ol/style/Fill';
+import GeoJSON from 'ol/format/GeoJSON';
 import Icon from 'ol/style/Icon';
 import LineString from 'ol/geom/LineString';
 import Modify from 'ol/interaction/Modify';
+import {
+  never
+} from 'ol/events/condition';
 import Point from 'ol/geom/Point';
 import Polygon from 'ol/geom/Polygon';
 import Select from 'ol/interaction/Select';
@@ -27,7 +29,7 @@ class VectorEditor extends VectorLayer {
   constructor(opt) {
     const options = {
       geoJsonId: 'geojson',
-      format: new ol.format.GeoJSON(),
+      format: new GeoJSON(),
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
       decimals: 5, //Output precision
@@ -95,7 +97,7 @@ class VectorEditor extends VectorLayer {
     // Interactions
     this.selectInteraction = new Select({
       hitTolerance: this.options.tolerance, // Default is 0
-      toggleCondition: ol.events.never, // No deselection on shift click
+      toggleCondition: never, // No deselection on shift click
       filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
       style: (f, r) => this.selectStyles(f, r),
     });

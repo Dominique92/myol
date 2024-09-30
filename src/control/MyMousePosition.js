@@ -1,19 +1,22 @@
 /**
  * MyMousePosition control to display the mouse position
+ * Improve style
  */
 
-import ol from '../ol'; //BEST imports direct de node_modules/ol
-
+import {
+  createStringXY,
+} from 'ol/coordinate';
 import {
   getDistance,
 } from 'ol/sphere';
+import MousePosition from 'ol/control/MousePosition';
 import {
   transform,
 } from 'ol/proj';
 
 import './control.css';
 
-class MyMousePosition extends ol.control.MousePosition {
+class MyMousePosition extends MousePosition {
   constructor(options) {
     super({
       // From MousePosition options
@@ -43,7 +46,7 @@ class MyMousePosition extends ol.control.MousePosition {
         (Math.round(distance)) + ' m' :
         (Math.round(distance / 10) / 100) + ' km';
     }
-    return ol.coordinate.createStringXY(4)(coordinates);
+    return createStringXY(4)(coordinates);
   }
 }
 

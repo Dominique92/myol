@@ -2,8 +2,6 @@
  * Marker position display & edit
  */
 
-import ol from '../ol'; //BEST imports direct de node_modules/ol
-
 import {
   containsCoordinate,
 } from 'ol/extent';
@@ -16,6 +14,9 @@ import {
   register,
 } from 'ol/proj/proj4';
 import Style from 'ol/style/Style';
+import {
+  toStringHDMS,
+} from 'ol/coordinate';
 import {
   transform,
 } from 'ol/proj';
@@ -205,7 +206,7 @@ class Marker extends VectorLayer {
     // Display
     const strings = {
       dec: 'Lon: ' + this.els.lon.value + ', Lat: ' + this.els.lat.value,
-      dms: ol.coordinate.toStringHDMS(ll4326),
+      dms: toStringHDMS(ll4326),
     };
 
     if (inEPSG21781) {

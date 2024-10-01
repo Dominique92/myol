@@ -1,6 +1,11 @@
-// Contient les fonctions gérant les cartes
+/**
+ * Contient les fonctions gérant les cartes
+ */
 /* global ol, myol */
 
+/**
+ * Contient les fonctions gérant les cartes
+ */
 // Les couches de fond des cartes de refuges.info
 function fondsCarte(mapKeys, restreint) {
   return {
@@ -40,6 +45,9 @@ function fondsCarte(mapKeys, restreint) {
   };
 }
 
+/**
+ * Contient les fonctions gérant les cartes
+ */
 // Fabrique le texte de l'étiquette à partir des propriétés reçues du serveur
 function etiquetteComplette(properties) {
   const caracteristiques = [],
@@ -60,6 +68,9 @@ function etiquetteComplette(properties) {
   return lignes.join('\n');
 }
 
+/**
+ * La couche des points avec icones
+ */
 function couchePointsWRI(options) {
   const layer = new myol.layer.MyVectorLayer({
     selectMassif: new myol.Selector('no-selector'), // Defaut = pas de sélecteur de massif
@@ -115,7 +126,9 @@ function couchePointsWRI(options) {
   return layer;
 }
 
-// La couche des massifs colorés (accueil et couche carte nav)
+/**
+ * La couche des massifs colorés (accueil et couche carte nav)
+ */
 function coucheMassifsColores(options) {
   return new myol.layer.MyVectorLayer({
     // Construction de l'url
@@ -172,7 +185,9 @@ function coucheMassifsColores(options) {
   });
 }
 
-// Affiche le contour d'un massif pour la page nav
+/**
+ * La couche des contours massifs colorés (page nav)
+ */
 function coucheContourMassif(options) {
   return new myol.layer.MyVectorLayer({
     // Construction de l'url
@@ -197,7 +212,9 @@ function coucheContourMassif(options) {
   });
 }
 
-// Carte de la page d'accueil
+/**
+ * Carte d'accueil
+ */
 /* eslint-disable-next-line no-unused-vars */
 function mapIndex(options) {
   const pointsLayer = couchePointsWRI({ // Les points
@@ -276,7 +293,9 @@ function mapIndex(options) {
   return map;
 }
 
-// Carte de la page de visualisation d'un point
+/**
+ * Carte de visualisation d'un point
+ */
 /* eslint-disable-next-line no-unused-vars */
 function mapPoint(options) {
   return new ol.Map({
@@ -324,7 +343,9 @@ function mapPoint(options) {
   });
 }
 
-// Carte des pages de création et de modification d'un point
+/**
+ * Carte des pages de création et de modification d'un point
+ */
 /* eslint-disable-next-line no-unused-vars */
 function mapModif(options) {
   return new ol.Map({
@@ -372,7 +393,9 @@ function mapModif(options) {
   });
 }
 
-// Carte de la page de navigation
+/**
+ * Carte de navigation
+ */
 /* eslint-disable-next-line no-unused-vars */
 function mapNav(options) {
   const contourMassif = coucheContourMassif({
@@ -465,7 +488,9 @@ function mapNav(options) {
   return map;
 }
 
-// Carte de la page de création ou d'édion de massif ou de zone
+/**
+ * Carte de création ou d'édition de massif ou de zone
+ */
 /* eslint-disable-next-line no-unused-vars */
 function mapEdit(options) {
   const editorLayer = new myol.layer.VectorEditor({

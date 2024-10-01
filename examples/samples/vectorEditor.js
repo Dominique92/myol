@@ -23,7 +23,9 @@ const snaplayer = new ol.layer.Vector({
     target: 'map',
 
     controls: [
-      new myol.control.Load(),
+      new myol.control.Load({
+        receivingLayer: editorLayer,
+      }),
       new myol.control.Download({
         savedLayer: editorLayer,
       }),

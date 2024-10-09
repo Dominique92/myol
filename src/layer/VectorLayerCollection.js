@@ -2,8 +2,10 @@
  * Many simplified display of various vector layers services
  */
 
-import ol from '../ol'; //BEST imports direct de node_modules/ol
-
+import {
+  all,
+} from 'ol/loadingstrategy';
+import OSMXML from 'ol/format/OSMXML';
 import {
   transformExtent,
 } from 'ol/proj';
@@ -140,7 +142,7 @@ export class PRC extends MyVectorLayer {
   constructor(options) {
     super({
       url: 'https://www.pyrenees-refuges.com/api.php?type_fichier=GEOJSON',
-      strategy: ol.loadingstrategy.all,
+      strategy: all,
       attribution: '&copy;Pyrenees-Refuges',
       nbMaxClusters: 108, // Number of clusters on the map display. Replace distance
 
@@ -223,7 +225,7 @@ export class Overpass extends MyVectorLayer {
       //host: 'https://lz4.overpass-api.de',
       //host: 'https://overpass.kumi.systems',
       bbox: () => null, // No bbox at the end of the url
-      format: new ol.format.OSMXML(),
+      format: new OSMXML(),
       attribution: '&copy;OpenStreetMap',
 
       maxResolution: 50,
@@ -299,7 +301,7 @@ export class Overpass extends MyVectorLayer {
       // Add new nodes to the document
       newNodes.forEach(n => doc.documentElement.appendChild(n));
 
-      return ol.format.OSMXML.prototype.readFeatures.call(this, doc, opt);
+      return OSMXML.prototype.readFeatures.call(this, doc, opt);
     };
   }
 

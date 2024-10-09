@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 01/10/2024 20:30:55 using npm run build from the src/... sources
+ * Built 09/10/2024 14:31:10 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -1468,6 +1468,11 @@
         typeof target === 'string' ? document.getElementById(target) : target;
     }
   }
+
+  var Control$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: Control
+  });
 
   /**
    * @module ol/css
@@ -6626,7 +6631,7 @@
    * @param {*} assertion Assertion we expected to be truthy.
    * @param {string} errorMessage Error message.
    */
-  function assert$1(assertion, errorMessage) {
+  function assert(assertion, errorMessage) {
     if (!assertion) {
       throw new Error(errorMessage);
     }
@@ -6953,7 +6958,7 @@
     if (Array.isArray(obj)) {
       styles = obj;
     } else {
-      assert$1(
+      assert(
         typeof (/** @type {?} */ (obj).getZIndex) === 'function',
         'Expected an `ol/style/Style` or an array of `ol/style/Style.js`',
       );
@@ -6964,6 +6969,12 @@
       return styles;
     };
   }
+
+  var Feature$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    createStyleFunction: createStyleFunction,
+    default: Feature
+  });
 
   /**
    * @module ol/transform
@@ -7069,7 +7080,7 @@
    */
   function makeInverse(target, source) {
     const det = determinant(source);
-    assert$1(det !== 0, 'Transformation matrix cannot be inverted');
+    assert(det !== 0, 'Transformation matrix cannot be inverted');
 
     const a = source[0];
     const b = source[1];
@@ -11100,6 +11111,11 @@
       this.changed();
     }
   };
+
+  var Point$2 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: Point$1
+  });
 
   /**
    * @module ol/geom/MultiPoint
@@ -20540,7 +20556,7 @@
             break;
         }
       }
-      assert$1(
+      assert(
         false,
         'Cannot determine IIIF Image API version from provided image information JSON',
       );
@@ -22760,7 +22776,7 @@
 
       let cacheKey = options.src;
 
-      assert$1(
+      assert(
         !(cacheKey !== undefined && image),
         '`image` and `src` cannot be provided at the same time',
       );
@@ -22768,12 +22784,12 @@
       if ((cacheKey === undefined || cacheKey.length === 0) && image) {
         cacheKey = /** @type {HTMLImageElement} */ (image).src || getUid(image);
       }
-      assert$1(
+      assert(
         cacheKey !== undefined && cacheKey.length > 0,
         'A defined and non-empty `src` or `image` must be provided',
       );
 
-      assert$1(
+      assert(
         !(
           (options.width !== undefined || options.height !== undefined) &&
           options.scale !== undefined
@@ -23186,6 +23202,11 @@
       return this.iconImage_.ready();
     }
   }
+
+  var Icon$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: Icon
+  });
 
   /**
    * @module ol/style/Stroke
@@ -25153,7 +25174,7 @@
       if (Array.isArray(obj)) {
         styles = obj;
       } else {
-        assert$1(
+        assert(
           typeof (/** @type {?} */ (obj).getZIndex) === 'function',
           'Expected an `Style` or an array of `Style`',
         );
@@ -25276,6 +25297,14 @@
   function defaultGeometryFunction(feature) {
     return feature.getGeometry();
   }
+
+  var Style$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    createDefaultStyle: createDefaultStyle,
+    createEditingStyle: createEditingStyle,
+    default: Style,
+    toFunction: toFunction
+  });
 
   /**
    * @module ol/style/Text
@@ -32114,7 +32143,7 @@
        * @type {Array<import("./Filter.js").default>}
        */
       this.conditions = conditions;
-      assert$1(this.conditions.length >= 2, 'At least 2 conditions are required');
+      assert(this.conditions.length >= 2, 'At least 2 conditions are required');
     }
   }
 
@@ -32712,14 +32741,14 @@
         'featurePrefix': options.featurePrefix,
         'propertyNames': options.propertyNames ? options.propertyNames : [],
       });
-      assert$1(
+      assert(
         Array.isArray(options.featureTypes),
         '`options.featureTypes` must be an Array',
       );
       if (typeof options.featureTypes[0] === 'string') {
         let filter = options.filter;
         if (options.bbox) {
-          assert$1(
+          assert(
             options.geometryName,
             '`options.geometryName` must also be provided when `options.bbox` is set',
           );
@@ -33035,7 +33064,7 @@
    */
   function writeDelete(node, feature, objectStack) {
     const context = objectStack[objectStack.length - 1];
-    assert$1(feature.getId() !== undefined, 'Features must have an id set');
+    assert(feature.getId() !== undefined, 'Features must have an id set');
     const featureType = context['featureType'];
     const featurePrefix = context['featurePrefix'];
     const featureNS = context['featureNS'];
@@ -33055,7 +33084,7 @@
    */
   function writeUpdate(node, feature, objectStack) {
     const context = objectStack[objectStack.length - 1];
-    assert$1(feature.getId() !== undefined, 'Features must have an id set');
+    assert(feature.getId() !== undefined, 'Features must have an id set');
     const version = context['version'];
     const featureType = context['featureType'];
     const featurePrefix = context['featurePrefix'];
@@ -37634,7 +37663,7 @@
 
       properties[LayerProperty.OPACITY] =
         options.opacity !== undefined ? options.opacity : 1;
-      assert$1(
+      assert(
         typeof properties[LayerProperty.OPACITY] === 'number',
         'Layer opacity must be a number',
       );
@@ -37900,7 +37929,7 @@
      * @api
      */
     setOpacity(opacity) {
-      assert$1(typeof opacity === 'number', 'Layer opacity must be a number');
+      assert(typeof opacity === 'number', 'Layer opacity must be a number');
       this.set(LayerProperty.OPACITY, opacity);
     }
 
@@ -39404,11 +39433,11 @@
       const center = /** @type {!import("./coordinate.js").Coordinate} */ (
         this.getCenterInternal()
       );
-      assert$1(center, 'The view center is not defined');
+      assert(center, 'The view center is not defined');
       const resolution = /** @type {!number} */ (this.getResolution());
-      assert$1(resolution !== undefined, 'The view resolution is not defined');
+      assert(resolution !== undefined, 'The view resolution is not defined');
       const rotation = /** @type {!number} */ (this.getRotation());
-      assert$1(rotation !== undefined, 'The view rotation is not defined');
+      assert(rotation !== undefined, 'The view rotation is not defined');
 
       return getForViewAndSize(center, resolution, rotation, size);
     }
@@ -39737,14 +39766,14 @@
     fit(geometryOrExtent, options) {
       /** @type {import("./geom/SimpleGeometry.js").default} */
       let geometry;
-      assert$1(
+      assert(
         Array.isArray(geometryOrExtent) ||
           typeof (/** @type {?} */ (geometryOrExtent).getSimplifiedGeometry) ===
             'function',
         'Invalid extent or geometry provided as `geometry`',
       );
       if (Array.isArray(geometryOrExtent)) {
-        assert$1(
+        assert(
           !isEmpty(geometryOrExtent),
           'Cannot fit empty extent provided as `geometry`',
         );
@@ -41010,7 +41039,7 @@
         /** @type {import("../render/Event.js").default} */ (renderEvent)
           .frameState.layerStatesArray;
       const layerState = this.getLayerState(false);
-      assert$1(
+      assert(
         !layerStatesArray.some(
           (arrayLayerState) => arrayLayerState.layer === layerState.layer,
         ),
@@ -45582,7 +45611,7 @@
         if (Array.isArray(layers)) {
           layers = new Collection(layers.slice(), {unique: true});
         } else {
-          assert$1(
+          assert(
             typeof (/** @type {?} */ (layers).getArray) === 'function',
             'Expected `layers` to be an array or a `Collection`',
           );
@@ -46540,7 +46569,7 @@
      * @return {boolean} The element was added to the queue.
      */
     enqueue(element) {
-      assert$1(
+      assert(
         !(this.keyFunction_(element) in this.queuedElements_),
         'Tried to enqueue an `element` that was already added to the queue',
       );
@@ -47863,7 +47892,7 @@
     const pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (
       mapBrowserEvent
     ).originalEvent;
-    assert$1(
+    assert(
       pointerEvent !== undefined,
       'mapBrowserEvent must originate from a pointer event',
     );
@@ -47882,7 +47911,7 @@
     const pointerEvt = /** @type {import("../MapBrowserEvent").default} */ (
       mapBrowserEvent
     ).originalEvent;
-    assert$1(
+    assert(
       pointerEvt !== undefined,
       'mapBrowserEvent must originate from a pointer event',
     );
@@ -47901,7 +47930,7 @@
     const pointerEvt = /** @type {import("../MapBrowserEvent").default} */ (
       mapBrowserEvent
     ).originalEvent;
-    assert$1(
+    assert(
       pointerEvt !== undefined,
       'mapBrowserEvent must originate from a pointer event',
     );
@@ -47922,7 +47951,7 @@
     const pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (
       mapBrowserEvent
     ).originalEvent;
-    assert$1(
+    assert(
       pointerEvent !== undefined,
       'mapBrowserEvent must originate from a pointer event',
     );
@@ -51639,7 +51668,7 @@
       if (Array.isArray(options.controls)) {
         controls = new Collection(options.controls.slice());
       } else {
-        assert$1(
+        assert(
           typeof (/** @type {?} */ (options.controls).getArray) === 'function',
           'Expected `controls` to be an array or an `ol/Collection.js`',
         );
@@ -51653,7 +51682,7 @@
       if (Array.isArray(options.interactions)) {
         interactions = new Collection(options.interactions.slice());
       } else {
-        assert$1(
+        assert(
           typeof (/** @type {?} */ (options.interactions).getArray) ===
             'function',
           'Expected `interactions` to be an array or an `ol/Collection.js`',
@@ -51668,7 +51697,7 @@
       if (Array.isArray(options.overlays)) {
         overlays = new Collection(options.overlays.slice());
       } else {
-        assert$1(
+        assert(
           typeof (/** @type {?} */ (options.overlays).getArray) === 'function',
           'Expected `overlays` to be an array or an `ol/Collection.js`',
         );
@@ -52177,7 +52206,7 @@
        * @type {!Array<number>}
        */
       this.resolutions_ = options.resolutions;
-      assert$1(
+      assert(
         isSorted(
           this.resolutions_,
           /**
@@ -52229,7 +52258,7 @@
       this.origins_ = null;
       if (options.origins !== undefined) {
         this.origins_ = options.origins;
-        assert$1(
+        assert(
           this.origins_.length == this.resolutions_.length,
           'Number of `origins` and `resolutions` must be equal',
         );
@@ -52241,7 +52270,7 @@
         this.origin_ = getTopLeft(extent);
       }
 
-      assert$1(
+      assert(
         (!this.origin_ && this.origins_) || (this.origin_ && !this.origins_),
         'Either `origin` or `origins` must be configured, never both',
       );
@@ -52253,7 +52282,7 @@
       this.tileSizes_ = null;
       if (options.tileSizes !== undefined) {
         this.tileSizes_ = options.tileSizes;
-        assert$1(
+        assert(
           this.tileSizes_.length == this.resolutions_.length,
           'Number of `tileSizes` and `resolutions` must be equal',
         );
@@ -52269,7 +52298,7 @@
           : !this.tileSizes_
             ? DEFAULT_TILE_SIZE
             : null;
-      assert$1(
+      assert(
         (!this.tileSize_ && this.tileSizes_) ||
           (this.tileSize_ && !this.tileSizes_),
         'Either `tileSize` or `tileSizes` must be configured, never both',
@@ -62601,6 +62630,11 @@
     }
   }
 
+  var Vector$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: VectorLayer
+  });
+
   /**
    * @module ol/structs/RBush
    */
@@ -63580,7 +63614,7 @@
       if (options.loader !== undefined) {
         this.loader_ = options.loader;
       } else if (this.url_ !== undefined) {
-        assert$1(this.format_, '`format` must be set when `url` is set');
+        assert(this.format_, '`format` must be set when `url` is set');
         // create a XHR feature loader for "url" and "format"
         this.loader_ = xhr(this.url_, this.format_);
       }
@@ -63764,7 +63798,7 @@
         }
       }
       if (valid) {
-        assert$1(
+        assert(
           !(featureKey in this.uidIndex_),
           'The passed `feature` was already added to the source',
         );
@@ -64524,11 +64558,17 @@
      * @api
      */
     setUrl(url) {
-      assert$1(this.format_, '`format` must be set when `url` is set');
+      assert(this.format_, '`format` must be set when `url` is set');
       this.url_ = url;
       this.setLoader(xhr(url, this.format_));
     }
   }
+
+  var Vector = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    VectorSourceEvent: VectorSourceEvent,
+    default: VectorSource
+  });
 
   /**
    * @module ol/interaction/Draw
@@ -71989,7 +72029,7 @@
      */
     get(key, options) {
       const entry = this.entries_[key];
-      assert$1(
+      assert(
         entry !== undefined,
         'Tried to get a value for a key that does not exist in the cache',
       );
@@ -72017,7 +72057,7 @@
      */
     remove(key) {
       const entry = this.entries_[key];
-      assert$1(
+      assert(
         entry !== undefined,
         'Tried to get a value for a key that does not exist in the cache',
       );
@@ -72135,7 +72175,7 @@
      * @param {T} value Value.
      */
     set(key, value) {
-      assert$1(
+      assert(
         !(key in this.entries_),
         'Tried to set a value for a key that is used already',
       );
@@ -75287,7 +75327,7 @@
         options.geometryFunction ||
         function (feature) {
           const geometry = /** @type {Point} */ (feature.getGeometry());
-          assert$1(
+          assert(
             !geometry || geometry.getType() === 'Point',
             'The default `geometryFunction` can only handle `Point` or null geometries',
           );
@@ -75500,6 +75540,35 @@
         features,
       });
     }
+  }
+
+  function getDefaultExportFromCjs (x) {
+  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+  }
+
+  function getAugmentedNamespace(n) {
+    if (n.__esModule) return n;
+    var f = n.default;
+  	if (typeof f == "function") {
+  		var a = function a () {
+  			if (this instanceof a) {
+          return Reflect.construct(f, arguments, this.constructor);
+  			}
+  			return f.apply(this, arguments);
+  		};
+  		a.prototype = f.prototype;
+    } else a = {};
+    Object.defineProperty(a, '__esModule', {value: true});
+  	Object.keys(n).forEach(function (k) {
+  		var d = Object.getOwnPropertyDescriptor(n, k);
+  		Object.defineProperty(a, k, d.get ? d : {
+  			enumerable: true,
+  			get: function () {
+  				return n[k];
+  			}
+  		});
+  	});
+  	return a;
   }
 
   /**
@@ -76881,7 +76950,7 @@
    * Doc: https://docs.microsoft.com/en-us/bingmaps/getting-started/
    * Key : https://www.bingmapsportal.com/
    */
-  let Bing$1 = class Bing extends ol.layer.Tile {
+  class Bing extends ol.layer.Tile {
     constructor(options = {}) {
       super({
         hidden: !options.key, // For LayerSwitcher
@@ -76903,7 +76972,7 @@
           this.setSource(new ol.source.BingMaps(options));
       });
     }
-  };
+  }
 
   /**
    * RGB elevation (Mapbox)
@@ -77011,7 +77080,7 @@
         subLayers: 's',
       }),
       'Photo ArcGIS': new ArcGIS(),
-      'Photo Bing': new Bing$1({
+      'Photo Bing': new Bing({
         key: options.bing, // For simplified options
         ...options.bing, // Include key
         imagerySet: 'Aerial',
@@ -77102,12 +77171,12 @@
         subLayer: 'topo',
       }),
 
-      'Bing': new Bing$1({
+      'Bing': new Bing({
         key: options.bing, // For simplified options
         ...options.bing, // Include key
         imagerySet: 'Road',
       }),
-      'Bing hybrid': new Bing$1({
+      'Bing hybrid': new Bing({
         key: options.bing, // For simplified options
         ...options.bing, // Include key
         imagerySet: 'AerialWithLabels',
@@ -77142,7 +77211,7 @@
   var tileLayercollection = /*#__PURE__*/Object.freeze({
     __proto__: null,
     ArcGIS: ArcGIS,
-    Bing: Bing$1,
+    Bing: Bing,
     Google: Google,
     IGM: IGM,
     IGN: IGN,
@@ -77523,1194 +77592,46 @@
     }
   }
 
-  var containerId = "gcd-container";
-  var buttonControlId = "gcd-button-control";
-  var inputQueryId = "gcd-input-query";
-  var inputLabelId = "gcd-input-label";
-  var inputSearchId = "gcd-input-search";
-  var cssClasses = {
-  	namespace: "ol-geocoder",
-  	spin: "gcd-pseudo-rotate",
-  	hidden: "gcd-hidden",
-  	address: "gcd-address",
-  	country: "gcd-country",
-  	city: "gcd-city",
-  	road: "gcd-road",
-  	olControl: "ol-control",
-  	glass: {
-  		container: "gcd-gl-container",
-  		control: "gcd-gl-control",
-  		button: "gcd-gl-btn",
-  		input: "gcd-gl-input",
-  		expanded: "gcd-gl-expanded",
-  		search: "gcd-gl-search",
-  		result: "gcd-gl-result"
-  	},
-  	inputText: {
-  		container: "gcd-txt-container",
-  		control: "gcd-txt-control",
-  		label: "gcd-txt-label",
-  		input: "gcd-txt-input",
-  		search: "gcd-txt-search",
-  		icon: "gcd-txt-glass",
-  		result: "gcd-txt-result"
-  	}
-  };
-  var vars = {
-  	containerId: containerId,
-  	buttonControlId: buttonControlId,
-  	inputQueryId: inputQueryId,
-  	inputLabelId: inputLabelId,
-  	inputSearchId: inputSearchId,
-  	cssClasses: cssClasses
-  };
+  var olGeocoder$1 = {exports: {}};
 
-  var _VARS_ = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    buttonControlId: buttonControlId,
-    containerId: containerId,
-    cssClasses: cssClasses,
-    default: vars,
-    inputLabelId: inputLabelId,
-    inputQueryId: inputQueryId,
-    inputSearchId: inputSearchId
-  });
+  var require$$0 = /*@__PURE__*/getAugmentedNamespace(Control$1);
 
-  const VARS = _VARS_;
+  var require$$1 = /*@__PURE__*/getAugmentedNamespace(Style$1);
 
-  const EVENT_TYPE = {
-    ADDRESSCHOSEN: 'addresschosen',
-  };
+  var require$$2 = /*@__PURE__*/getAugmentedNamespace(Icon$1);
 
-  const CONTROL_TYPE = {
-    NOMINATIM: 'nominatim',
-    REVERSE: 'reverse',
-  };
+  var require$$3 = /*@__PURE__*/getAugmentedNamespace(Vector$1);
 
-  const TARGET_TYPE = {
-    GLASS: 'glass-button',
-    INPUT: 'text-input',
-  };
+  var require$$4 = /*@__PURE__*/getAugmentedNamespace(Vector);
 
-  const PROVIDERS = {
-    OSM: 'osm',
-    MAPQUEST: 'mapquest',
-    PHOTON: 'photon',
-    BING: 'bing',
-    OPENCAGE: 'opencage',
-  };
+  var require$$5 = /*@__PURE__*/getAugmentedNamespace(Point$2);
 
-  const DEFAULT_OPTIONS = {
-    provider: PROVIDERS.OSM,
-    label: '',
-    placeholder: 'Search for an address',
-    featureStyle: null,
-    targetType: TARGET_TYPE.GLASS,
-    lang: 'en-US',
-    limit: 5,
-    keepOpen: false,
-    preventDefault: false,
-    preventPanning: false,
-    preventMarker: false,
-    defaultFlyResolution: 10, // Meters per pixel
-    debug: false,
-  };
+  var require$$6 = /*@__PURE__*/getAugmentedNamespace(Feature$1);
 
-  function assert(condition, message = 'Assertion failed') {
-    if (!condition) {
-      if (typeof Error !== 'undefined') throw new Error(message);
+  var require$$7 = /*@__PURE__*/getAugmentedNamespace(proj);
 
-      throw message; // Fallback
-    }
-  }
-
-  function now() {
-    // Polyfill for window.performance.now()
-    // @license http://opensource.org/licenses/MIT
-    // copyright Paul Irish 2015
-    // https://gist.github.com/paulirish/5438650
-    if ('performance' in window === false) {
-      window.performance = {};
-    }
-
-    if ('now' in window.performance === false) {
-      let nowOffset = Date.now();
-
-      if (performance.timing && performance.timing.navigationStart) {
-        nowOffset = performance.timing.navigationStart;
-      }
-
-      window.performance.now = () => Date.now() - nowOffset;
-    }
-
-    return window.performance.now();
-  }
-
-  function randomId(prefix) {
-    const id = now().toString(36);
-
-    return prefix ? prefix + id : id;
-  }
-
-  /* eslint-disable prefer-named-capture-group */
-
-  /**
-   * @param {Element|Array<Element>} element DOM node or array of nodes.
-   * @param {String|Array<String>} classname Class or array of classes.
-   * For example: 'class1 class2' or ['class1', 'class2']
-   * @param {Number|undefined} timeout Timeout to remove a class.
+  /*!
+   * ol-geocoder - v4.3.3
+   * A geocoder extension compatible with OpenLayers v6.x to v9.0
+   * https://github.com/Dominique92/ol-geocoder
+   * Built: 15/03/2024 08:57:04
    */
-  function addClass(element, classname, timeout) {
-    if (Array.isArray(element)) {
-      element.forEach((each) => addClass(each, classname));
+  var olGeocoder = olGeocoder$1.exports;
 
-      return;
-    }
+  var hasRequiredOlGeocoder;
 
-    const array = Array.isArray(classname) ? classname : classname.split(/\s+/u);
-
-    let i = array.length;
-
-    while (i--) {
-      if (!hasClass(element, array[i])) {
-        _addClass(element, array[i]);
-      }
-    }
+  function requireOlGeocoder () {
+  	if (hasRequiredOlGeocoder) return olGeocoder$1.exports;
+  	hasRequiredOlGeocoder = 1;
+  	(function (module, exports) {
+  		!function(e,t){module.exports=t(require$$0,require$$1,require$$2,require$$3,require$$4,require$$5,require$$6,require$$7);}(olGeocoder,(function(e,t,s,r,n,o,a,i){function l(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}function c(e){if(e&&e.__esModule)return e;var t=Object.create(null);return e&&Object.keys(e).forEach((function(s){if("default"!==s){var r=Object.getOwnPropertyDescriptor(e,s);Object.defineProperty(t,s,r.get?r:{enumerable:!0,get:function(){return e[s]}});}})),t.default=e,Object.freeze(t)}var d=l(e),u=l(t),p=l(s),h=l(r),g=l(n),m=l(o),y=l(a),f=c(i),b="gcd-container",v="gcd-button-control",w="gcd-input-query",x="gcd-input-label",$="gcd-input-search",k={namespace:"ol-geocoder",spin:"gcd-pseudo-rotate",hidden:"gcd-hidden",address:"gcd-address",country:"gcd-country",city:"gcd-city",road:"gcd-road",olControl:"ol-control",glass:{container:"gcd-gl-container",control:"gcd-gl-control",button:"gcd-gl-btn",input:"gcd-gl-input",expanded:"gcd-gl-expanded",search:"gcd-gl-search",result:"gcd-gl-result"},inputText:{container:"gcd-txt-container",control:"gcd-txt-control",label:"gcd-txt-label",input:"gcd-txt-input",search:"gcd-txt-search",icon:"gcd-txt-glass",result:"gcd-txt-result"}},S={containerId:b,buttonControlId:v,inputQueryId:w,inputLabelId:x,inputSearchId:$,cssClasses:k};const q=Object.freeze({__proto__:null,containerId:b,buttonControlId:v,inputQueryId:w,inputLabelId:x,inputSearchId:$,cssClasses:k,default:S}),L="addresschosen",C="nominatim",E="reverse",T="glass-button",j="text-input",I="bing",N="mapquest",P="opencage",A="osm",R="photon",F="https://dev.virtualearth.net/REST/v1/Locations",_="https://nominatim.openstreetmap.org/search",M="https://api.opencagedata.com/geocode/v1/json?",O="https://nominatim.openstreetmap.org/search",D="https://photon.komoot.io/api/",V={provider:A,label:"",placeholder:"Search for an address",featureStyle:null,targetType:T,lang:"en-US",limit:5,keepOpen:!1,preventDefault:!1,preventPanning:!1,preventMarker:!1,defaultFlyResolution:10,debug:!1};function B(e,t="Assertion failed"){if(!e){if("undefined"!=typeof Error)throw new Error(t);throw t}}function U(e){const t=function(){if("performance"in window==0&&(window.performance={}),"now"in window.performance==0){let e=Date.now();performance.timing&&performance.timing.navigationStart&&(e=performance.timing.navigationStart),window.performance.now=()=>Date.now()-e;}return window.performance.now()}().toString(36);return e?e+t:t}function Q(e,t,s){if(Array.isArray(e))return void e.forEach((e=>Q(e,t)));const r=Array.isArray(t)?t:t.split(/\s+/u);let n=r.length;for(;n--;)H(e,r[n])||Y(e,r[n]);}function z(e,t,s){if(Array.isArray(e))return void e.forEach((e=>z(e,t)));const r=Array.isArray(t)?t:t.split(/\s+/u);let n=r.length;for(;n--;)H(e,r[n])&&Z(e,r[n]);}function H(e,t){return e.classList?e.classList.contains(t):X(t).test(e.className)}function K(e){for(;e.firstChild;)e.firstChild.remove();}function J(e,t){return e.replace(/\{\s*([\w-]+)\s*\}/gu,((e,s)=>{const r=void 0===t[s]?"":t[s];return String(r).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}))}function W(e,t){let s;if(Array.isArray(e)){if(s=document.createElement(e[0]),e[1].id&&(s.id=e[1].id),e[1].classname&&(s.className=e[1].classname),e[1].attr){const{attr:t}=e[1];if(Array.isArray(t)){let e=-1;for(;++e<t.length;)s.setAttribute(t[e].name,t[e].value);}else s.setAttribute(t.name,t.value);}}else s=document.createElement(e);s.innerHTML=t;const r=document.createDocumentFragment();for(;s.childNodes[0];)r.append(s.childNodes[0]);return s.append(r),s}function X(e){return new RegExp(`(^|\\s+) ${e} (\\s+|$)`,"u")}function Y(e,t,s){e.classList?e.classList.add(t):e.className=`${e.className} ${t}`.trim();}function Z(e,t,s){e.classList?e.classList.remove(t):e.className=e.className.replace(X(t)," ").trim();}const ee=q.cssClasses;class te{constructor(e){this.options=e,this.els=this.createControl();}createControl(){let e,t,s;return this.options.targetType===j?(t=`${ee.namespace} ${ee.inputText.container}`,e=W(["div",{id:q.containerId,classname:t}],te.input),s={container:e,control:e.querySelector(`.${ee.inputText.control}`),label:e.querySelector(`.${ee.inputText.label}`),input:e.querySelector(`.${ee.inputText.input}`),search:e.querySelector(`.${ee.inputText.search}`),result:e.querySelector(`.${ee.inputText.result}`)},s.label.innerHTML=this.options.label):(t=`${ee.namespace} ${ee.glass.container}`,e=W(["div",{id:q.containerId,classname:t}],te.glass),s={container:e,control:e.querySelector(`.${ee.glass.control}`),button:e.querySelector(`.${ee.glass.button}`),input:e.querySelector(`.${ee.glass.input}`),search:e.querySelector(`.${ee.glass.search}`),result:e.querySelector(`.${ee.glass.result}`)}),s.input.placeholder=this.options.placeholder,s}}function se(e){return new Promise(((t,s)=>{const r=function(e,t){t&&"object"==typeof t&&(e+=(/\?/u.test(e)?"&":"?")+re(t));return e}(e.url,e.data),n={method:"GET",mode:"cors",credentials:"same-origin"};e.jsonp?function(e,t,s){const{head:r}=document,n=document.createElement("script"),o=`f${Math.round(Math.random()*Date.now())}`;n.setAttribute("src",`${e+(e.indexOf("?")>0?"&":"?")+t}=${o}`),window[o]=e=>{window[o]=void 0,setTimeout((()=>r.removeChild(n)),0),s(e);},r.append(n);}(r,e.callbackName,t):fetch(r,n).then((e=>e.json())).then(t).catch(s);}))}function re(e){return Object.keys(e).reduce(((t,s)=>(t.push("object"==typeof e[s]?re(e[s]):`${encodeURIComponent(s)}=${encodeURIComponent(e[s])}`),t)),[]).join("&")}te.glass=`\n  <div class="${ee.glass.control} ${ee.olControl}">\n    <button type="button" id="${q.buttonControlId}" class="${ee.glass.button}"></button>\n    <input type="text" id="${q.inputQueryId}" class="${ee.glass.input}" autocomplete="off" placeholder="Search ...">\n    <a id="${q.inputSearchId}" class="${ee.glass.search} ${ee.hidden}"></a>\n  </div>\n  <ul class="${ee.glass.result}"></ul>\n`,te.input=`\n  <div class="${ee.inputText.control}">\n    <label type="button" id="${q.inputSearchId}" class="${ee.inputText.label}"></label>\n    <input type="text" id="${q.inputQueryId}" class="${ee.inputText.input}" autocomplete="off" placeholder="Search ...">\n    <span class="${ee.inputText.icon}"></span>\n    <button type="button" id="${q.inputSearchId}" class="${ee.inputText.search} ${ee.hidden}"></button>\n  </div>\n  <ul class="${ee.inputText.result}"></ul>\n`;class ne{constructor(){this.settings={url:D,params:{q:"",limit:10,lang:"en"},langs:["de","it","fr","en"]};}getParameters(e){return e.lang=e.lang.toLowerCase(),{url:this.settings.url,params:{q:e.query,limit:e.limit||this.settings.params.limit,lang:this.settings.langs.includes(e.lang)?e.lang:this.settings.params.lang}}}handleResponse(e){return 0===e.features.length?[]:e.features.map((e=>({lon:e.geometry.coordinates[0],lat:e.geometry.coordinates[1],address:{name:e.properties.name,postcode:e.properties.postcode,city:e.properties.city,state:e.properties.state,country:e.properties.country},original:{formatted:e.properties.name,details:e.properties}})))}}class oe{constructor(e){this.settings={url:O,...e,params:{q:"",format:"json",addressdetails:1,limit:10,countrycodes:"",viewbox:"","accept-language":"en-US"}};}getParameters(e){return {url:this.settings.url,params:{q:e.query,format:this.settings.params.format,addressdetails:this.settings.params.addressdetails,limit:e.limit||this.settings.params.limit,countrycodes:e.countrycodes||this.settings.params.countrycodes,viewbox:e.viewbox||this.settings.params.viewbox,"accept-language":e.lang||this.settings.params["accept-language"]}}}handleResponse(e){return 0===e.length?[]:e.map((e=>({lon:e.lon,lat:e.lat,bbox:e.boundingbox,address:{name:e.display_name,road:e.address.road||"",houseNumber:e.address.house_number||"",postcode:e.address.postcode,city:e.address.city||e.address.town,state:e.address.state,country:e.address.country},original:{formatted:e.display_name,details:e.address}})))}}class ae{constructor(){this.settings={url:_,params:{q:"",key:"",format:"json",addressdetails:1,limit:10,countrycodes:"","accept-language":"en-US"}};}getParameters(e){return {url:this.settings.url,params:{q:e.query,key:e.key,format:"json",addressdetails:1,limit:e.limit||this.settings.params.limit,countrycodes:e.countrycodes||this.settings.params.countrycodes,"accept-language":e.lang||this.settings.params["accept-language"]}}}handleResponse(e){return 0===e.length?[]:e.map((e=>({lon:e.lon,lat:e.lat,address:{name:e.address.neighbourhood||"",road:e.address.road||"",postcode:e.address.postcode,city:e.address.city||e.address.town,state:e.address.state,country:e.address.country},original:{formatted:e.display_name,details:e.address}})))}}class ie{constructor(){this.settings={url:F,callbackName:"jsonp",params:{query:"",key:"",includeNeighborhood:0,maxResults:10}};}getParameters(e){return {url:this.settings.url,callbackName:this.settings.callbackName,params:{query:e.query,key:e.key,includeNeighborhood:e.includeNeighborhood||this.settings.params.includeNeighborhood,maxResults:e.maxResults||this.settings.params.maxResults}}}handleResponse(e){const{resources:t}=e.resourceSets[0];return 0===t.length?[]:t.map((e=>({lon:e.point.coordinates[1],lat:e.point.coordinates[0],address:{name:e.name},original:{formatted:e.address.formattedAddress,details:e.address}})))}}class le{constructor(){this.settings={url:M,params:{q:"",key:"",limit:10,countrycode:"",pretty:1,no_annotations:1}};}getParameters(e){return {url:this.settings.url,params:{q:e.query,key:e.key,limit:e.limit||this.settings.params.limit,countrycode:e.countrycodes||this.settings.params.countrycodes}}}handleResponse(e){return 0===e.results.length?[]:e.results.map((e=>({lon:e.geometry.lng,lat:e.geometry.lat,address:{name:e.components.house_number||"",road:e.components.road||"",postcode:e.components.postcode,city:e.components.city||e.components.town,state:e.components.state,country:e.components.country},original:{formatted:e.formatted,details:e.components}})))}}const ce=q.cssClasses;class de{constructor(e,t){this.Base=e,this.layerName=U("geocoder-layer-"),this.layer=new h.default({background:"transparent",name:this.layerName,source:new g.default,displayInLayerSwitcher:!1}),this.options=e.options,this.options.provider="string"==typeof this.options.provider?this.options.provider.toLowerCase():this.options.provider,this.provider=this.newProvider(),this.els=t,this.container=this.els.container,this.registeredListeners={mapClick:!1},this.setListeners();}setListeners(){const e=e=>{e.stopPropagation(),H(this.els.control,ce.glass.expanded)?this.collapse():this.expand();};this.els.input.addEventListener("keypress",(e=>{const t=e.target.value.trim();(e.key?"Enter"===e.key:e.which?13===e.which:!!e.keyCode&&13===e.keyCode)&&(e.preventDefault(),this.query(t));}),!1),this.els.input.addEventListener("click",(e=>e.stopPropagation()),!1),this.els.input.addEventListener("input",(e=>{0!==e.target.value.trim().length?z(this.els.search,ce.hidden):Q(this.els.search,ce.hidden);}),!1),this.els.search.addEventListener("click",(()=>{this.els.input.focus(),this.query(this.els.input.value);}),!1),this.options.targetType===T&&this.els.button.addEventListener("click",e,!1);}query(e){this.provider||(this.provider=this.newProvider());const t=this.provider.getParameters({query:e,key:this.options.key,lang:this.options.lang,countrycodes:this.options.countrycodes,viewbox:this.options.viewbox,limit:this.options.limit});this.clearResults(!1===this.options.keepOpen),Q(this.els.search,ce.spin);const s={url:t.url,data:t.params};t.callbackName&&(s.jsonp=!0,s.callbackName=t.callbackName),se(s).then((e=>{this.options.debug&&console.info(e),z(this.els.search,ce.spin);const t=this.provider.handleResponse(e);t&&(this.createList(t),this.listenMapClick());})).catch((()=>{z(this.els.search,ce.spin);const e=W("li","<h5>Error! No internet connection?</h5>");this.els.result.append(e);}));}createList(e){const t=this.els.result;e.forEach((s=>{let r;if(this.options.provider===A)r=`<span class="${ce.road}">${s.address.name}</span>`;else r=this.addressTemplate(s.address);if(1==e.length)this.chosen(s,r,s.address,s.original);else {const e=W("li",`<a href="#">${r}</a>`);e.addEventListener("click",(e=>{e.preventDefault(),this.chosen(s,r,s.address,s.original);}),!1),t.append(e);}}));}chosen(e,t,s,r){const n=this.Base.getMap(),o=[Number.parseFloat(e.lon),Number.parseFloat(e.lat)],a=n.getView().getProjection(),i=f.transform(o,"EPSG:4326",a);let{bbox:l}=e;l&&(l=f.transformExtent([parseFloat(l[2]),parseFloat(l[0]),parseFloat(l[3]),parseFloat(l[1])],"EPSG:4326",a));const c={formatted:t,details:s,original:r};if(this.clearResults(!0),!0===this.options.preventDefault||!0===this.options.preventMarker)this.Base.dispatchEvent({type:L,address:c,coordinate:i,bbox:l,place:e});else {const t=this.createFeature(i,c);this.Base.dispatchEvent({type:L,address:c,feature:t,coordinate:i,bbox:l,place:e});}!0!==this.options.preventDefault&&!0!==this.options.preventPanning&&(l?n.getView().fit(l,{duration:500}):n.getView().animate({center:i,resolution:this.options.defaultFlyResolution,duration:500}));}createFeature(e){const t=new y.default(new m.default(e));return this.addLayer(),t.setStyle(this.options.featureStyle),t.setId(U("geocoder-ft-")),this.getSource().addFeature(t),t}addressTemplate(e){const t=[];return e.name&&t.push(['<span class="',ce.road,'">{name}</span>'].join("")),(e.road||e.building||e.house_number)&&t.push(['<span class="',ce.road,'">{building} {road} {house_number}</span>'].join("")),(e.city||e.town||e.village)&&t.push(['<span class="',ce.city,'">{postcode} {city} {town} {village}</span>'].join("")),(e.state||e.country)&&t.push(['<span class="',ce.country,'">{state} {country}</span>'].join("")),J(t.join("<br>"),e)}newProvider(){switch(this.options.provider){case A:return new oe(this.options);case N:return new ae;case R:return new ne;case I:return new ie;case P:return new le;default:return this.options.provider}}expand(){z(this.els.input,ce.spin),Q(this.els.control,ce.glass.expanded),window.setTimeout((()=>this.els.input.focus()),100),this.listenMapClick();}collapse(){this.els.input.value="",this.els.input.blur(),Q(this.els.search,ce.hidden),z(this.els.control,ce.glass.expanded),K(this.els.result);}listenMapClick(){if(this.registeredListeners.mapClick)return;const e=this,t=this.Base.getMap().getTargetElement();this.registeredListeners.mapClick=!0,t.addEventListener("click",{handleEvent(s){t.removeEventListener(s.type,this,!1),e.registeredListeners.mapClick=!1;}},!1);}clearResults(e){e&&this.options.targetType===T?this.collapse():K(this.els.result);}getSource(){return this.layer.getSource()}addLayer(){let e=!1;const t=this.Base.getMap();t.getLayers().forEach((t=>{t===this.layer&&(e=!0);})),e||t.addLayer(this.layer);}}class ue extends d.default{constructor(e=C,t){B("string"==typeof e,"@param `type` should be string!"),B(e===C||e===E,`@param 'type' should be '${C}'\n      or '${E}'!`);const s={...V,featureStyle:[new u.default({image:new p.default({anchor:[.5,1],src:'data:image/svg+xml;charset=utf-8,<svg width="26" height="42" viewBox="0 0 26 42" xmlns="http://www.w3.org/2000/svg"><polygon points="1,18 14,42 25,18" fill="rgb(75,75,75)" /><ellipse cx="13" cy="13" rx="13" ry="13" fill="rgb(75,75,75)" /><ellipse cx="13" cy="14" rx="6" ry="6" fill="yellow" /></svg>'})})],...t};let r,n;const o=new te(s);if(e===C&&(r=o.els.container),super({element:r,...s}),!(this instanceof ue))return new ue;this.options=s,this.container=r,e===C&&(n=new de(this,o.els),this.layer=n.layer);}getLayer(){return this.layer}getSource(){return this.getLayer().getSource()}setProvider(e){this.options.provider=e;}setProviderKey(e){this.options.key=e;}}return ue}));
+  		
+  	} (olGeocoder$1));
+  	return olGeocoder$1.exports;
   }
 
-  /**
-   * @param {Element|Array<Element>} element DOM node or array of nodes.
-   * @param {String|Array<String>} classname Class or array of classes.
-   * For example: 'class1 class2' or ['class1', 'class2']
-   * @param {Number|undefined} timeout Timeout to add a class.
-   */
-  function removeClass(element, classname, timeout) {
-    if (Array.isArray(element)) {
-      element.forEach((each) => removeClass(each, classname));
-
-      return;
-    }
-
-    const array = Array.isArray(classname) ? classname : classname.split(/\s+/u);
-
-    let i = array.length;
-
-    while (i--) {
-      if (hasClass(element, array[i])) {
-        _removeClass(element, array[i]);
-      }
-    }
-  }
-
-  /**
-   * @param {Element} element DOM node.
-   * @param {String} classname Classname.
-   * @return {Boolean}
-   */
-  function hasClass(element, c) {
-    // use native if available
-    return element.classList ? element.classList.contains(c) : classRegex(c).test(element.className);
-  }
-
-  function removeAllChildren(node) {
-    while (node.firstChild) node.firstChild.remove();
-  }
-
-  function template(html, row) {
-    return html.replace(/\{\s*([\w-]+)\s*\}/gu, (htm, key) => {
-      const value = row[key] === undefined ? '' : row[key];
-
-      return htmlEscape(value);
-    });
-  }
-
-  function htmlEscape(str) {
-    return String(str)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
-  function createElement(node, html) {
-    let elem;
-
-    if (Array.isArray(node)) {
-      elem = document.createElement(node[0]);
-
-      if (node[1].id) elem.id = node[1].id;
-
-      if (node[1].classname) elem.className = node[1].classname;
-
-      if (node[1].attr) {
-        const {
-          attr
-        } = node[1];
-
-        if (Array.isArray(attr)) {
-          let i = -1;
-
-          while (++i < attr.length) {
-            elem.setAttribute(attr[i].name, attr[i].value);
-          }
-        } else {
-          elem.setAttribute(attr.name, attr.value);
-        }
-      }
-    } else {
-      elem = document.createElement(node);
-    }
-
-    elem.innerHTML = html;
-
-    const frag = document.createDocumentFragment();
-
-    while (elem.childNodes[0]) frag.append(elem.childNodes[0]);
-
-    elem.append(frag);
-
-    return elem;
-  }
-
-  function classRegex(classname) {
-    return new RegExp(`(^|\\s+) ${classname} (\\s+|$)`, 'u');
-  }
-
-  function _addClass(el, klass, timeout) {
-    // use native if available
-    if (el.classList) {
-      el.classList.add(klass);
-    } else {
-      el.className = `${el.className} ${klass}`.trim();
-    }
-  }
-
-  function _removeClass(el, klass, timeout) {
-    if (el.classList) {
-      el.classList.remove(klass);
-    } else {
-      el.className = el.className.replace(classRegex(klass), ' ').trim();
-    }
-  }
-
-  const klasses$1 = VARS.cssClasses;
-
-  /**
-   * @class Html
-   */
-  class Html {
-    /**
-     * @constructor
-     * @param {object} options Options.
-     */
-    constructor(options) {
-      this.options = options;
-      this.els = this.createControl();
-    }
-
-    createControl() {
-      let container;
-      let containerClass;
-      let elements;
-
-      if (this.options.targetType === TARGET_TYPE.INPUT) {
-        containerClass = `${klasses$1.namespace} ${klasses$1.inputText.container}`;
-        container = createElement(
-          ['div', {
-            id: VARS.containerId,
-            classname: containerClass
-          }],
-          Html.input
-        );
-        elements = {
-          container,
-          control: container.querySelector(`.${klasses$1.inputText.control}`),
-          label: container.querySelector(`.${klasses$1.inputText.label}`),
-          input: container.querySelector(`.${klasses$1.inputText.input}`),
-          search: container.querySelector(`.${klasses$1.inputText.search}`),
-          result: container.querySelector(`.${klasses$1.inputText.result}`),
-        };
-        elements.label.innerHTML = this.options.label;
-      } else {
-        containerClass = `${klasses$1.namespace} ${klasses$1.glass.container}`;
-        container = createElement(
-          ['div', {
-            id: VARS.containerId,
-            classname: containerClass
-          }],
-          Html.glass
-        );
-        elements = {
-          container,
-          control: container.querySelector(`.${klasses$1.glass.control}`),
-          button: container.querySelector(`.${klasses$1.glass.button}`),
-          input: container.querySelector(`.${klasses$1.glass.input}`),
-          search: container.querySelector(`.${klasses$1.glass.search}`),
-          result: container.querySelector(`.${klasses$1.glass.result}`),
-        };
-      }
-
-      // set placeholder from options
-      elements.input.placeholder = this.options.placeholder;
-
-      return elements;
-    }
-  }
-
-  Html.glass = `
-  <div class="${klasses$1.glass.control} ${klasses$1.olControl}">
-    <button type="button" id="${VARS.buttonControlId}" class="${klasses$1.glass.button}"></button>
-    <input type="text" id="${VARS.inputQueryId}" class="${klasses$1.glass.input}" autocomplete="off" placeholder="Search ...">
-    <a id="${VARS.inputSearchId}" class="${klasses$1.glass.search} ${klasses$1.hidden}"></a>
-  </div>
-  <ul class="${klasses$1.glass.result}"></ul>
-`;
-
-  Html.input = `
-  <div class="${klasses$1.inputText.control}">
-    <label type="button" id="${VARS.inputSearchId}" class="${klasses$1.inputText.label}"></label>
-    <input type="text" id="${VARS.inputQueryId}" class="${klasses$1.inputText.input}" autocomplete="off" placeholder="Search ...">
-    <span class="${klasses$1.inputText.icon}"></span>
-    <button type="button" id="${VARS.inputSearchId}" class="${klasses$1.inputText.search} ${klasses$1.hidden}"></button>
-  </div>
-  <ul class="${klasses$1.inputText.result}"></ul>
-`;
-
-  function json(obj) {
-    return new Promise((resolve, reject) => {
-      const url = encodeUrlXhr(obj.url, obj.data);
-      const config = {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'same-origin',
-      };
-
-      if (obj.jsonp) {
-        jsonp(url, obj.callbackName, resolve);
-      } else {
-        fetch(url, config)
-          .then((r) => r.json())
-          .then(resolve)
-          .catch(reject);
-      }
-    });
-  }
-
-  function toQueryString(obj) {
-    return Object.keys(obj)
-      .reduce((acc, k) => {
-        acc.push(
-          typeof obj[k] === 'object' ?
-          toQueryString(obj[k]) :
-          `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
-        );
-
-        return acc;
-      }, [])
-      .join('&');
-  }
-
-  function encodeUrlXhr(url, data) {
-    if (data && typeof data === 'object') {
-      url += (/\?/u.test(url) ? '&' : '?') + toQueryString(data);
-    }
-
-    return url;
-  }
-
-  function jsonp(url, key, callback) {
-    // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
-    const {
-      head
-    } = document;
-    const script = document.createElement('script');
-    // generate minimally unique name for callback function
-    const callbackName = `f${Math.round(Math.random() * Date.now())}`;
-
-    // set request url
-    script.setAttribute(
-      'src',
-      // add callback parameter to the url
-      //    where key is the parameter key supplied
-      //    and callbackName is the parameter value
-      `${url + (url.indexOf('?') > 0 ? '&' : '?') + key}=${callbackName}`
-    );
-
-    // place jsonp callback on window,
-    //  the script sent by the server should call this
-    //  function as it was passed as a url parameter
-    window[callbackName] = (data) => {
-      window[callbackName] = undefined;
-
-      // clean up script tag created for request
-      setTimeout(() => head.removeChild(script), 0);
-
-      // hand data back to the user
-      callback(data);
-    };
-
-    // actually make the request
-    head.append(script);
-  }
-
-  /**
-   * @class Photon
-   */
-  class Photon {
-    /**
-     * @constructor
-     */
-    constructor() {
-      this.settings = {
-        url: 'https://photon.komoot.io/api/',
-
-        params: {
-          q: '',
-          limit: 10,
-          lang: 'en',
-        },
-
-        langs: ['de', 'it', 'fr', 'en'],
-      };
-    }
-
-    getParameters(options) {
-      options.lang = options.lang.toLowerCase();
-
-      return {
-        url: this.settings.url,
-
-        params: {
-          q: options.query,
-          limit: options.limit || this.settings.params.limit,
-
-          lang: this.settings.langs.includes(options.lang) ? options.lang : this.settings.params.lang,
-        },
-      };
-    }
-
-    handleResponse(results) {
-      if (results.features.length === 0) return [];
-
-      return results.features.map((result) => ({
-        lon: result.geometry.coordinates[0],
-        lat: result.geometry.coordinates[1],
-
-        address: {
-          name: result.properties.name,
-          postcode: result.properties.postcode,
-          city: result.properties.city,
-          state: result.properties.state,
-          country: result.properties.country,
-        },
-
-        original: {
-          formatted: result.properties.name,
-          details: result.properties,
-        },
-      }));
-    }
-  }
-
-  /**
-   * @class OpenStreet
-   */
-  class OpenStreet {
-    /**
-     * @constructor
-     */
-    constructor(options) {
-      this.settings = {
-        url: 'https://nominatim.openstreetmap.org/search',
-        ...options, // Allow custom URL for osm provider
-        params: {
-          q: '',
-          format: 'json',
-          addressdetails: 1,
-          limit: 10,
-          countrycodes: '',
-          viewbox: '',
-          'accept-language': 'en-US',
-        },
-      };
-    }
-
-    getParameters(opt) {
-      return {
-        url: this.settings.url,
-
-        params: {
-          q: opt.query,
-          format: this.settings.params.format,
-          addressdetails: this.settings.params.addressdetails,
-          limit: opt.limit || this.settings.params.limit,
-          countrycodes: opt.countrycodes || this.settings.params.countrycodes,
-          viewbox: opt.viewbox || this.settings.params.viewbox,
-          'accept-language': opt.lang || this.settings.params['accept-language'],
-        },
-      };
-    }
-
-    handleResponse(results) {
-      if (results.length === 0) return [];
-
-      return results.map((result) => ({
-        lon: result.lon,
-        lat: result.lat,
-        bbox: result.boundingbox,
-
-        address: {
-          name: result.display_name,
-          road: result.address.road || '',
-          houseNumber: result.address.house_number || '',
-          postcode: result.address.postcode,
-          city: result.address.city || result.address.town,
-          state: result.address.state,
-          country: result.address.country,
-        },
-
-        original: {
-          formatted: result.display_name,
-          details: result.address,
-        },
-      }));
-    }
-  }
-
-  /**
-   * @class MapQuest
-   */
-  class MapQuest {
-    /**
-     * @constructor
-     */
-    constructor() {
-      this.settings = {
-        url: 'https://open.mapquestapi.com/nominatim/v1/search.php',
-
-        params: {
-          q: '',
-          key: '',
-          format: 'json',
-          addressdetails: 1,
-          limit: 10,
-          countrycodes: '',
-          'accept-language': 'en-US',
-        },
-      };
-    }
-
-    getParameters(options) {
-      return {
-        url: this.settings.url,
-
-        params: {
-          q: options.query,
-          key: options.key,
-          format: 'json',
-          addressdetails: 1,
-          limit: options.limit || this.settings.params.limit,
-          countrycodes: options.countrycodes || this.settings.params.countrycodes,
-
-          'accept-language': options.lang || this.settings.params['accept-language'],
-        },
-      };
-    }
-
-    handleResponse(results) {
-      if (results.length === 0) return [];
-
-      return results.map((result) => ({
-        lon: result.lon,
-        lat: result.lat,
-
-        address: {
-          name: result.address.neighbourhood || '',
-          road: result.address.road || '',
-          postcode: result.address.postcode,
-          city: result.address.city || result.address.town,
-          state: result.address.state,
-          country: result.address.country,
-        },
-
-        original: {
-          formatted: result.display_name,
-          details: result.address,
-        },
-      }));
-    }
-  }
-
-  /**
-   * @class Bing
-   */
-  class Bing {
-    /**
-     * @constructor
-     */
-    constructor() {
-      this.settings = {
-        url: 'https://dev.virtualearth.net/REST/v1/Locations',
-        callbackName: 'jsonp',
-
-        params: {
-          query: '',
-          key: '',
-          includeNeighborhood: 0,
-          maxResults: 10,
-        },
-      };
-    }
-
-    getParameters(options) {
-      return {
-        url: this.settings.url,
-        callbackName: this.settings.callbackName,
-
-        params: {
-          query: options.query,
-          key: options.key,
-
-          includeNeighborhood: options.includeNeighborhood || this.settings.params.includeNeighborhood,
-
-          maxResults: options.maxResults || this.settings.params.maxResults,
-        },
-      };
-    }
-
-    handleResponse(results) {
-      const {
-        resources
-      } = results.resourceSets[0];
-
-      if (resources.length === 0) return [];
-
-      return resources.map((result) => ({
-        lon: result.point.coordinates[1],
-        lat: result.point.coordinates[0],
-
-        address: {
-          name: result.name,
-        },
-
-        original: {
-          formatted: result.address.formattedAddress,
-          details: result.address,
-        },
-      }));
-    }
-  }
-
-  /**
-   * @class OpenCage
-   */
-  class OpenCage {
-    /**
-     * @constructor
-     */
-    constructor() {
-      this.settings = {
-        url: 'https://api.opencagedata.com/geocode/v1/json?',
-
-        params: {
-          q: '',
-          key: '',
-          limit: 10,
-          countrycode: '',
-          pretty: 1,
-          no_annotations: 1,
-        },
-      };
-    }
-
-    getParameters(options) {
-      return {
-        url: this.settings.url,
-
-        params: {
-          q: options.query,
-          key: options.key,
-          limit: options.limit || this.settings.params.limit,
-          countrycode: options.countrycodes || this.settings.params.countrycodes,
-        },
-      };
-    }
-
-    handleResponse(results) {
-      if (results.results.length === 0) return [];
-
-      return results.results.map((result) => ({
-        lon: result.geometry.lng,
-        lat: result.geometry.lat,
-
-        address: {
-          name: result.components.house_number || '',
-          road: result.components.road || '',
-          postcode: result.components.postcode,
-          city: result.components.city || result.components.town,
-          state: result.components.state,
-          country: result.components.country,
-        },
-
-        original: {
-          formatted: result.formatted,
-          details: result.components,
-        },
-      }));
-    }
-  }
-
-  const klasses = VARS.cssClasses;
-
-  /**
-   * @class Nominatim
-   */
-  class Nominatim {
-    /**
-     * @constructor
-     * @param {Function} base Base class.
-     */
-    constructor(base, els) {
-      this.Base = base;
-
-      this.layerName = randomId('geocoder-layer-');
-      this.layer = new VectorLayer({
-        background: 'transparent',
-        name: this.layerName,
-        source: new VectorSource(),
-        displayInLayerSwitcher: false, // Remove search layer from legend
-      });
-
-      this.options = base.options;
-      // provider is either the name of a built-in provider as a string or an
-      // object that implements the provider API
-      this.options.provider =
-        typeof this.options.provider === 'string' ?
-        this.options.provider.toLowerCase() :
-        this.options.provider;
-      this.provider = this.newProvider();
-
-      this.els = els;
-      this.lastQuery = '';
-      this.container = this.els.container;
-      this.registeredListeners = {
-        mapClick: false,
-      };
-      this.setListeners();
-    }
-
-    setListeners() {
-      const openSearch = (evt) => {
-        evt.stopPropagation();
-        hasClass(this.els.control, klasses.glass.expanded) ? this.collapse() : this.expand();
-      };
-      const query = (evt) => {
-        const value = evt.target.value.trim();
-        const hit = evt.key ?
-          evt.key === 'Enter' :
-          evt.which ?
-          evt.which === 13 :
-          evt.keyCode ?
-          evt.keyCode === 13 :
-          false;
-
-        if (hit) {
-          evt.preventDefault();
-          this.query(value);
-        }
-      };
-      const stopBubbling = (evt) => evt.stopPropagation();
-      const search = () => {
-        this.els.input.focus();
-        this.query(this.els.input.value);
-      };
-      const handleValue = (evt) => {
-        const value = evt.target.value.trim();
-
-        value.length !== 0 ?
-          removeClass(this.els.search, klasses.hidden) :
-          addClass(this.els.search, klasses.hidden);
-      };
-
-      this.els.input.addEventListener('keypress', query, false);
-      this.els.input.addEventListener('click', stopBubbling, false);
-      this.els.input.addEventListener('input', handleValue, false);
-      this.els.search.addEventListener('click', search, false);
-
-      if (this.options.targetType === TARGET_TYPE.GLASS) {
-        this.els.button.addEventListener('click', openSearch, false);
-      }
-    }
-
-    query(q) {
-      // lazy provider
-      if (!this.provider) {
-        this.provider = this.newProvider();
-      }
-
-      const parameters = this.provider.getParameters({
-        query: q,
-        key: this.options.key,
-        lang: this.options.lang,
-        countrycodes: this.options.countrycodes,
-        viewbox: this.options.viewbox,
-        limit: this.options.limit,
-      });
-
-      if (this.lastQuery === q && this.els.result.firstChild) return;
-
-      this.lastQuery = q;
-      this.clearResults();
-      addClass(this.els.search, klasses.spin);
-
-      const ajax = {
-        url: parameters.url,
-        data: parameters.params,
-      };
-
-      if (parameters.callbackName) {
-        ajax.jsonp = true;
-        ajax.callbackName = parameters.callbackName;
-      }
-
-      json(ajax)
-        .then((res) => {
-          // eslint-disable-next-line no-console
-          this.options.debug && console.info(res);
-
-          removeClass(this.els.search, klasses.spin);
-
-          // will be fullfiled according to provider
-          const res_ = this.provider.handleResponse(res);
-
-          if (res_) {
-            this.createList(res_);
-            this.listenMapClick();
-          }
-        })
-        .catch(() => {
-          removeClass(this.els.search, klasses.spin);
-
-          const li = createElement('li', '<h5>Error! No internet connection?</h5>');
-
-          this.els.result.append(li);
-        });
-    }
-
-    createList(response) {
-      const ul = this.els.result;
-
-      response.forEach((row) => {
-        let addressHtml;
-
-        switch (this.options.provider) {
-          case PROVIDERS.OSM:
-            addressHtml = `<span class="${klasses.road}">${row.address.name}</span>`;
-            break;
-
-          default:
-            addressHtml = this.addressTemplate(row.address);
-        }
-
-        if (response.length == 1) {
-          this.chosen(row, addressHtml, row.address, row.original);
-        } else {
-          const li = createElement('li', `<a href="#">${addressHtml}</a>`);
-
-          li.addEventListener(
-            'click',
-            (evt) => {
-              evt.preventDefault();
-              this.chosen(row, addressHtml, row.address, row.original);
-            },
-            false
-          );
-
-          ul.append(li);
-        }
-      });
-    }
-
-    chosen(place, addressHtml, addressObj, addressOriginal) {
-      const map = this.Base.getMap();
-      const coord_ = [Number.parseFloat(place.lon), Number.parseFloat(place.lat)];
-      const projection = map.getView().getProjection();
-      const coord = transform$1(coord_, 'EPSG:4326', projection);
-
-      let {
-        bbox
-      } = place;
-
-      if (bbox) {
-        bbox = transformExtent(
-          // https://nominatim.org/release-docs/latest/api/Output/#boundingbox
-          // Requires parseFloat on negative bbox entries
-          [parseFloat(bbox[2]), parseFloat(bbox[0]), parseFloat(bbox[3]), parseFloat(bbox[1])], // SNWE -> WSEN
-          'EPSG:4326',
-          projection
-        );
-      }
-
-      const address = {
-        formatted: addressHtml,
-        details: addressObj,
-        original: addressOriginal,
-      };
-
-      this.options.keepOpen === false && this.clearResults(true);
-
-      if (this.options.preventDefault === true || this.options.preventMarker === true) {
-        // No display change
-        this.Base.dispatchEvent({
-          type: EVENT_TYPE.ADDRESSCHOSEN,
-          address,
-          coordinate: coord,
-          bbox,
-          place,
-        });
-      } else {
-        // Display a marker
-        const feature = this.createFeature(coord, address);
-
-        this.Base.dispatchEvent({
-          type: EVENT_TYPE.ADDRESSCHOSEN,
-          address,
-          feature,
-          coordinate: coord,
-          bbox,
-          place,
-        });
-      }
-
-      if (this.options.preventDefault !== true && this.options.preventPanning !== true) {
-        // Move & zoom to the position
-        if (bbox) {
-          map.getView().fit(bbox, {
-            duration: 500,
-          });
-        } else {
-          map.getView().animate({
-            center: coord,
-            // ol-geocoder results are too much zoomed -in Dominique92/ol-geocoder#235
-            resolution: this.options.defaultFlyResolution,
-            duration: 500,
-          });
-        }
-      }
-    }
-
-    createFeature(coord) {
-      const feature = new Feature(new Point$1(coord));
-
-      this.addLayer();
-      feature.setStyle(this.options.featureStyle);
-      feature.setId(randomId('geocoder-ft-'));
-      this.getSource().addFeature(feature);
-
-      return feature;
-    }
-
-    addressTemplate(address) {
-      const html = [];
-
-      if (address.name) {
-        html.push(['<span class="', klasses.road, '">{name}</span>'].join(''));
-      }
-
-      if (address.road || address.building || address.house_number) {
-        html.push(
-          ['<span class="', klasses.road, '">{building} {road} {house_number}</span>'].join('')
-        );
-      }
-
-      if (address.city || address.town || address.village) {
-        html.push(
-          ['<span class="', klasses.city, '">{postcode} {city} {town} {village}</span>'].join('')
-        );
-      }
-
-      if (address.state || address.country) {
-        html.push(['<span class="', klasses.country, '">{state} {country}</span>'].join(''));
-      }
-
-      return template(html.join('<br>'), address);
-    }
-
-    newProvider() {
-      switch (this.options.provider) {
-        case PROVIDERS.OSM:
-          return new OpenStreet(this.options);
-        case PROVIDERS.MAPQUEST:
-          return new MapQuest();
-        case PROVIDERS.PHOTON:
-          return new Photon();
-        case PROVIDERS.BING:
-          return new Bing();
-        case PROVIDERS.OPENCAGE:
-          return new OpenCage();
-
-        default:
-          return this.options.provider;
-      }
-    }
-
-    expand() {
-      removeClass(this.els.input, klasses.spin);
-      addClass(this.els.control, klasses.glass.expanded);
-      window.setTimeout(() => this.els.input.focus(), 100);
-      this.listenMapClick();
-    }
-
-    collapse() {
-      this.els.input.value = '';
-      this.els.input.blur();
-      addClass(this.els.search, klasses.hidden);
-      removeClass(this.els.control, klasses.glass.expanded);
-      this.clearResults();
-    }
-
-    listenMapClick() {
-      // already registered
-      if (this.registeredListeners.mapClick) return;
-
-      const that = this;
-      const mapElement = this.Base.getMap().getTargetElement();
-
-      this.registeredListeners.mapClick = true;
-
-      // one-time fire click
-      mapElement.addEventListener(
-        'click', {
-          handleEvent(evt) {
-            that.clearResults(true);
-            mapElement.removeEventListener(evt.type, this, false);
-            that.registeredListeners.mapClick = false;
-          },
-        },
-        false
-      );
-    }
-
-    clearResults(collapse) {
-      collapse && this.options.targetType === TARGET_TYPE.GLASS ?
-        this.collapse() :
-        removeAllChildren(this.els.result);
-    }
-
-    getSource() {
-      return this.layer.getSource();
-    }
-
-    addLayer() {
-      let found = false;
-
-      const map = this.Base.getMap();
-
-      map.getLayers().forEach((layer) => {
-        if (layer === this.layer) found = true;
-      });
-
-      if (!found) map.addLayer(this.layer);
-    }
-  }
-
-  /**
-   * @class Base
-   * @extends {ol.control.Control}
-   */
-  class Base extends Control {
-    /**
-     * @constructor
-     * @param {string} type nominatim|reverse.
-     * @param {object} options Options.
-     */
-    constructor(type = CONTROL_TYPE.NOMINATIM, opt) {
-      assert(typeof type === 'string', '@param `type` should be string!');
-      assert(
-        type === CONTROL_TYPE.NOMINATIM || type === CONTROL_TYPE.REVERSE,
-        `@param 'type' should be '${CONTROL_TYPE.NOMINATIM}'
-      or '${CONTROL_TYPE.REVERSE}'!`
-      );
-      const options = {
-        ...DEFAULT_OPTIONS,
-        featureStyle: [
-          new Style({
-            image: new Icon({
-              anchor: [0.5, 1],
-              src: 'data:image/svg+xml;charset=utf-8,' +
-                '<svg width="26" height="42" viewBox="0 0 26 42" xmlns="http://www.w3.org/2000/svg">' +
-                '<polygon points="1,18 14,42 25,18" fill="rgb(75,75,75)" />' +
-                '<ellipse cx="13" cy="13" rx="13" ry="13" fill="rgb(75,75,75)" />' +
-                '<ellipse cx="13" cy="14" rx="6" ry="6" fill="yellow" />' +
-                '</svg>',
-            })
-          }),
-        ],
-        ...opt,
-      };
-
-      let container;
-      let $nominatim;
-      const $html = new Html(options);
-
-      if (type === CONTROL_TYPE.NOMINATIM) {
-        container = $html.els.container;
-      }
-
-      super({
-        element: container,
-        ...options, // Allows to add ol.control.Control options (as target:)
-      });
-
-      if (!(this instanceof Base)) return new Base();
-
-      this.options = options;
-      this.container = container;
-
-      if (type === CONTROL_TYPE.NOMINATIM) {
-        $nominatim = new Nominatim(this, $html.els);
-        this.layer = $nominatim.layer;
-      }
-    }
-
-    /**
-     * @return {ol.layer.Vector} Returns the layer created by this control
-     */
-    getLayer() {
-      return this.layer;
-    }
-
-    /**
-     * @return {ol.source.Vector} Returns the source created by this control
-     */
-    getSource() {
-      return this.getLayer().getSource();
-    }
-
-    /**
-     * Set a new provider
-     * @param {String} provider
-     */
-    setProvider(provider) {
-      this.options.provider = provider;
-    }
-
-    /**
-     * Set provider key
-     * @param {String} key
-     */
-    setProviderKey(key) {
-      this.options.key = key;
-    }
-
-    /**
-     * @return {String} Returns the version & build date
-     */
-    getVersion() {
-      return '4.3.3-3';
-    }
-  }
+  var olGeocoderExports = requireOlGeocoder();
+  var Geocoder = /*@__PURE__*/getDefaultExportFromCjs(olGeocoderExports);
 
   /**
    * MyGeocoder control that overloads ol-geocoder
@@ -78720,7 +77641,7 @@
    */
 
 
-  class MyGeocoder extends Base {
+  class MyGeocoder extends Geocoder {
     constructor(options) {
       super('nominatim', {
         // See https://github.com/kirtan-desai/ol-geocoder#user-content-api
@@ -88557,13 +87478,14 @@
    */
 
 
-  const VERSION = '1.1.2.dev 01/10/2024 20:30:55';
+  const VERSION = '1.1.2.dev 09/10/2024 14:31:10';
 
   async function trace() {
     const data = [
       'Ol v' + VERSION$1,
-      'Geocoder ' + Base.prototype.getVersion(),
       'MyOl ' + VERSION,
+      'Geocoder 4.3.3',
+      'Proj4 2.12.1',
       'language ' + navigator.language,
     ];
 

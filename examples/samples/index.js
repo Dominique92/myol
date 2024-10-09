@@ -3,6 +3,7 @@
 /* eslint-disable-next-line no-unused-vars */
 const map = new ol.Map({
   target: 'map',
+  //BEST resizable map
 
   controls: [
     ...myol.control.collection(),

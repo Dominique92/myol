@@ -163,6 +163,28 @@ export class PRC extends MyVectorLayer {
   }
 }
 
+// pere-lachaise.plan-interactif.com
+export class PL extends MyVectorLayer {
+  constructor(options) {
+    super({
+      url: 'https://chemineur.fr/ressources/pl.geojson.php',
+      strategy: all,
+      nbMaxClusters: 100,
+      attribution: '&copy<a href="https://pere-lachaise.plan-interactif.com">' +
+        'pere-lachaise.plan-interactif.com</a>',
+
+      ...options,
+    });
+  }
+
+  addProperties(properties) {
+    return {
+      icon: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/edifice_religieux.svg',
+      link: 'https://pere-lachaise.plan-interactif.com/fr/#!/category/' + properties.parent + '/marker/' + properties.id,
+    };
+  }
+}
+
 // CampToCamp.org
 export class C2C extends MyVectorLayer {
   constructor(options) {

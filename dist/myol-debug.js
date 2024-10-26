@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 11/10/2024 17:50:07 using npm run build from the src/... sources
+ * Built 26/10/2024 16:17:41 using npm run build from the src/... sources
  * Please don't modify it : modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -78740,6 +78740,11 @@
     defs('EPSG:4326', "+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees");
     defs('EPSG:4269', "+title=NAD83 (long/lat) +proj=longlat +a=6378137.0 +b=6356752.31414036 +ellps=GRS80 +datum=NAD83 +units=degrees");
     defs('EPSG:3857', "+title=WGS 84 / Pseudo-Mercator +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs");
+    // UTM WGS84
+    for (var i = 0; i <= 60; ++i) {
+      defs('EPSG:' + (32600 + i), "+proj=utm +zone=" + i + " +datum=WGS84 +units=m");
+      defs('EPSG:' + (32700 + i), "+proj=utm +zone=" + i + " +south +datum=WGS84 +units=m");
+    }
 
     defs.WGS84 = defs['EPSG:4326'];
     defs['EPSG:3785'] = defs['EPSG:3857']; // maintain backward compat, official code is 3857
@@ -78795,8 +78800,26 @@
   exports$3.oslo = 10.722916666667; //"10d43'22.5\"E"
 
   var units = {
-    ft: {to_meter: 0.3048},
-    'us-ft': {to_meter: 1200 / 3937}
+    'mm': {to_meter: 0.001},
+    'cm': {to_meter: 0.01},
+    'ft': {to_meter: 0.3048},
+    'us-ft': {to_meter: 1200 / 3937},
+    'fath': {to_meter: 1.8288},
+    'kmi': {to_meter: 1852},
+    'us-ch': {to_meter: 20.1168402336805},
+    'us-mi': {to_meter: 1609.34721869444},
+    'km': {to_meter: 1000},
+    'ind-ft': {to_meter: 0.30479841},
+    'ind-yd': {to_meter: 0.91439523},
+    'mi': {to_meter: 1609.344},
+    'yd': {to_meter: 0.9144},
+    'ch': {to_meter: 20.1168},
+    'link': {to_meter: 0.201168},
+    'dm': {to_meter: 0.01},
+    'in': {to_meter: 0.0254},
+    'ind-ch': {to_meter: 20.11669506},
+    'us-in': {to_meter: 0.025400050800101},
+    'us-yd': {to_meter: 0.914401828803658}
   };
 
   var ignoredChar = /[\s_\-\/\(\)]/g;
@@ -87272,6 +87295,28 @@
     }
   }
 
+  // pere-lachaise.plan-interactif.com
+  class PL extends MyVectorLayer {
+    constructor(options) {
+      super({
+        url: 'https://chemineur.fr/ressources/pl.geojson.php',
+        strategy: all,
+        nbMaxClusters: 100,
+        attribution: '&copy<a href="https://pere-lachaise.plan-interactif.com">' +
+          'pere-lachaise.plan-interactif.com</a>',
+
+        ...options,
+      });
+    }
+
+    addProperties(properties) {
+      return {
+        icon: 'https://chemineur.fr/ext/Dominique92/GeoBB/icones/edifice_religieux.svg',
+        link: 'https://pere-lachaise.plan-interactif.com/fr/#!/category/' + properties.parent + '/marker/' + properties.id,
+      };
+    }
+  }
+
   // CampToCamp.org
   class C2C extends MyVectorLayer {
     constructor(options) {
@@ -87452,6 +87497,7 @@
     Chemineur: Chemineur,
     GeoBB: GeoBB,
     Overpass: Overpass,
+    PL: PL,
     PRC: PRC,
     WRI: WRI,
     collection: collection
@@ -87467,7 +87513,7 @@
     VectorEditor: VectorEditor,
     Hover: Hover,
     Marker: Marker,
-    MyVectorLayer,
+    MyVectorLayer: MyVectorLayer,
     Selector: Selector,
     tile: tileLayercollection,
     vector: vectorLayerCollection,
@@ -87478,14 +87524,14 @@
    */
 
 
-  const VERSION = '1.1.2.dev 11/10/2024 17:50:07';
+  const VERSION = '1.1.2.dev 26/10/2024 16:17:41';
 
   async function trace() {
     const data = [
       'Ol v' + VERSION$1,
       'MyOl ' + VERSION,
       'Geocoder 4.3.3',
-      'Proj4 2.12.1',
+      'Proj4 2.13.2',
       'language ' + navigator.language,
     ];
 
@@ -87559,7 +87605,7 @@
   // This file defines the contents of the dist/myol.css & dist/myol libraries
   // It contains all what is necessary for refuges.info & chemineur.fr websites
 
-  window.ol ||= ol; // Make a global ol
+  window.ol ||= ol; // Makes a global ol
 
   return myol;
 

@@ -7,6 +7,7 @@ const map = new ol.Map({
   view: new ol.View({
     center: ol.proj.transform([5.885, 44.791], 'EPSG:4326', 'EPSG:3857'), // Cabane double Samblue
     //center: ol.proj.transform([6.51, 45.13], 'EPSG:4326', 'EPSG:3857'), // Cabane double Terre rouge
+    //center: ol.proj.transform([2.394, 48.861], 'EPSG:4326', 'EPSG:3857'), // Père lachaise
     constrainResolution: true, // Force zoom on the definition of available tiles
     zoom: 14,
   }),
@@ -42,6 +43,9 @@ const map = new ol.Map({
     }),
     new myol.layer.vector.Overpass({
       selectName: 'select-osm',
+    }),
+    new myol.layer.vector.PL({
+      selectName: 'select-pl',
     }),
 
     // Hover & click management (mouse & touch)

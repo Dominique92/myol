@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 21/02/2025 15:46:23 using npm run build from the src/... sources
+ * Built 21/02/2025 17:22:13 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -76491,6 +76491,9 @@
             this.subMenuAction(evt)
           )));
 
+      // Close the sub-menu when click or touch the map
+      map.on('click', () => this.element.classList.remove('myol-button-selected'));
+
       return super.setMap(map);
     }
 
@@ -88732,7 +88735,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 21/02/2025 15:46:23';
+  const VERSION = '1.1.2.dev 21/02/2025 17:22:13';
 
   async function trace() {
     const data = [

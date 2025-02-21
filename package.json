@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "ol": "latest",
-    "ol-geocoder": "latest",
     "@myol/geocoder": "latest",
     "proj4": "latest"
   },

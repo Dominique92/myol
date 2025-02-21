@@ -1,6 +1,7 @@
 /* global ol, myol, jsVars */
 
 console.log('MyGPS version ' + jsVars.lastChangeDate);
+myol.trace();
 
 // Force uri to be compliant with PWA
 if (!location.pathname.match(/index/u) || // Force script name

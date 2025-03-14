@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 21/02/2025 17:22:13 using npm run build from the src/... sources
+ * Built 14/03/2025 20:42:54 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -88735,7 +88735,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 21/02/2025 17:22:13';
+  const VERSION = '1.1.2.dev 14/03/2025 20:42:54';
 
   async function trace() {
     const data = [

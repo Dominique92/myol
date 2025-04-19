@@ -1,0 +1,48 @@
+<style>
+  body {
+    background: #234;
+    color: white;
+  }
+
+  a {
+    color: #fdb;
+    font-size: large;
+  }
+</style>
+<base href="https://dom.refuges.info/" target="_blank">
+<h4>Test des cartes refuges.info</h4>
+<a href="">Accueil</a><br />
+<a href="point/104">Carrette</a> Points<br />
+<a href="point_formulaire_modification?id_point=104">Modif Carrette</a> Points + curseur<br />
+<hr />
+
+<a href="nav">Affiche tous les points</a><br />
+<a href="nav/4">Affiche les points contenus dans le polygone 4</a> (ici le massif du Vercors)<br />
+<a href="nav/4262">Carte</a> Contour noir + points<br />
+<a href="nav/50?id_polygone_type=1">Affiche les massifs contenus dans le polygone 50</a>
+(ici la zone du Massif Central)<br />
+<a href="nav/?id_polygone_type=1">Affiche tous les massifs</a><br />
+<a href="nav/?id_polygone_type=11">Affiche toutes les zones</a><br />
+<a href="nav/352/zone/Alpes/">Zone Alpes</a> Massifs colorés dans la zone + points dans la zone<br />
+<a href="nav/352/zone/Alpes/?id_polygone_type=1">Massifs Alpes</a> Massifs colorés dans la zone<br />
+<hr />
+<a href="nav?id_polygone_type=1">Gestion massifs</a><br />
+<a href="nav?id_polygone_type=11">Gestion Zones</a><br />
+<a href="edit">Crée un massif</a><br />
+<a href="edit?id_polygone_type=1">Crée un massif</a><br />
+<a href="edit?id_polygone_type=11">Crée une zone</a><br />
+<a href="edit/4">Edit Vercors</a> Contours noirs tous massifs + 1 rouge en édition<br />
+<a href="edit/4262">Edit carte</a> Contours noirs tous massifs + 1 rouge en édition<br />
+<a href="edit/352">Edit Alpes</a>
+Contours noirs toutes zones + 1 rouge en édition
++ tous massifs en couleur<br />
+<hr />
+
+nav/<id_polygone> : Filtre et affiche le polygone en noir
+  (si coche "seule" active ou inexistante)<br />
+  $vue->polygone->id_polygone => id_polygone<br />
+
+  Données filtrées :<br />
+  ?id_polygone_type # ou rien : Affiche les points<br />
+  ?id_polygone_type=1 : Affiche les massifs colorés<br />
+  ?id_polygone_type=11 : Affiche les zones en noir et les massifs colorées<br />

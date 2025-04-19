@@ -15,19 +15,19 @@
 <div class="sample-wri sample-inline"> Refuges.info:
   <a id="sh-index" title="Index" href="?sample=wri&map=Index">In</a>
   <a id="sh-point" title="Point" href="?sample=wri&map=Point">P</a>
-  <a id="sh-modif" title="Modif point" href="?sample=wri&map=Modif&id_point=1234">Mp</a>
+  <a id="sh-modif" title="Modif point" href="?sample=wri&map=Modif&id_point=104">Mp</a>
   <a id="sh-pointcree" title="Crée point" href="?sample=wri&map=Modif&id_point_type=7">Cp</a>
 
   <a id="sh-nav" title="NAV tous les points" href="?sample=wri&map=Nav">Nav</a>
   <a id="sh-massif" title="NAV points dans un massif" href="?sample=wri&map=Nav&id_polygone=4&extent=5,44.7,5.7,45.3">Nm</a>
-  <a id="sh-polygone" title="NAV massifs contenus dans le Massif Central" href="?sample=wri&map=Nav&id_polygone=50&id_polygone_type=11&extent=1,43,5,47">Nmp</a>
-  <a id="sh-massifs" title="NAV tous les massifs" href="?sample=wri&map=Nav&id_polygone_type=11">Nms</a>
-  <a id="sh-zones" title="NAV toutes les zones" href="?sample=wri&map=Nav&id_polygone_type=11">Nzs</a>
-
-  <a id="sh-creemassif" title="Crée massif" href="?sample=wri&map=Edit">Cm</a>
+  <a id="sh-polygone" title="NAV massifs contenus dans le Massif Central" href="?sample=wri&map=Nav&id_polygone=50&id_polygone_type=1&extent=1,43,5,47">Nmp</a>
+  <a id="sh-massifs" title="Gestion massifs" href="?sample=wri&map=Nav&id_polygone_type=1">Nms</a>
+  <a id="sh-zones" title="Gestion Zones" href="?sample=wri&map=Nav&id_polygone_type=11">Nzs</a>
+  <a id="sh-creemassif" title="Crée un massif" href="?sample=wri&map=Edit">Cm</a>
   <a id="sh-editmassif" title="Edit massif Vercors" href="?sample=wri&map=Edit&id_polygone=4">Em</a>
+  <a id="sh-creezone" title="Crée une zone" href="?sample=wri&map=Edit&id_polygone_type=11">Cz</a>
   <a id="sh-editzone" title="Edit zone Massif Central" href="?sample=wri&map=Edit&id_polygone=50">Ez</a>
-  <a id="sh-creezone" title="Crée zone" href="?sample=wri&map=Edit&id_polygone_type=11">Cz</a>
+  <a id="sh-dri" title="Tests DRI" href="?sample=wri_dom">DRI</a>
 </div>
 
 <div class="wri-champs">
@@ -45,7 +45,7 @@
   </div>
 
   <div id="wri-champs-modif">
-    <p> <input id="marker-json" size="40" value='{"type":"Point","coordinates":[6.14871,46.20588]}' /></p>
+    <p> <input id="marker-json" size="40" value='{"type":"Point","coordinates":[6.1495,46.2053]}' /></p>
     <p>
       Longitude :
       <input type="text" id="marker-lon" name="lon" size="12" maxlength="12" /> (WGS84)&nbsp;

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 05/06/2025 17:37:05 using npm run build from the src/... sources
+ * Built 16/06/2025 21:53:39 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -1004,7 +1004,7 @@
    * OpenLayers version.
    * @type {string}
    */
-  const VERSION$1 = '10.5.0';
+  const VERSION$1 = '10.6.0';
 
   /**
    * @module ol/Object
@@ -7612,7 +7612,7 @@
     x,
     y,
   ) {
-    // https://geomalgorithms.com/a03-_inclusion.html
+    // https://web.archive.org/web/20210504233957/http://geomalgorithms.com/a03-_inclusion.html
     // Copyright 2000 softSurfer, 2012 Dan Sunday
     // This code may be freely used and modified for any purpose
     // providing that this copyright notice is included with it.
@@ -13485,6 +13485,12 @@
     'family',
   ];
 
+  /** @type {Object<string|number, number>} */
+  const fontWeights = {
+    normal: 400,
+    bold: 700,
+  };
+
   /**
    * Get the list of font families from a font spec.  Note that this doesn't work
    * for font families that have commas in them.
@@ -13500,16 +13506,22 @@
       lineHeight: 'normal',
       size: '1.2em',
       style: 'normal',
-      weight: 'normal',
+      weight: '400',
       variant: 'normal',
     });
     for (let i = 0, ii = fontRegExMatchIndex.length; i < ii; ++i) {
       const value = match[i + 1];
       if (value !== undefined) {
-        style[fontRegExMatchIndex[i]] = value;
+        style[fontRegExMatchIndex[i]] =
+          typeof value === 'string' ? value.trim() : value;
       }
     }
-    style.families = style.family.split(/,\s?/);
+    if (isNaN(Number(style.weight)) && style.weight in fontWeights) {
+      style.weight = fontWeights[style.weight];
+    }
+    style.families = style.family
+      .split(/,\s?/)
+      .map((f) => f.trim().replace(/^['"]|['"]$/g, ''));
     return style;
   };
 
@@ -13852,7 +13864,11 @@
    * the control should be re-rendered. This is called in a `requestAnimationFrame`
    * callback.
    * @property {string|Array<string>|undefined} [attributions] Optional attribution(s) that will always be
-   * displayed regardless of the layers rendered
+   * displayed regardless of the layers rendered.
+   * **Caution:** Attributions are rendered dynamically using `innerHTML`, which can lead to potential
+   * [**XSS (Cross-Site Scripting)**](https://en.wikipedia.org/wiki/Cross-site_scripting) vulnerabilities.
+   * Use this feature only for trusted content
+   * or ensure that the content is properly sanitized before inserting it.
    */
 
   /**
@@ -15050,7 +15066,7 @@
   const mouseActionButton = function (mapBrowserEvent) {
     const originalEvent = mapBrowserEvent.originalEvent;
     return (
-      originalEvent instanceof PointerEvent &&
+      'pointerId' in originalEvent &&
       originalEvent.button == 0 &&
       !(WEBKIT && MAC && originalEvent.ctrlKey)
     );
@@ -15199,9 +15215,7 @@
   const mouseOnly = function (mapBrowserEvent) {
     const pointerEvent = mapBrowserEvent.originalEvent;
     // see https://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
-    return (
-      pointerEvent instanceof PointerEvent && pointerEvent.pointerType == 'mouse'
-    );
+    return 'pointerId' in pointerEvent && pointerEvent.pointerType == 'mouse';
   };
 
   /**
@@ -15214,9 +15228,7 @@
   const touchOnly = function (mapBrowserEvent) {
     const pointerEvt = mapBrowserEvent.originalEvent;
     // see https://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
-    return (
-      pointerEvt instanceof PointerEvent && pointerEvt.pointerType === 'touch'
-    );
+    return 'pointerId' in pointerEvt && pointerEvt.pointerType === 'touch';
   };
 
   /**
@@ -15229,7 +15241,7 @@
   const penOnly = function (mapBrowserEvent) {
     const pointerEvt = mapBrowserEvent.originalEvent;
     // see https://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
-    return pointerEvt instanceof PointerEvent && pointerEvt.pointerType === 'pen';
+    return 'pointerId' in pointerEvt && pointerEvt.pointerType === 'pen';
   };
 
   /**
@@ -15244,7 +15256,7 @@
   const primaryAction = function (mapBrowserEvent) {
     const pointerEvent = mapBrowserEvent.originalEvent;
     return (
-      pointerEvent instanceof PointerEvent &&
+      'pointerId' in pointerEvent &&
       pointerEvent.isPrimary &&
       pointerEvent.button === 0
     );
@@ -16569,6 +16581,18 @@
    */
 
   /**
+   * Mutliplier for the DOM_DELTA_LINE delta value.
+   * @type {number}
+   */
+  const DELTA_LINE_MULTIPLIER = 40;
+
+  /**
+   * Mutliplier for the DOM_DELTA_PAGE delta value.
+   * @type {number}
+   */
+  const DELTA_PAGE_MULTIPLIER = 300;
+
+  /**
    * @classdesc
    * Allows the user to zoom the map by scrolling the mouse wheel.
    * @api
@@ -16731,12 +16755,16 @@
 
       // Delta normalisation inspired by
       // https://github.com/mapbox/mapbox-gl-js/blob/001c7b9/js/ui/handler/scroll_zoom.js
-      let delta;
-      if (mapBrowserEvent.type == EventType.WHEEL) {
-        delta = wheelEvent.deltaY;
-        if (wheelEvent.deltaMode === WheelEvent.DOM_DELTA_LINE) {
-          delta *= 40;
-        }
+      let delta = wheelEvent.deltaY;
+
+      switch (wheelEvent.deltaMode) {
+        case WheelEvent.DOM_DELTA_LINE:
+          delta *= DELTA_LINE_MULTIPLIER;
+          break;
+        case WheelEvent.DOM_DELTA_PAGE:
+          delta *= DELTA_PAGE_MULTIPLIER;
+          break;
+        // pass
       }
 
       if (delta === 0) {
@@ -18346,7 +18374,6 @@
             this.dispatchEvent('sourceready');
           }, 0);
         }
-        this.clearRenderer();
       }
       this.changed();
     }
@@ -19618,38 +19645,38 @@
    * See below for details on the available operators (with notes for those that are WebGL or Canvas only).
    *
    * Reading operators:
-   *   `['band', bandIndex, xOffset, yOffset]` For tile layers only. Fetches pixel values from band
+   *   * `['band', bandIndex, xOffset, yOffset]` For tile layers only. Fetches pixel values from band
    *     `bandIndex` of the source's data. The first `bandIndex` of the source data is `1`. Fetched values
    *     are in the 0..1 range. {@link import("../source/TileImage.js").default} sources have 4 bands: red,
    *     green, blue and alpha. {@link import("../source/DataTile.js").default} sources can have any number
    *     of bands, depending on the underlying data source and
    *     {@link import("../source/GeoTIFF.js").Options configuration}. `xOffset` and `yOffset` are optional
    *     and allow specifying pixel offsets for x and y. This is used for sampling data from neighboring pixels (WebGL only).
-   *   `['get', attributeName]` fetches a feature property value, similar to `feature.get('attributeName')`.
-   *   `['get', attributeName, keyOrArrayIndex, ...]` (Canvas only) Access nested properties and array items of a
+   *   * `['get', attributeName]` fetches a feature property value, similar to `feature.get('attributeName')`.
+   *   * `['get', attributeName, keyOrArrayIndex, ...]` (Canvas only) Access nested properties and array items of a
    *     feature property. The result is `undefined` when there is nothing at the specified key or index.
-   *   `['geometry-type']` returns a feature's geometry type as string, either: 'LineString', 'Point' or 'Polygon'
+   *   * `['geometry-type']` returns a feature's geometry type as string, either: 'LineString', 'Point' or 'Polygon'
    *     `Multi*` values are returned as their singular equivalent
    *     `Circle` geometries are returned as 'Polygon'
    *     `GeometryCollection` geometries are returned as the type of the first geometry found in the collection (WebGL only).
-   *   `['resolution']` returns the current resolution
-   *   `['time']` The time in seconds since the creation of the layer (WebGL only).
-   *   `['var', 'varName']` fetches a value from the style variables; will throw an error if that variable is undefined
-   *   `['zoom']` The current zoom level (WebGL only).
-   *   `['line-metric']` returns the M component of the current point on a line (WebGL only); in case where the geometry layout of the line
+   *   * `['resolution']` returns the current resolution
+   *   * `['time']` The time in seconds since the creation of the layer (WebGL only).
+   *   * `['var', 'varName']` fetches a value from the style variables; will throw an error if that variable is undefined
+   *   * `['zoom']` The current zoom level (WebGL only).
+   *   * `['line-metric']` returns the M component of the current point on a line (WebGL only); in case where the geometry layout of the line
    *      does not contain an M component (e.g. XY or XYZ), 0 is returned; 0 is also returned for geometries other than lines.
    *      Please note that the M component will be linearly interpolated between the two points composing a segment.
    *
    * Math operators:
-   *   `['*', value1, value2, ...]` multiplies the values (either numbers or colors)
-   *   `['/', value1, value2]` divides `value1` by `value2`
-   *   `['+', value1, value2, ...]` adds the values
-   *   `['-', value1, value2]` subtracts `value2` from `value1`
-   *   `['clamp', value, low, high]` clamps `value` between `low` and `high`
-   *   `['%', value1, value2]` returns the result of `value1 % value2` (modulo)
-   *   `['^', value1, value2]` returns the value of `value1` raised to the `value2` power
-   *   `['abs', value1]` returns the absolute value of `value1`
-   *   `['floor', value1]` returns the nearest integer less than or equal to `value1`
+   *   * `['*', value1, value2, ...]` multiplies the values (either numbers or colors)
+   *   * `['/', value1, value2]` divides `value1` by `value2`
+   *   * `['+', value1, value2, ...]` adds the values
+   *   * `['-', value1, value2]` subtracts `value2` from `value1`
+   *   * `['clamp', value, low, high]` clamps `value` between `low` and `high`
+   *   * `['%', value1, value2]` returns the result of `value1 % value2` (modulo)
+   *   * `['^', value1, value2]` returns the value of `value1` raised to the `value2` power
+   *   * `['abs', value1]` returns the absolute value of `value1`
+   *   * `['floor', value1]` returns the nearest integer less than or equal to `value1`
    *   * `['round', value1]` returns the nearest integer to `value1`
    *   * `['ceil', value1]` returns the nearest integer greater than or equal to `value1`
    *   * `['sin', value1]` returns the sine of `value1`
@@ -22152,98 +22179,123 @@
    */
   const textHeights = {};
 
+  const genericFontFamilies = new Set([
+    'serif',
+    'sans-serif',
+    'monospace',
+    'cursive',
+    'fantasy',
+    'system-ui',
+    'ui-serif',
+    'ui-sans-serif',
+    'ui-monospace',
+    'ui-rounded',
+    'emoji',
+    'math',
+    'fangsong',
+  ]);
+
+  /**
+   * @param {string} style Css font-style
+   * @param {string} weight Css font-weight
+   * @param {string} family Css font-family
+   * @return {string} Font key.
+   */
+  function getFontKey(style, weight, family) {
+    return `${style} ${weight} 16px "${family}"`;
+  }
+
   /**
    * Clears the label cache when a font becomes available.
    * @param {string} fontSpec CSS font spec.
    */
   const registerFont = (function () {
     const retries = 100;
-    const size = '32px ';
-    const referenceFonts = ['monospace', 'serif'];
-    const len = referenceFonts.length;
-    const text = 'wmytzilWMYTZIL@#/&?$%10\uF013';
-    let interval, referenceWidth;
+    let timeout, fontFaceSet;
 
     /**
-     * @param {string} fontStyle Css font-style
-     * @param {string} fontWeight Css font-weight
-     * @param {*} fontFamily Css font-family
-     * @return {boolean} Font with style and weight is available
+     * @param {string} fontSpec Css font spec
+     * @return {Promise<boolean>} Font with style and weight is available
      */
-    function isAvailable(fontStyle, fontWeight, fontFamily) {
-      let available = true;
-      for (let i = 0; i < len; ++i) {
-        const referenceFont = referenceFonts[i];
-        referenceWidth = measureTextWidth(
-          fontStyle + ' ' + fontWeight + ' ' + size + referenceFont,
-          text,
-        );
-        if (fontFamily != referenceFont) {
-          const width = measureTextWidth(
-            fontStyle +
-              ' ' +
-              fontWeight +
-              ' ' +
-              size +
-              fontFamily +
-              ',' +
-              referenceFont,
-            text,
+    async function isAvailable(fontSpec) {
+      await fontFaceSet.ready;
+      const fontFaces = await fontFaceSet.load(fontSpec);
+      if (fontFaces.length === 0) {
+        return false;
+      }
+      const font = getFontParameters(fontSpec);
+      const checkFamily = font.families[0].toLowerCase();
+      const checkWeight = font.weight;
+      return fontFaces.some(
+        /**
+         * @param {import('../css.js').FontParameters} f Font.
+         * @return {boolean} Font matches.
+         */
+        (f) => {
+          const family = f.family.replace(/^['"]|['"]$/g, '').toLowerCase();
+          const weight = fontWeights[f.weight] || f.weight;
+          return (
+            family === checkFamily &&
+            f.style === font.style &&
+            weight == checkWeight
           );
-          // If width and referenceWidth are the same, then the fallback was used
-          // instead of the font we wanted, so the font is not available.
-          available = available && width != referenceWidth;
-        }
-      }
-      if (available) {
-        return true;
-      }
-      return false;
+        },
+      );
     }
 
-    function check() {
+    async function check() {
+      await fontFaceSet.ready;
       let done = true;
-      const fonts = checkedFonts.getKeys();
-      for (let i = 0, ii = fonts.length; i < ii; ++i) {
+      const checkedFontsProperties = checkedFonts.getProperties();
+      const fonts = Object.keys(checkedFontsProperties).filter(
+        (key) => checkedFontsProperties[key] < retries,
+      );
+      for (let i = fonts.length - 1; i >= 0; --i) {
         const font = fonts[i];
-        if (checkedFonts.get(font) < retries) {
-          const [style, weight, family] = font.split('\n');
-          if (isAvailable(style, weight, family)) {
+        let currentRetries = checkedFontsProperties[font];
+        if (currentRetries < retries) {
+          if (await isAvailable(font)) {
             clear$2(textHeights);
-            // Make sure that loaded fonts are picked up by Safari
-            measureContext = null;
-            measureFont = undefined;
             checkedFonts.set(font, retries);
           } else {
-            checkedFonts.set(font, checkedFonts.get(font) + 1, true);
-            done = false;
+            currentRetries += 10;
+            checkedFonts.set(font, currentRetries, true);
+            if (currentRetries < retries) {
+              done = false;
+            }
           }
         }
       }
-      if (done) {
-        clearInterval(interval);
-        interval = undefined;
+      timeout = undefined;
+      if (!done) {
+        timeout = setTimeout(check, 100);
       }
     }
 
-    return function (fontSpec) {
+    return async function (fontSpec) {
+      if (!fontFaceSet) {
+        fontFaceSet = WORKER_OFFSCREEN_CANVAS ? self.fonts : document.fonts;
+      }
       const font = getFontParameters(fontSpec);
       if (!font) {
         return;
       }
       const families = font.families;
-      for (let i = 0, ii = families.length; i < ii; ++i) {
-        const family = families[i];
-        const key = font.style + '\n' + font.weight + '\n' + family;
-        if (checkedFonts.get(key) === undefined) {
-          checkedFonts.set(key, retries, true);
-          if (!isAvailable(font.style, font.weight, family)) {
-            checkedFonts.set(key, 0, true);
-            if (interval === undefined) {
-              interval = setInterval(check, 32);
-            }
-          }
+      let needCheck = false;
+      for (const family of families) {
+        if (genericFontFamilies.has(family)) {
+          continue;
         }
+        const key = getFontKey(font.style, font.weight, family);
+        if (checkedFonts.get(key) !== undefined) {
+          continue;
+        }
+        checkedFonts.set(key, 0, true);
+        needCheck = true;
+      }
+      if (needCheck) {
+        clearTimeout(timeout);
+        timeout = setTimeout(check, 100);
       }
     };
   })();
@@ -29195,7 +29247,10 @@
      * Redraws all text after new fonts have loaded
      */
     redrawText() {
-      const layerStates = this.getLayerGroup().getLayerStatesArray();
+      if (!this.frameState_) {
+        return;
+      }
+      const layerStates = this.frameState_.layerStatesArray;
       for (let i = 0, ii = layerStates.length; i < ii; ++i) {
         const layer = layerStates[i].layer;
         if (layer.hasRenderer()) {
@@ -35870,8 +35925,8 @@
 
       this.setVisible(true);
 
-      const x = Math.round(pixel[0] + offset[0]) + 'px';
-      const y = Math.round(pixel[1] + offset[1]) + 'px';
+      const x = `${pixel[0] + offset[0]}px`;
+      const y = `${pixel[1] + offset[1]}px`;
       let posX = '0%';
       let posY = '0%';
       if (
@@ -53336,7 +53391,11 @@
    * @const
    * @type {Array<null|string>}
    */
-  const NAMESPACE_URIS$1 = [null, 'http://www.opengis.net/wms'];
+  const NAMESPACE_URIS$1 = [
+    null,
+    'http://www.opengis.net/wms',
+    'http://www.opengis.net/sld',
+  ];
 
   function isV13(objectStack) {
     return compareVersions(objectStack[0].version, '1.3') >= 0;
@@ -53352,33 +53411,19 @@
     'Capability': makeObjectPropertySetter(readCapability),
   });
 
-  const COMMON_CAPABILITY_PARSERS = {
-    'Request': makeObjectPropertySetter(readRequest),
-    'Exception': makeObjectPropertySetter(readException),
-    'Layer': makeObjectPropertySetter(readCapabilityLayer),
-  };
-
   /**
    * @const
    * @type {Object<string, Object<string, import("../xml.js").Parser>>}
    */
   // @ts-ignore
   const CAPABILITY_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
-    ...COMMON_CAPABILITY_PARSERS,
+    'Request': makeObjectPropertySetter(readRequest),
+    'Exception': makeObjectPropertySetter(readException),
+    'Layer': makeObjectPropertySetter(readCapabilityLayer),
     'UserDefinedSymbolization': makeObjectPropertySetter(
       readUserDefinedSymbolization,
     ),
   });
-
-  /**
-   * @const
-   * @type {Object<string, Object<string, import("../xml.js").Parser>>}
-   */
-  // @ts-ignore
-  const CAPABILITY_PARSERS_V13 = makeStructureNS(
-    NAMESPACE_URIS$1,
-    COMMON_CAPABILITY_PARSERS,
-  );
 
   /**
    * @typedef {Object} RootObject
@@ -53579,6 +53624,8 @@
     'GetCapabilities': makeObjectPropertySetter(readOperationType),
     'GetMap': makeObjectPropertySetter(readOperationType),
     'GetFeatureInfo': makeObjectPropertySetter(readOperationType),
+    'DescribeLayer': makeObjectPropertySetter(readOperationType),
+    'GetLegendGraphic': makeObjectPropertySetter(readOperationType),
   });
 
   /**
@@ -53654,12 +53701,14 @@
 
   function readUserDefinedSymbolization(node, objectStack) {
     return {
-      'SupportSLD': !!readBooleanString(
-        node.getAttribute('UserDefinedSymbolization'),
-      ),
+      'SupportSLD': !!readBooleanString(node.getAttribute('SupportSLD')),
       'UserLayer': !!readBooleanString(node.getAttribute('UserLayer')),
       'UserStyle': !!readBooleanString(node.getAttribute('UserStyle')),
       'RemoteWFS': !!readBooleanString(node.getAttribute('RemoteWFS')),
+      'InlineFeatureData': !!readBooleanString(
+        node.getAttribute('InlineFeatureData'),
+      ),
+      'RemoteWCS': !!readBooleanString(node.getAttribute('RemoteWCS')),
     };
   }
 
@@ -53748,13 +53797,9 @@
    * @param {Array<*>} objectStack Object stack.
    * @return {Object|undefined} Capability object.
    */
+  //ts-ignore
   function readCapability(node, objectStack) {
-    return pushParseAndPop(
-      {},
-      isV13(objectStack) ? CAPABILITY_PARSERS_V13 : CAPABILITY_PARSERS,
-      node,
-      objectStack,
-    );
+    return pushParseAndPop({}, CAPABILITY_PARSERS, node, objectStack);
   }
 
   /**
@@ -55419,9 +55464,7 @@
     updateFillStyle(state, createFill) {
       const fillStyle = state.fillStyle;
       if (typeof fillStyle !== 'string' || state.currentFillStyle != fillStyle) {
-        if (fillStyle !== undefined) {
-          this.instructions.push(createFill.call(this, state));
-        }
+        this.instructions.push(createFill.call(this, state));
         state.currentFillStyle = fillStyle;
       }
     }
@@ -55448,9 +55491,7 @@
         state.currentLineWidth != lineWidth ||
         state.currentMiterLimit != miterLimit
       ) {
-        if (strokeStyle !== undefined) {
-          applyStroke.call(this, state);
-        }
+        applyStroke.call(this, state);
         state.currentStrokeStyle = strokeStyle;
         state.currentLineCap = lineCap;
         state.currentLineDash = lineDash;
@@ -56192,13 +56233,8 @@
      */
     setFillStrokeStyles_() {
       const state = this.state;
-      const fillStyle = state.fillStyle;
-      if (fillStyle !== undefined) {
-        this.updateFillStyle(state, this.createFill);
-      }
-      if (state.strokeStyle !== undefined) {
-        this.updateStrokeStyle(state, this.applyStroke);
-      }
+      this.updateFillStyle(state, this.createFill);
+      this.updateStrokeStyle(state, this.applyStroke);
     }
   }
 
@@ -57943,6 +57979,9 @@
     setStrokeStyle_(context, instruction) {
       context.strokeStyle =
         /** @type {import("../../colorlike.js").ColorLike} */ (instruction[1]);
+      if (!instruction[1]) {
+        return;
+      }
       context.lineWidth = /** @type {number} */ (instruction[2]);
       context.lineCap = /** @type {CanvasLineCap} */ (instruction[3]);
       context.lineJoin = /** @type {CanvasLineJoin} */ (instruction[4]);
@@ -58856,6 +58895,8 @@
         this.hitDetectionContext_ = createCanvasContext2D(
           contextSize,
           contextSize,
+          undefined,
+          {willReadFrequently: false},
         );
       }
       const context = this.hitDetectionContext_;
@@ -59053,7 +59094,7 @@
             }
             if (zIndexContext) {
               zIndexContext.offset();
-              const index = zs[i] * maxBuilderTypes + j;
+              const index = zs[i] * maxBuilderTypes + ALL.indexOf(builderType);
               if (!this.deferredZIndexContexts_[index]) {
                 this.deferredZIndexContexts_[index] = [];
               }
@@ -61776,7 +61817,7 @@
      * @private
      */
     resetDrawContext_() {
-      if (this.opacity_ !== 1) {
+      if (this.opacity_ !== 1 && this.targetContext_) {
         const alpha = this.targetContext_.globalAlpha;
         this.targetContext_.globalAlpha = this.opacity_;
         this.targetContext_.drawImage(this.context.canvas, 0, 0);
@@ -68791,7 +68832,7 @@
       const segments = [];
       const coordinates = geometry.getFlatCoordinates();
       const stride = geometry.getStride();
-      for (let i = 0, ii = coordinates.length - stride; i < ii; i += stride) {
+      for (let i = 0, ii = coordinates.length; i < ii; i += stride) {
         segments.push([coordinates.slice(i, i + 2)]);
       }
       return segments;
@@ -71768,14 +71809,15 @@
    */
 
   /**
+   * @param {import("../../source/Tile.js").default} source The tile source.
    * @param {string} sourceKey The source key.
    * @param {number} z The tile z level.
    * @param {number} x The tile x level.
    * @param {number} y The tile y level.
    * @return {string} The cache key.
    */
-  function getCacheKey(sourceKey, z, x, y) {
-    return `${sourceKey},${getKeyZXY(z, x, y)}`;
+  function getCacheKey(source, sourceKey, z, x, y) {
+    return `${getUid(source)},${sourceKey},${getKeyZXY(z, x, y)}`;
   }
 
   /**
@@ -71897,12 +71939,6 @@
       this.renderedProjection = null;
 
       /**
-       * @private
-       * @type {number}
-       */
-      this.renderedRevision_;
-
-      /**
        * @protected
        * @type {!Array<import("../../Tile.js").default>}
        */
@@ -71970,7 +72006,7 @@
       const tileCache = this.tileCache_;
       const tileLayer = this.getLayer();
       const tileSource = tileLayer.getSource();
-      const cacheKey = getCacheKey(tileSource.getKey(), z, x, y);
+      const cacheKey = getCacheKey(tileSource, tileSource.getKey(), z, x, y);
 
       /** @type {import("../../Tile.js").default} */
       let tile;
@@ -72109,10 +72145,10 @@
         return false;
       }
       const sourceRevision = source.getRevision();
-      if (!this.renderedRevision_) {
-        this.renderedRevision_ = sourceRevision;
-      } else if (this.renderedRevision_ !== sourceRevision) {
-        this.renderedRevision_ = sourceRevision;
+      if (!this.renderedSourceRevision_) {
+        this.renderedSourceRevision_ = sourceRevision;
+      } else if (this.renderedSourceRevision_ !== sourceRevision) {
+        this.renderedSourceRevision_ = sourceRevision;
         if (this.renderedSourceKey_ === source.getKey()) {
           this.tileCache_.clear();
         }
@@ -72225,7 +72261,13 @@
       const y = tileCoord[2];
       const staleKeys = this.getStaleKeys();
       for (let i = 0; i < staleKeys.length; ++i) {
-        const cacheKey = getCacheKey(staleKeys[i], z, x, y);
+        const cacheKey = getCacheKey(
+          this.getLayer().getSource(),
+          staleKeys[i],
+          z,
+          x,
+          y,
+        );
         if (tileCache.containsKey(cacheKey)) {
           const tile = tileCache.peek(cacheKey);
           if (tile.getState() === TileState.LOADED) {
@@ -72265,7 +72307,7 @@
       const sourceKey = source.getKey();
       for (let x = tileRange.minX; x <= tileRange.maxX; ++x) {
         for (let y = tileRange.minY; y <= tileRange.maxY; ++y) {
-          const cacheKey = getCacheKey(sourceKey, altZ, x, y);
+          const cacheKey = getCacheKey(source, sourceKey, altZ, x, y);
           let loaded = false;
           if (tileCache.containsKey(cacheKey)) {
             const tile = tileCache.peek(cacheKey);
@@ -88184,7 +88226,7 @@
       if (this.face === FACE_ENUM.RIGHT) {
         lon = qsc_shift_lon_origin(lon, +HALF_PI);
       } else if (this.face === FACE_ENUM.BACK) {
-        lon = qsc_shift_lon_origin(lon, 3.14159265359);
+        lon = qsc_shift_lon_origin(lon, +SPI);
       } else if (this.face === FACE_ENUM.LEFT) {
         lon = qsc_shift_lon_origin(lon, -HALF_PI);
       }
@@ -88364,7 +88406,7 @@
       if (this.face === FACE_ENUM.RIGHT) {
         lp.lam = qsc_shift_lon_origin(lp.lam, -HALF_PI);
       } else if (this.face === FACE_ENUM.BACK) {
-        lp.lam = qsc_shift_lon_origin(lp.lam, -3.14159265359);
+        lp.lam = qsc_shift_lon_origin(lp.lam, -SPI);
       } else if (this.face === FACE_ENUM.LEFT) {
         lp.lam = qsc_shift_lon_origin(lp.lam, +HALF_PI);
       }
@@ -88418,9 +88460,9 @@
   /* Helper function: shift the longitude. */
   function qsc_shift_lon_origin(lon, offset) {
     var slon = lon + offset;
-    if (slon < -3.14159265359) {
+    if (slon < -SPI) {
       slon += TWO_PI;
-    } else if (slon > 3.14159265359) {
+    } else if (slon > +SPI) {
       slon -= TWO_PI;
     }
     return slon;
@@ -90381,7 +90423,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 05/06/2025 17:37:05';
+  const VERSION = '1.1.2.dev 16/06/2025 21:53:39';
 
   async function trace() {
     const data = [

@@ -39,7 +39,7 @@ Tile layers
 ===========
 Collection of base layers from different vendors.
 See a [Tile layers example](https://Dominique92.github.io/myol/examples/?sample=tileLayer)
-* OSM, OSM-FR, OpenTopoMap, CyclOsm, Maps.Refuges.Info
+* OSM, OSM-FR, OpenTopoMap, CyclOsm, OpenHikingMap
 * ThunderForest Outdoors, Cycles, Landscape, Transport, ...
 * IGN France, TOP25, cadastre, satellite, ...
 * SwissTopo, satellite

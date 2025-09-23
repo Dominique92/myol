@@ -90,14 +90,14 @@ export class OpenTopoMap extends OpenStreetMap {
 /**
  * Maps of https://www.refuges.info/
  * Map : https://maps.refuges.info/
- * Doc : https://wiki.openstreetmap.org/wiki/Hiking/mri
+ * Doc : https://wiki.openstreetmap.org/wiki/OpenHikingMap
  */
-export class MRI extends OpenStreetMap {
+export class OpenHikingMap extends OpenStreetMap {
   constructor() {
     super({
       url: 'https://maps.refuges.info/hiking/{z}/{x}/{y}.png',
       maxZoom: 18,
-      attributions: '<a href="https://wiki.openstreetmap.org/wiki/Hiking/mri">Refuges.info</a>',
+      attributions: '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
     });
   }
 }
@@ -468,7 +468,7 @@ export function collection(options = {}) {
     'OSM cyclo': new OpenStreetMap({
       url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
     }),
-    'Refuges.info': new MRI(),
+    'OpenHikingMap': new OpenHikingMap(),
 
     'IGN TOP25': new IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',

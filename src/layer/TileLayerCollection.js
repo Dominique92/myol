@@ -74,9 +74,9 @@ export class OpenStreetMap extends TileLayer {
 /**
  * Nice OSM style
  * Map : opentopomap.org
- * API : https://www.opentopodata.org/#public-api
+ * Doc : https://opentopomap.org/about
  */
-export class OpenTopo extends OpenStreetMap {
+export class OpenTopoMap extends OpenStreetMap {
   constructor() {
     super({
       url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
@@ -459,7 +459,7 @@ export function collection(options = {}) {
       ...options.thunderforest, // Include key
       subLayer: 'outdoors',
     }),
-    'OpenTopo': new OpenTopo(),
+    'OpenTopoMap': new OpenTopoMap(),
     'OSM transports': new Thunderforest({
       key: options.thunderforest, // For simplified options
       ...options.thunderforest, // Include key

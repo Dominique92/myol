@@ -9,7 +9,7 @@ function externTilesLayers(mapKeys, restreint) {
   return {
     'Refuges.info': new myol.layer.tile.MRI(),
     'OSM': new myol.layer.tile.OpenStreetMap(),
-    'OpenTopo': new myol.layer.tile.OpenTopo(),
+    'OpenTopoMap': new myol.layer.tile.OpenTopoMap(),
     'Outdoors': new myol.layer.tile.Thunderforest({
       subLayer: 'outdoors',
       key: mapKeys.thunderforest,

@@ -8,7 +8,7 @@
 function externTilesLayers(mapKeys, restreint) {
   return {
     'OpenHikingMap': new myol.layer.tile.OpenHikingMap(),
-    'OSM': new myol.layer.tile.OpenStreetMap(),
+    'OpenStreetMap': new myol.layer.tile.OpenStreetMap(),
     'OpenTopoMap': new myol.layer.tile.OpenTopoMap(),
     'Outdoors': new myol.layer.tile.Thunderforest({
       subLayer: 'outdoors',
@@ -355,7 +355,7 @@ function mapPoint(options) {
       // Les autres points refuges.info
       couchePointsWRI({
         host: options.host,
-        browserClusterMinResolution: 4, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
+        browserClusterMinResolution: 10, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
         displayLabel: true,
       }),
 

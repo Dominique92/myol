@@ -24,7 +24,7 @@ import * as stylesOptions from './stylesOptions';
 
 /**
  * GeoJSON vector display
- * display the loading status
+ * & loading status display
  */
 class MyVectorSource extends VectorSource {
   constructor(options) {
@@ -226,6 +226,9 @@ class MyBrowserClusterVectorLayer extends VectorLayer {
   }
 }
 
+/**
+ * Activate a vector & a cluster layer depending on the zoom level
+ */
 class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
   constructor(options) {
     // serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server

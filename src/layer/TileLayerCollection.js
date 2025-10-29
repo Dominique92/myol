@@ -81,9 +81,9 @@ export class OpenTopoMap extends OpenStreetMap {
     super({
       url: 'https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png',
       maxZoom: 17,
-      attributions: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' + 
-      '<a href="https://github.com/sletuffe/OpenTopoMap/">OpenTopoMap-R</a> ' +
-      '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+      attributions: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' +
+        '<a href="https://github.com/sletuffe/OpenTopoMap/">OpenTopoMap-R</a> ' +
+        '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
     });
   }
 }
@@ -98,8 +98,8 @@ export class OpenHikingMap extends OpenStreetMap {
     super({
       url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
       maxZoom: 18,
-      attributions: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' + 
-      '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+      attributions: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' +
+        '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
     });
   }
 }
@@ -138,7 +138,7 @@ export class Thunderforest extends OpenStreetMap {
       // subLayer: 'outdoors', ...
       // key: '...',
       attributions: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' +
-      '<a href="https://www.thunderforest.com/">Thunderforest</a>',
+        '<a href="https://www.thunderforest.com/">Thunderforest</a>',
 
       ...options, // Include key
     });

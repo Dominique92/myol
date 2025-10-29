@@ -23,8 +23,8 @@ import Selector from './Selector';
 import * as stylesOptions from './stylesOptions';
 
 /**
- * GeoJSON vector display
- * & loading status display
+ * GeoJSON vector display &
+ * loading status display
  */
 class MyVectorSource extends VectorSource {
   constructor(options) {
@@ -284,6 +284,26 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
 }
 
 /**
+ * Strategy function for loading features based on tiles
+ */
+/* eslint-disable-next-line no-unused-vars */
+function tiledBbox(extent, resolution) {
+  const ts = 10000, // tileSize (m)
+    extents = [];
+
+  for (let lon = Math.floor(extent[0] / ts); lon < Math.ceil(extent[2] / ts); lon++)
+    for (let lat = Math.floor(extent[1] / ts); lat < Math.ceil(extent[3] / ts); lat++)
+      extents.push([
+        Math.round(lon * ts),
+        Math.round(lat * ts),
+        Math.round(lon * ts + ts),
+        Math.round(lat * ts + ts),
+      ]);
+
+  return extents;
+}
+
+/**
  * Facilities added vector layer
  * Style features
  * Layer & features selector
@@ -292,7 +312,7 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
   constructor(opt) {
     const options = {
       // host: '',
-      strategy: bbox,
+      strategy: tiledBbox,
       dataProjection: 'EPSG:4326',
 
       // Clusters:
@@ -353,8 +373,11 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
     const urlArgs = this.query(...args, this.options),
       url = this.host + urlArgs._path; // Mem _path
 
-    if (this.strategy === bbox)
+    if (this.strategy === bbox ||
+      this.strategy === tiledBbox)
       urlArgs.bbox = this.bbox(...args);
+    /*DCMM*/
+    console.log(urlArgs);
 
     // Add a pseudo parameter if any marker or edit has been done
     const version = sessionStorage.myolLastchange ?

@@ -1,30 +1,18 @@
-/****************************************************************************
- * Multiplie le modele de groupe jusqu'au nombre d'informations disponibles *
- ****************************************************************************
-<div id="commentaires-groupe">
-	<div><!-- Modèle pour un commentaire -->
-		<img id="commentaires-groupe-0-photo-reduite">
-		<p id="commentaires-groupe-0-texte_commentaire"></p>
-	</div>
-</div>
-*/
-function prepareModeleGroupe(id, nb) {
-  const groupEl = document.getElementById(id);
+/******************
+ * Appel de l'API *
+ ******************/
+function requeteAPI(nom, url, donneesPost, callBack) {
+  const req = new XMLHttpRequest();
 
-  // Nettoie les éléments de données existants
-  groupEl.querySelectorAll('[id^="' + id + '"]')
-    .forEach(el => appliqueDonnees(el.id, ''));
+  // Affiche le panneau d'attente le temps que XMLHttpRequest réponde
+  document.body.classList.add('attente-api-' + nom);
 
-  // Ajoute autant de modeles que nécéssaire
-  while (groupEl.children.length < nb)
-    groupEl.insertAdjacentHTML(
-      'beforeend',
-      groupEl.children[0].outerHTML.replaceAll('0', groupEl.children.length)
-    );
-
-  // Masquer les modeles superflus
-  for (let t = 0; t < groupEl.children.length; t++)
-    groupEl.children[t].style.display = t < nb ? '' : 'none';
+  req.open(donneesPost ? 'POST' : 'GET', serveurApi + url, true);
+  req.onload = () => {
+    callBack(JSON.parse(req.responseText));
+    document.body.classList.remove('attente-api-' + nom);
+  };
+  req.send(donneesPost);
 }
 
 /************************
@@ -58,19 +46,31 @@ function appliqueDonnees(id, value) {
   }
 }
 
-/******************
- * Appel de l'API *
- ******************/
-function requeteAPI(nom, url, donneesPost, callBack) {
-  const req = new XMLHttpRequest();
+/****************************************************************************
+ * Multiplie le modele de groupe jusqu'au nombre d'informations disponibles *
+ ****************************************************************************
+<div id="commentaires-groupe">
+	<div><!-- Modèle pour un commentaire -->
+		<img id="commentaires-groupe-0-photo-reduite">
+		<p id="commentaires-groupe-0-texte_commentaire"></p>
+	</div>
+</div>
+*/
+function prepareModeleGroupe(id, nb) {
+  const groupEl = document.getElementById(id);
 
-  // Affiche le panneau d'attente le temps que XMLHttpRequest réponde
-  document.body.classList.add('attente-api-' + nom);
+  // Nettoie les éléments de données existants
+  groupEl.querySelectorAll('[id^="' + id + '"]')
+    .forEach(el => appliqueDonnees(el.id, ''));
 
-  req.open(donneesPost ? 'POST' : 'GET', serveurApi + url, true);
-  req.onload = () => {
-    callBack(JSON.parse(req.responseText));
-    document.body.classList.remove('attente-api-' + nom);
-  };
-  req.send(donneesPost);
+  // Ajoute autant de modeles que nécéssaire
+  while (groupEl.children.length < nb)
+    groupEl.insertAdjacentHTML(
+      'beforeend',
+      groupEl.children[0].outerHTML.replaceAll('0', groupEl.children.length)
+    );
+
+  // Masquer les modeles superflus
+  for (let t = 0; t < groupEl.children.length; t++)
+    groupEl.children[t].style.display = t < nb ? '' : 'none';
 }

@@ -8,93 +8,95 @@ qui peut s'adapter à tout framework.
 © Dominique Cavailhez 2025
 -->
 <html dir="ltr" lang="fr">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link href="https://www.refuges.info/images/icones/favicon.svg" rel="icon" type="image/svg+xml" />
-		<title>Refuges.info</title>
 
-		<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
-		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://www.refuges.info/images/icones/favicon.svg" rel="icon" type="image/svg+xml" />
+  <title>Refuges.info</title>
 
-		<link href="index.css" rel="stylesheet">
-		<script src="index.js" defer></script>
-		<script src="carte.js" defer></script>
-		<script src="templeteur.js" defer></script>
-	</head>
+  <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-	<body id="carte"><!-- id = le nom de la page courante -->
-		<div class="bandeau">
-			<h2>Refuges.info</h2>
-			<a href='#'>&#127757;<span>Cartes</span></a>
-			<a href='#nouvelles'>&#128276;<span>Nouvelles</span></a>
-			<a href='https://dom.refuges.info/point_ajout'>&#128204;<span>Ajouter</span></a>
-			<a href='https://dom.refuges.info/forum/'>&#128172;<span>Forum</span></a>
-		</div>
+  <link href="index.css" rel="stylesheet">
+  <script src="index.js" defer></script>
+  <script src="carte.js" defer></script>
+  <script src="templeteur.js" defer></script>
+</head>
 
-		<!-- Nouvelles -->
-		<div class="nouvelles">
-			<h3>Nouvelles</h3>
-			<div id="nouvelles-groupe">
-				<div><!-- Modèle pour un nouvelle -->
-					Le <span id="nouvelles-groupe-0-date_formatee"></span>
-					<a id="nouvelles-groupe-0-lien_interne">
-						<span id="nouvelles-groupe-0-nom_point"></span>
-					</a>
-					dans <span id="nouvelles-groupe-0-localisation"></span>
-					<span id="nouvelles-groupe-0-type_point"></span>
-					de <span id="nouvelles-groupe-0-auteur"></span>
-				</div>
-			</div>
-		</div>
+<body id="carte"><!-- id = le nom de la page courante -->
+  <div class="bandeau">
+    <h2>Refuges.info</h2>
+    <a href='#'>&#127757;<span>Cartes</span></a>
+    <a href='#nouvelles'>&#128276;<span>Nouvelles</span></a>
+    <a href='https://dom.refuges.info/point_ajout'>&#128204;<span>Ajouter</span></a>
+    <a href='https://dom.refuges.info/forum/'>&#128172;<span>Forum</span></a>
+  </div>
 
-		<!-- Point entête -->
-		<div class="point">
-			<h2 id="point-nom"></h2>
-			(<span id="point-type-valeur"></span>)
-			<span id="point-coord-alt"></span> m
-			<p id="point-etat-valeur"></p>
-		</div>
+  <!-- Nouvelles -->
+  <div class="nouvelles">
+    <h3>Nouvelles</h3>
+    <div id="nouvelles-groupe">
+      <div><!-- Modèle pour un nouvelle -->
+        Le <span id="nouvelles-groupe-0-date_formatee"></span>
+        <a id="nouvelles-groupe-0-lien_interne">
+          <span id="nouvelles-groupe-0-nom_point"></span>
+        </a>
+        dans <span id="nouvelles-groupe-0-localisation"></span>
+        <span id="nouvelles-groupe-0-type_point"></span>
+        de <span id="nouvelles-groupe-0-auteur"></span>
+      </div>
+    </div>
+  </div>
 
-		<div id="map"></div>
+  <!-- Point entête -->
+  <div class="point">
+    <h2 id="point-nom"></h2>
+    (<span id="point-type-valeur"></span>)
+    <span id="point-coord-alt"></span> m
+    <p id="point-etat-valeur"></p>
+  </div>
 
-		<!-- Point infos -->
-		<div class="point">
-			<a id="point-lien_externe">Voir la fiche sur le site</a>
-			<p>
-				Latitude: <span id="point-coord-lat"></span>°,
-				Longitude: <span id="point-coord-long"></span>°
-			</p>
-			<div id="point-infos-groupe">
-				<div>
-					<span id="point-infos-groupe-0-nom"></span>:
-					<span id="point-infos-groupe-0-valeur"></span>
-				</div>
-			</div>
+  <div id="map"></div>
 
-			<h3>Accès</h3>
-			<p id="point-acces-valeur"></p>
-			<h3>Remarques</h3>
-			<p id="point-remarque-valeur"></p>
-			<h3>Propriétaire</h3>
-			<p id="point-proprio-valeur"></p>
-		</div>
+  <!-- Point infos -->
+  <div class="point">
+    <a id="point-lien_externe">Voir la fiche sur le site</a>
+    <p>
+      Latitude: <span id="point-coord-lat"></span>°,
+      Longitude: <span id="point-coord-long"></span>°
+    </p>
+    <div id="point-infos-groupe">
+      <div>
+        <span id="point-infos-groupe-0-nom"></span>:
+        <span id="point-infos-groupe-0-valeur"></span>
+      </div>
+    </div>
 
-		<div class="attente">Attente réseau</div>
+    <h3>Accès</h3>
+    <p id="point-acces-valeur"></p>
+    <h3>Remarques</h3>
+    <p id="point-remarque-valeur"></p>
+    <h3>Propriétaire</h3>
+    <p id="point-proprio-valeur"></p>
+  </div>
 
-		<!-- Point commentaires -->
-		<div class="point">
-			<h3>Commentaires</h3>
-			<div id="commentaires-groupe">
-				<div><!-- Modèle pour un commentaire -->
-					<p>
-						<spam id="commentaires-groupe-0-auteur_commentaire"></spam>
-						<spam id="commentaires-groupe-0-date_commentaire"></spam>
-					</p>
-					<img id="commentaires-groupe-0-photo-reduite">
-					<p id="commentaires-groupe-0-texte_commentaire"></p>
-				</div>
-			</div>
-		</div>
-	</body>
+  <div class="attente">Attente réseau</div>
+
+  <!-- Point commentaires -->
+  <div class="point">
+    <h3>Commentaires</h3>
+    <div id="commentaires-groupe">
+      <div><!-- Modèle pour un commentaire -->
+        <p>
+          <spam id="commentaires-groupe-0-auteur_commentaire"></spam>
+          <spam id="commentaires-groupe-0-date_commentaire"></spam>
+        </p>
+        <img id="commentaires-groupe-0-photo-reduite">
+        <p id="commentaires-groupe-0-texte_commentaire"></p>
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>

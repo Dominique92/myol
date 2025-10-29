@@ -1,9 +1,12 @@
+/* global L, requeteAPI, serveurApi, appliqueDonnees */
+
 /*****************
  * Carte Leaflet *
  *****************/
 // Initialise la carte avec les points des Alpes du Nord
-var map;
+let map = null;
 
+/* eslint-disable-next-line no-unused-vars */
 function initCarte() {
   //BEST stratégie bbox & ne pas charger toutes les icônes
   if (!map) {

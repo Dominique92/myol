@@ -1,6 +1,9 @@
+/* global serveurApi, XMLHttpRequest */
+
 /******************
  * Appel de l'API *
  ******************/
+/* eslint-disable-next-line no-unused-vars */
 function requeteAPI(nom, url, donneesPost, callBack) {
   const req = new XMLHttpRequest();
 
@@ -30,7 +33,7 @@ function appliqueDonnees(id, value) {
   const el = document.getElementById(id);
 
   if (typeof value === 'object') {
-    for (v in value)
+    for (const v in value)
       appliqueDonnees(id + '-' + v, value[v]);
   } else if (el) {
     if (el.tagName === 'IMG' && value && value[0] === '/')
@@ -56,6 +59,7 @@ function appliqueDonnees(id, value) {
 	</div>
 </div>
 */
+/* eslint-disable-next-line no-unused-vars */
 function prepareModeleGroupe(id, nb) {
   const groupEl = document.getElementById(id);
 

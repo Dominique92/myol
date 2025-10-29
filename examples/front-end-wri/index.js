@@ -1,5 +1,8 @@
-var nomPages = ['carte', 'point', 'nouvelles'],
-  serveurApi = 'https://www.refuges.info';
+/* global requeteAPI, initCarte, prepareModeleGroupe, appliqueDonnees */
+
+/* eslint-disable-next-line no-unused-vars */
+const serveurApi = 'https://www.refuges.info',
+  nomPages = ['carte', 'point', 'nouvelles'];
 
 // Initialisation de la page lorsque l'URL principale est appelée ou l'ancre change 
 function changePage() {
@@ -15,7 +18,7 @@ function changePage() {
   document.body.className = '';
 
   // Execute la function d'initialisation de la page
-  const nomFonctionAffiche = 'affichePage' + document.body.id.replace(/^[a-z]/, m => m.toUpperCase());
+  const nomFonctionAffiche = 'affichePage' + document.body.id.replace(/^[a-z]/u, m => m.toUpperCase());
   window[nomFonctionAffiche](ancre[1]);
 }
 
@@ -25,6 +28,7 @@ window.addEventListener('popstate', changePage); // L'ancre change ou navigation
 /**************
  * Page carte *
  **************/
+/* eslint-disable-next-line no-unused-vars */
 function affichePageCarte() {
   initCarte().setView([45, 5.5], 13);
 }
@@ -32,6 +36,7 @@ function affichePageCarte() {
 /******************
  * Page nouvelles *
  ******************/
+/* eslint-disable-next-line no-unused-vars */
 function affichePageNouvelles() {
   requeteAPI(
     'nouvelles',
@@ -39,7 +44,8 @@ function affichePageNouvelles() {
     null,
     json => {
       // Calcule le lien pour afficher la page qui correspond
-      for (j in json)
+      for (const j in json)
+        /* eslint-disable-next-line camelcase */
         json[j].lien_interne = '#point=' + json[j].id_point;
 
       prepareModeleGroupe('nouvelles-groupe', Object.keys(json).length - 1); // -1 pour le copyright
@@ -51,16 +57,17 @@ function affichePageNouvelles() {
 /**************
  * Page point *
  **************/
-function affichePagePoint(point_id) {
+/* eslint-disable-next-line no-unused-vars */
+function affichePagePoint(pointId) {
   // Charge les données du points
   requeteAPI(
     'point',
-    '/api/point?detail=complet&format=geojson&format_texte=html&id=' + point_id,
+    '/api/point?detail=complet&format=geojson&format_texte=html&id=' + pointId,
     null,
     json => {
       const properties = json.features[0].properties,
-        coords = json.features[0].geometry.coordinates
-      info_comp = {};
+        coords = json.features[0].geometry.coordinates,
+        infoComp = {};
 
       initCarte().setView([coords[1], coords[0]], 15);
 
@@ -68,15 +75,16 @@ function affichePagePoint(point_id) {
       // Filtre les infos non signifiantes
       properties.info_comp.places = properties.places;
       let ii = 0;
-      for (ic in properties.info_comp)
+      for (const ic in properties.info_comp)
         if (!'§ 0 Sans'.includes(properties.info_comp[ic].valeur || '§'))
-          info_comp[ii++] = properties.info_comp[ic];
+          infoComp[ii++] = properties.info_comp[ic];
 
-      prepareModeleGroupe('point-infos-groupe', Object.keys(info_comp).length);
-      appliqueDonnees('point-infos-groupe', info_comp);
+      prepareModeleGroupe('point-infos-groupe', Object.keys(infoComp).length);
+      appliqueDonnees('point-infos-groupe', infoComp);
 
       // Infos de la fiche
       //BEST enlever titre de la rubrique quand elle est vide
+      /* eslint-disable-next-line camelcase */
       properties.lien_externe = '/point/' + properties.id;
       appliqueDonnees('point', properties);
     }
@@ -85,7 +93,7 @@ function affichePagePoint(point_id) {
   // Charge les données des commentaires
   requeteAPI(
     'commentaires',
-    '/api/commentaires?format=json&format_texte=html&id_point=' + point_id,
+    '/api/commentaires?format=json&format_texte=html&id_point=' + pointId,
     null,
     json => {
       prepareModeleGroupe('commentaires-groupe', Object.keys(json).length - 1); // -1 pour le copyright

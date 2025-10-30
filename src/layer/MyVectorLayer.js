@@ -284,13 +284,14 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
 }
 
 /**
- * Strategy function for loading features based on fixed position & size tiles
- * The position is centered on fixed Mercator regular paterns
- * For the high resolutions, the maximum tile size is a screen square in pixels
- * For the low resolutions, the minimum tile size is a land square in meeters
+ * Strategy function for loading elements based on fixed position and size tiles
+ * The position is centered on fixed regular Mercator patterns
+ * For high resolutions, the maximum tile size corresponds to a screen square in pixels
+ * For low resolutions, the minimum tile size corresponds to a ground square in meters
  */
 export function tiledBbox(extent, resolution) {
-  const tileSize = Math.max(resolution * 1000, 30000), // (pixels, meeters)
+  const byStepResolution = Math.exp(Math.round(Math.log(resolution))),
+    tileSize = Math.max(byStepResolution * 1000, 50000), // (pixels, meters)
     extents = [];
 
   for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)

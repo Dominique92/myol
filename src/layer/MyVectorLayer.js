@@ -284,19 +284,22 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
 }
 
 /**
- * Strategy function for loading features based on tiles
+ * Strategy function for loading features based on fixed position & size tiles
+ * The position is centered on fixed Mercator regular paterns
+ * For the high resolutions, the maximum tile size is a screen square in pixels
+ * For the low resolutions, the minimum tile size is a land square in meeters
  */
 export function tiledBbox(extent, resolution) {
-  const ts = resolution * 1000, // tile size (pixels)
+  const tileSize = Math.max(resolution * 1000, 30000), // (pixels, meeters)
     extents = [];
 
-  for (let lon = Math.floor(extent[0] / ts); lon < Math.ceil(extent[2] / ts); lon++)
-    for (let lat = Math.floor(extent[1] / ts); lat < Math.ceil(extent[3] / ts); lat++)
+  for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
+    for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
       extents.push([
-        Math.round(lon * ts),
-        Math.round(lat * ts),
-        Math.round(lon * ts + ts),
-        Math.round(lat * ts + ts),
+        Math.round(lon * tileSize),
+        Math.round(lat * tileSize),
+        Math.round(lon * tileSize + tileSize),
+        Math.round(lat * tileSize + tileSize),
       ]);
 
   return extents;
@@ -307,11 +310,11 @@ export function tiledBbox(extent, resolution) {
  * Style features
  * Layer & features selector
  */
-class MyVectorLayer extends MyServerClusterVectorLayer {
+export class MyVectorLayer extends MyServerClusterVectorLayer {
   constructor(opt) {
     const options = {
       // host: '',
-      strategy: tiledBbox,
+      strategy: bbox,
       dataProjection: 'EPSG:4326',
 
       // Clusters:
@@ -375,8 +378,6 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
     if (this.strategy === bbox ||
       this.strategy === tiledBbox)
       urlArgs.bbox = this.bbox(...args);
-    /*DCMM*/
-    console.log(urlArgs);
 
     // Add a pseudo parameter if any marker or edit has been done
     const version = sessionStorage.myolLastchange ?

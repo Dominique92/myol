@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 29/10/2025 16:20:30 using npm run build from the src/... sources
+ * Built 30/10/2025 11:33:52 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -90322,8 +90322,8 @@
 
 
   /**
-   * GeoJSON vector display
-   * & loading status display
+   * GeoJSON vector display &
+   * loading status display
    */
   class MyVectorSource extends VectorSource {
     constructor(options) {
@@ -90583,6 +90583,28 @@
   }
 
   /**
+   * Strategy function for loading features based on fixed position & size tiles
+   * The position is centered on fixed Mercator regular patern
+   * For the high resolutions, the maximum tile size is a screen square
+   * For the low resolutions, the minimum tile size is a land square
+   */
+  function tiledBbox(extent, resolution) {
+    const tileSize = Math.max(resolution * 1000, 30000), // Tile size (pixels), tile size (meeters)
+      extents = [];
+
+    for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
+      for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
+        extents.push([
+          Math.round(lon * tileSize),
+          Math.round(lat * tileSize),
+          Math.round(lon * tileSize + tileSize),
+          Math.round(lat * tileSize + tileSize),
+        ]);
+
+    return extents;
+  }
+
+  /**
    * Facilities added vector layer
    * Style features
    * Layer & features selector
@@ -90652,7 +90674,8 @@
       const urlArgs = this.query(...args, this.options),
         url = this.host + urlArgs._path; // Mem _path
 
-      if (this.strategy === bbox)
+      if (this.strategy === bbox ||
+        this.strategy === tiledBbox)
         urlArgs.bbox = this.bbox(...args);
 
       // Add a pseudo parameter if any marker or edit has been done
@@ -90693,6 +90716,13 @@
       return super.reload(this.selector.getSelection().length > 0);
     }
   }
+
+  var MyVectorLayer$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    MyVectorLayer: MyVectorLayer,
+    default: MyVectorLayer,
+    tiledBbox: tiledBbox
+  });
 
   /**
    * Many simplified display of various vector layers services
@@ -90790,6 +90820,7 @@
     constructor(options) {
       super({
         host: 'https://www.refuges.info/',
+        strategy: tiledBbox,
         attribution: '&copy;refuges.info',
 
         serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
@@ -91068,7 +91099,7 @@
     VectorEditor: VectorEditor,
     Hover: Hover,
     Marker: Marker,
-    MyVectorLayer: MyVectorLayer,
+    MyVectorLayer: MyVectorLayer$1,
     Selector: Selector,
     tile: tileLayercollection,
     vector: vectorLayerCollection,
@@ -91079,7 +91110,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 29/10/2025 16:20:30';
+  const VERSION = '1.1.2.dev 30/10/2025 11:33:52';
 
   async function trace() {
     const data = [

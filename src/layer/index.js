@@ -6,7 +6,7 @@ import BackgroundLayer from './BackgroundLayer';
 import VectorEditor from './VectorEditor';
 import Hover from './Hover';
 import Marker from './Marker';
-import MyVectorLayer from './MyVectorLayer';
+import * as MyVectorLayer from './MyVectorLayer';
 import Selector from './Selector';
 import * as tileLayercollection from './TileLayerCollection';
 import * as vectorLayerCollection from './VectorLayerCollection';

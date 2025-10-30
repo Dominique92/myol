@@ -10,7 +10,10 @@ import {
   transformExtent,
 } from 'ol/proj';
 
-import MyVectorLayer from './MyVectorLayer';
+import {
+  MyVectorLayer,
+  tiledBbox,
+} from './MyVectorLayer';
 
 // Get icon from chemineur.fr
 function genericIconUrl(type, hostIcons) {
@@ -103,6 +106,7 @@ export class WRI extends MyVectorLayer {
   constructor(options) {
     super({
       host: 'https://www.refuges.info/',
+      strategy: tiledBbox,
       attribution: '&copy;refuges.info',
 
       serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server

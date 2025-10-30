@@ -9,7 +9,7 @@ const map = new ol.Map({
     //center: ol.proj.transform([6.51, 45.13], 'EPSG:4326', 'EPSG:3857'), // Cabane double Terre rouge
     //center: ol.proj.transform([2.394, 48.861], 'EPSG:4326', 'EPSG:3857'), // Père lachaise
     constrainResolution: true, // Force zoom on the definition of available tiles
-    zoom: 14,
+    zoom: 13,
   }),
 
   controls: [

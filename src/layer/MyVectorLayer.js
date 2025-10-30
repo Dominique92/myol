@@ -21,6 +21,9 @@ import VectorSource from 'ol/source/Vector';
 
 import Selector from './Selector';
 import * as stylesOptions from './stylesOptions';
+import {
+  tiledBbox,
+} from './MyLoadingStrategy';
 
 /**
  * GeoJSON vector display &
@@ -284,34 +287,11 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
 }
 
 /**
- * Strategy function for loading elements based on fixed position and size tiles
- * The position is centered on fixed regular Mercator patterns
- * For high resolutions, the maximum tile size corresponds to a screen square in pixels
- * For low resolutions, the minimum tile size corresponds to a ground square in meters
- */
-export function tiledBbox(extent, resolution) {
-  const byStepResolution = Math.exp(Math.round(Math.log(resolution))),
-    tileSize = Math.max(byStepResolution * 1000, 50000), // (pixels, meters)
-    extents = [];
-
-  for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
-    for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
-      extents.push([
-        Math.round(lon * tileSize),
-        Math.round(lat * tileSize),
-        Math.round(lon * tileSize + tileSize),
-        Math.round(lat * tileSize + tileSize),
-      ]);
-
-  return extents;
-}
-
-/**
  * Facilities added vector layer
  * Style features
  * Layer & features selector
  */
-export class MyVectorLayer extends MyServerClusterVectorLayer {
+class MyVectorLayer extends MyServerClusterVectorLayer {
   constructor(opt) {
     const options = {
       // host: '',

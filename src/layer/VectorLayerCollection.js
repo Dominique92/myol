@@ -11,9 +11,9 @@ import {
 } from 'ol/proj';
 
 import {
-  MyVectorLayer,
   tiledBbox,
-} from './MyVectorLayer';
+} from './MyLoadingStrategy';
+import MyVectorLayer from './MyVectorLayer';
 
 // Get icon from chemineur.fr
 function genericIconUrl(type, hostIcons) {

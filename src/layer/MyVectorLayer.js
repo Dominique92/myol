@@ -286,9 +286,8 @@ class MyServerClusterVectorLayer extends MyBrowserClusterVectorLayer {
 /**
  * Strategy function for loading features based on tiles
  */
-/* eslint-disable-next-line no-unused-vars */
-function tiledBbox(extent, resolution) {
-  const ts = 10000, // tileSize (m)
+export function tiledBbox(extent, resolution) {
+  const ts = resolution * 1000, // tile size (pixels)
     extents = [];
 
   for (let lon = Math.floor(extent[0] / ts); lon < Math.ceil(extent[2] / ts); lon++)

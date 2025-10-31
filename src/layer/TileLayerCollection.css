@@ -1,0 +1,3 @@
+.ol-attribution:not(.ol-collapsed) a {
+  color: black !important;
+}

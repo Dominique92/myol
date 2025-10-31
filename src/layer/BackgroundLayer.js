@@ -9,12 +9,13 @@ import {
 } from 'ol/extent';
 import * as layerTile from './TileLayerCollection';
 
-class BackgroundLayer extends layerTile.Positron {
+class BackgroundLayer extends layerTile.CartoDB {
   constructor(options) {
     // High resolution background layer
     super({
       minResolution: 20,
       visible: false,
+      attributions: '', //TODO signaler "hors cadre"
 
       ...options,
     });

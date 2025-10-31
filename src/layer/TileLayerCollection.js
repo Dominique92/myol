@@ -17,13 +17,21 @@ import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS.js';
 import WMTS from 'ol/source/WMTS.js';
 
+import './TileLayerCollection.css';
+
 /**
  * Virtual class to factorise XYZ layers code
  */
 class XYZ extends TileLayer {
   constructor(options) {
     super({
-      source: new SourceXYZ(options),
+      source: new SourceXYZ({
+        attributions: (options.attribution ? '&copy; ' + options.attribution : '') +
+          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+
+        ...options,
+      }),
+
       ...options,
     });
   }
@@ -33,11 +41,12 @@ class XYZ extends TileLayer {
  * Simple layer to be used when a layer is out of extent
  * API : https://api-docs.carto.com/
  */
-export class Positron extends XYZ {
+export class CartoDB extends XYZ {
   constructor(options) {
     super({
       url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-      attributions: '<a href="https://carto.com/attribution/">CartoDB</a>',
+      attribution: '<a href="https://carto.com/attribution/">CartoDB</a>',
+
       ...options,
     });
   }
@@ -50,7 +59,7 @@ export class NoTile extends XYZ {
   constructor(options) {
     super({
       url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
-      attributions: 'Out of zoom',
+      attributions: 'No tile',
 
       ...options,
     });
@@ -63,9 +72,21 @@ export class NoTile extends XYZ {
  * API : https://wiki.openstreetmap.org/wiki/API/
  */
 export class OpenStreetMap extends TileLayer {
-  constructor(options) {
+  constructor(opt) {
+    const options = {
+      legend: 'https://www.openstreetmap.org/panes/legend',
+
+      ...opt,
+    };
+
     super({
-      source: new OSM(options),
+      source: new OSM({
+        attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' +
+          (options.attribution ? ' | ' + options.attribution : '') +
+          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+
+        ...options,
+      }),
       ...options,
     });
   }
@@ -81,9 +102,10 @@ export class OpenTopoMap extends OpenStreetMap {
     super({
       url: 'https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png',
       maxZoom: 17,
-      attributions: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' +
-        '<a href="https://github.com/sletuffe/OpenTopoMap/">OpenTopoMap-R</a> ' +
+
+      attribution: '<a href="https://github.com/sletuffe/OpenTopoMap/">OpenTopoMap-R</a> ' +
         '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+      legend: 'https://www.geograph.org/leaflet/otm-legend.php',
     });
   }
 }
@@ -98,8 +120,9 @@ export class OpenHikingMap extends OpenStreetMap {
     super({
       url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
       maxZoom: 18,
-      attributions: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' +
-        '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+
+      attribution: '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+      legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
     });
   }
 }
@@ -117,7 +140,8 @@ export class Kompass extends OpenStreetMap { // Austria
         'https://map{1-4}.kompass.de/{z}/{x}/{y}/kompass_' + options.subLayer + '?key=' + options.key : // Specific
         'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
       maxZoom: 17,
-      attributions: '<a href="https://www.kompass.de/">Kompass</a>',
+
+      attribution: '<a href="https://www.kompass.de/">Kompass</a>',
 
       ...options,
     });
@@ -137,8 +161,8 @@ export class Thunderforest extends OpenStreetMap {
       maxZoom: 22,
       // subLayer: 'outdoors', ...
       // key: '...',
-      attributions: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' +
-        '<a href="https://www.thunderforest.com/">Thunderforest</a>',
+
+      attribution: '<a href="https://www.thunderforest.com/">Thunderforest</a>',
 
       ...options, // Include key
     });
@@ -151,7 +175,14 @@ export class Thunderforest extends OpenStreetMap {
  * Key : https://cartes.gouv.fr
  */
 export class IGN extends TileLayer {
-  constructor(options = {}) {
+  constructor(opt) {
+    const options = {
+      attribution: '<a href="https://www.geoportail.gouv.fr/" target="_blank">IGN</a>',
+      legend: '',
+
+      ...opt,
+    };
+
     const IGNresolutions = [],
       IGNmatrixIds = [];
 
@@ -167,18 +198,45 @@ export class IGN extends TileLayer {
         style: 'normal',
         matrixSet: 'PM',
         format: 'image/jpeg',
-        attributions: '&copy; <a href="https://www.geoportail.gouv.fr/" target="_blank">IGN</a>',
         tileGrid: new TilegridWMTS({
           origin: [-20037508, 20037508],
           resolutions: IGNresolutions,
           matrixIds: IGNmatrixIds,
         }),
 
+        attributions: (options.attribution ? '&copy; ' + options.attribution : '') +
+          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+
         // IGN options
         ...options, // Include layer
       }),
 
       ...options, // For layer limits
+    });
+  }
+}
+
+export class IGNtop25 extends IGN {
+  constructor(options) {
+
+    super({
+      layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
+      legend: 'https://geoservices.ign.fr/sites/default/files/2021-07/DC_SCAN25_3-1.pdf',
+
+      ...options,
+    });
+  }
+}
+
+export class IGNplan extends IGN {
+  constructor(options) {
+
+    super({
+      layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+      format: 'image/png',
+      legend: 'https://geoservices.ign.fr/sites/default/files/2021-07/DC_Plan_IGN.pdf',
+
+      ...options,
     });
   }
 }
@@ -195,7 +253,9 @@ export class SwissTopo extends TileLayer {
       subLayer: 'ch.swisstopo.pixelkarte-farbe',
       maxResolution: 2000, // Resolution limit above which we switch to a more global service
       extent: [640000, 5730000, 1200000, 6100000],
-      attributions: '&copy <a href="https://map.geo.admin.ch/">SwissTopo</a>',
+
+      attribution: '<a href="https://map.geo.admin.ch/">SwissTopo</a>',
+      legend: 'https://prod-swishop-s3.s3.eu-central-1.amazonaws.com/2022-04/symbols_fr_0.pdf',
 
       ...opt,
     };
@@ -219,6 +279,11 @@ export class SwissTopo extends TileLayer {
           matrixIds: matrixIds,
         }),
         requestEncoding: 'REST',
+
+        attributions: (options.attribution ? '&copy; ' + options.attribution : '') +
+          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+
+        ...options, // For attributionss
       })),
 
       ...options, // For layer limits
@@ -238,7 +303,9 @@ export class IgnES extends XYZ {
       server: 'mapa-raster',
       subLayer: 'MTN',
       maxZoom: 20,
-      attributions: '&copy; <a href="https://www.ign.es/">IGN España</a>',
+
+      attribution: '<a href="https://www.ign.es/">Instituto Geográfico Nacional España</a>',
+      legend: 'https://www.ign.es/web/resources/docs/IGNCnig/Especificaciones/catalogo_MTN25.pdf',
 
       ...opt,
     };
@@ -268,6 +335,7 @@ export class IGM extends TileLayer {
         url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it', // Not available via https
         attributions: '&copy <a href="https://gn.mase.gov.it/">IGM</a>',
       }),
+
       maxResolution: 120,
       extent: [720000, 4380000, 2070000, 5970000],
     });
@@ -309,7 +377,9 @@ export class OS extends XYZ {
       minZoom: 7,
       maxZoom: 16,
       extent: [-1198263, 6365000, 213000, 8702260],
-      attributions: '&copy <a href="https://explore.osmaps.com/">UK Ordnancesurvey maps</a>',
+
+      attribution: '<a href="https://explore.osmaps.com/">UK Ordnancesurvey maps</a>',
+      legend: 'https://www.ordnancesurvey.co.uk/mapzone/assets/doc/Explorer-25k-Legend-en.pdf',
 
       ...opt,
     };
@@ -337,7 +407,8 @@ export class ArcGIS extends XYZ {
       host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
       subLayer: 'World_Imagery',
       maxZoom: 19,
-      attributions: '&copy; <a href="https://www.arcgis.com/">ArcGIS (Esri)</a>',
+
+      attribution: '<a href="https://www.arcgis.com/">ArcGIS (Esri)</a>',
 
       ...opt,
     };
@@ -359,7 +430,8 @@ export class Maxbox extends XYZ {
       hidden: !options.key, // For LayerSwitcher
       url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
       // No maxZoom
-      attributions: '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+
+      attribution: '<a href="https://www.mapbox.com/">Mapbox</a>',
     });
   }
 }
@@ -372,7 +444,8 @@ export class Google extends XYZ {
     const options = {
       subLayers: 'p', // Terrain
       maxZoom: 22,
-      attributions: '&copy; <a href="https://www.google.com/maps">Google</a>',
+
+      attribution: '<a href="https://www.google.com/maps">Google</a>',
 
       ...opt,
     };
@@ -444,7 +517,6 @@ export class MapTilerElevation extends XYZ {
       hidden: !options.key, // For LayerSwitcher
       url: 'https://api.maptiler.com/tiles/terrain-rgb/{z}/{x}/{y}.png?key=' + options.key,
       maxZoom: 12,
-      attributions: '<a href="https://www.maptiler.com/copyright/"">&copy; MapTiler</a> ' + '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>',
 	  
       ...options,
     });
@@ -454,34 +526,62 @@ export class MapTilerElevation extends XYZ {
 /**
  * Tile layers examples
  */
-export function collection(options = {}) {
+export function wriNavLayers(options = {}) {
   return {
+    // Carte refuges.info
+    'OpenHikingMap': new OpenHikingMap(),
     'OpenStreetMap': new OpenStreetMap(),
+    'OpenTopoMap': new OpenTopoMap(),
     'Outdoors': new Thunderforest({
       key: options.thunderforest, // For simplified options
       ...options.thunderforest, // Include key
       subLayer: 'outdoors',
+      legend: '',
     }),
-    'OpenTopoMap': new OpenTopoMap(),
+
+    'IGN TOP25': new IGNtop25({
+      key: options.ign, // Include key
+      ...options.ign, // Include key
+    }),
+    'IGN plan': new IGNplan(),
+
+    'SwissTopo': new SwissTopo(),
+    'Österreich Kompass': new Kompass({
+      subLayer: 'osm', // No key
+    }),
+    'España': new IgnES(),
+
+    'Photo IGN': new IGN({
+      layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+    }),
+
+    'Photo ArcGIS': new ArcGIS(),
+    'Photo Google': new Google({
+      subLayers: 's',
+    }),
+    'Photo Maxar': new Maxbox({
+      key: options.mapbox, // For simplified options
+      ...options.mapbox, // Include key
+      tileset: 'mapbox.satellite',
+    }),
+  }
+}
+
+export function collection(options = {}) {
+  return {
+    ...wriNavLayers(options),
+
     'OSM transports': new Thunderforest({
       key: options.thunderforest, // For simplified options
       ...options.thunderforest, // Include key
       subLayer: 'transport',
+      legend: 'https://www.thunderforest.com/maps/transport/',
     }),
     'OSM cyclo': new OpenStreetMap({
       url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+      legend: 'https://www.thunderforest.com/maps/opencyclemap/',
     }),
-    'OpenHikingMap': new OpenHikingMap(),
 
-    'IGN TOP25': new IGN({
-      layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
-      key: options.ign, // Include key
-      ...options.ign, // Include key
-    }),
-    'IGN V2': new IGN({
-      layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
-      format: 'image/png',
-    }),
     'IGN N+1': new IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.BDUNI.J1',
       format: 'image/png',
@@ -492,10 +592,6 @@ export function collection(options = {}) {
       minZoom: 6,
     }),
 
-    'SwissTopo': new SwissTopo(),
-    'Österreich Kompass': new Kompass({
-      subLayer: 'osm', // No key
-    }),
     'Kompas winter': new Kompass({
       key: options.kompass, // For simplified options
       ...options.kompass, // Include key
@@ -507,27 +603,14 @@ export function collection(options = {}) {
       ...options.os, // Include key
     }),
     'Italie': new IGM(),
-    'España': new IgnES(),
-    'Google': new Google(),
 
-    'Maxar': new Maxbox({
-      key: options.mapbox, // For simplified options
-      ...options.mapbox, // Include key
-      tileset: 'mapbox.satellite',
-    }),
-    'Photo Google': new Google({
-      subLayers: 's',
-    }),
-    'Photo ArcGIS': new ArcGIS(),
+    'Google': new Google(),
     'Photo Bing': new Bing({
       key: options.bing, // For simplified options
       ...options.bing, // Include key
       imagerySet: 'Aerial',
     }),
 
-    'Photo IGN': new IGN({
-      layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
-    }),
     'Photo IGN 1950-65': new IGN({
       layer: 'ORTHOIMAGERY.ORTHOPHOTOS.1950-1965',
       style: 'BDORTHOHISTORIQUE',
@@ -546,6 +629,7 @@ export function collection(options = {}) {
       extent: [-580000, 506000, 1070000, 6637000],
       minZoom: 6,
     }),
+
     /* //BEST Cassini ? clé
 	'IGN Cassini': new IGN({
       ...options.ign,
@@ -567,10 +651,11 @@ export function examples(options = {}) {
       url: 'https://wms.openstreetmap.fr/tms/1.0.0/tous_fr/{z}/{x}/{y}',
     }),
 
-    'ThF cycle': new Thunderforest({
+    'OpenCycleMap': new Thunderforest({
       key: options.thunderforest, // For simplified options
       ...options.thunderforest, // Include key
       subLayer: 'cycle',
+      legend: 'https://www.opencyclemap.org/docs/',
       maxZoom: 14,
     }),
     'ThF trains': new Thunderforest({
@@ -623,10 +708,12 @@ export function examples(options = {}) {
 
     'Photo Swiss': new SwissTopo({
       subLayer: 'ch.swisstopo.swissimage',
+      legend: '',
     }),
     'Photo España': new IgnES({
       server: 'pnoa-ma',
       subLayer: 'OI.OrthoimageCoverage',
+      legend: '',
     }),
 
     'Google road': new Google({
@@ -641,7 +728,7 @@ export function examples(options = {}) {
       ...options.mapbox, // Include key
     }),
 
-    'Positron': new Positron(),
+    'CartoDB': new CartoDB(),
     'No tile': new NoTile(),
     'Blank': new TileLayer(),
   };

@@ -1,34 +1,38 @@
 /**
  * Contient les fonctions gérant les cartes
- * Regroupées ici pour tests unitaires dans MyOl
+ * Regroupées ici pour permettre des tests unitaires dans MyOl
  */
 /* global ol, myol */
 
-// Les couches de fond des cartes de refuges.info
+/* Les couches de fond des cartes de refuges.info
+Ces couches acceptent les surcharges:
+  {
+    attribution: '<a href="un lien vers le fournisseur">Nom du fournisseur</a>',
+    legend : 'lien vers une page légende', 
+  }
+*/
 function externTilesLayers(mapKeys, restreint) {
   return {
     'OpenHikingMap': new myol.layer.tile.OpenHikingMap(),
-    'OpenStreetMap': new myol.layer.tile.OpenStreetMap(),
+    'OpenStreetMap': new myol.layer.tile.OpenStreetMap({}),
     'OpenTopoMap': new myol.layer.tile.OpenTopoMap(),
     'Outdoors': new myol.layer.tile.Thunderforest({
       subLayer: 'outdoors',
       key: mapKeys.thunderforest,
+      legend: '',
     }),
-    'IGN TOP25': restreint ? null : new myol.layer.tile.IGN({
-      layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
+
+    'IGN TOP25': restreint ? null : new myol.layer.tile.IGNtop25({
       key: mapKeys.ign,
     }),
-    'IGN V2': new myol.layer.tile.IGN({
-      layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
-      format: 'image/png',
-    }),
-    'SwissTopo': restreint ? null : new myol.layer.tile.SwissTopo({
-      subLayer: 'ch.swisstopo.pixelkarte-farbe',
-    }),
+    'IGN plan': new myol.layer.tile.IGNplan(),
+
+    'SwissTopo': restreint ? null : new myol.layer.tile.SwissTopo(),
     'Autriche': new myol.layer.tile.Kompass({
       subLayer: 'osm', // No key
     }),
-    'Espagne': new myol.layer.tile.IgnES(),
+    'Espagne': new myol.layer.tile.IgnES({}),
+
     'Photo IGN': new myol.layer.tile.IGN({
       layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
     }),

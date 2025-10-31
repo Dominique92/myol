@@ -4,7 +4,7 @@ const baseLayers = {
     'OSM org': new ol.layer.Tile({
       source: new ol.source.OSM(),
     }),
-    'Positron': new ol.layer.Tile({
+    'CartoDB': new ol.layer.Tile({
       source: new ol.source.XYZ({
         url: 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
       }),

@@ -16,7 +16,6 @@ class BackgroundLayer extends layerTile.Stamen {
       layer: 'stamen_toner_lite',
       minResolution: 20,
       visible: false,
-      attributions: '', //TODO signaler "hors cadre"
 
       ...options,
     });

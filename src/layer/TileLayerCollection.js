@@ -47,7 +47,6 @@ function makeAttributions(options, dataAttribution) {
     return '&copy' + ret.join(' | ');
 }
 
-
 /**
  * Virtual class to factorise XYZ layers classes
  */
@@ -140,6 +139,7 @@ export class Kompass extends OpenStreetMap { // Austria
       maxZoom: 17,
 
       attribution: 'https://www.kompass.de/,Kompass',
+      legend: 'https://www.outdooractive.com/fr/knowledgepage/carte-kompass/43778568/#5',
 
       ...options,
     });
@@ -619,17 +619,13 @@ export function collection(options = {}) {
       key: options.thunderforest, // For simplified options
       ...options.thunderforest, // Include key
       subLayer: 'transport',
-      legend: 'https://www.thunderforest.com/maps/transport/',
+      legend: '',
     }),
     'OSM cyclo': new OpenStreetMap({
       url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
-      legend: 'https://www.thunderforest.com/maps/opencyclemap/',
+      legend: '',
     }),
 
-    'IGN N+1': new IGN({
-      layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.BDUNI.J1',
-      format: 'image/png',
-    }),
     'IGN cartes 1950': new IGN({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN50.1950',
       extent: [-580000, 506000, 1070000, 6637000],
@@ -688,11 +684,13 @@ export function examples(options = {}) {
   return {
     ...collection(options),
 
-    'OpenStreetMap fr': new OpenStreetMap({
+    'OpenStreetMap FR': new OpenStreetMap({
       url: 'https://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+      legend: '',
     }),
     'OSM orthos FR': new OpenStreetMap({
       url: 'https://wms.openstreetmap.fr/tms/1.0.0/tous_fr/{z}/{x}/{y}',
+      legend: '',
     }),
 
     'OpenCycleMap': new Thunderforest({

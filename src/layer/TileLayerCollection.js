@@ -19,6 +19,34 @@ import WMTS from 'ol/source/WMTS.js';
 
 import './TileLayerCollection.css';
 
+/* Makes the attributions chain from:
+ {
+   contribution: 'link,name',
+   attribution: 'link,name',
+   licence: 'link,name',
+   legend: 'link',
+ }
+ */
+function makeAttributions(options, dataAttribution) {
+  const makeLink = args => '<a target="_blank" href="' + args[0] + '">' + args[1] + '</a>',
+    ret = [];
+
+  if (options.contribution)
+    ret.push(makeLink(options.contribution.split(',')));
+  if (options.attribution)
+    ret.push(makeLink(options.attribution.split(',')));
+  if (options.licence)
+    ret.push(makeLink(options.licence.split(',')));
+  if (options.legend)
+    ret.push(makeLink([options.legend, 'Légende']));
+  if (options.dataAttribution)
+    ret.push(makeLink(dataAttribution.split(',')));
+
+  if (ret)
+    return '&copy' + ret.join(' | ');
+}
+
+
 /**
  * Virtual class to factorise XYZ layers code
  */
@@ -26,8 +54,7 @@ class XYZ extends TileLayer {
   constructor(options) {
     super({
       source: new SourceXYZ({
-        attributions: (options.attribution ? '&copy; ' + options.attribution : '') +
-          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+        attributions: makeAttributions(options),
 
         ...options,
       }),
@@ -45,7 +72,7 @@ export class CartoDB extends XYZ {
   constructor(options) {
     super({
       url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-      attribution: '<a href="https://carto.com/attribution/">CartoDB</a>',
+      attribution: 'https://carto.com/attribution/,CartoDB',
 
       ...options,
     });
@@ -74,6 +101,7 @@ export class NoTile extends XYZ {
 export class OpenStreetMap extends TileLayer {
   constructor(opt) {
     const options = {
+      contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
       legend: 'https://www.openstreetmap.org/panes/legend',
 
       ...opt,
@@ -81,9 +109,7 @@ export class OpenStreetMap extends TileLayer {
 
     super({
       source: new OSM({
-        attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' +
-          (options.attribution ? ' | ' + options.attribution : '') +
-          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+        attributions: makeAttributions(options),
 
         ...options,
       }),
@@ -103,8 +129,8 @@ export class OpenTopoMap extends OpenStreetMap {
       url: 'https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png',
       maxZoom: 17,
 
-      attribution: '<a href="https://github.com/sletuffe/OpenTopoMap/">OpenTopoMap-R</a> ' +
-        '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+      attribution: 'https://github.com/sletuffe/OpenTopoMap/,OpenTopoMap-R',
+      licence: 'https://creativecommons.org/licenses/by-sa/3.0/,CC-BY-SA',
       legend: 'https://www.geograph.org/leaflet/otm-legend.php',
     });
   }
@@ -121,7 +147,7 @@ export class OpenHikingMap extends OpenStreetMap {
       url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
       maxZoom: 18,
 
-      attribution: '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+      attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
       legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
     });
   }
@@ -141,7 +167,7 @@ export class Kompass extends OpenStreetMap { // Austria
         'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
       maxZoom: 17,
 
-      attribution: '<a href="https://www.kompass.de/">Kompass</a>',
+      attribution: 'https://www.kompass.de/,Kompass',
 
       ...options,
     });
@@ -162,7 +188,7 @@ export class Thunderforest extends OpenStreetMap {
       // subLayer: 'outdoors', ...
       // key: '...',
 
-      attribution: '<a href="https://www.thunderforest.com/">Thunderforest</a>',
+      attribution: 'https://www.thunderforest.com/,Thunderforest',
 
       ...options, // Include key
     });
@@ -177,7 +203,7 @@ export class Thunderforest extends OpenStreetMap {
 export class IGN extends TileLayer {
   constructor(opt) {
     const options = {
-      attribution: '<a href="https://www.geoportail.gouv.fr/" target="_blank">IGN</a>',
+      attribution: 'https://www.geoportail.gouv.fr/,IGN',
       legend: '',
 
       ...opt,
@@ -204,8 +230,7 @@ export class IGN extends TileLayer {
           matrixIds: IGNmatrixIds,
         }),
 
-        attributions: (options.attribution ? '&copy; ' + options.attribution : '') +
-          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+        attributions: makeAttributions(options),
 
         // IGN options
         ...options, // Include layer
@@ -254,7 +279,7 @@ export class SwissTopo extends TileLayer {
       maxResolution: 2000, // Resolution limit above which we switch to a more global service
       extent: [640000, 5730000, 1200000, 6100000],
 
-      attribution: '<a href="https://map.geo.admin.ch/">SwissTopo</a>',
+      attribution: 'https://map.geo.admin.ch/,SwissTopo',
       legend: 'https://prod-swishop-s3.s3.eu-central-1.amazonaws.com/2022-04/symbols_fr_0.pdf',
 
       ...opt,
@@ -280,8 +305,7 @@ export class SwissTopo extends TileLayer {
         }),
         requestEncoding: 'REST',
 
-        attributions: (options.attribution ? '&copy; ' + options.attribution : '') +
-          (options.legend ? ' | <a href="' + options.legend + '">Légende</a>' : ''),
+        attributions: makeAttributions(options),
 
         ...options, // For attributionss
       })),
@@ -304,7 +328,7 @@ export class IgnES extends XYZ {
       subLayer: 'MTN',
       maxZoom: 20,
 
-      attribution: '<a href="https://www.ign.es/">Instituto Geográfico Nacional España</a>',
+      attribution: 'https://www.ign.es/,Instituto Geográfico Nacional',
       legend: 'https://www.ign.es/web/resources/docs/IGNCnig/Especificaciones/catalogo_MTN25.pdf',
 
       ...opt,
@@ -378,7 +402,7 @@ export class OS extends XYZ {
       maxZoom: 16,
       extent: [-1198263, 6365000, 213000, 8702260],
 
-      attribution: '<a href="https://explore.osmaps.com/">UK Ordnancesurvey maps</a>',
+      attribution: 'https://explore.osmaps.com/,UK Ordnancesurvey maps',
       legend: 'https://www.ordnancesurvey.co.uk/mapzone/assets/doc/Explorer-25k-Legend-en.pdf',
 
       ...opt,
@@ -408,7 +432,7 @@ export class ArcGIS extends XYZ {
       subLayer: 'World_Imagery',
       maxZoom: 19,
 
-      attribution: '<a href="https://www.arcgis.com/">ArcGIS (Esri)</a>',
+      attribution: 'https://www.arcgis.com/,ArcGIS (Esri)',
 
       ...opt,
     };
@@ -431,7 +455,7 @@ export class Maxbox extends XYZ {
       url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
       // No maxZoom
 
-      attribution: '<a href="https://www.mapbox.com/">Mapbox</a>',
+      attribution: 'https://www.mapbox.com/,Mapbox',
     });
   }
 }
@@ -445,7 +469,7 @@ export class Google extends XYZ {
       subLayers: 'p', // Terrain
       maxZoom: 22,
 
-      attribution: '<a href="https://www.google.com/maps">Google</a>',
+      attribution: 'https://www.google.com/maps,Google',
 
       ...opt,
     };

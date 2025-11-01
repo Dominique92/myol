@@ -12,6 +12,7 @@ import {
 } from 'ol/extent';
 import OSM from 'ol/source/OSM.js';
 import SourceXYZ from 'ol/source/XYZ.js';
+import StadiaMaps from 'ol/source/StadiaMaps.js';
 import TilegridWMTS from 'ol/tilegrid/WMTS.js';
 import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS.js';
@@ -48,9 +49,9 @@ function makeAttributions(options, dataAttribution) {
 
 
 /**
- * Virtual class to factorise XYZ layers code
+ * Virtual class to factorise XYZ layers classes
  */
-class XYZ extends TileLayer {
+class layerXYZ extends TileLayer {
   constructor(options) {
     super({
       source: new SourceXYZ({
@@ -58,35 +59,6 @@ class XYZ extends TileLayer {
 
         ...options,
       }),
-
-      ...options,
-    });
-  }
-}
-
-/**
- * Simple layer to be used when a layer is out of extent
- * API : https://api-docs.carto.com/
- */
-export class CartoDB extends XYZ {
-  constructor(options) {
-    super({
-      url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-      attribution: 'https://carto.com/attribution/,CartoDB',
-
-      ...options,
-    });
-  }
-}
-
-/**
- * Simple layer to be used when a layer is out of scope
- */
-export class NoTile extends XYZ {
-  constructor(options) {
-    super({
-      url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
-      attributions: 'No tile',
 
       ...options,
     });
@@ -320,7 +292,7 @@ export class SwissTopo extends TileLayer {
  * Map : https://www.ign.es/iberpix/visor
  * API : https://api-maps.ign.es/
  */
-export class IgnES extends XYZ {
+export class IgnES extends layerXYZ {
   constructor(opt) {
     const options = {
       host: 'https://www.ign.es/wmts/',
@@ -393,7 +365,7 @@ export class IGM extends TileLayer {
  * Ordnance Survey : Great Britain
  * API & key : https://osdatahub.os.uk/
  */
-export class OS extends XYZ {
+export class OS extends layerXYZ {
   constructor(opt) {
     const options = {
       hidden: !opt.key, // For LayerSwitcher
@@ -425,7 +397,7 @@ export class OS extends XYZ {
  * API : https://developers.arcgis.com/javascript/latest/
  * No key
  */
-export class ArcGIS extends XYZ {
+export class ArcGIS extends layerXYZ {
   constructor(opt) {
     const options = {
       host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
@@ -448,7 +420,7 @@ export class ArcGIS extends XYZ {
  * Maxbox (Maxar)
  * Key : https://www.mapbox.com/
  */
-export class Maxbox extends XYZ {
+export class Maxbox extends layerXYZ {
   constructor(options = {}) {
     super({
       hidden: !options.key, // For LayerSwitcher
@@ -463,7 +435,7 @@ export class Maxbox extends XYZ {
 /**
  * Google
  */
-export class Google extends XYZ {
+export class Google extends layerXYZ {
   constructor(opt) {
     const options = {
       subLayers: 'p', // Terrain
@@ -511,6 +483,54 @@ export class Bing extends TileLayer {
 }
 
 /**
+ * Simple layers
+ * Doc : https://maps.stamen.com/
+ */
+export class Stamen extends TileLayer {
+  constructor(options) {
+    super({
+      source: new StadiaMaps({
+        layer: 'stamen_watercolor', // Default
+        // attributions: defined by ol.source.StadiaMaps
+
+        ...options,
+      }),
+
+      ...options,
+    });
+  }
+}
+
+/**
+ * Simple shematic layer
+ * API : https://api-docs.carto.com/
+ */
+export class CartoDB extends layerXYZ {
+  constructor(options) {
+    super({
+      url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      attribution: 'https://carto.com/attribution/,CartoDB',
+
+      ...options,
+    });
+  }
+}
+
+/**
+ * Simple layer displaying a zoom error
+ */
+export class NoTile extends layerXYZ {
+  constructor(options) {
+    super({
+      url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
+      attributions: 'No tile',
+
+      ...options,
+    });
+  }
+}
+
+/**
  * RGB elevation (Mapbox)
  * Each pixel color encode the elevation
  * Doc: https://docs.mapbox.com/data/tilesets/guides/access-elevation-data/
@@ -535,7 +555,7 @@ export class MapboxElevation extends Maxbox {
  * Key : https://cloud.maptiler.com/account/keys/
  */
 /*// Backup of Maxbox elevation
-export class MapTilerElevation extends XYZ {
+export class MapTilerElevation extends layerXYZ {
   constructor(options = {}) {
     super({
       hidden: !options.key, // For LayerSwitcher
@@ -753,6 +773,16 @@ export function examples(options = {}) {
     }),
 
     'CartoDB': new CartoDB(),
+    'STAMEN watercolor': new Stamen(),
+    'STAMEN terrain': new Stamen({
+      layer: 'stamen_terrain',
+    }),
+    'STAMEN toner': new Stamen({
+      layer: 'stamen_toner',
+    }),
+    'STAMEN toner lite': new Stamen({
+      layer: 'stamen_toner_lite',
+    }),
     'No tile': new NoTile(),
     'Blank': new TileLayer(),
   };

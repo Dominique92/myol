@@ -1,3 +1,7 @@
 .ol-attribution:not(.ol-collapsed) a {
   color: black !important;
 }
+
+.ol-attribution ul:has([href*="openmaptiles"]) li:not(:last-child) {
+  display: none;
+}

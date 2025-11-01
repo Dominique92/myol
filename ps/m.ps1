@@ -1,1 +1,1 @@
-Set-Location C:\Users\Admin\Documents\GitHub\myol
+Set-Location C:\Users\$Env:UserName\Documents\GitHub\myol

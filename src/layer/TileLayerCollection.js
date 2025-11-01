@@ -771,14 +771,14 @@ export function examples(options = {}) {
     }),
 
     'CartoDB': new CartoDB(),
-    'STAMEN watercolor': new Stamen(),
-    'STAMEN terrain': new Stamen({
+    'Stamen watercolor': new Stamen(),
+    'Stamen terrain': new Stamen({
       layer: 'stamen_terrain',
     }),
-    'STAMEN toner': new Stamen({
+    'Stamen toner': new Stamen({
       layer: 'stamen_toner',
     }),
-    'STAMEN toner lite': new Stamen({
+    'Stamen toner lite': new Stamen({
       layer: 'stamen_toner_lite',
     }),
     'No tile': new NoTile(),

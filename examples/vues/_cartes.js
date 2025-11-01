@@ -38,7 +38,7 @@ function externTilesLayers(mapKeys, restreint) {
     }),
     'Photo ArcGIS': new myol.layer.tile.ArcGIS(),
     'Photo Google': restreint ? null : new myol.layer.tile.Google({
-      subLayers: 's',
+      subLayers: 's', // Satellite
     }),
     'Photo Maxar': new myol.layer.tile.Maxbox({
       tileset: 'mapbox.satellite',

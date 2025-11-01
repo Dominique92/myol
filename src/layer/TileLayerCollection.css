@@ -2,6 +2,8 @@
   color: black !important;
 }
 
-.ol-attribution ul:has([href*="openmaptiles"]) li:not(:last-child) {
+.ol-attribution:has([href*="openmaptiles"]) li:has([href*="stadiamaps"]),
+.ol-attribution:has([href*="openmaptiles"]) li:has([href*="openmaptiles"]),
+.ol-attribution:has([href*="openmaptiles"]) li:has([href*="openstreetmap"]) {
   display: none;
 }

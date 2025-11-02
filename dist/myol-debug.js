@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 01/11/2025 14:03:30 using npm run build from the src/... sources
+ * Built 02/11/2025 16:08:56 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -62711,7 +62711,7 @@
     );
   }
 
-  var loadingstrategy = /*#__PURE__*/Object.freeze({
+  var loadingstrategy$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     all: all,
     bbox: bbox,
@@ -74777,7 +74777,7 @@
    * ```
    * @api
    */
-  let XYZ$1 = class XYZ extends TileImage {
+  class XYZ extends TileImage {
     /**
      * @param {Options} [options] XYZ options.
      */
@@ -74831,7 +74831,7 @@
     getGutter() {
       return this.gutter_;
     }
-  };
+  }
 
   /**
    * @module ol/source/Cluster
@@ -75339,7 +75339,7 @@
    * Layer source for the OpenStreetMap tile server.
    * @api
    */
-  class OSM extends XYZ$1 {
+  class OSM extends XYZ {
     /**
      * @param {Options} [options] Open Street Map options.
      */
@@ -75372,6 +75372,192 @@
         tileLoadFunction: options.tileLoadFunction,
         transition: options.transition,
         url: url,
+        wrapX: options.wrapX,
+        zDirection: options.zDirection,
+      });
+    }
+  }
+
+  /**
+   * @module ol/source/StadiaMaps
+   */
+
+
+  /**
+   * @type {string}
+   */
+  const STADIA_ATTRIBUTION =
+    '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>';
+
+  /**
+   * @type {string}
+   */
+  const OMT_ATTRIBUTION =
+    '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a>';
+
+  /**
+   * @type {string}
+   */
+  const STAMEN_ATTRIBUTION =
+    '&copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a>';
+
+  /**
+   * @type {Object<string, {extension: string}>}
+   */
+  const LayerConfig = {
+    'stamen_terrain': {
+      extension: 'png',
+    },
+    'stamen_terrain_background': {
+      extension: 'png',
+    },
+    'stamen_terrain_labels': {
+      extension: 'png',
+    },
+    'stamen_terrain_lines': {
+      extension: 'png',
+    },
+    'stamen_toner_background': {
+      extension: 'png',
+    },
+    'stamen_toner': {
+      extension: 'png',
+    },
+    'stamen_toner_labels': {
+      extension: 'png',
+    },
+    'stamen_toner_lines': {
+      extension: 'png',
+    },
+    'stamen_toner_lite': {
+      extension: 'png',
+    },
+    'stamen_watercolor': {
+      extension: 'jpg',
+    },
+    'alidade_smooth': {
+      extension: 'png',
+    },
+    'alidade_smooth_dark': {
+      extension: 'png',
+    },
+    'alidade_satellite': {
+      extension: 'png',
+    },
+    'outdoors': {
+      extension: 'png',
+    },
+    'osm_bright': {
+      extension: 'png',
+    },
+  };
+
+  /**
+   * @type {Object<string, {minZoom: number, maxZoom: number, retina: boolean}>}
+   */
+  const ProviderConfig = {
+    'stamen_terrain': {
+      minZoom: 0,
+      maxZoom: 18,
+      retina: true,
+    },
+    'stamen_toner': {
+      minZoom: 0,
+      maxZoom: 20,
+      retina: true,
+    },
+    'stamen_watercolor': {
+      minZoom: 1,
+      maxZoom: 18,
+      retina: false,
+    },
+  };
+
+  /**
+   * @typedef {Object} Options
+   * @property {number} [cacheSize] Deprecated.  Use the cacheSize option on the layer instead.
+   * @property {boolean} [interpolate=true] Use interpolated values when resampling.  By default,
+   * linear interpolation is used when resampling.  Set to false to use the nearest neighbor instead.
+   * @property {string} layer Layer name. Valid values: `alidade_smooth`, `alidade_smooth_dark`, `outdoors`, `stamen_terrain`, `stamen_terrain_background`, `stamen_terrain_labels`, `stamen_terrain_lines`, `stamen_toner_background`, `stamen_toner`, `stamen_toner_labels`, `stamen_toner_lines`, `stamen_toner_lite`, `stamen_watercolor`, and `osm_bright`.
+   * @property {number} [minZoom] Minimum zoom.
+   * @property {number} [maxZoom] Maximum zoom.
+   * @property {number} [reprojectionErrorThreshold=0.5] Maximum allowed reprojection error (in pixels).
+   * Higher values can increase reprojection performance, but decrease precision.
+   * @property {import("../Tile.js").LoadFunction} [tileLoadFunction]
+   * Optional function to load a tile given a URL. The default is
+   * ```js
+   * function(imageTile, src) {
+   *   imageTile.getImage().src = src;
+   * };
+   * ```
+   * @property {number} [transition=250] Duration of the opacity transition for rendering.
+   * To disable the opacity transition, pass `transition: 0`.
+   * @property {string} [url] URL template. Must include `{x}`, `{y}` or `{-y}`, and `{z}` placeholders.
+   * @property {boolean} [wrapX=true] Whether to wrap the world horizontally.
+   * @property {number|import("../array.js").NearestDirectionFunction} [zDirection=0]
+   * Choose whether to use tiles with a higher or lower zoom level when between integer
+   * zoom levels. See {@link module:ol/tilegrid/TileGrid~TileGrid#getZForResolution}.
+   * @property {string} [apiKey] Stadia Maps API key. Not required for localhost or most public web deployments. See https://docs.stadiamaps.com/authentication/ for details.
+   * @property {boolean} [retina] Use retina tiles (if available; not available for Stamen Watercolor).
+   */
+
+  /**
+   * @classdesc
+   * Layer source for the Stadia Maps tile server.
+   * @api
+   */
+  class StadiaMaps extends XYZ {
+    /**
+     * @param {Options} options StadiaMaps options.
+     */
+    constructor(options) {
+      const i = options.layer.indexOf('-');
+      const provider = i == -1 ? options.layer : options.layer.slice(0, i);
+      const providerConfig = ProviderConfig[provider] || {
+        'minZoom': 0,
+        'maxZoom': 20,
+        'retina': true,
+      };
+
+      const layerConfig = LayerConfig[options.layer];
+      const query = options.apiKey ? '?api_key=' + options.apiKey : '';
+      const retina = providerConfig.retina && options.retina ? '@2x' : '';
+
+      const url =
+        options.url !== undefined
+          ? options.url
+          : 'https://tiles.stadiamaps.com/tiles/' +
+            options.layer +
+            '/{z}/{x}/{y}' +
+            retina +
+            '.' +
+            layerConfig.extension +
+            query;
+
+      const attributions = [STADIA_ATTRIBUTION, OMT_ATTRIBUTION, ATTRIBUTION];
+
+      if (options.layer.startsWith('stamen_')) {
+        attributions.splice(1, 0, STAMEN_ATTRIBUTION);
+      }
+
+      super({
+        attributions: attributions,
+        cacheSize: options.cacheSize,
+        crossOrigin: 'anonymous',
+        interpolate: options.interpolate,
+        maxZoom:
+          options.maxZoom !== undefined
+            ? options.maxZoom
+            : providerConfig.maxZoom,
+        minZoom:
+          options.minZoom !== undefined
+            ? options.minZoom
+            : providerConfig.minZoom,
+        reprojectionErrorThreshold: options.reprojectionErrorThreshold,
+        tileLoadFunction: options.tileLoadFunction,
+        transition: options.transition,
+        url: url,
+        tilePixelRatio: retina ? 2 : 1,
         wrapX: options.wrapX,
         zDirection: options.zDirection,
       });
@@ -76155,7 +76341,7 @@
       Vector: VectorLayer,
     },
     Map: Map,
-    loadingstrategy: loadingstrategy,
+    loadingstrategy: loadingstrategy$1,
     proj: {
       ...proj,
       proj4: projProj4,
@@ -76167,7 +76353,7 @@
       TileWMS: TileWMS,
       Vector: VectorSource,
       WMTS: WMTS,
-      XYZ: XYZ$1,
+      XYZ: XYZ,
     },
     sphere: sphere$1,
     style: style,
@@ -76425,47 +76611,17 @@
       return '&copy' + ret.join(' | ');
   }
 
-
   /**
-   * Virtual class to factorise XYZ layers code
+   * Virtual class to factorise XYZ layers classes
    */
-  class XYZ extends TileLayer {
+  class layerXYZ extends TileLayer {
     constructor(options) {
       super({
-        source: new XYZ$1({
+        source: new XYZ({
           attributions: makeAttributions(options),
 
           ...options,
         }),
-
-        ...options,
-      });
-    }
-  }
-
-  /**
-   * Simple layer to be used when a layer is out of extent
-   * API : https://api-docs.carto.com/
-   */
-  class CartoDB extends XYZ {
-    constructor(options) {
-      super({
-        url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-        attribution: 'https://carto.com/attribution/,CartoDB',
-
-        ...options,
-      });
-    }
-  }
-
-  /**
-   * Simple layer to be used when a layer is out of scope
-   */
-  class NoTile extends XYZ {
-    constructor(options) {
-      super({
-        url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
-        attributions: 'No tile',
 
         ...options,
       });
@@ -76547,6 +76703,7 @@
         maxZoom: 17,
 
         attribution: 'https://www.kompass.de/,Kompass',
+        legend: 'https://www.outdooractive.com/fr/knowledgepage/carte-kompass/43778568/#5',
 
         ...options,
       });
@@ -76699,7 +76856,7 @@
    * Map : https://www.ign.es/iberpix/visor
    * API : https://api-maps.ign.es/
    */
-  class IgnES extends XYZ {
+  class IgnES extends layerXYZ {
     constructor(opt) {
       const options = {
         host: 'https://www.ign.es/wmts/',
@@ -76772,7 +76929,7 @@
    * Ordnance Survey : Great Britain
    * API & key : https://osdatahub.os.uk/
    */
-  class OS extends XYZ {
+  class OS extends layerXYZ {
     constructor(opt) {
       const options = {
         hidden: !opt.key, // For LayerSwitcher
@@ -76804,7 +76961,7 @@
    * API : https://developers.arcgis.com/javascript/latest/
    * No key
    */
-  class ArcGIS extends XYZ {
+  class ArcGIS extends layerXYZ {
     constructor(opt) {
       const options = {
         host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
@@ -76827,7 +76984,7 @@
    * Maxbox (Maxar)
    * Key : https://www.mapbox.com/
    */
-  class Maxbox extends XYZ {
+  class Maxbox extends layerXYZ {
     constructor(options = {}) {
       super({
         hidden: !options.key, // For LayerSwitcher
@@ -76842,7 +76999,7 @@
   /**
    * Google
    */
-  class Google extends XYZ {
+  class Google extends layerXYZ {
     constructor(opt) {
       const options = {
         subLayers: 'p', // Terrain
@@ -76855,6 +77012,7 @@
 
       super({
         url: 'https://mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
+
         ...options,
       });
     }
@@ -76869,11 +77027,8 @@
     constructor(options = {}) {
       super({
         hidden: !options.key, // For LayerSwitcher
-
-        // Mandatory
-        // 'key',
         imagerySet: 'Road',
-
+        // Mandatory 'key',
         // No explicit zoom
         // attributions, defined by ol.source.BingMaps
 
@@ -76888,6 +77043,54 @@
       });
     }
   };
+
+  /**
+   * Simple layers
+   * Doc : https://maps.stamen.com/
+   */
+  class Stamen extends TileLayer {
+    constructor(options) {
+      super({
+        source: new StadiaMaps({
+          layer: 'stamen_watercolor', // Default
+          // attributions: defined by ol.source.StadiaMaps
+
+          ...options,
+        }),
+
+        ...options,
+      });
+    }
+  }
+
+  /**
+   * Simple shematic layer
+   * API : https://api-docs.carto.com/
+   */
+  class CartoDB extends layerXYZ {
+    constructor(options) {
+      super({
+        url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        attribution: 'https://carto.com/attribution/,CartoDB',
+
+        ...options,
+      });
+    }
+  }
+
+  /**
+   * Simple layer displaying a zoom error
+   */
+  class NoTile extends layerXYZ {
+    constructor(options) {
+      super({
+        url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
+        attributions: 'No tile',
+
+        ...options,
+      });
+    }
+  }
 
   /**
    * RGB elevation (Mapbox)
@@ -76914,7 +77117,7 @@
    * Key : https://cloud.maptiler.com/account/keys/
    */
   /*// Backup of Maxbox elevation
-  export class MapTilerElevation extends XYZ {
+  export class MapTilerElevation extends layerXYZ {
     constructor(options = {}) {
       super({
         hidden: !options.key, // For LayerSwitcher
@@ -76978,17 +77181,13 @@
         key: options.thunderforest, // For simplified options
         ...options.thunderforest, // Include key
         subLayer: 'transport',
-        legend: 'https://www.thunderforest.com/maps/transport/',
+        legend: '',
       }),
-      'OSM cyclo': new OpenStreetMap({
+      'CyclOSM': new OpenStreetMap({
         url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
-        legend: 'https://www.thunderforest.com/maps/opencyclemap/',
+        legend: 'https://www.cyclosm.org/legend.html',
       }),
 
-      'IGN N+1': new IGN({
-        layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.BDUNI.J1',
-        format: 'image/png',
-      }),
       'IGN cartes 1950': new IGN({
         layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN50.1950',
         extent: [-58e4, 506000, 1070000, 6637000],
@@ -77047,11 +77246,13 @@
     return {
       ...collection$2(options),
 
-      'OpenStreetMap fr': new OpenStreetMap({
+      'OpenStreetMap FR': new OpenStreetMap({
         url: 'https://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+        legend: '',
       }),
       'OSM orthos FR': new OpenStreetMap({
         url: 'https://wms.openstreetmap.fr/tms/1.0.0/tous_fr/{z}/{x}/{y}',
+        legend: '',
       }),
 
       'OpenCycleMap': new Thunderforest({
@@ -77132,6 +77333,16 @@
       }),
 
       'CartoDB': new CartoDB(),
+      'Stamen watercolor': new Stamen(),
+      'Stamen terrain': new Stamen({
+        layer: 'stamen_terrain',
+      }),
+      'Stamen toner': new Stamen({
+        layer: 'stamen_toner',
+      }),
+      'Stamen toner lite': new Stamen({
+        layer: 'stamen_toner_lite',
+      }),
       'No tile': new NoTile(),
       'Blank': new TileLayer(),
     };
@@ -77156,6 +77367,7 @@
     OpenHikingMap: OpenHikingMap,
     OpenStreetMap: OpenStreetMap,
     OpenTopoMap: OpenTopoMap,
+    Stamen: Stamen,
     SwissTopo: SwissTopo,
     Thunderforest: Thunderforest,
     collection: collection$2,
@@ -77170,13 +77382,13 @@
    */
 
 
-  class BackgroundLayer extends CartoDB {
+  class BackgroundLayer extends Stamen {
     constructor(options) {
       // High resolution background layer
       super({
+        layer: 'stamen_toner_lite',
         minResolution: 20,
         visible: false,
-        attributions: '', //TODO signaler "hors cadre"
 
         ...options,
       });
@@ -78764,15 +78976,28 @@
 
 
   //BEST move this in html
-  const subMenuHTML$1 = '<p>\
-  <input type="radio" name="myol-gps-source" value="0" checked="checked">None &nbsp;\
-  <input type="radio" name="myol-gps-source" value="1">Outdoor &nbsp;\
-  <input type="radio" name="myol-gps-source" value="2">Indoor &nbsp;\
-  </p><hr><p>\
-  <input type="radio" name="myol-gps-display" value="0" checked="checked">Free map&nbsp;\
-  <input type="radio" name="myol-gps-display" value="1">Center &nbsp;\
-  <input type="radio" name="myol-gps-display" value="2">Center & orient &nbsp;\
-  </p>',
+  const subMenuHTML$1 = '\
+  <p>GPS location:</p>\
+  <label>\
+    <input type="radio" name="myol-gps-source" value="0" checked="checked">\
+    Inactive</label><label>\
+    <input type="radio" name="myol-gps-source" value="1">\
+    GPS location <span>(1) outdoor</span></label><label>\
+    <input type="radio" name="myol-gps-source" value="2">\
+    Position GPS ou IP <span>(2) indoor</span></label>\
+  <hr><label>\
+    <input type="radio" name="myol-gps-display" value="0" checked="checked">\
+    Graticule, free map</label><label>\
+    <input type="radio" name="myol-gps-display" value="1">\
+    Center the map, north at the top</label><label>\
+    <input type="radio" name="myol-gps-display" value="2">\
+    Center and orient the map <span>(3)</span></label>\
+  <hr>\
+  <p>(1) More accurate outdoors but slower to initialize,\
+    requires a GPS sensor and a free space.</p>\
+  <p>(2) more precise and faster indoors or in urban areas\
+    but can be inaccurate outdoors.</p>\
+  <p>(3) requires a magnetic sensor and a compatible explorer.</p>',
 
     subMenuHTMLfr$1 = '\
   <p>Localisation GPS:</p>\
@@ -90426,6 +90651,34 @@
   });
 
   /**
+   * Strategy for loading elements based on fixed position and size tiles
+   * The position is centered on fixed regular Mercator patterns
+   * For high resolutions, the maximum tile size corresponds to a screen square in pixels
+   * For low resolutions, the minimum tile size corresponds to a ground square in meters
+   */
+  function tiledBbox(extent, resolution) {
+    const byStepResolution = Math.exp(Math.round(Math.log(resolution))),
+      tileSize = Math.max(byStepResolution * 1000, 50000), // (pixels, meters)
+      extents = [];
+
+    for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
+      for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
+        extents.push([
+          Math.round(lon * tileSize),
+          Math.round(lat * tileSize),
+          Math.round(lon * tileSize + tileSize),
+          Math.round(lat * tileSize + tileSize),
+        ]);
+
+    return extents;
+  }
+
+  var loadingstrategy = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    tiledBbox: tiledBbox
+  });
+
+  /**
    * MyVectorLayer class to facilitate vector layers display
    */
 
@@ -90761,7 +91014,8 @@
       const urlArgs = this.query(...args, this.options),
         url = this.host + urlArgs._path; // Mem _path
 
-      if (this.strategy === bbox)
+      if (this.strategy === bbox ||
+        this.strategy === tiledBbox)
         urlArgs.bbox = this.bbox(...args);
 
       // Add a pseudo parameter if any marker or edit has been done
@@ -91179,6 +91433,7 @@
     Marker: Marker,
     MyVectorLayer: MyVectorLayer,
     Selector: Selector,
+    loadingstrategy: loadingstrategy,
     tile: tileLayercollection,
     vector: vectorLayerCollection,
   };
@@ -91188,7 +91443,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 01/11/2025 14:03:30';
+  const VERSION = '1.1.2.dev 02/11/2025 16:08:56';
 
   async function trace() {
     const data = [

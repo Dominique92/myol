@@ -8,11 +8,15 @@
 function externTilesLayers(mapKeys, restreint) {
   return {
     'OpenHikingMap': new myol.layer.tile.OpenHikingMap({
-      // On peut modifier les champs de l'attribution en décommentant :
+      /* On peut modifier l'attribution en décommentant un ou plusieurs des champs : */
       // contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
       // attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
       // licence: 'https://creativecommons.org/licenses/by-sa/3.0/,CC-BY-SA',
       // legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
+      /* OU carrément */
+      // attributions: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' +
+      //   '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+      /* Idem pour les autres couches */
     }),
     'OpenStreetMap': new myol.layer.tile.OpenStreetMap({}),
     'OpenTopoMap': new myol.layer.tile.OpenTopoMap(),

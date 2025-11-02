@@ -2,8 +2,8 @@
   color: black !important;
 }
 
-.ol-attribution:has([href*="openmaptiles"]) li:has([href*="stadiamaps"]),
-.ol-attribution:has([href*="openmaptiles"]) li:has([href*="openmaptiles"]),
-.ol-attribution:has([href*="openmaptiles"]) li:has([href*="openstreetmap"]) {
+.ol-attribution:not(:hover) li:has([href*="stadiamaps"]),
+.ol-attribution:not(:hover) li:has([href*="openmaptiles"]),
+.ol-attribution:not(:hover):has([href*="openmaptiles"]) li:has([href*="openstreetmap"]) {
   display: none;
 }

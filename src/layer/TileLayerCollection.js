@@ -448,6 +448,7 @@ export class Google extends layerXYZ {
 
     super({
       url: 'https://mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
+
       ...options,
     });
   }
@@ -462,11 +463,8 @@ export class Bing extends TileLayer {
   constructor(options = {}) {
     super({
       hidden: !options.key, // For LayerSwitcher
-
-      // Mandatory
-      // 'key',
       imagerySet: 'Road',
-
+      // Mandatory 'key',
       // No explicit zoom
       // attributions, defined by ol.source.BingMaps
 
@@ -621,9 +619,9 @@ export function collection(options = {}) {
       subLayer: 'transport',
       legend: '',
     }),
-    'OSM cyclo': new OpenStreetMap({
+    'CyclOSM': new OpenStreetMap({
       url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
-      legend: '',
+      legend: 'https://www.cyclosm.org/legend.html',
     }),
 
     'IGN cartes 1950': new IGN({

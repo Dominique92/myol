@@ -4,16 +4,16 @@
  */
 /* global ol, myol */
 
-/* Les couches de fond des cartes de refuges.info
-Ces couches acceptent les surcharges:
-  {
-    attribution: '<a href="un lien vers le fournisseur">Nom du fournisseur</a>',
-    legend : 'lien vers une page légende', 
-  }
-*/
+// Les couches de fond des cartes de refuges.info
 function externTilesLayers(mapKeys, restreint) {
   return {
-    'OpenHikingMap': new myol.layer.tile.OpenHikingMap(),
+    'OpenHikingMap': new myol.layer.tile.OpenHikingMap({
+      // On peut modifier les champs de l'attribution en décommentant :
+      // contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
+      // attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
+      // licence: 'https://creativecommons.org/licenses/by-sa/3.0/,CC-BY-SA',
+      // legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
+    }),
     'OpenStreetMap': new myol.layer.tile.OpenStreetMap({}),
     'OpenTopoMap': new myol.layer.tile.OpenTopoMap(),
     'Outdoors': new myol.layer.tile.Thunderforest({

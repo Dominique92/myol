@@ -34,7 +34,7 @@ const map = new ol.Map({
     }),
     new myol.layer.vector.WRI({
       selectName: 'select-wri',
-      strategy: myol.layer.tiledBbox,
+      debug: true,
     }),
     new myol.layer.vector.PRC({
       selectName: 'select-prc',

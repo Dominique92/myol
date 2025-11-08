@@ -115,6 +115,11 @@ function couchePointsWRI(options) {
     serverClusterMinResolution: 100, // (mètres par pixel) Résolution au dessus de laquelle on demande des clusters au serveur
     nbMaxClusters: 108, // Nombre de clusters sur la carte (12 rangées de 9). Remplace la distance
     browserClusterMinResolution: 10, // (mètres par pixel) Résolution en-dessous de laquelle le navigateur ne clusterise plus et ajoute une gigue
+    tileSizeUntilResolution: { // Static tiled bbox
+      43000: 100, // tilesize = 40 000 mercator units = 30 kms until resolution = 100 meters per pixel
+      570000: 1000, // tilesize = 400 kms until resolution = 1 km per pixel
+      14000000: Infinity, // tilesize = 10 000 kms above
+    },
 
     ...options,
 

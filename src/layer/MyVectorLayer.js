@@ -393,9 +393,9 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
     urlArgs.bbox = this.bboxParameter(...args);
 
     // Add a pseudo parameter if any marker or edit has been done
-    //TODO replace by a changeDateKey more general method
+    /*//TODO DCMM replace by a changeDateKey more general method
     const version = sessionStorage.myolLastchange ?
-      '&' + Math.round(sessionStorage.myolLastchange / 2500 % 46600).toString(36) : '';
+      '&' + Math.round(sessionStorage.myolLastchange / 2500 % 46600).toString(36) : '';*/
 
     // Clean null & not relative parameters
     Object.keys(urlArgs).forEach(k => {
@@ -403,7 +403,7 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
         delete urlArgs[k];
     });
 
-    return url + '?' + new URLSearchParams(urlArgs).toString() + version;
+    return url + '?' + new URLSearchParams(urlArgs).toString() /*//TODO DCMM + version*/;
   }
 
   bboxParameter(extent, resolution, mapProjection) {

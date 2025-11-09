@@ -265,6 +265,8 @@ function mapIndex(options) {
   const pointsLayer = couchePointsWRI({ // Les points
       host: options.host,
       selection: options.selection,
+      // eslint-disable-next-line camelcase
+      date_derniere_modification: options.date_derniere_modification,
     }),
     polygonesLayer = couchePolygonesColores({ // Les massifs
       host: options.host,
@@ -370,6 +372,8 @@ function mapPoint(options) {
         host: options.host,
         browserClusterMinResolution: 10, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
         displayLabel: true,
+        // eslint-disable-next-line camelcase
+        date_derniere_modification: options.date_derniere_modification,
       }),
 
       // Le cadre rouge autour du point de la fiche
@@ -422,6 +426,8 @@ function mapModif(options) {
         host: options.host,
         browserClusterMinResolution: null, // Pour ne pas générer de gigue
         noClick: true,
+        // eslint-disable-next-line camelcase
+        date_derniere_modification: options.date_derniere_modification,
       }),
 
       // Le viseur jaune pour modifier la position du point
@@ -461,6 +467,8 @@ function mapNav(options) {
     initSelect: 'all', // Réinitialise les choix du selecteur
     selectContour: intersectionLayer.options.selector, // Recharger quand la sélection change
     displayLabel: true,
+    // eslint-disable-next-line camelcase
+    date_derniere_modification: options.date_derniere_modification,
   });
 
   const polygonesLayer = couchePolygonesColores({ // Les massifs

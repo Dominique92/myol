@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 08/11/2025 16:15:49 using npm run build from the src/... sources
+ * Built 09/11/2025 11:29:33 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -91028,18 +91028,17 @@
 
       urlArgs.bbox = this.bboxParameter(...args);
 
-      // Add a pseudo parameter if any marker or edit has been done
-      //TODO replace by a changeDateKey more general method
-      const version = sessionStorage.myolLastchange ?
-        '&' + Math.round(sessionStorage.myolLastchange / 2500 % 46600).toString(36) : '';
-
       // Clean null & not relative parameters
       Object.keys(urlArgs).forEach(k => {
         if (k === '_path' || urlArgs[k] === 'on' || !urlArgs[k] || !urlArgs[k].toString())
           delete urlArgs[k];
       });
 
-      return url + '?' + new URLSearchParams(urlArgs).toString() + version;
+      // Add a pseudo parameter if any marker or edit has been done
+      if (this.options.date_derniere_modification)
+        urlArgs.v = this.options.date_derniere_modification;
+
+      return url + '?' + new URLSearchParams(urlArgs).toString();
     }
 
     bboxParameter(extent, resolution, mapProjection) {
@@ -91457,7 +91456,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 08/11/2025 16:15:49';
+  const VERSION = '1.1.2.dev 09/11/2025 11:29:33';
 
   async function trace() {
     const data = [

@@ -24,13 +24,13 @@ import * as stylesOptions from './stylesOptions';
  * Strategy for loading elements based on fixed tile grid
  * Following layer option
      tileSizeUntilResolution: {
-       10000: 100, // tilesize = 10000 metres until resolution = 100 meters per pixel
+       1000: 10, // tilesize = 1000 Mercator unit up to resolution = 10 meters per pixel
      },
  */
 function tiledBboxStrategy(extent, resolution) {
-  /* eslint-disable-next-line no-invalid-this */
-  const options = this.options,
-    tsur = options.tileSizeUntilResolution || {},
+  /* eslint-disable-next-line consistent-this, no-invalid-this */
+  const layer = this,
+    tsur = layer.options.tileSizeUntilResolution || {},
     found = Object.keys(tsur).find(k => tsur[k] > resolution),
     tileSize = parseInt(found, 10),
     tiledExtent = [];
@@ -47,11 +47,15 @@ function tiledBboxStrategy(extent, resolution) {
         Math.round(lat * tileSize + tileSize),
       ]);
 
-  if (options.debug) {
-    options.requestedTileSize = Math.round(tileSize / 1414);
+  if (layer.options.debug) {
+    layer.logs = {
+      tileSize: Math.round(tileSize / 1414) + '*' + Math.round(tileSize / 1414) + 'km',
+      isCluster: resolution > layer.options.serverClusterMinResolution,
+    };
     console.info(
-      'Request ' + tiledExtent.length + ' tile (' +
-      options.requestedTileSize + 'km) for ' +
+      'Request ' + tiledExtent.length +
+      ' tile' + (tiledExtent.length > 1 ? 's ' : ' ') +
+      layer.logs.tileSize + ' for ' +
       Math.round(resolution) + 'm/px resolution '
     );
   }
@@ -92,9 +96,9 @@ class MyVectorSource extends VectorSource {
     this.on('change', () => {
       if (this.options.debug)
         console.info(
-          'Receive 1 tile (' +
-          this.options.requestedTileSize + 'km), ' +
-          this.getFeatures().length + ' points, ' +
+          'Receive 1 tile ' +
+          this.logs.tileSize + ', ' + this.getFeatures().length +
+          (this.logs.isCluster ? ' clusters, ' : ' points, ') +
           transform(getCenter(this.getExtent()), 'EPSG:3857', 'EPSG:4326')
           .map(x => Math.round(x * 1000) / 1000)
           .join('°E/') + '°N'

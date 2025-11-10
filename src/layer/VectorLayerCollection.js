@@ -109,7 +109,7 @@ export class WRI extends MyVectorLayer {
       nbMaxClusters: 108, // Number of clusters on the map display. Replace distance
       browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
       tileSizeUntilResolution: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
-        10000: 100, // tilesize = 10 000 Mercator units = 70 km until resolution = 100 meters per pixel
+        50000: 100, // tilesize = 10 000 Mercator units = 35 km until resolution = 100 meters per pixel
         570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
         14000000: Infinity, // tilesize = 10 000 km above
       },

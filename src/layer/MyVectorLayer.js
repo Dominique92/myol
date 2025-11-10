@@ -11,6 +11,7 @@ import {
 import Point from 'ol/geom/Point';
 import Style from 'ol/style/Style';
 import {
+  transform,
   transformExtent,
 } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
@@ -28,7 +29,8 @@ import * as stylesOptions from './stylesOptions';
  */
 function tiledBboxStrategy(extent, resolution) {
   /* eslint-disable-next-line no-invalid-this */
-  const tsur = this.options.tileSizeUntilResolution || {},
+  const options = this.options,
+    tsur = options.tileSizeUntilResolution || {},
     found = Object.keys(tsur).find(k => tsur[k] > resolution),
     tileSize = parseInt(found, 10),
     tiledExtent = [];
@@ -45,13 +47,14 @@ function tiledBboxStrategy(extent, resolution) {
         Math.round(lat * tileSize + tileSize),
       ]);
 
-
-  /* eslint-disable-next-line no-invalid-this */
-  if (this.options.debug)
-    console.log(
-      'resolution: ' + Math.round(resolution) +
-      ' m/px, tile: ' + Math.round(tileSize / 14.14) / 100 +
-      ' km, ' + tiledExtent.length + ' requettes');
+  if (options.debug) {
+    options.requestedTileSize = Math.round(tileSize / 1414);
+    console.info(
+      'Request ' + tiledExtent.length + ' tile (' +
+      options.requestedTileSize + 'km) for ' +
+      Math.round(resolution) + 'm/px resolution '
+    );
+  }
 
   return tiledExtent;
 }
@@ -86,9 +89,16 @@ class MyVectorSource extends VectorSource {
     });
 
     // Compute properties when the layer is loaded & before the cluster layer is computed
-    this.on('change', (evt) => {
-      if (evt.target.options.debug)
-        console.log('tile ' + this.getFeatures().length + ' points');
+    this.on('change', () => {
+      if (this.options.debug)
+        console.info(
+          'Receive 1 tile (' +
+          this.options.requestedTileSize + 'km), ' +
+          this.getFeatures().length + ' points, ' +
+          transform(getCenter(this.getExtent()), 'EPSG:3857', 'EPSG:4326')
+          .map(x => Math.round(x * 1000) / 1000)
+          .join('°E/') + '°N'
+        );
 
       this.getFeatures().forEach(f => {
         if (!f.yetAdded) {
@@ -399,8 +409,8 @@ class MyVectorLayer extends MyServerClusterVectorLayer {
     });
 
     // Add a pseudo parameter if any marker or edit has been done
-    if (this.options.date_derniere_modification)
-      urlArgs.v = this.options.date_derniere_modification;
+    if (this.options.lastChangeTime)
+      urlArgs.v = this.options.lastChangeTime;
 
     return url + '?' + new URLSearchParams(urlArgs).toString();
   }

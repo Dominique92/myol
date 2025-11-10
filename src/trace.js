@@ -56,7 +56,7 @@ export async function trace() {
 /* global map */
 // Zoom & resolution
 function traceZoom() {
-  console.log(
+  console.info(
     'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
     'res ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
   );

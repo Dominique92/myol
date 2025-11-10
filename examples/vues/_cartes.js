@@ -114,12 +114,16 @@ function couchePointsWRI(options) {
     // Default clusters options:
     serverClusterMinResolution: 100, // (mètres par pixel) Résolution au dessus de laquelle on demande des clusters au serveur
     nbMaxClusters: 108, // Nombre de clusters sur la carte (12 rangées de 9). Remplace la distance
-    browserClusterMinResolution: 10, // (mètres par pixel) Résolution en-dessous de laquelle le navigateur ne clusterise plus et ajoute une gigue
+    browserClusterMinResolution: 10, // (mètres par pixel) Résolution en-dessous
+    // de laquellele navigateur ne clusterise plus et ajoute une gigue
     tileSizeUntilResolution: { // Static tiled bbox
-      43000: 100, // tilesize = 40 000 mercator units = 30 kms until resolution = 100 meters per pixel
-      570000: 1000, // tilesize = 400 kms until resolution = 1 km per pixel
-      14000000: Infinity, // tilesize = 10 000 kms above
+      // 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
+      10000: 100, // tilesize = 10 000 Mercator units
+      // = 70 km until resolution = 100 meters per pixel
+      570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
+      14000000: Infinity, // tilesize = 10 000 km above
     },
+    debug: true, // Décommenter pour avoir les traces dans la console.info
 
     ...options,
 
@@ -265,8 +269,7 @@ function mapIndex(options) {
   const pointsLayer = couchePointsWRI({ // Les points
       host: options.host,
       selection: options.selection,
-      // eslint-disable-next-line camelcase
-      date_derniere_modification: options.date_derniere_modification,
+      lastChangeTime: options.lastChangeTime,
     }),
     polygonesLayer = couchePolygonesColores({ // Les massifs
       host: options.host,
@@ -372,8 +375,7 @@ function mapPoint(options) {
         host: options.host,
         browserClusterMinResolution: 10, // (mètres par pixel) pour ne pas générer de gigue à l'affichage du point
         displayLabel: true,
-        // eslint-disable-next-line camelcase
-        date_derniere_modification: options.date_derniere_modification,
+        lastChangeTime: options.lastChangeTime,
       }),
 
       // Le cadre rouge autour du point de la fiche
@@ -426,8 +428,7 @@ function mapModif(options) {
         host: options.host,
         browserClusterMinResolution: null, // Pour ne pas générer de gigue
         noClick: true,
-        // eslint-disable-next-line camelcase
-        date_derniere_modification: options.date_derniere_modification,
+        lastChangeTime: options.lastChangeTime,
       }),
 
       // Le viseur jaune pour modifier la position du point
@@ -467,8 +468,7 @@ function mapNav(options) {
     initSelect: 'all', // Réinitialise les choix du selecteur
     selectContour: intersectionLayer.options.selector, // Recharger quand la sélection change
     displayLabel: true,
-    // eslint-disable-next-line camelcase
-    date_derniere_modification: options.date_derniere_modification,
+    lastChangeTime: options.lastChangeTime,
   });
 
   const polygonesLayer = couchePolygonesColores({ // Les massifs

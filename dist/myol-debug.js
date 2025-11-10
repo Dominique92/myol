@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 09/11/2025 11:29:33 using npm run build from the src/... sources
+ * Built 10/11/2025 16:22:26 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -79100,7 +79100,7 @@
       });
       this.geolocation.on('change', evt => this.subMenuAction(evt));
       this.geolocation.on('error', error => {
-        console.log('Geolocation error: ' + error.message);
+        console.error('Geolocation error: ' + error.message);
       });
 
       return super.setMap(map);
@@ -90664,7 +90664,8 @@
    */
   function tiledBboxStrategy(extent, resolution) {
     /* eslint-disable-next-line no-invalid-this */
-    const tsur = this.options.tileSizeUntilResolution || {},
+    const options = this.options,
+      tsur = options.tileSizeUntilResolution || {},
       found = Object.keys(tsur).find(k => tsur[k] > resolution),
       tileSize = parseInt(found, 10),
       tiledExtent = [];
@@ -90681,13 +90682,14 @@
           Math.round(lat * tileSize + tileSize),
         ]);
 
-
-    /* eslint-disable-next-line no-invalid-this */
-    if (this.options.debug)
-      console.log(
-        'resolution: ' + Math.round(resolution) +
-        ' m/px, tile: ' + Math.round(tileSize / 14.14) / 100 +
-        ' km, ' + tiledExtent.length + ' requettes');
+    if (options.debug) {
+      options.requestedTileSize = Math.round(tileSize / 1414);
+      console.info(
+        'Request ' + tiledExtent.length + ' tile (' +
+        options.requestedTileSize + 'km) for ' +
+        Math.round(resolution) + 'm/px resolution '
+      );
+    }
 
     return tiledExtent;
   }
@@ -90722,9 +90724,16 @@
       });
 
       // Compute properties when the layer is loaded & before the cluster layer is computed
-      this.on('change', (evt) => {
-        if (evt.target.options.debug)
-          console.log('tile ' + this.getFeatures().length + ' points');
+      this.on('change', () => {
+        if (this.options.debug)
+          console.info(
+            'Receive 1 tile (' +
+            this.options.requestedTileSize + 'km), ' +
+            this.getFeatures().length + ' points, ' +
+            transform$1(getCenter(this.getExtent()), 'EPSG:3857', 'EPSG:4326')
+            .map(x => Math.round(x * 1000) / 1000)
+            .join('°E/') + '°N'
+          );
 
         this.getFeatures().forEach(f => {
           if (!f.yetAdded) {
@@ -91035,8 +91044,8 @@
       });
 
       // Add a pseudo parameter if any marker or edit has been done
-      if (this.options.date_derniere_modification)
-        urlArgs.v = this.options.date_derniere_modification;
+      if (this.options.lastChangeTime)
+        urlArgs.v = this.options.lastChangeTime;
 
       return url + '?' + new URLSearchParams(urlArgs).toString();
     }
@@ -91168,10 +91177,10 @@
         serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
         nbMaxClusters: 108, // Number of clusters on the map display. Replace distance
         browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
-        tileSizeUntilResolution: { // Static tiled bbox
-          43000: 100, // tilesize = 40 000 mercator units = 30 kms until resolution = 100 meters per pixel
-          570000: 1000, // tilesize = 400 kms until resolution = 1 km per pixel
-          14000000: Infinity, // tilesize = 10 000 kms above
+        tileSizeUntilResolution: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
+          10000: 100, // tilesize = 10 000 Mercator units = 70 km until resolution = 100 meters per pixel
+          570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
+          14000000: Infinity, // tilesize = 10 000 km above
         },
         // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
 
@@ -91456,7 +91465,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 09/11/2025 11:29:33';
+  const VERSION = '1.1.2.dev 10/11/2025 16:22:26';
 
   async function trace() {
     const data = [
@@ -91506,7 +91515,7 @@
   /* global map */
   // Zoom & resolution
   function traceZoom() {
-    console.log(
+    console.info(
       'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
       'res ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
     );

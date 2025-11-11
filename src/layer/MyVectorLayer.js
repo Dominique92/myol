@@ -23,14 +23,15 @@ import * as stylesOptions from './stylesOptions';
 /**
  * Strategy for loading elements based on fixed tile grid
  * Following layer option
-     tileSizeUntilResolution: {
+     tiledBBoxStrategy: {
        1000: 10, // tilesize = 1000 Mercator unit up to resolution = 10 meters per pixel
      },
  */
 function tiledBboxStrategy(extent, resolution) {
+  //TODO BUG obsolescence de toutes les tuiles après 1 modif: pb hors ligne
   /* eslint-disable-next-line consistent-this, no-invalid-this */
   const layer = this,
-    tsur = layer.options.tileSizeUntilResolution || {},
+    tsur = layer.options.tiledBBoxStrategy || {},
     found = Object.keys(tsur).find(k => tsur[k] > resolution),
     tileSize = parseInt(found, 10),
     tiledExtent = [];

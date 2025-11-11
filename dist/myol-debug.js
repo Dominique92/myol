@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 10/11/2025 18:30:51 using npm run build from the src/... sources
+ * Built 11/11/2025 16:07:44 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -90658,14 +90658,15 @@
   /**
    * Strategy for loading elements based on fixed tile grid
    * Following layer option
-       tileSizeUntilResolution: {
+       tiledBBoxStrategy: {
          1000: 10, // tilesize = 1000 Mercator unit up to resolution = 10 meters per pixel
        },
    */
   function tiledBboxStrategy(extent, resolution) {
+    //TODO BUG obsolescence de toutes les tuiles après 1 modif: pb hors ligne
     /* eslint-disable-next-line consistent-this, no-invalid-this */
     const layer = this,
-      tsur = layer.options.tileSizeUntilResolution || {},
+      tsur = layer.options.tiledBBoxStrategy || {},
       found = Object.keys(tsur).find(k => tsur[k] > resolution),
       tileSize = parseInt(found, 10),
       tiledExtent = [];
@@ -91181,7 +91182,7 @@
         serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
         nbMaxClusters: 108, // Number of clusters on the map display. Replace distance
         browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
-        tileSizeUntilResolution: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
+        tiledBBoxStrategy: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
           50000: 100, // tilesize = 10 000 Mercator units = 35 km until resolution = 100 meters per pixel
           570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
           14000000: Infinity, // tilesize = 10 000 km above
@@ -91469,7 +91470,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 10/11/2025 18:30:51';
+  const VERSION = '1.1.2.dev 11/11/2025 16:07:44';
 
   async function trace() {
     const data = [

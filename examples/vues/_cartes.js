@@ -115,11 +115,14 @@ function couchePointsWRI(options) {
     serverClusterMinResolution: 100, // (mètres par pixel) Résolution au dessus de laquelle on demande des clusters au serveur
     nbMaxClusters: 108, // Nombre de clusters sur la carte (12 rangées de 9). Remplace la distance
     browserClusterMinResolution: 10, // (mètres par pixel) Résolution en-dessous
-    // de laquellele navigateur ne clusterise plus et ajoute une gigue
-    tileSizeUntilResolution: { // Static tiled bbox 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
-      50000: 100, // tilesize = 10 000 Mercator units = 35 km until resolution = 100 meters per pixel
-      570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
-      14000000: Infinity, // tilesize = 10 000 km above
+    //   de laquelle le navigateur ne clusterise plus et ajoute une gigue
+    //
+    // Stratégie BBox tuilée, 1 unité Mercator = 0,7 mètre à la latitude = 45° : cos(45°)
+    // Supprimer ce paramètre pour revenir à une stratégie BBox simple
+    tiledBBoxStrategy: {
+      50000: 100, // Tuiles de 10 000 unités Mercator = 35 km jusqu'à une résolution de 100 mètres par pixel
+      570000: 1000, // Tuiles de 400 km jusqu'à une résolution de 1 km par pixel
+      14000000: Infinity, // Tuiles de 10 000 km au dessus
     },
     debug: true, // Décommenter pour avoir les traces dans la console.info
 

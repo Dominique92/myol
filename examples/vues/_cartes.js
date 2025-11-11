@@ -120,7 +120,7 @@ function couchePointsWRI(options) {
     // Stratégie BBox tuilée, 1 unité Mercator = 0,7 mètre à la latitude = 45° : cos(45°)
     // Supprimer ce paramètre pour revenir à une stratégie BBox simple
     tiledBBoxStrategy: {
-      50000: 100, // Tuiles de 10 000 unités Mercator = 35 km jusqu'à une résolution de 100 mètres par pixel
+      50000: 100, // Tuiles de 50 000 unités Mercator = 35 km jusqu'à une résolution de 100 mètres par pixel
       570000: 1000, // Tuiles de 400 km jusqu'à une résolution de 1 km par pixel
       14000000: Infinity, // Tuiles de 10 000 km au dessus
     },

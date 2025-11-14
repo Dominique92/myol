@@ -11,7 +11,7 @@ function externTilesLayers(mapKeys, restreint) {
       /* On peut modifier l'attribution en décommentant un ou plusieurs des champs : */
       // url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
       // maxZoom: 18,
-      // tileSize n'est pas modifiable dans l'appel
+      /* tileSize n'est pas un paramètre d'appel */
       // contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
       // attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
       // licence: 'https://creativecommons.org/licenses/by-sa/3.0/,CC-BY-SA',
@@ -42,7 +42,7 @@ function externTilesLayers(mapKeys, restreint) {
       key: mapKeys.thunderforest,
       legend: '', // Ecrase la légende par défaut de myol.layer.tile.Thunderforest
     }),
-    /* Appel natif d'une couche d'origine OSM (paramètres par défaut pour OpenStreetMap
+    /* Appel natif d'une couche d'origine OSM (paramètres par défaut pour OpenStreetMap)
     'OSM': new ol.layer.Tile({
       source: new ol.source.OSM({
         url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',

@@ -22,9 +22,9 @@ function requeteAPI(nom, url, donneesPost, callBack) {
  * Applique les données *
  ************************
 value = {
-	a: {
-		b: 123
-	}
+  a: {
+    b: 123
+  }
 }
 à
 <tag id="id-a-b">123</tag>
@@ -53,10 +53,10 @@ function appliqueDonnees(id, value) {
  * Multiplie le modele de groupe jusqu'au nombre d'informations disponibles *
  ****************************************************************************
 <div id="commentaires-groupe">
-	<div><!-- Modèle pour un commentaire -->
-		<img id="commentaires-groupe-0-photo-reduite">
-		<p id="commentaires-groupe-0-texte_commentaire"></p>
-	</div>
+  <div><!-- Modèle pour un commentaire -->
+    <img id="commentaires-groupe-0-photo-reduite">
+    <p id="commentaires-groupe-0-texte_commentaire"></p>
+  </div>
 </div>
 */
 /* eslint-disable-next-line no-unused-vars */

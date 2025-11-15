@@ -19,7 +19,7 @@ async function replaceIncludes() {
     if (firstIncludeEl.tagName === 'SCRIPT') {
       const scriptEl = document.createElement('script');
 
-      // Wait for script load	 
+      // Wait for script load
       scriptEl.addEventListener('load', async () => {
         await replaceIncludes(); // Iterate recursively if any tag w3-include has been included
       });

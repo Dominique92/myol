@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 11/11/2025 17:18:50 using npm run build from the src/... sources
+ * Built 15/11/2025 17:03:04 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -76612,23 +76612,6 @@
   }
 
   /**
-   * Virtual class to factorise XYZ layers classes
-   */
-  class layerXYZ extends TileLayer {
-    constructor(options) {
-      super({
-        source: new XYZ({
-          attributions: makeAttributions(options),
-
-          ...options,
-        }),
-
-        ...options,
-      });
-    }
-  }
-
-  /**
    * OpenStreetMap & co
    * Map : https://www.openstreetmap.org/
    * API : https://wiki.openstreetmap.org/wiki/API/
@@ -76654,36 +76637,20 @@
   }
 
   /**
-   * OSM Topo style OpenTopoMap 
-   * Map : Hosted by https://openmaps.fr
-   * Doc : https://opentopomap.org/about
+   * OSM originated maps
+   * Doc : https://www.thunderforest.com/maps/
+   * Key : https://manage.thunderforest.com/dashboard
    */
-  class OpenTopoMap extends OpenStreetMap {
-    constructor() {
+  class Thunderforest extends OpenStreetMap {
+    constructor(options = {}) {
       super({
-        url: 'https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png',
-        maxZoom: 17,
+        hidden: !options.key, // For LayerSwitcher
+        url: 'https://{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
+        maxZoom: 22,
 
-        attribution: 'https://github.com/sletuffe/OpenTopoMap/,OpenTopoMap-R',
-        licence: 'https://creativecommons.org/licenses/by-sa/3.0/,CC-BY-SA',
-        legend: 'https://www.geograph.org/leaflet/otm-legend.php',
-      });
-    }
-  }
+        attribution: 'https://www.thunderforest.com/,Thunderforest',
 
-  /**
-   * Maps of https://openmaps.fr
-   * Map : https://openmaps.fr
-   * Doc : https://wiki.openstreetmap.org/wiki/OpenHikingMap
-   */
-  class OpenHikingMap extends OpenStreetMap {
-    constructor() {
-      super({
-        url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
-        maxZoom: 18,
-
-        attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
-        legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
+        ...options, // Include key
       });
     }
   }
@@ -76696,7 +76663,6 @@
   class Kompass extends OpenStreetMap { // Austria
     constructor(options = {}) {
       super({
-        hidden: !options.key && options.subLayer !== 'osm', // For LayerSwitcher
         url: options.key ?
           'https://map{1-4}.kompass.de/{z}/{x}/{y}/kompass_' + options.subLayer + '?key=' + options.key : // Specific
           'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
@@ -76706,27 +76672,6 @@
         legend: 'https://www.outdooractive.com/fr/knowledgepage/carte-kompass/43778568/#5',
 
         ...options,
-      });
-    }
-  }
-
-  /**
-   * OSM originated maps
-   * Doc : https://www.thunderforest.com/maps/
-   * Key : https://manage.thunderforest.com/dashboard
-   */
-  class Thunderforest extends OpenStreetMap {
-    constructor(options = {}) {
-      super({
-        hidden: !options.key, // For LayerSwitcher
-        url: 'https://{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
-        maxZoom: 22,
-        // subLayer: 'outdoors', ...
-        // key: '...',
-
-        attribution: 'https://www.thunderforest.com/,Thunderforest',
-
-        ...options, // Include key
       });
     }
   }
@@ -76779,9 +76724,10 @@
 
   class IGNtop25 extends IGN {
     constructor(options) {
-
       super({
+        hidden: !options.key, // For LayerSwitcher
         layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
+
         legend: 'https://geoservices.ign.fr/sites/default/files/2021-07/DC_SCAN25_3-1.pdf',
 
         ...options,
@@ -76791,10 +76737,10 @@
 
   class IGNplan extends IGN {
     constructor(options) {
-
       super({
         layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
         format: 'image/png',
+
         legend: 'https://geoservices.ign.fr/sites/default/files/2021-07/DC_Plan_IGN.pdf',
 
         ...options,
@@ -76852,6 +76798,24 @@
   }
 
   /**
+   * Virtual class to factorise XYZ layers classes
+   */
+  class layerXYZ extends TileLayer {
+    constructor(options) {
+      super({
+        hidden: !options.key, // For LayerSwitcher
+        source: new XYZ({
+          attributions: makeAttributions(options),
+
+          ...options,
+        }),
+
+        ...options,
+      });
+    }
+  }
+
+  /**
    * Spain IGN
    * Map : https://www.ign.es/iberpix/visor
    * API : https://api-maps.ign.es/
@@ -76862,6 +76826,7 @@
         host: 'https://www.ign.es/wmts/',
         server: 'mapa-raster',
         subLayer: 'MTN',
+        key: '#na',
         maxZoom: 20,
 
         attribution: 'https://www.ign.es/,Instituto Geográfico Nacional',
@@ -76893,6 +76858,7 @@
       super({
         source: new TileWMS({
           url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it', // Not available via https
+
           attributions: '&copy <a href="https://gn.mase.gov.it/">IGM</a>',
         }),
 
@@ -76932,7 +76898,6 @@
   class OS extends layerXYZ {
     constructor(opt) {
       const options = {
-        hidden: !opt.key, // For LayerSwitcher
         subLayer: 'Outdoor_3857',
         minZoom: 7,
         maxZoom: 16,
@@ -76965,6 +76930,7 @@
     constructor(opt) {
       const options = {
         host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
+        key: '#na',
         subLayer: 'World_Imagery',
         maxZoom: 19,
 
@@ -76987,7 +76953,6 @@
   class Maxbox extends layerXYZ {
     constructor(options = {}) {
       super({
-        hidden: !options.key, // For LayerSwitcher
         url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
         // No maxZoom
 
@@ -77003,6 +76968,7 @@
     constructor(opt) {
       const options = {
         subLayers: 'p', // Terrain
+        key: '#na',
         maxZoom: 22,
 
         attribution: 'https://www.google.com/maps,Google',
@@ -77024,12 +76990,13 @@
    * Key : https://www.bingmapsportal.com/
    */
   let Bing$1 = class Bing extends TileLayer {
+    //TODO https://blogs.bing.com/maps/2025-06/Bing-Maps-for-Enterprise-Basic-Account-shutdown-June-30,2025
     constructor(options = {}) {
       super({
         hidden: !options.key, // For LayerSwitcher
         imagerySet: 'Road',
-        // Mandatory 'key',
         // No explicit zoom
+
         // attributions, defined by ol.source.BingMaps
 
         ...options,
@@ -77052,7 +77019,9 @@
     constructor(options) {
       super({
         source: new StadiaMaps({
+          key: '#na',
           layer: 'stamen_watercolor', // Default
+
           // attributions: defined by ol.source.StadiaMaps
 
           ...options,
@@ -77071,6 +77040,8 @@
     constructor(options) {
       super({
         url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        key: '#na',
+
         attribution: 'https://carto.com/attribution/,CartoDB',
 
         ...options,
@@ -77085,6 +77056,8 @@
     constructor(options) {
       super({
         url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
+        key: '#na',
+
         attributions: 'No tile',
 
         ...options,
@@ -77102,7 +77075,6 @@
   class MapboxElevation extends Maxbox {
     constructor(options = {}) {
       super({
-        hidden: !options.key, // For LayerSwitcher
         ...options,
         tileset: 'mapbox.terrain-rgb',
       });
@@ -77110,39 +77082,54 @@
   }
 
   /**
-   * RGB elevation (MapTiler)
-   * Doc: https://cloud.maptiler.com/tiles/terrain-rgb-v2/
-   * Doc: https://documentation.maptiler.com/hc/en-us/articles/4405444055313-RGB-Terrain-by-MapTiler
-   * elevation = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1
-   * Key : https://cloud.maptiler.com/account/keys/
-   */
-  /*// Backup of Maxbox elevation
-  export class MapTilerElevation extends layerXYZ {
-    constructor(options = {}) {
-      super({
-        hidden: !options.key, // For LayerSwitcher
-        url: 'https://api.maptiler.com/tiles/terrain-rgb/{z}/{x}/{y}.png?key=' + options.key,
-        maxZoom: 12,
-  	  
-        ...options,
-      });
-    }
-  }*/
-
-  /**
    * Tile layers examples
    */
+  // Carte refuges.info
   function wriNavLayers(options = {}) {
     return {
-      // Carte refuges.info
-      'OpenHikingMap': new OpenHikingMap(),
-      'OpenStreetMap': new OpenStreetMap(),
-      'OpenTopoMap': new OpenTopoMap(),
-      'Outdoors': new Thunderforest({
-        key: options.thunderforest, // For simplified options
-        ...options.thunderforest, // Include key
-        subLayer: 'outdoors',
-        legend: '',
+      'OpenHikingMap': new TileLayer({
+        source: new OSM({
+          url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
+          maxZoom: 18,
+          attributions: makeAttributions({
+            contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
+            attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
+            legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
+          }),
+        }),
+      }),
+      'OpenStreetMap': new TileLayer({
+        source: new OSM({
+          url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          maxZoom: 19,
+          attributions: makeAttributions({
+            contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
+            legend: 'https://www.openstreetmap.org/panes/legend',
+          }),
+        }),
+      }),
+      'OpenTopoMap': new TileLayer({
+        source: new OSM({
+          url: 'https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png',
+          maxZoom: 17,
+          attributions: makeAttributions({
+            contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
+            attribution: 'https://github.com/sletuffe/OpenTopoMap/,OpenTopoMap-R',
+            licence: 'https://creativecommons.org/licenses/by-sa/3.0/,CC-BY-SA',
+            legend: 'https://www.geograph.org/leaflet/otm-legend.php',
+          }),
+        }),
+      }),
+      'Outdoors': new TileLayer({
+        hidden: !options.thunderforest, // For LayerSwitcher
+        source: new OSM({
+          url: 'https://{a-c}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=' + options.thunderforest,
+          maxZoom: 22,
+          attributions: makeAttributions({
+            contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
+            attribution: 'https://www.thunderforest.com/,Thunderforest',
+          }),
+        }),
       }),
 
       'IGN TOP25': new IGNtop25({
@@ -77364,14 +77351,13 @@
     Maxbox: Maxbox,
     NoTile: NoTile,
     OS: OS,
-    OpenHikingMap: OpenHikingMap,
     OpenStreetMap: OpenStreetMap,
-    OpenTopoMap: OpenTopoMap,
     Stamen: Stamen,
     SwissTopo: SwissTopo,
     Thunderforest: Thunderforest,
     collection: collection$2,
     examples: examples,
+    layerXYZ: layerXYZ,
     wriNavLayers: wriNavLayers
   });
 
@@ -79467,463 +79453,6 @@
   };
 
   /**
-   * VectorEditor layer to edit GeoJSON lines & polygons
-   */
-
-
-  class VectorEditor extends VectorLayer {
-    constructor(opt) {
-      const options = {
-        geoJsonId: 'geojson',
-        format: new GeoJSON(),
-        dataProjection: 'EPSG:4326',
-        featureProjection: 'EPSG:3857',
-        decimals: 5, //Output precision
-        tolerance: 7, // Px
-        // direction: false, // Add arrows to each line segment to show the direction
-        // canMerge: false, // Merge lines having a common end
-        // withPolys: false, // Can edit polygons
-        // withHoles: false, // Allow holes in polygons
-        // baseStyleOptions: {},
-        // selectedStyleOptions: {},
-
-        writeGeoJson: () => // writeGeoJson (features, lines, polys, options)
-          this.options.format.writeFeatures(
-            this.editedSource.getFeatures(),
-            this.options,
-          ),
-
-        ...opt,
-      };
-
-      // Read data in an html element
-      const geoJsonEl = document.getElementById(options.geoJsonId) ||
-        document.createElement('textarea'),
-        geoJson = geoJsonEl.value.trim() ||
-        geoJsonEl.innerHTML.trim() ||
-        '{"type":"FeatureCollection","features":[]}';
-
-      // The editor source
-      const editedSource = new VectorSource({
-        features: options.format.readFeatures(geoJson, options),
-        wrapX: false,
-
-        ...options,
-      });
-
-      // The editor layer
-      super({
-        source: editedSource,
-        zIndex: 400, // Editor & cursor above the features
-        style: new Style({
-          stroke: new Stroke({
-            color: 'blue',
-            width: 2,
-          }),
-          fill: new Fill({
-            color: 'rgba(0,0,255,0.2)',
-          }),
-
-          ...options.baseStyleOptions,
-        }),
-
-        ...options,
-      });
-
-      this.options = options;
-      this.geoJsonEl = geoJsonEl;
-      this.editedSource = editedSource;
-      this.snapSource = new VectorSource({});
-    } // End constructor
-
-    setMapInternal(map) {
-      super.setMapInternal(map);
-      this.map = map;
-
-      // Interactions
-      this.selectInteraction = new Select({
-        hitTolerance: this.options.tolerance, // Default is 0
-        toggleCondition: never, // No deselection on shift click
-        filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
-        style: (f, r) => this.selectStyles(f, r),
-      });
-
-      this.modifyInteraction = new Modify({
-        features: this.selectInteraction.getFeatures(),
-        pixelTolerance: this.options.tolerance, // Default is 10
-      });
-
-      if (this.options.withPolys)
-        this.drawPolyInteraction = new Draw({ // Draw line
-          type: 'Polygon',
-          source: this.editedSource,
-          traceSource: this.snapSource,
-          trace: true,
-          stopClick: true, // Avoid zoom when finish drawing by doubleclick
-          style: f => this.selectStyles(f),
-        });
-
-      this.drawLineInteraction = new Draw({ // Draw line
-        type: 'LineString',
-        source: this.editedSource,
-        traceSource: this.snapSource,
-        trace: true,
-        stopClick: true, // Avoid zoom when finish drawing by doubleclick
-        style: f => this.selectStyles(f),
-      });
-
-      this.snapInteraction = new Snap({
-        source: this.editedSource,
-        pixelTolerance: this.options.tolerance, // Default is 10
-      });
-
-      // Buttons
-      const buttonsName = this.options.withPolys ? ['modify', 'drawPoly', 'drawLine'] : ['modify', 'drawLine'];
-
-      buttonsName.forEach(intName => {
-        const buttonEl = document.createElement('button'),
-          element = document.createElement('div');
-
-        buttonEl.setAttribute('type', 'button');
-        element.className = 'ol-unselectable ol-control edit-button edit-button-' + intName;
-        element.appendChild(buttonEl);
-
-        const helpEl = document.getElementById('edit-help-' + intName);
-        if (helpEl)
-          element.appendChild(helpEl);
-
-        buttonEl.addEventListener('click', () => this.restartInteractions(intName));
-
-        // Add the button to the map
-        map.addControl(new Control({
-          element: element,
-        }));
-      });
-
-      // Interactions listeners
-      this.selectInteraction.on('select', () => this.optimiseAndSave()); // Merge old separated segments
-
-      this.modifyInteraction.on('modifystart', evt => {
-        const oEvt = evt.mapBrowserEvent.originalEvent,
-          selectedFeature = this.selectInteraction.getFeatures().item(0),
-          coordinates = selectedFeature.getGeometry().getCoordinates();
-
-        // Shift + click : reverse line direction
-        if (oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey &&
-          typeof coordinates[0][0] === 'number') {
-          this.editedSource.removeFeature(selectedFeature);
-
-          this.editedSource.addFeature(new Feature({
-            geometry: new LineString(coordinates.reverse()),
-          }));
-        }
-
-        // Ctrl+Alt+click on segment : delete the line or poly
-        if (!oEvt.shiftKey && oEvt.ctrlKey && oEvt.altKey)
-          this.editedSource.removeFeature(selectedFeature);
-      });
-
-      this.editedSource.on('addfeature', () => {
-        this.optimiseAndSave();
-        this.restartInteractions('modify');
-      });
-
-      this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
-
-      // At init
-      this.map.once('loadend', () => {
-        this.coordinate = this.map.getView().getCenter();
-
-        this.optimiseAndSave();
-        this.restartInteractions('modify');
-      });
-
-      map.on('pointermove', evt => {
-        this.coordinate = evt.coordinate;
-
-        // Change pointer if a feature is hovered
-        const selectedFeatures = this.selectInteraction.getFeatures();
-
-        this.map.getTargetElement().classList.remove('edit-pointed');
-        if (selectedFeatures.getLength()) {
-          this.map.forEachFeatureAtPixel(
-            evt.pixel,
-            feature => {
-              if (feature !== selectedFeatures.item(0))
-                this.map.getTargetElement().classList.add('edit-pointed');
-            }, {
-              layerFilter: (layer) => layer.getSource() === this.editedSource, // Only the edited layer
-              hitTolerance: this.options.tolerance, // Default is 0
-            },
-          );
-        }
-      });
-
-      map.on('click', evt => {
-        const oEvt = evt.originalEvent;
-
-        if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey)
-          this.optimiseAndSave(
-            this.snapInteraction.snapTo(
-              evt.pixel,
-              evt.coordinate,
-              map,
-            ).vertex
-          );
-      });
-    } // End setMapInternal
-
-    restartInteractions(intName) {
-      const interactionName = this.options.withPolys ? ['select', 'modify', 'drawPoly', 'drawLine', 'snap'] : ['select', 'modify', 'drawLine', 'snap'];
-
-      interactionName.forEach(i =>
-        this.map.removeInteraction(this[i + 'Interaction'])
-      );
-
-      if (intName === 'modify')
-        this.map.addInteraction(this.selectInteraction);
-
-      this.map.addInteraction(this[intName + 'Interaction']);
-      this.map.addInteraction(this.snapInteraction); // Must be added after the others
-
-      this.map.getTargetElement().firstChild.className = 'ol-viewport edit-view-' + intName;
-
-      // For snap & traceSource : register again the full list of features as addFeature manages already registered
-      this.snapSource.clear();
-      this.map.getLayers().forEach(layer => {
-        if (layer.getSource() !== this.editedSource &&
-          layer.getSource() &&
-          layer.getSource().getFeatures) // Vector layers only
-          layer.getSource().getFeatures().forEach(feature => {
-            this.snapInteraction.addFeature(feature);
-            this.snapSource.addFeature(feature);
-          });
-      });
-    }
-
-    optimiseAndSave(splitCord) {
-      if (!this.semaphore) { // Avoid recursion when adding the features
-        this.semaphore = true;
-
-        // Get optimized coords
-        const editedFeatures = this.editedSource.getFeatures(), // Get edited features
-          coordinates = editedFeatures.map(
-            f => this.flatFeatures(f.getGeometry()) // Get flat coordinates
-          ),
-          // Get all edited features as array of lines coordinates
-          lines = this.flatCoord(coordinates, splitCord),
-          polys = [];
-
-        // Merge lines having a common end
-        if (this.options.canMerge)
-          for (const a in lines) {
-            for (let b = 0; b < a; b++) { // Once each combination
-              if (lines[b]) {
-                const m = [a, b];
-
-                for (let i = 4; i; i--) // 4 times
-                  if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
-                    // Shake lines end to explore all possibilities
-                    m.reverse();
-                    lines[m[0]].reverse();
-
-                    // Merge 2 lines having 2 ends in common
-                    if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0], splitCord)) {
-                      lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
-                      delete lines[m[1]]; // Remove the line but don't renumber the array keys
-                    }
-                  }
-              }
-            }
-          }
-
-        // Make polygons with looped lines
-        if (this.options.withPolys)
-          for (const a in lines)
-            if (this.compareCoords(lines[a]) && // If this line is closed
-              !this.compareCoords(splitCord, lines[a][0])) { // Except if we just split it
-              polys.push([lines[a]]); // Add the polygon
-              delete lines[a]; // Forget the line
-            }
-
-        // Makes holes if a polygon is included in a biggest one
-        if (this.options.withHoles)
-          for (const p1 in polys) { // Explore all Polygons combinaison
-            const fs = new Polygon(polys[p1]);
-
-            for (const p2 in polys)
-              if (polys[p2] && p1 !== p2) {
-                let intersects = true;
-
-                for (const c in polys[p2][0])
-                  if (!fs.intersectsCoordinate(polys[p2][0][c]))
-                    intersects = false;
-
-                if (intersects) { // If one intersects a bigger
-                  polys[p1].push(polys[p2][0]); // Include the smaler in the bigger
-                  delete polys[p2]; // Forget the smaller
-                }
-              }
-          }
-
-        // Recreate features
-        this.editedSource.clear();
-        lines.forEach(l => {
-          this.editedSource.addFeature(new Feature({
-            geometry: new LineString(l),
-          }));
-        });
-        polys.forEach(p => {
-          this.editedSource.addFeature(new Feature({
-            geometry: new Polygon(p),
-          }));
-        });
-
-        // Save geometries in <EL> as geoJSON at every change
-        if (this.geoJsonEl)
-          this.geoJsonEl.value = this.options.writeGeoJson(
-            this.editedSource.getFeatures(),
-            lines.filter(Boolean),
-            polys.filter(Boolean),
-            this.options,
-          ).replaceAll(',"properties":null', '');
-
-        // Select the feature closest to the mouse position
-        //TODO do it also when loading a file
-        const selectedFeatures = this.selectInteraction.getFeatures();
-
-        if (this.editedSource.getFeatures().length) {
-          selectedFeatures.clear();
-          selectedFeatures.push(
-            this.editedSource.getClosestFeatureToCoordinate(this.coordinate)
-          );
-        }
-        delete this.semaphore;
-      }
-    } // End optimiseAndSave
-
-    flatFeatures(geom) {
-      if (geom.getType().match(/collection/iu)) // Recurse Collections
-        return geom.getGeometries().map(g => this.flatFeatures(g));
-      return geom.getCoordinates();
-    }
-
-    // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
-    flatCoord(coords, splitCord) {
-      const lines = [];
-
-      coords.forEach(segmentCoords => {
-        if (typeof segmentCoords[0] === 'object') {
-          if (typeof segmentCoords[0][0] === 'object') // Recurse for multi* or polys
-            lines.push(...this.flatCoord(segmentCoords, splitCord));
-          else if (typeof segmentCoords[0][0] === 'number') { // Lines
-            if (splitCord) {
-              lines.push([]);
-              segmentCoords.forEach(p => {
-                lines[lines.length - 1].push(p);
-                // Split segments if required
-                if (this.compareCoords(splitCord, p))
-                  lines.push([p]);
-              });
-            } else
-              lines.push(segmentCoords);
-          }
-        }
-      });
-
-      return lines;
-    }
-
-    compareCoords(a, b, splitCord) {
-      if (!a) return false;
-      if (this.compareCoords(splitCord, a)) return false; // Except if we just split it
-      if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
-      return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
-    }
-
-    // Style to color selected features with arrows, begin & end points
-    selectStyles(feature, resolution) {
-      const geometry = feature.getGeometry(),
-
-        selectedStyleOptions = {
-          // Lines
-          stroke: new Stroke({
-            color: 'red',
-            width: 2,
-          }),
-          // Polygons
-          fill: new Fill({
-            color: 'rgba(255,0,0,0.2)',
-          }),
-          // Begin & end marker
-          radius: 3,
-
-          ...this.options.selectedStyleOptions,
-        },
-
-        circle = new CircleStyle(selectedStyleOptions),
-
-        featureStyles = [
-          new Style({
-            // Line & Poly
-            ...selectedStyleOptions,
-            // Draw marker
-            image: circle,
-          }),
-        ];
-
-      // Circle at the ends of the line
-      if (geometry.getCoordinates) {
-        const coordinates = geometry.getCoordinates(),
-          circlesCoords = [coordinates[0]];
-
-        if (!this.options.direction)
-          circlesCoords.push(coordinates[coordinates.length - 1]);
-
-        circlesCoords.forEach(cc => {
-          featureStyles.push(
-            new Style({
-              geometry: new Point$1(cc),
-              image: circle,
-            }),
-          );
-        });
-      }
-
-      // Arrows to show the line direction
-      if (this.options.direction && geometry.forEachSegment && resolution) {
-        let last = null;
-
-        geometry.forEachSegment((start, end) => {
-          if (!last) last = start;
-
-          const dx = end[0] - last[0],
-            dy = end[1] - last[1];
-
-          if (Math.abs(dx) + Math.abs(dy) > resolution * 50) {
-            last = end;
-            featureStyles.push(
-              new Style({
-                geometry: new Point$1(end),
-                image: new Icon({
-                  rotateWithView: true,
-                  rotation: -Math.atan2(dy, dx),
-                  src: 'data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
-<path stroke="red" d="M0 0 4 3 M4 3 0 6" />\
-</svg>',
-                }),
-              }),
-            );
-          }
-        });
-      }
-
-      return featureStyles;
-    };
-  }
-
-  /**
    * Hover & click management
    * Display the hovered feature with the hover style
    * Go to the link property when click a feature
@@ -80043,6 +79572,55 @@
       map.lastHoveredSubFeature = hoveredSubFeature;
     }
   }
+
+  /**
+   * Strategy for loading elements based on fixed tile grid
+   * Following layer option
+       tiledBBoxStrategy: {
+         1000: 10, // tilesize = 1000 Mercator unit up to resolution = 10 meters per pixel
+       },
+   */
+  function tiledBboxStrategy(extent, resolution) {
+    //TODO BUG obsolescence de toutes les tuiles après 1 modif: pb hors ligne
+    /* eslint-disable-next-line consistent-this, no-invalid-this */
+    const layer = this,
+      tsur = layer.options.tiledBBoxStrategy || {},
+      found = Object.keys(tsur).find(k => tsur[k] > resolution),
+      tileSize = parseInt(found, 10),
+      tiledExtent = [];
+
+    if (typeof found === 'undefined')
+      return [extent]; // Fall back to bbox strategy
+
+    for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
+      for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
+        tiledExtent.push([
+          Math.round(lon * tileSize),
+          Math.round(lat * tileSize),
+          Math.round(lon * tileSize + tileSize),
+          Math.round(lat * tileSize + tileSize),
+        ]);
+
+    if (layer.options.debug) {
+      layer.logs = {
+        tileSize: Math.round(tileSize / 1414) + '*' + Math.round(tileSize / 1414) + 'km',
+        isCluster: resolution > layer.options.serverClusterMinResolution,
+      };
+      console.info(
+        'Request ' + tiledExtent.length +
+        ' tile' + (tiledExtent.length > 1 ? 's ' : ' ') +
+        layer.logs.tileSize + ' for ' +
+        Math.round(resolution) + 'm/px resolution '
+      );
+    }
+
+    return tiledExtent;
+  }
+
+  var myLoadingStrategy = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    tiledBboxStrategy: tiledBboxStrategy
+  });
 
   function globals (defs) {
     defs('EPSG:4326', '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees');
@@ -90656,50 +90234,6 @@
 
 
   /**
-   * Strategy for loading elements based on fixed tile grid
-   * Following layer option
-       tiledBBoxStrategy: {
-         1000: 10, // tilesize = 1000 Mercator unit up to resolution = 10 meters per pixel
-       },
-   */
-  function tiledBboxStrategy(extent, resolution) {
-    //TODO BUG obsolescence de toutes les tuiles après 1 modif: pb hors ligne
-    /* eslint-disable-next-line consistent-this, no-invalid-this */
-    const layer = this,
-      tsur = layer.options.tiledBBoxStrategy || {},
-      found = Object.keys(tsur).find(k => tsur[k] > resolution),
-      tileSize = parseInt(found, 10),
-      tiledExtent = [];
-
-    if (typeof found === 'undefined')
-      return [extent]; // Fall back to bbox strategy
-
-    for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
-      for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
-        tiledExtent.push([
-          Math.round(lon * tileSize),
-          Math.round(lat * tileSize),
-          Math.round(lon * tileSize + tileSize),
-          Math.round(lat * tileSize + tileSize),
-        ]);
-
-    if (layer.options.debug) {
-      layer.logs = {
-        tileSize: Math.round(tileSize / 1414) + '*' + Math.round(tileSize / 1414) + 'km',
-        isCluster: resolution > layer.options.serverClusterMinResolution,
-      };
-      console.info(
-        'Request ' + tiledExtent.length +
-        ' tile' + (tiledExtent.length > 1 ? 's ' : ' ') +
-        layer.logs.tileSize + ' for ' +
-        Math.round(resolution) + 'm/px resolution '
-      );
-    }
-
-    return tiledExtent;
-  }
-
-  /**
    * GeoJSON vector display &
    * loading status display
    */
@@ -90730,6 +90264,7 @@
 
       // Compute properties when the layer is loaded & before the cluster layer is computed
       this.on('change', () => {
+        this.logs ??= {};
         if (this.options.debug)
           console.info(
             'Receive 1 tile ' +
@@ -90979,7 +90514,7 @@
     constructor(opt) {
       const options = {
         // host: '',
-        strategy: tiledBboxStrategy,
+        strategy: bbox,
         dataProjection: 'EPSG:4326',
 
         // Clusters:
@@ -91079,6 +90614,463 @@
     reload() {
       return super.reload(this.selector.getSelection().length > 0);
     }
+  }
+
+  /**
+   * VectorEditor layer to edit GeoJSON lines & polygons
+   */
+
+
+  class VectorEditor extends VectorLayer {
+    constructor(opt) {
+      const options = {
+        geoJsonId: 'geojson',
+        format: new GeoJSON(),
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+        decimals: 5, //Output precision
+        tolerance: 7, // Px
+        // direction: false, // Add arrows to each line segment to show the direction
+        // canMerge: false, // Merge lines having a common end
+        // withPolys: false, // Can edit polygons
+        // withHoles: false, // Allow holes in polygons
+        // baseStyleOptions: {},
+        // selectedStyleOptions: {},
+
+        writeGeoJson: () => // writeGeoJson (features, lines, polys, options)
+          this.options.format.writeFeatures(
+            this.editedSource.getFeatures(),
+            this.options,
+          ),
+
+        ...opt,
+      };
+
+      // Read data in an html element
+      const geoJsonEl = document.getElementById(options.geoJsonId) ||
+        document.createElement('textarea'),
+        geoJson = geoJsonEl.value.trim() ||
+        geoJsonEl.innerHTML.trim() ||
+        '{"type":"FeatureCollection","features":[]}';
+
+      // The editor source
+      const editedSource = new VectorSource({
+        features: options.format.readFeatures(geoJson, options),
+        wrapX: false,
+
+        ...options,
+      });
+
+      // The editor layer
+      super({
+        source: editedSource,
+        zIndex: 400, // Editor & cursor above the features
+        style: new Style({
+          stroke: new Stroke({
+            color: 'blue',
+            width: 2,
+          }),
+          fill: new Fill({
+            color: 'rgba(0,0,255,0.2)',
+          }),
+
+          ...options.baseStyleOptions,
+        }),
+
+        ...options,
+      });
+
+      this.options = options;
+      this.geoJsonEl = geoJsonEl;
+      this.editedSource = editedSource;
+      this.snapSource = new VectorSource({});
+    } // End constructor
+
+    setMapInternal(map) {
+      super.setMapInternal(map);
+      this.map = map;
+
+      // Interactions
+      this.selectInteraction = new Select({
+        hitTolerance: this.options.tolerance, // Default is 0
+        toggleCondition: never, // No deselection on shift click
+        filter: (f, layer) => layer && (layer.getSource() === this.editedSource),
+        style: (f, r) => this.selectStyles(f, r),
+      });
+
+      this.modifyInteraction = new Modify({
+        features: this.selectInteraction.getFeatures(),
+        pixelTolerance: this.options.tolerance, // Default is 10
+      });
+
+      if (this.options.withPolys)
+        this.drawPolyInteraction = new Draw({ // Draw line
+          type: 'Polygon',
+          source: this.editedSource,
+          traceSource: this.snapSource,
+          trace: true,
+          stopClick: true, // Avoid zoom when finish drawing by doubleclick
+          style: f => this.selectStyles(f),
+        });
+
+      this.drawLineInteraction = new Draw({ // Draw line
+        type: 'LineString',
+        source: this.editedSource,
+        traceSource: this.snapSource,
+        trace: true,
+        stopClick: true, // Avoid zoom when finish drawing by doubleclick
+        style: f => this.selectStyles(f),
+      });
+
+      this.snapInteraction = new Snap({
+        source: this.editedSource,
+        pixelTolerance: this.options.tolerance, // Default is 10
+      });
+
+      // Buttons
+      const buttonsName = this.options.withPolys ? ['modify', 'drawPoly', 'drawLine'] : ['modify', 'drawLine'];
+
+      buttonsName.forEach(intName => {
+        const buttonEl = document.createElement('button'),
+          element = document.createElement('div');
+
+        buttonEl.setAttribute('type', 'button');
+        element.className = 'ol-unselectable ol-control edit-button edit-button-' + intName;
+        element.appendChild(buttonEl);
+
+        const helpEl = document.getElementById('edit-help-' + intName);
+        if (helpEl)
+          element.appendChild(helpEl);
+
+        buttonEl.addEventListener('click', () => this.restartInteractions(intName));
+
+        // Add the button to the map
+        map.addControl(new Control({
+          element: element,
+        }));
+      });
+
+      // Interactions listeners
+      this.selectInteraction.on('select', () => this.optimiseAndSave()); // Merge old separated segments
+
+      this.modifyInteraction.on('modifystart', evt => {
+        const oEvt = evt.mapBrowserEvent.originalEvent,
+          selectedFeature = this.selectInteraction.getFeatures().item(0),
+          coordinates = selectedFeature.getGeometry().getCoordinates();
+
+        // Shift + click : reverse line direction
+        if (oEvt.shiftKey && !oEvt.ctrlKey && !oEvt.altKey &&
+          typeof coordinates[0][0] === 'number') {
+          this.editedSource.removeFeature(selectedFeature);
+
+          this.editedSource.addFeature(new Feature({
+            geometry: new LineString(coordinates.reverse()),
+          }));
+        }
+
+        // Ctrl+Alt+click on segment : delete the line or poly
+        if (!oEvt.shiftKey && oEvt.ctrlKey && oEvt.altKey)
+          this.editedSource.removeFeature(selectedFeature);
+      });
+
+      this.editedSource.on('addfeature', () => {
+        this.optimiseAndSave();
+        this.restartInteractions('modify');
+      });
+
+      this.modifyInteraction.on('modifyend', () => this.optimiseAndSave());
+
+      // At init
+      this.map.once('loadend', () => {
+        this.coordinate = this.map.getView().getCenter();
+
+        this.optimiseAndSave();
+        this.restartInteractions('modify');
+      });
+
+      map.on('pointermove', evt => {
+        this.coordinate = evt.coordinate;
+
+        // Change pointer if a feature is hovered
+        const selectedFeatures = this.selectInteraction.getFeatures();
+
+        this.map.getTargetElement().classList.remove('edit-pointed');
+        if (selectedFeatures.getLength()) {
+          this.map.forEachFeatureAtPixel(
+            evt.pixel,
+            feature => {
+              if (feature !== selectedFeatures.item(0))
+                this.map.getTargetElement().classList.add('edit-pointed');
+            }, {
+              layerFilter: (layer) => layer.getSource() === this.editedSource, // Only the edited layer
+              hitTolerance: this.options.tolerance, // Default is 0
+            },
+          );
+        }
+      });
+
+      map.on('click', evt => {
+        const oEvt = evt.originalEvent;
+
+        if (!oEvt.shiftKey && oEvt.ctrlKey && !oEvt.altKey)
+          this.optimiseAndSave(
+            this.snapInteraction.snapTo(
+              evt.pixel,
+              evt.coordinate,
+              map,
+            ).vertex
+          );
+      });
+    } // End setMapInternal
+
+    restartInteractions(intName) {
+      const interactionName = this.options.withPolys ? ['select', 'modify', 'drawPoly', 'drawLine', 'snap'] : ['select', 'modify', 'drawLine', 'snap'];
+
+      interactionName.forEach(i =>
+        this.map.removeInteraction(this[i + 'Interaction'])
+      );
+
+      if (intName === 'modify')
+        this.map.addInteraction(this.selectInteraction);
+
+      this.map.addInteraction(this[intName + 'Interaction']);
+      this.map.addInteraction(this.snapInteraction); // Must be added after the others
+
+      this.map.getTargetElement().firstChild.className = 'ol-viewport edit-view-' + intName;
+
+      // For snap & traceSource : register again the full list of features as addFeature manages already registered
+      this.snapSource.clear();
+      this.map.getLayers().forEach(layer => {
+        if (layer.getSource() !== this.editedSource &&
+          layer.getSource() &&
+          layer.getSource().getFeatures) // Vector layers only
+          layer.getSource().getFeatures().forEach(feature => {
+            this.snapInteraction.addFeature(feature);
+            this.snapSource.addFeature(feature);
+          });
+      });
+    }
+
+    optimiseAndSave(splitCord) {
+      if (!this.semaphore) { // Avoid recursion when adding the features
+        this.semaphore = true;
+
+        // Get optimized coords
+        const editedFeatures = this.editedSource.getFeatures(), // Get edited features
+          coordinates = editedFeatures.map(
+            f => this.flatFeatures(f.getGeometry()) // Get flat coordinates
+          ),
+          // Get all edited features as array of lines coordinates
+          lines = this.flatCoord(coordinates, splitCord),
+          polys = [];
+
+        // Merge lines having a common end
+        if (this.options.canMerge)
+          for (const a in lines) {
+            for (let b = 0; b < a; b++) { // Once each combination
+              if (lines[b]) {
+                const m = [a, b];
+
+                for (let i = 4; i; i--) // 4 times
+                  if (lines[m[0]] && lines[m[1]]) { // Test if the line has been removed
+                    // Shake lines end to explore all possibilities
+                    m.reverse();
+                    lines[m[0]].reverse();
+
+                    // Merge 2 lines having 2 ends in common
+                    if (this.compareCoords(lines[m[0]][lines[m[0]].length - 1], lines[m[1]][0], splitCord)) {
+                      lines[m[0]] = lines[m[0]].concat(lines[m[1]].slice(1)).reverse();
+                      delete lines[m[1]]; // Remove the line but don't renumber the array keys
+                    }
+                  }
+              }
+            }
+          }
+
+        // Make polygons with looped lines
+        if (this.options.withPolys)
+          for (const a in lines)
+            if (this.compareCoords(lines[a]) && // If this line is closed
+              !this.compareCoords(splitCord, lines[a][0])) { // Except if we just split it
+              polys.push([lines[a]]); // Add the polygon
+              delete lines[a]; // Forget the line
+            }
+
+        // Makes holes if a polygon is included in a biggest one
+        if (this.options.withHoles)
+          for (const p1 in polys) { // Explore all Polygons combinaison
+            const fs = new Polygon(polys[p1]);
+
+            for (const p2 in polys)
+              if (polys[p2] && p1 !== p2) {
+                let intersects = true;
+
+                for (const c in polys[p2][0])
+                  if (!fs.intersectsCoordinate(polys[p2][0][c]))
+                    intersects = false;
+
+                if (intersects) { // If one intersects a bigger
+                  polys[p1].push(polys[p2][0]); // Include the smaler in the bigger
+                  delete polys[p2]; // Forget the smaller
+                }
+              }
+          }
+
+        // Recreate features
+        this.editedSource.clear();
+        lines.forEach(l => {
+          this.editedSource.addFeature(new Feature({
+            geometry: new LineString(l),
+          }));
+        });
+        polys.forEach(p => {
+          this.editedSource.addFeature(new Feature({
+            geometry: new Polygon(p),
+          }));
+        });
+
+        // Save geometries in <EL> as geoJSON at every change
+        if (this.geoJsonEl)
+          this.geoJsonEl.value = this.options.writeGeoJson(
+            this.editedSource.getFeatures(),
+            lines.filter(Boolean),
+            polys.filter(Boolean),
+            this.options,
+          ).replaceAll(',"properties":null', '');
+
+        // Select the feature closest to the mouse position
+        //TODO do it also when loading a file
+        const selectedFeatures = this.selectInteraction.getFeatures();
+
+        if (this.editedSource.getFeatures().length) {
+          selectedFeatures.clear();
+          selectedFeatures.push(
+            this.editedSource.getClosestFeatureToCoordinate(this.coordinate)
+          );
+        }
+        delete this.semaphore;
+      }
+    } // End optimiseAndSave
+
+    flatFeatures(geom) {
+      if (geom.getType().match(/collection/iu)) // Recurse Collections
+        return geom.getGeometries().map(g => this.flatFeatures(g));
+      return geom.getCoordinates();
+    }
+
+    // Get all lines fragments (lines, polylines, polygons, multipolygons, hole polygons, ...) at the same level
+    flatCoord(coords, splitCord) {
+      const lines = [];
+
+      coords.forEach(segmentCoords => {
+        if (typeof segmentCoords[0] === 'object') {
+          if (typeof segmentCoords[0][0] === 'object') // Recurse for multi* or polys
+            lines.push(...this.flatCoord(segmentCoords, splitCord));
+          else if (typeof segmentCoords[0][0] === 'number') { // Lines
+            if (splitCord) {
+              lines.push([]);
+              segmentCoords.forEach(p => {
+                lines[lines.length - 1].push(p);
+                // Split segments if required
+                if (this.compareCoords(splitCord, p))
+                  lines.push([p]);
+              });
+            } else
+              lines.push(segmentCoords);
+          }
+        }
+      });
+
+      return lines;
+    }
+
+    compareCoords(a, b, splitCord) {
+      if (!a) return false;
+      if (this.compareCoords(splitCord, a)) return false; // Except if we just split it
+      if (!b) return this.compareCoords(a[0], a[a.length - 1]); // Compare start with end
+      return a[0] === b[0] && a[1] === b[1]; // 2 coordinates
+    }
+
+    // Style to color selected features with arrows, begin & end points
+    selectStyles(feature, resolution) {
+      const geometry = feature.getGeometry(),
+
+        selectedStyleOptions = {
+          // Lines
+          stroke: new Stroke({
+            color: 'red',
+            width: 2,
+          }),
+          // Polygons
+          fill: new Fill({
+            color: 'rgba(255,0,0,0.2)',
+          }),
+          // Begin & end marker
+          radius: 3,
+
+          ...this.options.selectedStyleOptions,
+        },
+
+        circle = new CircleStyle(selectedStyleOptions),
+
+        featureStyles = [
+          new Style({
+            // Line & Poly
+            ...selectedStyleOptions,
+            // Draw marker
+            image: circle,
+          }),
+        ];
+
+      // Circle at the ends of the line
+      if (geometry.getCoordinates) {
+        const coordinates = geometry.getCoordinates(),
+          circlesCoords = [coordinates[0]];
+
+        if (!this.options.direction)
+          circlesCoords.push(coordinates[coordinates.length - 1]);
+
+        circlesCoords.forEach(cc => {
+          featureStyles.push(
+            new Style({
+              geometry: new Point$1(cc),
+              image: circle,
+            }),
+          );
+        });
+      }
+
+      // Arrows to show the line direction
+      if (this.options.direction && geometry.forEachSegment && resolution) {
+        let last = null;
+
+        geometry.forEachSegment((start, end) => {
+          if (!last) last = start;
+
+          const dx = end[0] - last[0],
+            dy = end[1] - last[1];
+
+          if (Math.abs(dx) + Math.abs(dy) > resolution * 50) {
+            last = end;
+            featureStyles.push(
+              new Style({
+                geometry: new Point$1(end),
+                image: new Icon({
+                  rotateWithView: true,
+                  rotation: -Math.atan2(dy, dx),
+                  src: 'data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
+<path stroke="red" d="M0 0 4 3 M4 3 0 6" />\
+</svg>',
+                }),
+              }),
+            );
+          }
+        });
+      }
+
+      return featureStyles;
+    };
   }
 
   /**
@@ -91182,11 +91174,6 @@
         serverClusterMinResolution: 100, // (meters per pixel) resolution above which we ask clusters to the server
         nbMaxClusters: 108, // Number of clusters on the map display. Replace distance
         browserClusterMinResolution: 10, // (meters per pixel) resolution below which the browser no longer clusters
-        tiledBBoxStrategy: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
-          50000: 100, // tilesize = 10 000 Mercator units = 35 km until resolution = 100 meters per pixel
-          570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
-          14000000: Infinity, // tilesize = 10 000 km above
-        },
         // Any myol.layer.MyVectorLayer, ol.source.Vector options, ol.source.layer.Vector
 
         ...options,
@@ -91456,12 +91443,13 @@
 
   var layer = {
     BackgroundLayer: BackgroundLayer,
-    VectorEditor: VectorEditor,
     Hover: Hover,
+    myLoadingStrategy: myLoadingStrategy,
     Marker: Marker,
     MyVectorLayer: MyVectorLayer,
     Selector: Selector,
     tile: tileLayercollection,
+    VectorEditor: VectorEditor,
     vector: vectorLayerCollection,
   };
 
@@ -91470,7 +91458,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 11/11/2025 17:18:50';
+  const VERSION = '1.1.2.dev 15/11/2025 17:03:04';
 
   async function trace() {
     const data = [

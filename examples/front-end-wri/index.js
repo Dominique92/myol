@@ -4,7 +4,7 @@
 const serveurApi = 'https://www.refuges.info',
   nomPages = ['carte', 'point', 'nouvelles'];
 
-// Initialisation de la page lorsque l'URL principale est appelée ou l'ancre change 
+// Initialisation de la page lorsque l'URL principale est appelée ou l'ancre change
 function changePage() {
   const ancre = window.location.hash.replace('#', '').split('=');
 

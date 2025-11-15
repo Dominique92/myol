@@ -54,6 +54,7 @@ class MyVectorSource extends VectorSource {
 
     // Compute properties when the layer is loaded & before the cluster layer is computed
     this.on('change', () => {
+      this.logs ??= {};
       if (this.options.debug)
         console.info(
           'Receive 1 tile ' +

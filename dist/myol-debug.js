@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 15/11/2025 17:03:04 using npm run build from the src/... sources
+ * Built 15/11/2025 21:06:13 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -75379,192 +75379,6 @@
   }
 
   /**
-   * @module ol/source/StadiaMaps
-   */
-
-
-  /**
-   * @type {string}
-   */
-  const STADIA_ATTRIBUTION =
-    '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>';
-
-  /**
-   * @type {string}
-   */
-  const OMT_ATTRIBUTION =
-    '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a>';
-
-  /**
-   * @type {string}
-   */
-  const STAMEN_ATTRIBUTION =
-    '&copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a>';
-
-  /**
-   * @type {Object<string, {extension: string}>}
-   */
-  const LayerConfig = {
-    'stamen_terrain': {
-      extension: 'png',
-    },
-    'stamen_terrain_background': {
-      extension: 'png',
-    },
-    'stamen_terrain_labels': {
-      extension: 'png',
-    },
-    'stamen_terrain_lines': {
-      extension: 'png',
-    },
-    'stamen_toner_background': {
-      extension: 'png',
-    },
-    'stamen_toner': {
-      extension: 'png',
-    },
-    'stamen_toner_labels': {
-      extension: 'png',
-    },
-    'stamen_toner_lines': {
-      extension: 'png',
-    },
-    'stamen_toner_lite': {
-      extension: 'png',
-    },
-    'stamen_watercolor': {
-      extension: 'jpg',
-    },
-    'alidade_smooth': {
-      extension: 'png',
-    },
-    'alidade_smooth_dark': {
-      extension: 'png',
-    },
-    'alidade_satellite': {
-      extension: 'png',
-    },
-    'outdoors': {
-      extension: 'png',
-    },
-    'osm_bright': {
-      extension: 'png',
-    },
-  };
-
-  /**
-   * @type {Object<string, {minZoom: number, maxZoom: number, retina: boolean}>}
-   */
-  const ProviderConfig = {
-    'stamen_terrain': {
-      minZoom: 0,
-      maxZoom: 18,
-      retina: true,
-    },
-    'stamen_toner': {
-      minZoom: 0,
-      maxZoom: 20,
-      retina: true,
-    },
-    'stamen_watercolor': {
-      minZoom: 1,
-      maxZoom: 18,
-      retina: false,
-    },
-  };
-
-  /**
-   * @typedef {Object} Options
-   * @property {number} [cacheSize] Deprecated.  Use the cacheSize option on the layer instead.
-   * @property {boolean} [interpolate=true] Use interpolated values when resampling.  By default,
-   * linear interpolation is used when resampling.  Set to false to use the nearest neighbor instead.
-   * @property {string} layer Layer name. Valid values: `alidade_smooth`, `alidade_smooth_dark`, `outdoors`, `stamen_terrain`, `stamen_terrain_background`, `stamen_terrain_labels`, `stamen_terrain_lines`, `stamen_toner_background`, `stamen_toner`, `stamen_toner_labels`, `stamen_toner_lines`, `stamen_toner_lite`, `stamen_watercolor`, and `osm_bright`.
-   * @property {number} [minZoom] Minimum zoom.
-   * @property {number} [maxZoom] Maximum zoom.
-   * @property {number} [reprojectionErrorThreshold=0.5] Maximum allowed reprojection error (in pixels).
-   * Higher values can increase reprojection performance, but decrease precision.
-   * @property {import("../Tile.js").LoadFunction} [tileLoadFunction]
-   * Optional function to load a tile given a URL. The default is
-   * ```js
-   * function(imageTile, src) {
-   *   imageTile.getImage().src = src;
-   * };
-   * ```
-   * @property {number} [transition=250] Duration of the opacity transition for rendering.
-   * To disable the opacity transition, pass `transition: 0`.
-   * @property {string} [url] URL template. Must include `{x}`, `{y}` or `{-y}`, and `{z}` placeholders.
-   * @property {boolean} [wrapX=true] Whether to wrap the world horizontally.
-   * @property {number|import("../array.js").NearestDirectionFunction} [zDirection=0]
-   * Choose whether to use tiles with a higher or lower zoom level when between integer
-   * zoom levels. See {@link module:ol/tilegrid/TileGrid~TileGrid#getZForResolution}.
-   * @property {string} [apiKey] Stadia Maps API key. Not required for localhost or most public web deployments. See https://docs.stadiamaps.com/authentication/ for details.
-   * @property {boolean} [retina] Use retina tiles (if available; not available for Stamen Watercolor).
-   */
-
-  /**
-   * @classdesc
-   * Layer source for the Stadia Maps tile server.
-   * @api
-   */
-  class StadiaMaps extends XYZ {
-    /**
-     * @param {Options} options StadiaMaps options.
-     */
-    constructor(options) {
-      const i = options.layer.indexOf('-');
-      const provider = i == -1 ? options.layer : options.layer.slice(0, i);
-      const providerConfig = ProviderConfig[provider] || {
-        'minZoom': 0,
-        'maxZoom': 20,
-        'retina': true,
-      };
-
-      const layerConfig = LayerConfig[options.layer];
-      const query = options.apiKey ? '?api_key=' + options.apiKey : '';
-      const retina = providerConfig.retina && options.retina ? '@2x' : '';
-
-      const url =
-        options.url !== undefined
-          ? options.url
-          : 'https://tiles.stadiamaps.com/tiles/' +
-            options.layer +
-            '/{z}/{x}/{y}' +
-            retina +
-            '.' +
-            layerConfig.extension +
-            query;
-
-      const attributions = [STADIA_ATTRIBUTION, OMT_ATTRIBUTION, ATTRIBUTION];
-
-      if (options.layer.startsWith('stamen_')) {
-        attributions.splice(1, 0, STAMEN_ATTRIBUTION);
-      }
-
-      super({
-        attributions: attributions,
-        cacheSize: options.cacheSize,
-        crossOrigin: 'anonymous',
-        interpolate: options.interpolate,
-        maxZoom:
-          options.maxZoom !== undefined
-            ? options.maxZoom
-            : providerConfig.maxZoom,
-        minZoom:
-          options.minZoom !== undefined
-            ? options.minZoom
-            : providerConfig.minZoom,
-        reprojectionErrorThreshold: options.reprojectionErrorThreshold,
-        tileLoadFunction: options.tileLoadFunction,
-        transition: options.transition,
-        url: url,
-        tilePixelRatio: retina ? 2 : 1,
-        wrapX: options.wrapX,
-        zDirection: options.zDirection,
-      });
-    }
-  }
-
-  /**
    * @module ol/source/TileWMS
    */
 
@@ -76584,12 +76398,13 @@
    */
 
 
-  /* Makes the attributions chain from:
-   {
-     contribution: 'link,name',
-     attribution: 'link,name',
-     licence: 'link,name',
-     legend: 'link',
+  /**
+   * Build the attributions chain from:
+    {
+      contribution: 'link,name',
+      attribution: 'link,name',
+      licence: 'link,name',
+      legend: 'link',
    }
    */
   function makeAttributions(options, dataAttribution) {
@@ -76947,21 +76762,6 @@
   }
 
   /**
-   * Maxbox (Maxar)
-   * Key : https://www.mapbox.com/
-   */
-  class Maxbox extends layerXYZ {
-    constructor(options = {}) {
-      super({
-        url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
-        // No maxZoom
-
-        attribution: 'https://www.mapbox.com/,Mapbox',
-      });
-    }
-  }
-
-  /**
    * Google
    */
   class Google extends layerXYZ {
@@ -77012,21 +76812,28 @@
   };
 
   /**
-   * Simple layers
-   * Doc : https://maps.stamen.com/
+   * Maxbox (Maxar)
+   * Key : https://www.mapbox.com/
+   * tileset
+      Satellite Streets
+      ???
+      Light
+      Dark
+      Streets
+      Outdoors
    */
-  class Stamen extends TileLayer {
-    constructor(options) {
-      super({
-        source: new StadiaMaps({
-          key: '#na',
-          layer: 'stamen_watercolor', // Default
+  class Maxbox extends layerXYZ {
+    constructor(opt) {
+      const options = {
+        tileset: 'mapbox.satellite',// Maxar
 
-          // attributions: defined by ol.source.StadiaMaps
-
-          ...options,
-        }),
-
+        ...opt,
+      };
+       super({
+        url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
+   
+        attribution: 'https://www.mapbox.com/,Mapbox',
+        
         ...options,
       });
     }
@@ -77034,12 +76841,29 @@
 
   /**
    * Simple shematic layer
+   * DOC https://github.com/CartoDB/basemap-styles/tree/master
    * API : https://api-docs.carto.com/
+      light_all,
+      dark_all,
+      light_nolabels,
+      light_only_labels,
+      dark_nolabels,
+      dark_only_labels,
+      rastertiles/voyager,
+      rastertiles/voyager_nolabels,
+      rastertiles/voyager_only_labels,
+      rastertiles/voyager_labels_under
    */
   class CartoDB extends layerXYZ {
-    constructor(options) {
+    constructor(opt) {
+      const options = {
+        tileset: 'light_all',
+
+        ...opt,
+      };
+
       super({
-        url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        url: 'https://basemaps.cartocdn.com/rastertiles/' + options.tileset + '/{z}/{x}/{y}.png',
         key: '#na',
 
         attribution: 'https://carto.com/attribution/,CartoDB',
@@ -77061,22 +76885,6 @@
         attributions: 'No tile',
 
         ...options,
-      });
-    }
-  }
-
-  /**
-   * RGB elevation (Mapbox)
-   * Each pixel color encode the elevation
-   * Doc: https://docs.mapbox.com/data/tilesets/guides/access-elevation-data/
-   * elevation = -10000 + (({R} * 256 * 256 + {G} * 256 + {B}) * 0.1)
-   * Key : https://www.mapbox.com/
-   */
-  class MapboxElevation extends Maxbox {
-    constructor(options = {}) {
-      super({
-        ...options,
-        tileset: 'mapbox.terrain-rgb',
       });
     }
   }
@@ -77153,8 +76961,7 @@
         subLayers: 's',
       }),
       'Photo Maxar': new Maxbox({
-        key: options.mapbox, // For simplified options
-        ...options.mapbox, // Include key
+         key: options.mapbox,  
         tileset: 'mapbox.satellite',
       }),
     }
@@ -77162,7 +76969,7 @@
 
   function collection$2(options = {}) {
     return {
-      ...wriNavLayers(options),
+       ...wriNavLayers(options),
 
       'OSM transports': new Thunderforest({
         key: options.thunderforest, // For simplified options
@@ -77313,23 +77120,20 @@
       'Google hybrid': new Google({
         subLayers: 's,h',
       }),
-
-      'MapBox elevation': new MapboxElevation({
-        key: options.mapbox, // For simplified options
-        ...options.mapbox, // Include key
-      }),
+      
+      /**
+       * RGB elevation (Mapbox)
+       * Each pixel color encode the elevation
+       * Doc: https://docs.mapbox.com/data/tilesets/guides/access-elevation-data/
+       * elevation = -10000 + (({R} * 256 * 256 + {G} * 256 + {B}) * 0.1)
+       * Key : https://www.mapbox.com/
+       */
+      'MapBox elevation': new Maxbox( {
+             tileset: 'mapbox.terrain-rgb',
+            key: options.mapbox, // For simplified options
+       }),
 
       'CartoDB': new CartoDB(),
-      'Stamen watercolor': new Stamen(),
-      'Stamen terrain': new Stamen({
-        layer: 'stamen_terrain',
-      }),
-      'Stamen toner': new Stamen({
-        layer: 'stamen_toner',
-      }),
-      'Stamen toner lite': new Stamen({
-        layer: 'stamen_toner_lite',
-      }),
       'No tile': new NoTile(),
       'Blank': new TileLayer(),
     };
@@ -77347,12 +77151,10 @@
     IGNtop25: IGNtop25,
     IgnES: IgnES,
     Kompass: Kompass,
-    MapboxElevation: MapboxElevation,
     Maxbox: Maxbox,
     NoTile: NoTile,
     OS: OS,
     OpenStreetMap: OpenStreetMap,
-    Stamen: Stamen,
     SwissTopo: SwissTopo,
     Thunderforest: Thunderforest,
     collection: collection$2,
@@ -77368,11 +77170,10 @@
    */
 
 
-  class BackgroundLayer extends Stamen {
+  class BackgroundLayer extends CartoDB {
     constructor(options) {
       // High resolution background layer
       super({
-        layer: 'stamen_toner_lite',
         minResolution: 20,
         visible: false,
 
@@ -91458,7 +91259,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 15/11/2025 17:03:04';
+  const VERSION = '1.1.2.dev 15/11/2025 21:06:13';
 
   async function trace() {
     const data = [

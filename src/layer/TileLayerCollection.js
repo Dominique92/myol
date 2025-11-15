@@ -12,7 +12,6 @@ import {
 } from 'ol/extent';
 import SourceOSM from 'ol/source/OSM.js';
 import SourceXYZ from 'ol/source/XYZ.js';
-import StadiaMaps from 'ol/source/StadiaMaps.js';
 import TilegridWMTS from 'ol/tilegrid/WMTS.js';
 import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS.js';
@@ -20,12 +19,13 @@ import WMTS from 'ol/source/WMTS.js';
 
 import './TileLayerCollection.css';
 
-/* Makes the attributions chain from:
- {
-   contribution: 'link,name',
-   attribution: 'link,name',
-   licence: 'link,name',
-   legend: 'link',
+/**
+ * Build the attributions chain from:
+  {
+    contribution: 'link,name',
+    attribution: 'link,name',
+    licence: 'link,name',
+    legend: 'link',
  }
  */
 function makeAttributions(options, dataAttribution) {
@@ -383,21 +383,6 @@ export class ArcGIS extends layerXYZ {
 }
 
 /**
- * Maxbox (Maxar)
- * Key : https://www.mapbox.com/
- */
-export class Maxbox extends layerXYZ {
-  constructor(options = {}) {
-    super({
-      url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
-      // No maxZoom
-
-      attribution: 'https://www.mapbox.com/,Mapbox',
-    });
-  }
-}
-
-/**
  * Google
  */
 export class Google extends layerXYZ {
@@ -448,21 +433,28 @@ export class Bing extends TileLayer {
 }
 
 /**
- * Simple layers
- * Doc : https://maps.stamen.com/
+ * Maxbox (Maxar)
+ * Key : https://www.mapbox.com/
+ * tileset
+    Satellite Streets
+    ???
+    Light
+    Dark
+    Streets
+    Outdoors
  */
-export class Stamen extends TileLayer {
-  constructor(options) {
-    super({
-      source: new StadiaMaps({
-        key: '#na',
-        layer: 'stamen_watercolor', // Default
+export class Maxbox extends layerXYZ {
+  constructor(opt) {
+    const options = {
+      tileset: 'mapbox.satellite',// Maxar
 
-        // attributions: defined by ol.source.StadiaMaps
-
-        ...options,
-      }),
-
+      ...opt,
+    };
+     super({
+      url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
+ 
+      attribution: 'https://www.mapbox.com/,Mapbox',
+      
       ...options,
     });
   }
@@ -470,12 +462,29 @@ export class Stamen extends TileLayer {
 
 /**
  * Simple shematic layer
+ * DOC https://github.com/CartoDB/basemap-styles/tree/master
  * API : https://api-docs.carto.com/
+    light_all,
+    dark_all,
+    light_nolabels,
+    light_only_labels,
+    dark_nolabels,
+    dark_only_labels,
+    rastertiles/voyager,
+    rastertiles/voyager_nolabels,
+    rastertiles/voyager_only_labels,
+    rastertiles/voyager_labels_under
  */
 export class CartoDB extends layerXYZ {
-  constructor(options) {
+  constructor(opt) {
+    const options = {
+      tileset: 'light_all',
+
+      ...opt,
+    };
+
     super({
-      url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      url: 'https://basemaps.cartocdn.com/rastertiles/' + options.tileset + '/{z}/{x}/{y}.png',
       key: '#na',
 
       attribution: 'https://carto.com/attribution/,CartoDB',
@@ -497,22 +506,6 @@ export class NoTile extends layerXYZ {
       attributions: 'No tile',
 
       ...options,
-    });
-  }
-}
-
-/**
- * RGB elevation (Mapbox)
- * Each pixel color encode the elevation
- * Doc: https://docs.mapbox.com/data/tilesets/guides/access-elevation-data/
- * elevation = -10000 + (({R} * 256 * 256 + {G} * 256 + {B}) * 0.1)
- * Key : https://www.mapbox.com/
- */
-export class MapboxElevation extends Maxbox {
-  constructor(options = {}) {
-    super({
-      ...options,
-      tileset: 'mapbox.terrain-rgb',
     });
   }
 }
@@ -589,8 +582,7 @@ export function wriNavLayers(options = {}) {
       subLayers: 's',
     }),
     'Photo Maxar': new Maxbox({
-      key: options.mapbox, // For simplified options
-      ...options.mapbox, // Include key
+       key: options.mapbox,  
       tileset: 'mapbox.satellite',
     }),
   }
@@ -598,7 +590,7 @@ export function wriNavLayers(options = {}) {
 
 export function collection(options = {}) {
   return {
-    ...wriNavLayers(options),
+     ...wriNavLayers(options),
 
     'OSM transports': new Thunderforest({
       key: options.thunderforest, // For simplified options
@@ -749,23 +741,20 @@ export function examples(options = {}) {
     'Google hybrid': new Google({
       subLayers: 's,h',
     }),
-
-    'MapBox elevation': new MapboxElevation({
-      key: options.mapbox, // For simplified options
-      ...options.mapbox, // Include key
-    }),
+    
+    /**
+     * RGB elevation (Mapbox)
+     * Each pixel color encode the elevation
+     * Doc: https://docs.mapbox.com/data/tilesets/guides/access-elevation-data/
+     * elevation = -10000 + (({R} * 256 * 256 + {G} * 256 + {B}) * 0.1)
+     * Key : https://www.mapbox.com/
+     */
+    'MapBox elevation': new Maxbox( {
+           tileset: 'mapbox.terrain-rgb',
+          key: options.mapbox, // For simplified options
+     }),
 
     'CartoDB': new CartoDB(),
-    'Stamen watercolor': new Stamen(),
-    'Stamen terrain': new Stamen({
-      layer: 'stamen_terrain',
-    }),
-    'Stamen toner': new Stamen({
-      layer: 'stamen_toner',
-    }),
-    'Stamen toner lite': new Stamen({
-      layer: 'stamen_toner_lite',
-    }),
     'No tile': new NoTile(),
     'Blank': new TileLayer(),
   };

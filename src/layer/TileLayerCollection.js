@@ -53,18 +53,14 @@ function makeAttributions(options, dataAttribution) {
  * API : https://wiki.openstreetmap.org/wiki/API/
  */
 export class OpenStreetMap extends TileLayer {
-  constructor(opt) {
-    const options = {
-      contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
-      legend: 'https://www.openstreetmap.org/panes/legend',
-
-      ...opt,
-    };
-
+  constructor(options) {
     super({
       source: new SourceOSM({
-        attributions: makeAttributions(options),
-
+        attributions: makeAttributions({
+          contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
+          legend: 'https://www.openstreetmap.org/panes/legend',
+          ...options,
+        }),
         ...options,
       }),
       ...options,
@@ -80,13 +76,10 @@ export class OpenStreetMap extends TileLayer {
 export class Thunderforest extends OpenStreetMap {
   constructor(options = {}) {
     super({
-      hidden: !options.key, // For LayerSwitcher
       url: 'https://{a-c}.tile.thunderforest.com/' + options.subLayer + '/{z}/{x}/{y}.png?apikey=' + options.key,
       maxZoom: 22,
-
       attribution: 'https://www.thunderforest.com/,Thunderforest',
-
-      ...options, // Include key
+      ...options,
     });
   }
 }
@@ -103,10 +96,8 @@ export class Kompass extends OpenStreetMap { // Austria
         'https://map{1-4}.kompass.de/{z}/{x}/{y}/kompass_' + options.subLayer + '?key=' + options.key : // Specific
         'https://map{1-5}.tourinfra.com/tiles/kompass_' + options.subLayer + '/{z}/{x}/{y}.png', // No key
       maxZoom: 17,
-
       attribution: 'https://www.kompass.de/,Kompass',
       legend: 'https://www.outdooractive.com/fr/knowledgepage/carte-kompass/43778568/#5',
-
       ...options,
     });
   }
@@ -118,14 +109,7 @@ export class Kompass extends OpenStreetMap { // Austria
  * Key : https://cartes.gouv.fr
  */
 export class IGN extends TileLayer {
-  constructor(opt) {
-    const options = {
-      attribution: 'https://www.geoportail.gouv.fr/,IGN',
-      legend: '',
-
-      ...opt,
-    };
-
+  constructor(options) {
     const IGNresolutions = [],
       IGNmatrixIds = [];
 
@@ -137,35 +121,36 @@ export class IGN extends TileLayer {
     super({
       source: new WMTS({
         // WMTS options
-        url: options.key ? 'https://data.geopf.fr/private/wmts?apikey=' + options.key : 'https://data.geopf.fr/wmts',
+        url: options.key ?
+          'https://data.geopf.fr/private/wmts?apikey=' + options.key : 'https://data.geopf.fr/wmts',
+        // layer:'mandatory',
+        // layer:'mandatory',
+        // format: 'image/???',
         style: 'normal',
         matrixSet: 'PM',
-        format: 'image/jpeg',
         tileGrid: new TilegridWMTS({
           origin: [-20037508, 20037508],
           resolutions: IGNresolutions,
           matrixIds: IGNmatrixIds,
         }),
-
-        attributions: makeAttributions(options),
-
-        // IGN options
-        ...options, // Include layer
+        attributions: makeAttributions({
+          attribution: 'https://www.geoportail.gouv.fr/,IGN',
+          ...options,
+        }),
+        ...options,
       }),
-
       ...options, // For layer limits
     });
   }
 }
 
 export class IGNtop25 extends IGN {
+  //BEST couche hors zone de définition (pôles)
   constructor(options) {
     super({
-      hidden: !options.key, // For LayerSwitcher
       layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
-
+      format: 'image/jpeg',
       legend: 'https://geoservices.ign.fr/sites/default/files/2021-07/DC_SCAN25_3-1.pdf',
-
       ...options,
     });
   }
@@ -176,9 +161,7 @@ export class IGNplan extends IGN {
     super({
       layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
       format: 'image/png',
-
       legend: 'https://geoservices.ign.fr/sites/default/files/2021-07/DC_Plan_IGN.pdf',
-
       ...options,
     });
   }
@@ -192,18 +175,15 @@ export class IGNplan extends IGN {
 export class SwissTopo extends TileLayer {
   constructor(opt) {
     const options = {
-      host: 'https://wmts2{0-4}.geo.admin.ch/1.0.0/',
-      subLayer: 'ch.swisstopo.pixelkarte-farbe',
-      maxResolution: 2000, // Resolution limit above which we switch to a more global service
-      extent: [640000, 5730000, 1200000, 6100000],
-
-      attribution: 'https://map.geo.admin.ch/,SwissTopo',
-      legend: 'https://prod-swishop-s3.s3.eu-central-1.amazonaws.com/2022-04/symbols_fr_0.pdf',
-
-      ...opt,
-    };
-
-    const projectionExtent = get('EPSG:3857').getExtent(),
+        host: 'https://wmts2{0-4}.geo.admin.ch/1.0.0/',
+        subLayer: 'ch.swisstopo.pixelkarte-farbe',
+        maxResolution: 2000, // Resolution limit above which we switch to a more global service
+        extent: [640000, 5730000, 1200000, 6100000],
+        attribution: 'https://map.geo.admin.ch/,SwissTopo',
+        legend: 'https://prod-swishop-s3.s3.eu-central-1.amazonaws.com/2022-04/symbols_fr_0.pdf',
+        ...opt,
+      },
+      projectionExtent = get('EPSG:3857').getExtent(),
       resolutions = [],
       matrixIds = [];
 
@@ -222,31 +202,10 @@ export class SwissTopo extends TileLayer {
           matrixIds: matrixIds,
         }),
         requestEncoding: 'REST',
-
         attributions: makeAttributions(options),
-
         ...options, // For attributionss
       })),
-
       ...options, // For layer limits
-    });
-  }
-}
-
-/**
- * Virtual class to factorise XYZ layers classes
- */
-export class layerXYZ extends TileLayer {
-  constructor(options) {
-    super({
-      hidden: !options.key, // For LayerSwitcher
-      source: new SourceXYZ({
-        attributions: makeAttributions(options),
-
-        ...options,
-      }),
-
-      ...options,
     });
   }
 }
@@ -256,29 +215,29 @@ export class layerXYZ extends TileLayer {
  * Map : https://www.ign.es/iberpix/visor
  * API : https://api-maps.ign.es/
  */
-export class IgnES extends layerXYZ {
+export class IgnES extends TileLayer {
   constructor(opt) {
     const options = {
       host: 'https://www.ign.es/wmts/',
       server: 'mapa-raster',
       subLayer: 'MTN',
-      key: '#na',
       maxZoom: 20,
-
       attribution: 'https://www.ign.es/,Instituto Geográfico Nacional',
       legend: 'https://www.ign.es/web/resources/docs/IGNCnig/Especificaciones/catalogo_MTN25.pdf',
-
       ...opt,
     };
 
     super({
-      url: options.host + options.server +
-        '?layer=' + options.subLayer +
-        '&Service=WMTS&Request=GetTile&Version=1.0.0' +
-        '&Format=image/jpeg' +
-        '&style=default&tilematrixset=GoogleMapsCompatible' +
-        '&TileMatrix={z}&TileCol={x}&TileRow={y}',
-
+      source: new SourceXYZ({
+        url: options.host + options.server +
+          '?layer=' + options.subLayer +
+          '&Service=WMTS&Request=GetTile&Version=1.0.0' +
+          '&Format=image/jpeg' +
+          '&style=default&tilematrixset=GoogleMapsCompatible' +
+          '&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        attributions: makeAttributions(options),
+        ...options,
+      }),
       ...options,
     });
   }
@@ -294,10 +253,8 @@ export class IGM extends TileLayer {
     super({
       source: new TileWMS({
         url: 'https://chemineur.fr/assets/proxy/?s=minambiente.it', // Not available via https
-
         attributions: '&copy <a href="https://gn.mase.gov.it/">IGM</a>',
       }),
-
       maxResolution: 120,
       extent: [720000, 4380000, 2070000, 5970000],
     });
@@ -331,26 +288,27 @@ export class IGM extends TileLayer {
  * Ordnance Survey : Great Britain
  * API & key : https://osdatahub.os.uk/
  */
-export class OS extends layerXYZ {
+export class OS extends TileLayer {
   constructor(opt) {
     const options = {
       subLayer: 'Outdoor_3857',
       minZoom: 7,
       maxZoom: 16,
       extent: [-1198263, 6365000, 213000, 8702260],
-
       attribution: 'https://explore.osmaps.com/,UK Ordnancesurvey maps',
       legend: 'https://www.ordnancesurvey.co.uk/mapzone/assets/doc/Explorer-25k-Legend-en.pdf',
-
       ...opt,
     };
 
     super({
-      url: 'https://api.os.uk/maps/raster/v1/zxy/' +
-        options.subLayer +
-        '/{z}/{x}/{y}.png' +
-        '?key=' + options.key,
-
+      source: new SourceXYZ({
+        url: 'https://api.os.uk/maps/raster/v1/zxy/' +
+          options.subLayer +
+          '/{z}/{x}/{y}.png' +
+          '?key=' + options.key,
+        attributions: makeAttributions(options),
+        ...options,
+      }),
       ...options,
     });
   }
@@ -362,21 +320,22 @@ export class OS extends layerXYZ {
  * API : https://developers.arcgis.com/javascript/latest/
  * No key
  */
-export class ArcGIS extends layerXYZ {
+export class ArcGIS extends TileLayer {
   constructor(opt) {
     const options = {
       host: 'https://server.arcgisonline.com/ArcGIS/rest/services/',
-      key: '#na',
       subLayer: 'World_Imagery',
       maxZoom: 19,
-
       attribution: 'https://www.arcgis.com/,ArcGIS (Esri)',
-
       ...opt,
     };
 
     super({
-      url: options.host + options.subLayer + '/MapServer/tile/{z}/{y}/{x}',
+      source: new SourceXYZ({
+        url: options.host + options.subLayer + '/MapServer/tile/{z}/{y}/{x}',
+        attributions: makeAttributions(options),
+        ...options,
+      }),
       ...options,
     });
   }
@@ -385,21 +344,21 @@ export class ArcGIS extends layerXYZ {
 /**
  * Google
  */
-export class Google extends layerXYZ {
+export class Google extends TileLayer {
   constructor(opt) {
     const options = {
       subLayers: 'p', // Terrain
-      key: '#na',
       maxZoom: 22,
-
       attribution: 'https://www.google.com/maps,Google',
-
       ...opt,
     };
 
     super({
-      url: 'https://mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
-
+      source: new SourceXYZ({
+        url: 'https://mt{0-3}.google.com/vt/lyrs=' + options.subLayers + '&hl=fr&x={x}&y={y}&z={z}',
+        attributions: makeAttributions(options),
+        ...options,
+      }),
       ...options,
     });
   }
@@ -414,12 +373,9 @@ export class Bing extends TileLayer {
   //TODO https://blogs.bing.com/maps/2025-06/Bing-Maps-for-Enterprise-Basic-Account-shutdown-June-30,2025
   constructor(options = {}) {
     super({
-      hidden: !options.key, // For LayerSwitcher
       imagerySet: 'Road',
       // No explicit zoom
-
       // attributions, defined by ol.source.BingMaps
-
       ...options,
     });
 
@@ -443,18 +399,21 @@ export class Bing extends TileLayer {
     Streets
     Outdoors
  */
-export class Maxbox extends layerXYZ {
+export class Maxbox extends TileLayer {
   constructor(opt) {
     const options = {
-      tileset: 'mapbox.satellite',// Maxar
-
+      tileset: 'mapbox.satellite', // Maxar
+      attribution: 'https://www.mapbox.com/,Mapbox',
       ...opt,
     };
-     super({
-      url: 'https://api.mapbox.com/v4/' + options.tileset + '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
- 
-      attribution: 'https://www.mapbox.com/,Mapbox',
-      
+
+    super({
+      source: new SourceXYZ({
+        url: 'https://api.mapbox.com/v4/' + options.tileset +
+          '/{z}/{x}/{y}@2x.webp?access_token=' + options.key,
+        attributions: makeAttributions(options),
+        ...options,
+      }),
       ...options,
     });
   }
@@ -475,20 +434,19 @@ export class Maxbox extends layerXYZ {
     rastertiles/voyager_only_labels,
     rastertiles/voyager_labels_under
  */
-export class CartoDB extends layerXYZ {
+export class CartoDB extends TileLayer {
   constructor(opt) {
     const options = {
       tileset: 'light_all',
-
       ...opt,
     };
 
     super({
-      url: 'https://basemaps.cartocdn.com/rastertiles/' + options.tileset + '/{z}/{x}/{y}.png',
-      key: '#na',
-
-      attribution: 'https://carto.com/attribution/,CartoDB',
-
+      source: new SourceXYZ({
+        url: 'https://basemaps.cartocdn.com/rastertiles/' + options.tileset + '/{z}/{x}/{y}.png',
+        attributions: makeAttributions(options),
+        ...options,
+      }),
       ...options,
     });
   }
@@ -497,15 +455,13 @@ export class CartoDB extends layerXYZ {
 /**
  * Simple layer displaying a zoom error
  */
-export class NoTile extends layerXYZ {
-  constructor(options) {
+export class NoTile extends TileLayer {
+  constructor() {
     super({
-      url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
-      key: '#na',
-
-      attributions: 'No tile',
-
-      ...options,
+      source: new SourceXYZ({
+        url: 'https://ecn.t0.tiles.virtualearth.net/tiles/r000000000000000000.jpeg?g=1',
+        attributions: 'No tile',
+      }),
     });
   }
 }
@@ -550,7 +506,6 @@ export function wriNavLayers(options = {}) {
       }),
     }),
     'Outdoors': new TileLayer({
-      hidden: !options.thunderforest, // For LayerSwitcher
       source: new SourceOSM({
         url: 'https://{a-c}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=' + options.thunderforest,
         maxZoom: 22,
@@ -582,7 +537,7 @@ export function wriNavLayers(options = {}) {
       subLayers: 's',
     }),
     'Photo Maxar': new Maxbox({
-       key: options.mapbox,  
+      key: options.mapbox,
       tileset: 'mapbox.satellite',
     }),
   }
@@ -590,7 +545,7 @@ export function wriNavLayers(options = {}) {
 
 export function collection(options = {}) {
   return {
-     ...wriNavLayers(options),
+    ...wriNavLayers(options),
 
     'OSM transports': new Thunderforest({
       key: options.thunderforest, // For simplified options
@@ -741,7 +696,7 @@ export function examples(options = {}) {
     'Google hybrid': new Google({
       subLayers: 's,h',
     }),
-    
+
     /**
      * RGB elevation (Mapbox)
      * Each pixel color encode the elevation
@@ -749,10 +704,10 @@ export function examples(options = {}) {
      * elevation = -10000 + (({R} * 256 * 256 + {G} * 256 + {B}) * 0.1)
      * Key : https://www.mapbox.com/
      */
-    'MapBox elevation': new Maxbox( {
-           tileset: 'mapbox.terrain-rgb',
-          key: options.mapbox, // For simplified options
-     }),
+    'MapBox elevation': new Maxbox({
+      tileset: 'mapbox.terrain-rgb',
+      key: options.mapbox, // For simplified options
+    }),
 
     'CartoDB': new CartoDB(),
     'No tile': new NoTile(),

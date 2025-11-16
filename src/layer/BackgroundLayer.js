@@ -20,7 +20,9 @@ class BackgroundLayer extends layerTile.CartoDB {
     });
 
     // Low resolution background layer
-    this.lowResLayer = new layerTile.NoTile({
+    //TODO BUG apply to hors zone
+    //TODO BUG no apply under zoom limit
+    this.lowResLayer = new layerTile.CartoDB({
       maxResolution: this.getMinResolution(),
       visible: false,
     });

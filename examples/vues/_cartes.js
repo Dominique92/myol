@@ -346,7 +346,7 @@ function mapIndex(options) {
     ],
 
     layers: [
-      new myol.layer.tile.OpenHikingMap(), // Fond de carte
+      externTilesLayers(options.mapKeys).OpenHikingMap, // Fond de carte
       polygonesLayer,
       pointsLayer,
       new myol.layer.Hover(), // Gère le survol du curseur

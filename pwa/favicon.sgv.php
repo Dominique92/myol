@@ -1,0 +1,36 @@
+<?php
+$expire=$_GET['expire']??0;
+$date = gmdate('D, d M Y H:i:s',$expire+time()).' GMT';
+header("Expires: ".$expire);
+header("Last-Modified: ".$date);
+if(!isset($expire)) {
+  header("Cache-Control: no-cache, must-revalidate");
+  header("Pragma: no-cache");
+}
+header('Access-Control-Allow-Origin: *');
+header("Content-type: image/svg+xml");
+
+file_put_contents('toto.log',
+	$date.' FAVICON * '.$expire.'<br/>'.PHP_EOL,
+	FILE_APPEND
+);
+?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="512" width="512">
+<style>
+	g {filter: drop-shadow(0 0 1px black);}
+</style>
+<g>
+	<ellipse cx="13.7" cy="3.5" rx="4" ry="2.5" stroke="#888888" fill="#aaccff" />
+	<ellipse cx="9" cy="3" rx="3.5" ry="2" stroke="#888888" fill="#aaccff" />
+	<ellipse cx="19" cy="4.5" rx="4" ry="3.5" stroke="#888888" fill="#aaccff" />
+	<ellipse cx="13.7" cy="3.5" rx="3" ry="1.5" stroke="#aaccff" fill="#aaccff" />
+	<rect x="3" y="2" width="3" height="7" fill="#666666" />
+
+	<path d="M3 10.7 l0 12.5,18 0,0 -12.5" stroke-width="0.5" stroke="#e08020" fill="#ffeedd" />
+	<path d="M1.5 12.3 l10.5 -10.5,10.5 10.5" stroke-width="3" stroke-linecap="round" stroke="red" fill="#ffeedd" />
+
+	<rect x="9" y="13.5" width="6" height="10" stroke="none" fill="#e08020" />
+
+	<ellipse cx="12" cy="9.5" rx="2" ry="2" stroke="green" fill="green" />
+</g>
+</svg>

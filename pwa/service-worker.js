@@ -19,6 +19,10 @@ self.addEventListener('install', evt => {
           'manifest.json',
           'service-worker.js',
           'favicon.svg',
+          'favicon.sgv.php?expire=5',
+          // lon:2°=157km,lat:1°=111km
+          'https://www.refuges.info/api/bbox?&nb_points=all&bbox=5,45,7,46',
+          'https://www.refuges.info/api/bbox?&nb_points=all&cluster=0.1',
         ])
         .then(console.info('PWA files added to cache'))
         .catch(error => console.error(error));
@@ -37,3 +41,35 @@ self.addEventListener('fetch', evt => {
     .catch(error => console.error(error + ' ' + evt.request.url))
   )
 });
+
+// https://blog.bitsrc.io/5-service-worker-caching-strategies-for-your-next-pwa-app-58539f156f52
+/* Cache first
+self.addEventListener('fetch', function (event) {
+    event.respondWith(
+        caches.open(cacheName)
+            .then(function(cache) {
+                cache.match(event.request)
+                    .then( function(cacheResponse) {
+                        if(cacheResponse)
+                            return cacheResponse
+                        else
+                            return fetch(event.request)
+                                .then(function(networkResponse) {
+                                    cache.put(event.request, networkResponse.clone())
+                                    return networkResponse
+                                })
+                    })
+            })
+    )
+});
+*/
+
+/* Network First
+self.addEventListener(’fetch’, function (event) {
+    event.respondWith(
+        fetch(event.request).catch(function() {
+            return caches.match(event.request)
+        })
+    )
+});
+*/

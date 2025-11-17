@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 17/11/2025 15:48:09 using npm run build from the src/... sources
+ * Built 17/11/2025 21:59:08 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -90247,7 +90247,7 @@
 
         // Methods to instantiate
         // url (extent, resolution, mapProjection) // Calculate the url
-        // query (extent, resolution, mapProjection, optioons) ({_path: '...'}),
+        // query (extent, resolution, mapProjection, options) ({_path: '...'}),
         // bboxParameter (extent, resolution, mapProjection) => {}
         // addProperties (properties) => {}, // Add properties to each received features
 
@@ -91165,7 +91165,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 17/11/2025 15:48:09';
+  const VERSION = '1.1.2.dev 17/11/2025 21:59:08';
 
   async function trace() {
     const data = [

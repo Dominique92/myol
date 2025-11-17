@@ -2,9 +2,12 @@
 
 // Strategy for loading elements based on fixed tile grid
 // lon:2°=157km, lat:1°=111km
-function tiledBboxStrategy(extent) {
+function tiledBboxStrategy(extent, resolution) {
   const extent4326 = ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326'),
     tiledExtents = [];
+
+  if (resolution > 100)
+    return [ol.proj.transformExtent([-180, -90, 180, 90], 'EPSG:4326', 'EPSG:3857')]; // Full world
 
   for (let lon = Math.floor(extent4326[0] / 2) * 2 - 2; lon < Math.ceil(extent4326[2] / 2) * +2; lon += 2)
     for (let lat = Math.floor(extent4326[1]) - 1; lat < Math.ceil(extent4326[3]) + 1; lat++)
@@ -39,13 +42,7 @@ const map = new ol.Map({
 
     // Vector layers
     new myol.layer.vector.WRI({
-      //selectName: 'select-wri-tiled',
       strategy: tiledBboxStrategy,
-      /*tiledBBoxStrategy: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
-        50000: 100, // tilesize = 10 000 Mercator units = 35 km until resolution = 100 meters per pixel
-        570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
-        14000000: Infinity, // tilesize = 10 000 km above
-      },*/
       debug: true,
     }),
 

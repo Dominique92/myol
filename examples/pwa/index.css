@@ -1,0 +1,14 @@
+body {
+  background: #333;
+  color: white;
+}
+
+img {
+  width: 32px;
+}
+
+#map {
+  width: 80vw;
+  height: 60vw;
+  background: grey;
+}

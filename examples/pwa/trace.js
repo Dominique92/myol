@@ -39,7 +39,8 @@ async function trace() {
             .then(cache => cache.keys())
             .then(keys => {
               keys.forEach(request => {
-                data.push('CACHE:' + name + ' FILE:' + request.url);
+                request.toto = 0; // Avoid lint error
+                //data.push('CACHE:' + name + ' FILE:' + request.url);
               });
             });
         }
@@ -49,11 +50,12 @@ async function trace() {
   //if(0)//Pour attendre la fin du calcul :(
   if (typeof caches === 'object')
     await caches
-    .open("myWRI1")
+    .open('myWRI')
     .then(cache => cache.keys())
     .then(keys => {
       keys.forEach(request => {
-        //    data.push('FILE ' + request.url);
+        request.toto = 0; // Avoid lint error
+        //data.push('FILE ' + request.url);
       });
     });
 

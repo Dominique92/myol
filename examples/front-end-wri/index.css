@@ -92,8 +92,8 @@ body:not([class*="attente"]) .attente {
   display: inline;
 }
 
-#nouvelles-groupe > div,
-#commentaires-groupe > div {
+#nouvelles-groupe>div,
+#commentaires-groupe>div {
   margin: 10px 0;
   padding: 10px;
   border: 1px solid var(--couleur_texte);

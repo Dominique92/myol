@@ -36,16 +36,6 @@ const map = new ol.Map({
       selectName: 'select-wri',
       debug: true,
     }),
-    new myol.layer.vector.WRI({
-      selectName: 'select-wri-tiled',
-      strategy: myol.layer.myLoadingStrategy.tiledBboxStrategy,
-      tiledBBoxStrategy: { // Static tiled bbox. 1 Mercator unit = 0.7 meter at lat = 45° : cos(45°)
-        50000: 100, // tilesize = 10 000 Mercator units = 35 km until resolution = 100 meters per pixel
-        570000: 1000, // tilesize = 400 km until resolution = 1 km per pixel
-        14000000: Infinity, // tilesize = 10 000 km above
-      },
-      debug: true,
-    }),
     new myol.layer.vector.PRC({
       selectName: 'select-prc',
     }),

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 16/11/2025 11:12:09 using npm run build from the src/... sources
+ * Built 17/11/2025 15:48:09 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -79330,55 +79330,6 @@
     }
   }
 
-  /**
-   * Strategy for loading elements based on fixed tile grid
-   * Following layer option
-       tiledBBoxStrategy: {
-         1000: 10, // tilesize = 1000 Mercator unit up to resolution = 10 meters per pixel
-       },
-   */
-  function tiledBboxStrategy(extent, resolution) {
-    //TODO BUG obsolescence de toutes les tuiles après 1 modif: pb hors ligne
-    /* eslint-disable-next-line consistent-this, no-invalid-this */
-    const layer = this,
-      tsur = layer.options.tiledBBoxStrategy || {},
-      found = Object.keys(tsur).find(k => tsur[k] > resolution),
-      tileSize = parseInt(found, 10),
-      tiledExtent = [];
-
-    if (typeof found === 'undefined')
-      return [extent]; // Fall back to bbox strategy
-
-    for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
-      for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
-        tiledExtent.push([
-          Math.round(lon * tileSize),
-          Math.round(lat * tileSize),
-          Math.round(lon * tileSize + tileSize),
-          Math.round(lat * tileSize + tileSize),
-        ]);
-
-    if (layer.options.debug) {
-      layer.logs = {
-        tileSize: Math.round(tileSize / 1414) + '*' + Math.round(tileSize / 1414) + 'km',
-        isCluster: resolution > layer.options.serverClusterMinResolution,
-      };
-      console.info(
-        'Request ' + tiledExtent.length +
-        ' tile' + (tiledExtent.length > 1 ? 's ' : ' ') +
-        layer.logs.tileSize + ' for ' +
-        Math.round(resolution) + 'm/px resolution '
-      );
-    }
-
-    return tiledExtent;
-  }
-
-  var myLoadingStrategy = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    tiledBboxStrategy: tiledBboxStrategy
-  });
-
   function globals (defs) {
     defs('EPSG:4326', '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees');
     defs('EPSG:4269', '+title=NAD83 (long/lat) +proj=longlat +a=6378137.0 +b=6356752.31414036 +ellps=GRS80 +datum=NAD83 +units=degrees');
@@ -91201,7 +91152,6 @@
   var layer = {
     BackgroundLayer: BackgroundLayer,
     Hover: Hover,
-    myLoadingStrategy: myLoadingStrategy,
     Marker: Marker,
     MyVectorLayer: MyVectorLayer,
     Selector: Selector,
@@ -91215,7 +91165,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 16/11/2025 11:12:09';
+  const VERSION = '1.1.2.dev 17/11/2025 15:48:09';
 
   async function trace() {
     const data = [

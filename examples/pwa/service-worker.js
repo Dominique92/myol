@@ -4,7 +4,7 @@ self.addEventListener('install', evt => {
 
   //self.skipWaiting(); // Immediately activate the SW & trigger controllerchange
 
-  const cacheName = 'myWRI1';
+  const cacheName = 'myWRI';
 
   caches.delete(cacheName)
     .then(console.info('PWA ' + cacheName + ' deleted'))
@@ -15,11 +15,13 @@ self.addEventListener('install', evt => {
     .then(cache => {
       console.info('PWA open cache ' + cacheName);
       cache.addAll([
-          'index.html',
+          'index.php',
           'manifest.json',
           'service-worker.js',
           'favicon.svg',
+          /*
           'favicon.sgv.php?expire=5',
+          */
           // lon:2°=157km,lat:1°=111km
           'https://www.refuges.info/api/bbox?&nb_points=all&bbox=5,45,7,46',
           'https://www.refuges.info/api/bbox?&nb_points=all&cluster=0.1',
@@ -34,7 +36,7 @@ self.addEventListener('install', evt => {
 // Provides the required files
 // Cache first, then browser cache, then network
 self.addEventListener('fetch', evt => {
-  console.info('PWA fetch ' + evt.request.url);
+  //console.info('PWA fetch ' + evt.request.url);
   evt.respondWith(
     caches.match(evt.request)
     .then(found => found || fetch(evt.request))

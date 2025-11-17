@@ -1,73 +1,18 @@
 /* global ol, myol */
 
 // Strategy for loading elements based on fixed tile grid
-function tiledBboxStrategy(extent, resolution) {
+// lon:2°=157km, lat:1°=111km
+function tiledBboxStrategy(extent) {
+  const extent4326 = ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326'),
+    tiledExtents = [];
 
-  // lon:2°=157km,lat:1°=111km
+  for (let lon = Math.floor(extent4326[0] / 2) * 2 - 2; lon < Math.ceil(extent4326[2] / 2) * +2; lon += 2)
+    for (let lat = Math.floor(extent4326[1]) - 1; lat < Math.ceil(extent4326[3]) + 1; lat++)
+      tiledExtents.push(
+        ol.proj.transformExtent([lon, lat, lon + 2, lat + 1], 'EPSG:4326', 'EPSG:3857')
+      );
 
-
-  const exdeg = ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-  /*DCMM*/
-  console.log(exdeg);
-  if (0);
-  {
-    /*DCMM*/
-    console.log(Math.floor(exdeg[0]));
-    /*DCMM*/
-    console.log(Math.floor(exdeg[1] * 2) / 2);
-    /*DCMM*/
-    console.log(Math.ceil(exdeg[2]));
-    /*DCMM*/
-    console.log(Math.ceil(exdeg[3] * 2) / 2);
-  }
-
-  //for(x=Math.floor(exdeg[0])-1;x<Math.ceil(exdeg[2])+1;x++)
-  //for(y=Math.floor(exdeg[1]/2)*2-2;y<Math.ceil(exdeg[3]/2)*2+2;y+=2)
-
-  //for(x=Math.floor(exdeg[0]/2)*2-2;x<Math.ceil(exdeg[2]/2)*2+2;x+=2)
-  //for(y=Math.floor(exdeg[1])-1;y<Math.ceil(exdeg[3])+1;y++)
-
-  for (x = Math.floor(exdeg[0]) - 1; x < Math.ceil(exdeg[2]) + 1; x++)
-    for (y = Math.floor(exdeg[1] * 2) / 2 - 1; y < Math.ceil(exdeg[3] * 2) / 2 + 1; y += 2) {
-      /*DCMM*/
-      console.log(x + '/' + y + ' à ' + (x + 1) + '/' + (y + 2));
-    }
-
-
-  return [extent]; // Fall back to bbox strategy
-
-  const layer = this,
-    tsur = layer.options.tiledBBoxStrategy || {},
-    found = Object.keys(tsur).find(k => tsur[k] > resolution),
-    tileSize = parseInt(found, 10),
-    tiledExtent = [];
-
-  if (typeof found === 'undefined')
-    return [extent]; // Fall back to bbox strategy
-
-  for (let lon = Math.floor(extent[0] / tileSize); lon < Math.ceil(extent[2] / tileSize); lon++)
-    for (let lat = Math.floor(extent[1] / tileSize); lat < Math.ceil(extent[3] / tileSize); lat++)
-      tiledExtent.push([
-        Math.round(lon * tileSize),
-        Math.round(lat * tileSize),
-        Math.round(lon * tileSize + tileSize),
-        Math.round(lat * tileSize + tileSize),
-      ]);
-
-  if (layer.options.debug) {
-    layer.logs = {
-      tileSize: Math.round(tileSize / 1414) + '*' + Math.round(tileSize / 1414) + 'km',
-      isCluster: resolution > layer.options.serverClusterMinResolution,
-    };
-    console.info(
-      'Request ' + tiledExtent.length +
-      ' tile' + (tiledExtent.length > 1 ? 's ' : ' ') +
-      layer.logs.tileSize + ' for ' +
-      Math.round(resolution) + 'm/px resolution '
-    );
-  }
-
-  return tiledExtent;
+  return tiledExtents;
 }
 
 /* eslint-disable-next-line no-unused-vars */
@@ -76,8 +21,8 @@ const map = new ol.Map({
 
   view: new ol.View({
     center: ol.proj.transform([5.7, 45.2], 'EPSG:4326', 'EPSG:3857'), // Grenoble
-    //constrainResolution: true, // Force zoom on the definition of available tiles
-    zoom: 10,
+    constrainResolution: true, // Force zoom on the definition of available tiles
+    zoom: 11,
   }),
 
   controls: [

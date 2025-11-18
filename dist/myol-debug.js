@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 17/11/2025 21:59:08 using npm run build from the src/... sources
+ * Built 18/11/2025 18:23:40 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -79042,7 +79042,7 @@
         this.element.className = 'ol-control myol-permalink';
         this.linkEl = document.createElement('a');
         this.linkEl.innerHTML = 'Permalink';
-        this.linkEl.title = 'Generate a link with map zoom & position';
+        this.linkEl.title = 'Generate a link with map zoom, position & layer';
         this.element.appendChild(this.linkEl);
       }
     }
@@ -79076,13 +79076,14 @@
         ], 'EPSG:4326', 'EPSG:3857'));
       }
 
-      // Set the permalink with current map zoom & position
+      // Set the permalink with current map zoom, position & layer
       if (view.getCenter()) {
         const ll4326 = transform$1(view.getCenter(), 'EPSG:3857', 'EPSG:4326'),
           newParams = 'map=' +
           (localStorage.myolZoom = Math.round(view.getZoom() * 10) / 10) + '/' +
           (localStorage.myolLon = Math.round(ll4326[0] * 10000) / 10000) + '/' +
-          (localStorage.myolLat = Math.round(ll4326[1] * 10000) / 10000);
+          (localStorage.myolLat = Math.round(ll4326[1] * 10000) / 10000) +
+          '&baselayer=' + encodeURI(localStorage.myolBaselayer);
 
         if (this.linkEl) {
           this.linkEl.href = this.options.hash + newParams;
@@ -91165,7 +91166,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 17/11/2025 21:59:08';
+  const VERSION = '1.1.2.dev 18/11/2025 18:23:40';
 
   async function trace() {
     const data = [

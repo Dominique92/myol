@@ -15,6 +15,7 @@
   <!-- "Usual" title charset description viewport -->
   <title>Refuges.info</title>
   <meta charset="utf-8">
+<link href="https://www.refuges.info/images/icones/favicon.svg" rel="icon" type="image/svg+xml" />
   <meta name="description" content="Test Progressive Web Application">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <link href="manifest.json" rel="manifest">

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 18/11/2025 18:23:40 using npm run build from the src/... sources
+ * Built 19/11/2025 17:45:01 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -76172,6 +76172,7 @@
     sphere: sphere$1,
     style: style,
     tilegrid: {
+      TileGrid: TileGrid,
       WMTS: WMTSTileGrid,
     },
     util: {
@@ -91166,7 +91167,7 @@
    */
 
 
-  const VERSION = '1.1.2.dev 18/11/2025 18:23:40';
+  const VERSION = '1.1.2.dev 19/11/2025 17:45:01';
 
   async function trace() {
     const data = [

@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 20/11/2025 08:59:00 using npm run build from the src/... sources
+ * Built 20/11/2025 21:33:25 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -91163,36 +91163,41 @@
     vector: vectorLayerCollection,
   };
 
-  /**
-   * Display misc values
-   */
+  /* global map */
 
 
-  const VERSION = '1.1.2.dev 20/11/2025 08:59:00';
+  const VERSION = '1.1.2.dev 20/11/2025 21:33:25';
 
   async function traces(options) {
     const debug = {
+        versions: true,
+        storages: true,
+        serviceWorkers: true,
         ...options
       },
-      data = [
+      data = [];
+
+    if (debug.versions)
+      data.push(...[
         'Ol v' + VERSION$1,
         'MyOl ' + VERSION,
         'Geocoder 4.3.3-4',
         'Proj4 2.19.10',
         'language ' + navigator.language,
-      ];
+      ]);
 
     // Storages in the subdomain
-    ['localStorage', 'sessionStorage'].forEach(s => {
-      if (window[s].length)
-        data.push(s + ':');
+    if (debug.storages)
+      ['localStorage', 'sessionStorage'].forEach(s => {
+        if (window[s].length)
+          data.push(s + ':');
 
-      Object.keys(window[s])
-        .forEach(k => data.push('  ' + k + ': ' + window[s].getItem(k)));
-    });
+        Object.keys(window[s])
+          .forEach(k => data.push('  ' + k + ': ' + window[s].getItem(k)));
+      });
 
     // Registered service workers in the scope
-    if ('serviceWorker' in navigator)
+    if (debug.serviceWorkers && 'serviceWorker' in navigator)
       await navigator.serviceWorker.getRegistrations().then(registrations => {
         if (registrations.length) {
           data.push('service-workers:');
@@ -91205,27 +91210,23 @@
 
     // Registered caches in the scope
     if (typeof caches === 'object')
-      await caches.keys().then(names => {
-        if (names.length) {
+      await caches.keys().then(async keys => {
+        if (keys.length) {
           data.push('caches:');
 
-          for (const name of names) {
-            data.push('  ' + name);
+          for (const key of keys) {
+            // Cache name
+            data.push('  ' + key);
 
-            //TODO BUG: doesn't work !
-            if (debug.files) {
-              data.push('Cached file list:');
-
-              caches
-                .open(name)
-                .then(cache => cache.keys())
-                .then(keys => {
-                  keys.forEach(request => {
-                    request.toto = 0; // Avoid lint error
-                    data.push('CACHE:' + name + ' FILE:' + request.url);
-                  });
-                });
-            }
+            // File names
+            await caches
+              .open(key)
+              .then(cache => cache.keys())
+              .then(requests =>
+                requests.forEach(request =>
+                  data.push('  ' + request.url)
+                )
+              );
           }
         }
       });
@@ -91234,7 +91235,6 @@
     console.info(data.join('\n'));
   }
 
-  /* global map */
   // Zoom & resolution
   function traceZoom() {
     console.info(

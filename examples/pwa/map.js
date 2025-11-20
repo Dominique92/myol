@@ -55,30 +55,12 @@ const points = new myol.layer.vector.WRI({
   }),
   baselayerTileGrid = baselayer.getSource().getTileGrid();
 
-async function traces() {
-  console.log('MAP.JS: Cached file list:');
-  await caches
-    .open('myWRI')
-    .then(cache => cache.keys())
-    .then(keys => {
-      const data = [];
-      keys.forEach(request => {
-        request.toto = 0; // Avoid lint error
-        data.push('FILE 000 ' + request.url);
-      });
-      console.info(data.join('\n'));
-    });
-}
+myol.traces({
+  files: true,
+});
 
-  myol.traces();
-  
 view.on('change', evt => {
-  myol.traces();
-  traces();
-
-  if (0)
-    console.log(baselayerTileGrid.getTileCoordForCoordAndZ(
-      evt.target.getCenter(),
-      Math.round(evt.target.getZoom())
-    ));
+  myol.traces({
+    files: true,
+  });
 });

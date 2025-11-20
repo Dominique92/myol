@@ -4,7 +4,7 @@
   header('Access-Control-Allow-Origin: *');
   header("Expires: ".$expire);
   header("Last-Modified: ".$date);
-  if(!isset($expire)) {
+  if(!$expire) {
     header("Cache-Control: no-cache, must-revalidate");
     header("Pragma: no-cache");
   }
@@ -25,7 +25,6 @@
   <script src="../../dist/myol-debug.js"></script>
   <script src="index.js" defer></script>
   <script src="map.js" defer></script>
-  <script src="trace.js" defer></script>
 </head>
 
 <body>

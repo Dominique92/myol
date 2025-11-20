@@ -15,6 +15,13 @@ function tiledBboxStrategy(extent, resolution) {
         ol.proj.transformExtent([lon, lat, lon + 2, lat + 1], 'EPSG:4326', 'EPSG:3857')
       );
 
+  console.info(
+    'Request ' + tiledExtents.length +
+    ' tile' + (tiledExtents.length > 1 ? 's' : '') +
+    ' extent=[' + extent4326.join(',') + '] for ' +
+    Math.round(resolution) + 'm/px resolution '
+  );
+
   return tiledExtents;
 }
 
@@ -25,14 +32,11 @@ const points = new myol.layer.vector.WRI({
   baselayer = new ol.layer.Tile({
     source: new ol.source.OSM(),
   }),
-  baselayerTileGrid = baselayer.getSource().getTileGrid(),
-
   view = new ol.View({
     center: ol.proj.transform([5.7, 45.2], 'EPSG:4326', 'EPSG:3857'), // Grenoble
     constrainResolution: true, // Force zoom on the definition of available tiles
     zoom: 8,
   }),
-
   map = new ol.Map({
     target: 'map',
     view: view,
@@ -44,19 +48,34 @@ const points = new myol.layer.vector.WRI({
     ],
 
     layers: [
-      baselayer, // Background layer
-
-      // Vector layers
+      baselayer,
       points,
-
-      // Hover & click management (mouse & touch)
       new myol.layer.Hover(),
     ],
-  });
+  }),
+  baselayerTileGrid = baselayer.getSource().getTileGrid();
+
+async function traces() {
+  console.log('MAP.JS: Cached file list:');
+  await caches
+    .open('myWRI')
+    .then(cache => cache.keys())
+    .then(keys => {
+      const data = [];
+      keys.forEach(request => {
+        request.toto = 0; // Avoid lint error
+        data.push('FILE 000 ' + request.url);
+      });
+      console.info(data.join('\n'));
+    });
+}
 
 view.on('change', evt => {
-  console.log(baselayerTileGrid.getTileCoordForCoordAndZ(
-    evt.target.getCenter(),
-    evt.target.getZoom()
-  ));
+  traces();
+
+  if (0)
+    console.log(baselayerTileGrid.getTileCoordForCoordAndZ(
+      evt.target.getCenter(),
+      Math.round(evt.target.getZoom())
+    ));
 });

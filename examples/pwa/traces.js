@@ -1,7 +1,7 @@
 /**
  * Display misc values
  */
-async function trace() {
+async function traces() {
   const data = [];
 
   // Storages in the subdomain
@@ -40,7 +40,7 @@ async function trace() {
             .then(keys => {
               keys.forEach(request => {
                 request.toto = 0; // Avoid lint error
-                //data.push('CACHE:' + name + ' FILE:' + request.url);
+                data.push('CACHE:' + name + ' FILE:' + request.url);
               });
             });
         }
@@ -62,4 +62,4 @@ async function trace() {
   // Log all the traces
   console.info(data.join('\n'));
 }
-trace();
+traces();

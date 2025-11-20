@@ -8,14 +8,17 @@ import {
 
 export const VERSION = '__myolBuildVersion__ __myolBuildDate__';
 
-export async function trace() {
-  const data = [
-    'Ol v' + olVersion,
-    'MyOl ' + VERSION,
-    'Geocoder __geocoderBuildVersion__',
-    'Proj4 __proj4BuildVersion__',
-    'language ' + navigator.language,
-  ];
+export async function traces(options) {
+  const debug = {
+      ...options
+    },
+    data = [
+      'Ol v' + olVersion,
+      'MyOl ' + VERSION,
+      'Geocoder __geocoderBuildVersion__',
+      'Proj4 __proj4BuildVersion__',
+      'language ' + navigator.language,
+    ];
 
   // Storages in the subdomain
   ['localStorage', 'sessionStorage'].forEach(s => {
@@ -44,31 +47,46 @@ export async function trace() {
       if (names.length) {
         data.push('caches:');
 
-        for (const name of names)
+        for (const name of names) {
           data.push('  ' + name);
+
+          //TODO BUG: doesn't work !
+          if (debug.files) {
+            data.push('Cached file list:');
+
+            caches
+              .open(name)
+              .then(cache => cache.keys())
+              .then(keys => {
+                keys.forEach(request => {
+                  request.toto = 0; // Avoid lint error
+                  data.push('CACHE:' + name + ' FILE:' + request.url);
+                });
+              });
+          }
+        }
       }
     });
 
-  // Log all the traces
+  // Display all the traces
   console.info(data.join('\n'));
 }
 
 /* global map */
 // Zoom & resolution
 function traceZoom() {
-  if (map.debug)
-    console.info(
-      'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
-      'resolution ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
-    );
+  console.info(
+    'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
+    'resolution ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
+  );
 }
 
 window.addEventListener('load', () => { // Wait for document load
-  if (typeof map === 'object' && map.once)
+  if (typeof map === 'object' && map.once && map.debug)
     map.once('precompose', () => { // Wait for view load
       traceZoom();
       map.getView().on('change:resolution', traceZoom);
     });
 });
 
-export default trace;
+export default traces;

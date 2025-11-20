@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 19/11/2025 17:45:01 using npm run build from the src/... sources
+ * Built 20/11/2025 08:59:00 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -77437,7 +77437,7 @@
       const fileExtent = gpxSource.getExtent();
 
       if (isEmpty(fileExtent))
-        alert(url + ' ne comporte pas de point ni de trace.');
+        alert(url + ' ne comporte pas de point ni de traces.');
       else {
         // Add received features to the layer defined in potion
         if (this.options.receivingLayer)
@@ -89972,7 +89972,7 @@
           }
       });
 
-      // Compute properties when the layer is loaded & before the cluster layer is computed
+      // Compute properties when one request is loaded & before the cluster layer is computed
       this.on('change', () => {
         this.logs ??= {};
         if (this.options.debug)
@@ -89985,6 +89985,7 @@
             .join('°E/') + '°N'
           );
 
+        //TODO move feature.getProperties() in hover
         this.getFeatures().forEach(f => {
           if (!f.yetAdded) {
             f.yetAdded = true;
@@ -91167,16 +91168,19 @@
    */
 
 
-  const VERSION = '1.1.2.dev 19/11/2025 17:45:01';
+  const VERSION = '1.1.2.dev 20/11/2025 08:59:00';
 
-  async function trace() {
-    const data = [
-      'Ol v' + VERSION$1,
-      'MyOl ' + VERSION,
-      'Geocoder 4.3.3-4',
-      'Proj4 2.19.10',
-      'language ' + navigator.language,
-    ];
+  async function traces(options) {
+    const debug = {
+        ...options
+      },
+      data = [
+        'Ol v' + VERSION$1,
+        'MyOl ' + VERSION,
+        'Geocoder 4.3.3-4',
+        'Proj4 2.19.10',
+        'language ' + navigator.language,
+      ];
 
     // Storages in the subdomain
     ['localStorage', 'sessionStorage'].forEach(s => {
@@ -91205,27 +91209,42 @@
         if (names.length) {
           data.push('caches:');
 
-          for (const name of names)
+          for (const name of names) {
             data.push('  ' + name);
+
+            //TODO BUG: doesn't work !
+            if (debug.files) {
+              data.push('Cached file list:');
+
+              caches
+                .open(name)
+                .then(cache => cache.keys())
+                .then(keys => {
+                  keys.forEach(request => {
+                    request.toto = 0; // Avoid lint error
+                    data.push('CACHE:' + name + ' FILE:' + request.url);
+                  });
+                });
+            }
+          }
         }
       });
 
-    // Log all the traces
+    // Display all the traces
     console.info(data.join('\n'));
   }
 
   /* global map */
   // Zoom & resolution
   function traceZoom() {
-    if (map.debug)
-      console.info(
-        'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
-        'resolution ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
-      );
+    console.info(
+      'zoom ' + map.getView().getZoom().toFixed(2) + ', ' +
+      'resolution ' + map.getView().getResolution().toPrecision(4) + ' m/pix'
+    );
   }
 
   window.addEventListener('load', () => { // Wait for document load
-    if (typeof map === 'object' && map.once)
+    if (typeof map === 'object' && map.once && map.debug)
       map.once('precompose', () => { // Wait for view load
         traceZoom();
         map.getView().on('change:resolution', traceZoom);
@@ -91242,7 +91261,7 @@
     layer: layer,
     Selector: layer.Selector,
     stylesOptions: stylesOptions,
-    trace: trace,
+    traces: traces,
     VERSION: VERSION,
   };
 

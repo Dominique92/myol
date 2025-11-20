@@ -11,7 +11,7 @@ header('Access-Control-Allow-Origin: *');
 header("Content-type: image/svg+xml");
 
 file_put_contents('toto.log',
-	$date.' FAVICON * '.$expire.'<br/>'.PHP_EOL,
+	$date.' FAVICON '.$_SERVER['REQUEST_URI'].PHP_EOL,
 	FILE_APPEND
 );
 ?>

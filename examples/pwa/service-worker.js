@@ -16,9 +16,13 @@
         console.info('PWA open cache ' + cacheName);
         cache.addAll([
             'index.php',
+            'index.css',
             'manifest.json',
             'service-worker.js',
+            'map.js',
             'favicon.svg',
+            'favicon.svg.php',
+            'favicon.svg.php?expire=120',
             // lon:2°=157km,lat:1°=111km
             'https://www.refuges.info/api/bbox?&nb_points=all&bbox=5,45,7,46',
             'https://www.refuges.info/api/bbox?&nb_points=all&cluster=0.1',

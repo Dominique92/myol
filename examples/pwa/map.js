@@ -70,7 +70,10 @@ async function traces() {
     });
 }
 
+  myol.traces();
+  
 view.on('change', evt => {
+  myol.traces();
   traces();
 
   if (0)

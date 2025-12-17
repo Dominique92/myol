@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 17/12/2025 15:21:17 using npm run build from the src/... sources
+ * Built 17/12/2025 15:58:48 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -77366,9 +77366,10 @@
           url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
           maxZoom: 18,
           attributions: makeAttributions({
-            contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
-            attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
-            legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
+            contribution: 'https://github.com/sletuffe/OpenTopoMap,OpenHikingMap',
+            donate: 'https://openmaps.fr/donate,Donation',
+            attribution: 'http://www.openstreetmap.org/copyright,OpenStreetMap',
+            legend: 'https://openmaps.fr/otm/legend.html',
           }),
         }),
       }),
@@ -92068,7 +92069,7 @@
   /* global map */
 
 
-  const VERSION = '1.1.2.dev 17/12/2025 15:21:17';
+  const VERSION = '1.1.2.dev 17/12/2025 15:58:48';
 
   async function traces(options) {
     const debug = {

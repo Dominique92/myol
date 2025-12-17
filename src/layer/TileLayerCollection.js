@@ -481,9 +481,10 @@ export function wriNavLayers(options = {}) {
         url: 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png',
         maxZoom: 18,
         attributions: makeAttributions({
-          contribution: 'https://www.openstreetmap.org/copyright,OpenStreetMap',
-          attribution: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap,OpenHikingMap',
-          legend: 'https://wiki.openstreetmap.org/wiki/OpenHikingMap#Map_Legend',
+          contribution: 'https://github.com/sletuffe/OpenTopoMap,OpenHikingMap',
+          donate: 'https://openmaps.fr/donate,Donation',
+          attribution: 'http://www.openstreetmap.org/copyright,OpenStreetMap',
+          legend: 'https://openmaps.fr/otm/legend.html',
         }),
       }),
     }),

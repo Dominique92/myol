@@ -1,5 +1,10 @@
-navigator.serviceWorker.register('service-worker.js');
+// Register service worker
+// https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+if ('serviceWorker' in navigator)
+  navigator.serviceWorker.register('service-worker.js')
+  .catch(error => console.error('Service worker not registered' + error));
 
+/*
 async function getData() {
   const url = 'https://c92.fr/test/pwa/?expire=1000';
   try {
@@ -15,3 +20,4 @@ async function getData() {
   }
 }
 window.onload = getData;
+*/

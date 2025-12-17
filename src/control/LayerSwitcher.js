@@ -48,7 +48,7 @@ class LayerSwitcher extends Button {
       this.subMenuEl.insertAdjacentHTML('beforeend', '<label><input type="checkbox" name="baselayer" value="' + name + '">' + name + '</label>');
 
       // Make layers available for display
-      this.layers[name].setVisible(false); // Don't begin to get the tiles yet (Necessary for Bing)
+      //this.layers[name].setVisible(false); // Don't begin to get the tiles yet (Necessary for Bing)
       map.addLayer(this.layers[name]);
     }
     this.selectorEls = this.element.querySelectorAll('input[name="baselayer"]');

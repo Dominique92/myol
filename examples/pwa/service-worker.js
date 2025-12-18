@@ -57,6 +57,7 @@ self.addEventListener('fetch', evt => {
 
   evt.respondWith(
     caches.match(evt.request)
+    /* eslint-disable arrow-body-style */
     .then(found => {
       //*DCMM*/console.log(found);
       //*DCMM*/console.log(fetch(evt.request));

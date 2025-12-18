@@ -1,4 +1,5 @@
 /* global ol, myol */
+/* eslint-disable no-unused-vars */ //TODO REMOVE
 
 // Strategy for loading elements based on fixed tile grid
 // lon:2°=157km, lat:1°=111km

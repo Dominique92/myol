@@ -137,5 +137,4 @@ Tested on
 * Android (Samsung) : Samsung Internet, FireFox, Chrome, Brave, DuckDuckGo
 * Linux : FireFox
 
-TEST sous-modules : MODIF 251219 dans myol
-TEST sous-modules : MODIF 251219-2 dans myol
+TEST sous-modules : MODIF 251219-7 dans myol

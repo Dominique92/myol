@@ -138,3 +138,4 @@ Tested on
 * Linux : FireFox
 
 TEST sous-modules : MODIF 251219 dans myol
+TEST sous-modules : MODIF 251219-2 dans myol

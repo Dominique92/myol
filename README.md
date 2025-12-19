@@ -136,3 +136,5 @@ Tested on
 * Windows 10 : Edge, FireFox, Chrome, Opera, Brave
 * Android (Samsung) : Samsung Internet, FireFox, Chrome, Brave, DuckDuckGo
 * Linux : FireFox
+
+TEST sous-modules : MODIF 251219 dans myol

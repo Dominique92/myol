@@ -6,8 +6,8 @@ error_reporting(E_ALL);
 ini_set("display_errors", "on");
 
 // Default config.php
-$myol_rep = "../dist/";
-$gpx_rep = "";
+$myol_rep = "../../dist/";
+$gpx_rep = "traces/";
 $map_keys = [];
 $vector_layers = [];
 $js_include = [];

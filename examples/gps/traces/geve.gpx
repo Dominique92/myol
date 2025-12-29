@@ -1,0 +1,50 @@
+<gpx
+	xmlns="http://www.topografix.com/GPX/1/1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"
+	version="1.1"
+	creator="OpenLayers">
+<rte>
+	<rtept lat="45.20558" lon="5.55968"/>
+	<rtept lat="45.2039" lon="5.56034"/>
+	<rtept lat="45.20289" lon="5.5621"/>
+	<rtept lat="45.20345" lon="5.5627"/>
+	<rtept lat="45.20338" lon="5.5633"/>
+	<rtept lat="45.20424" lon="5.56416"/>
+	<rtept lat="45.20477" lon="5.56416"/>
+	<rtept lat="45.20564" lon="5.56598"/>
+	<rtept lat="45.20842" lon="5.56568"/>
+	<rtept lat="45.20875" lon="5.56603"/>
+	<rtept lat="45.2098" lon="5.56626"/>
+	<rtept lat="45.2104" lon="5.56499"/>
+	<rtept lat="45.21172" lon="5.56478"/>
+	<rtept lat="45.21215" lon="5.56429"/>
+	<rtept lat="45.21251" lon="5.5654"/>
+	<rtept lat="45.21381" lon="5.56607"/>
+	<rtept lat="45.2144" lon="5.56565"/>
+	<rtept lat="45.21429" lon="5.56463"/>
+	<rtept lat="45.21465" lon="5.56354"/>
+	<rtept lat="45.21544" lon="5.56153"/>
+	<rtept lat="45.2158" lon="5.55979"/>
+	<rtept lat="45.2146" lon="5.55888"/>
+	<rtept lat="45.21374" lon="5.55928"/>
+	<rtept lat="45.21227" lon="5.55799"/>
+	<rtept lat="45.21175" lon="5.55888"/>
+	<rtept lat="45.21095" lon="5.5591"/>
+	<rtept lat="45.21039" lon="5.55795"/>
+	<rtept lat="45.20981" lon="5.55786"/>
+	<rtept lat="45.20917" lon="5.5583"/>
+	<rtept lat="45.20851" lon="5.55822"/>
+	<rtept lat="45.20785" lon="5.55796"/>
+	<rtept lat="45.20733" lon="5.55715"/>
+	<rtept lat="45.20675" lon="5.55863"/>
+	<rtept lat="45.20573" lon="5.55958"/>
+</rte>
+<wpt lat="45.21138" lon="5.57023">
+	<ele>1260</ele>
+	<name>Cabane des Sabots</name>
+	<link href="https://www.refuges.info/point/9839/cabane-non-gardee/cabane-des-Sabots/"/>
+	<sym>Fishing Hot Spot Facility</sym>
+	<type>cabane non gardée</type>
+</wpt>
+</gpx>

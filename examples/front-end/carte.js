@@ -8,30 +8,28 @@
 // Initialise la carte avec les points des Alpes du Nord
 let map = null;
 
-const openhikingmapLayer = L.tileLayer(
-    'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' +
-        '<a href="https://wiki.openstreetmap.org/wiki/openhikingmap">openhikingmap</a>',
-    }
-  ),
-  osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const baseLayers = {
+  OpenHikingMap: L.tileLayer('https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' +
+      '<a href="https://wiki.openstreetmap.org/wiki/openhikingmap">openhikingmap</a>',
+  }),
+  OpenStreetMap: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
-  });
+  }),
+};
 
 /* eslint-disable-next-line no-unused-vars */
 function initCarte() {
   if (!map) {
-    map = L.map('map', {
-      layers: [openhikingmapLayer],
-    });
+    map = L.map('map');
+
+    Object.values(baseLayers)[0].addTo(map); // Default layer
+    L.control.layers(baseLayers).addTo(map);
+
     new L.Control.Gps({
       autoCenter: true,
-    }).addTo(map);
-    L.control.layers({
-      openhikingmap: openhikingmapLayer,
-      OpenStreetMap: osmLayer,
     }).addTo(map);
 
     requeteAPI(

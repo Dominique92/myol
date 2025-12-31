@@ -1,25 +1,35 @@
 /* global L, requeteAPI, serveurApi, appliqueDonnees */
 
+//TODO BUG ligne blanche entre les dalles
+
 /*****************
  * Carte Leaflet *
  *****************/
 // Initialise la carte avec les points des Alpes du Nord
 let map = null;
 
+const openhikingmap = L.tileLayer(
+    'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' +
+        '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+    }
+  ),
+  osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  });
+
 /* eslint-disable-next-line no-unused-vars */
 function initCarte() {
-  //BEST stratégie bbox & ne pas charger toutes les icônes
   if (!map) {
-    map = L.map('map');
-
-    // Fond de carte
-    L.tileLayer(
-      'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: '<a href="https://www.openstreetmap.org/copyright"">&copy; OpenStreetMap</a>. ' +
-          '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
-      }
-    ).addTo(map);
+    map = L.map('map', {
+      layers: [openhikingmap],
+    });
+    L.control.layers({
+      openhikingmap: openhikingmap,
+      OpenStreetMap: osm,
+    }).addTo(map);
 
     requeteAPI(
       'cartes',

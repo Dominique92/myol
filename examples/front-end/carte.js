@@ -25,8 +25,14 @@ function initCarte() {
   if (!map) {
     map = L.map('map');
 
+    // Layer switcher
     Object.values(baseLayers)[0].addTo(map); // Default layer
     L.control.layers(baseLayers).addTo(map);
+
+    new L.Control.Fullscreen().addTo(map);
+
+    new L.Control.Geocoder().addTo(map);
+    //TODO Access to fetch at 'https://nominatim.openstreetmap.org/...' has been blocked by CORS policy:
 
     new L.Control.Gps({
       autoCenter: true,

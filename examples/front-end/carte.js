@@ -8,14 +8,14 @@
 // Initialise la carte avec les points des Alpes du Nord
 let map = null;
 
-const openhikingmap = L.tileLayer(
+const openhikingmapLayer = L.tileLayer(
     'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>. ' +
-        '<a href="https://wiki.openstreetmap.org/wiki/OpenHikingMap">OpenHikingMap</a>',
+        '<a href="https://wiki.openstreetmap.org/wiki/openhikingmap">openhikingmap</a>',
     }
   ),
-  osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
   });
@@ -24,11 +24,14 @@ const openhikingmap = L.tileLayer(
 function initCarte() {
   if (!map) {
     map = L.map('map', {
-      layers: [openhikingmap],
+      layers: [openhikingmapLayer],
     });
+    new L.Control.Gps({
+      autoCenter: true,
+    }).addTo(map);
     L.control.layers({
-      openhikingmap: openhikingmap,
-      OpenStreetMap: osm,
+      openhikingmap: openhikingmapLayer,
+      OpenStreetMap: osmLayer,
     }).addTo(map);
 
     requeteAPI(

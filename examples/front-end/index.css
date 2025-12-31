@@ -115,3 +115,8 @@ body:not([class*="attente"]) .attente {
   border-style: double;
   text-align: center;
 }
+
+/* Carte */
+.leaflet-control-gps .gps-button {
+  background-image: url('stefanocudini-gps/gps-icon.png');
+}

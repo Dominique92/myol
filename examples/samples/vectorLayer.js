@@ -16,6 +16,7 @@ const map = new ol.Map({
     new ol.control.Zoom(),
     new ol.control.FullScreen(),
     new ol.control.ScaleLine(),
+    new myol.control.Download(),
   ],
 
   layers: [

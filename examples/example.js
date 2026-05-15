@@ -77,7 +77,7 @@ const mapKeys = {
   // https://manage.thunderforest.com/dashboard
   thunderforest: 'ee751f43b3af4614b01d1bce72785369',
 
-  // http://www.kompass.de/livemap/
+  // https://www.kompass.de/livemap/
   kompass: '2ba8c124-38b6-11e7-ade1-e0cb4e28e847',
 
   // https://www.mapbox.com/

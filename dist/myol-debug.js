@@ -4,7 +4,7 @@
  * This package adds many features to Openlayer https://openlayers.org/
  * https://github.com/Dominique92/myol#readme
  * Based on https://openlayers.org
- * Built 01/04/2026 20:36:06 using npm run build from the src/... sources
+ * Built 15/05/2026 21:44:48 using npm run build from the src/... sources
  * Please don't modify this file : best is to modify src/... & npm run build !
  */
 (function (global, factory) {
@@ -91675,7 +91675,7 @@
                   rotateWithView: true,
                   rotation: -Math.atan2(dy, dx),
                   src: 'data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
+<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
 <path stroke="red" d="M0 0 4 3 M4 3 0 6" />\
 </svg>',
                 }),
@@ -91751,7 +91751,7 @@
   }
 
   // alpages.info
-  //TODO vite : Access to XMLHttpRequest at 'https://alpages.info/ext/Dominique92/GeoBB/gis.php?forums=on&bbox=5.85311%2C44.7727%2C5.91689%2C44.8093' from origin 'http://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+  //TODO vite : Access to XMLHttpRequest at 'https://alpages.info/ext/Dominique92/GeoBB/gis.php?forums=on&bbox=5.85311%2C44.7727%2C5.91689%2C44.8093' from origin 'https://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
   class Alpages extends MyVectorLayer {
     constructor(options) {
       super({
@@ -91916,7 +91916,7 @@
   /**
    * OSM XML overpass POI layer
    * From: https://openlayers.org/en/latest/examples/vector-osm.html
-   * Doc: http://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
+   * Doc: https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
    */
   class Overpass extends MyVectorLayer {
     constructor(options) {
@@ -92071,7 +92071,7 @@
   /* global map */
 
 
-  const VERSION = '1.1.2.dev 01/04/2026 20:36:06';
+  const VERSION = '1.1.2.dev 15/05/2026 21:44:48';
 
   async function traces(options) {
     const debug = {

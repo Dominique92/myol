@@ -1,5 +1,5 @@
 <svg
-  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="gris" x1="14%" y1="0%" x2="86%" y2="0%">
       <stop offset="27%" style="stop-color:#E2DCC6;stop-opacity:1" />

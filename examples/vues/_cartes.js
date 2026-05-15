@@ -20,7 +20,7 @@ function externTilesLayers(mapKeys, restreint) {
         maxZoom: 18,
         attributions: '<a href="https://github.com/sletuffe/OpenTopoMap">© OpenHikingMap</a> ' +
           '<a href="https://openmaps.fr/donate">❤️ Donation</a> ' +
-          '<a href="http://www.openstreetmap.org/copyright">© OpenStreetMap</a> ' +
+          '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap</a> ' +
           '<a target="_blank" href="https://openmaps.fr/otm/legend.html">Légende</a>',
       }),
     }),
@@ -38,7 +38,7 @@ function externTilesLayers(mapKeys, restreint) {
         maxZoom: 17,
         attributions: '<a href="https://github.com/sletuffe/OpenTopoMap">&copy; OTM-R</a> | ' +
           '<a href="https://openmaps.fr/donate">❤️ Donation</a> | ' +
-          '<a href="http://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a> | ' +
+          '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a> | ' +
           '<a target="_blank" href="https://openmaps.fr/otm/legend.html">Légende</a>',
       }),
     }),

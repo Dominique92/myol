@@ -46,7 +46,6 @@ See a [Tile layers example](https://Dominique92.github.io/myol/examples/?sample=
 * Österreich Kompass
 * Great Britain Ordnance Survey
 * IDEE España, satellite
-* IGM Italie
 * Google maps, satellite
 * Maxar, ArcGIS
 

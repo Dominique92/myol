@@ -464,7 +464,7 @@ class VectorEditor extends VectorLayer {
                 rotateWithView: true,
                 rotation: -Math.atan2(dy, dx),
                 src: 'data:image/svg+xml;utf8,\
-<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="10" height="10">\
 <path stroke="red" d="M0 0 4 3 M4 3 0 6" />\
 </svg>',
               }),

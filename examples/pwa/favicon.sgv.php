@@ -15,7 +15,7 @@ file_put_contents('toto.log',
 	FILE_APPEND
 );
 ?>
-<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 24 24" height="512" width="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="512" width="512">
 <style>
 	g {filter: drop-shadow(0 0 1px black);}
 </style>

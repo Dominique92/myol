@@ -303,7 +303,7 @@ function mapIndex(options) {
     });
 
   // Initialiser au chargement de la page
-  if (localStorage.wriaccueilmassifs === 'true')
+  if (sessionStorage.wriaccueilmassifs === 'true')
     boutonSelectContour.element.classList.add('myol-button-selected');
   else
     boutonSelectPoints.element.classList.add('myol-button-selected');
@@ -323,7 +323,7 @@ function mapIndex(options) {
 
     pointsLayer.setVisible(pointsSelected);
     polygonesLayer.setVisible(!pointsSelected);
-    localStorage.wriaccueilmassifs = !pointsSelected;
+    sessionStorage.wriaccueilmassifs = !pointsSelected;
   }
   boutonSelectPoints.buttonAction = selectIndexLayer;
   boutonSelectContour.buttonAction = selectIndexLayer;
